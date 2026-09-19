@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Whiplash Shift</title>
+<style>
+  :root {
+    --bg: #07090b;
+    --ink: #e8eef5;
+    --muted: rgba(170,185,200,0.7);
+    --line: rgba(150,170,190,0.18);
+    --a: #4fd2ff;
+    --b: #ffa63d;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--mono); overflow: hidden; }
+  #game { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
+
+  #brand {
+    position: fixed; left: 50%; top: 84px; transform: translateX(-50%);
+    text-align: center; pointer-events: none; opacity: 0.28; letter-spacing: 0.34em;
+    font-size: 11px; color: var(--muted); text-transform: uppercase;
+  }
+
+  #tuner {
+    position: fixed; right: 0; top: 0; height: 100vh; width: 330px;
+    background: rgba(8,11,14,0.94); border-left: 1px solid var(--line);
+    transform: translateX(100%); transition: transform 180ms ease;
+    overflow-y: auto; padding: 16px 16px 40px; z-index: 5;
+  }
+  #tuner.open { transform: none; }
+  #tuner h2 {
+    font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--muted); margin: 4px 0 14px; font-weight: 500;
+  }
+  #tuner p.hint { font-size: 10px; line-height: 1.5; color: var(--muted); margin: 0 0 16px; }
+  .tune-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin-bottom: 11px; }
+  .tune-name { font-size: 10px; color: var(--muted); }
+  .tune-val { font-size: 10px; color: var(--a); text-align: right; }
+  .tune-row input { grid-column: 1 / -1; width: 100%; accent-color: var(--a); height: 16px; }
+  .tune-reset {
+    margin-top: 10px; width: 100%; padding: 8px; background: transparent; cursor: pointer;
+    border: 1px solid var(--line); color: var(--muted); font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .tune-reset:hover { color: var(--ink); border-color: var(--a); }
+  #noscript { padding: 40px; font-size: 13px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="brand">Whiplash Shift &middot; bi-directional chassis prototype</div>
+<aside id="tuner">
+  <h2>Live tuning</h2>
+  <p class="hint">
+    Values apply immediately. This is the point of the prototype &mdash; the swap should be
+    judged with the numbers moving, not as a fixed build. Press <b>T</b> to hide.
+  </p>
+</aside>
+<noscript><div id="noscript">Whiplash Shift needs JavaScript and a canvas-capable browser.</div></noscript>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
