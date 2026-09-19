@@ -1,0 +1,32 @@
+; Whiplash Shift — M0 physics spike
+; Engine configuration file.
+
+config_version=5
+
+[application]
+
+config/name="Whiplash Shift"
+config/description="M0: two-ended chassis physics spike. One question — does the swap still feel right in 3D?"
+run/main_scene="res://scenes/proving_ground.tscn"
+config/features=PackedStringArray("4.6", "Forward Plus")
+
+[debug]
+
+gdscript/warnings/untyped_declaration=1
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+
+[physics]
+
+; 120 Hz to match the web prototype's fixed timestep exactly, so side-by-side
+; comparison isn't confounded by tick rate. Stiff springs like it too.
+common/physics_ticks_per_second=120
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+anti_aliasing/quality/msaa_3d=2
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=2

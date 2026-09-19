@@ -1,7 +1,16 @@
-# Whiplash Shift — playable prototype
+# Whiplash Shift
 
-A browser prototype of the bi-directional combat racer: one chassis, two ends, and a swap
-that hands the drive from one to the other **without touching the body's momentum**.
+A bi-directional combat racer: one chassis, two ends, and a swap that hands the drive from
+one to the other **without touching the body's momentum**.
+
+| | |
+|---|---|
+| **`godot/`** | the game — Godot 4.6, 3D, where development happens now. See [godot/README.md](godot/README.md). |
+| **`web/`** | the original 2D browser prototype. Kept alive deliberately: it's the reference for what the handling is *supposed* to feel like, and the Godot tests measure against it. |
+
+---
+
+## The web prototype (`web/`)
 
 - **End A — Asphalt Racer.** Slicks, low clearance, aero downforce, ~180 km/h on tarmac.
   Effectively immobilised in a bog.
@@ -15,7 +24,7 @@ Solo mode, one mixed-surface circuit, an AI copilot on callouts and the tailgun,
 ES modules need to be served, not opened from `file://`:
 
 ```sh
-python3 -m http.server 8137
+cd web && python3 -m http.server 8137
 # then open http://127.0.0.1:8137/index.html
 ```
 
@@ -98,8 +107,8 @@ numbers moving.
 ## Tests
 
 ```sh
-node tests/headless.mjs            # 30 checks, headless Chromium
-node tests/headless.mjs --shots    # also writes screenshots to shots/
+node web/tests/headless.mjs            # 30 checks, headless Chromium
+node web/tests/headless.mjs --shots    # also writes screenshots to shots/
 ```
 
 The page exposes `window.__WS`, which steps the same fixed-timestep simulation the game loop
