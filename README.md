@@ -21,6 +21,16 @@ python3 -m http.server 8137
 
 ## Controls
 
+Touch controls appear automatically on any device whose primary pointer is a finger.
+Force them on desktop with `?touch=1`, or off with `?touch=0`.
+
+**Touch** — left pad steers (relative, so a thumb landing never snaps to full lock);
+right cluster is `GO` / `BRAKE` / `H-BRK`, with `SWAP` spanning the two buttons your
+thumb was just on and `BOOST` beside it. `MENU` opens reset, camera, copilot and pause.
+Landscape is strongly preferred; portrait shows a rotate prompt.
+
+**Keyboard**
+
 | | |
 |---|---|
 | `W` / `↑` | throttle |
@@ -34,6 +44,10 @@ python3 -m http.server 8137
 | `F` | copilot assist on/off |
 | `T` | live tuning panel |
 | `P` / `H` / `M` | pause / controls / mute |
+
+On touch the HUD switches to a compact layout that lives entirely in the top strip, so the
+bottom two thirds of the screen belong to your thumbs. That applies on tablets too, where
+there is room for the wide layout but the bottom edge is still under a hand.
 
 ## What the prototype is actually testing
 
@@ -84,7 +98,7 @@ numbers moving.
 ## Tests
 
 ```sh
-node tests/headless.mjs            # 20 checks, headless Chromium
+node tests/headless.mjs            # 30 checks, headless Chromium
 node tests/headless.mjs --shots    # also writes screenshots to shots/
 ```
 
@@ -104,9 +118,10 @@ independent of frame rate.
 | `src/weapons.js` | missiles, interceptor fire, oil, particles |
 | `src/render.js` | camera (the 180° swing), world draw |
 | `src/hud.js` | screen-space HUD |
+| `src/touch.js` | touch overlay: builds its own DOM and CSS, so both host pages stay in sync |
 | `src/tuning.js` | every tunable number + the live panel |
 | `src/main.js` | loop, laps, gates, collisions, test hook |
 
 ## Not in this pass
 
-Co-op split-screen, more tracks, vehicle progression, enemy weak-point targeting, touch controls.
+Co-op split-screen, more tracks, vehicle progression, enemy weak-point targeting, gamepad support.

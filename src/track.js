@@ -14,8 +14,12 @@
 
 import { SID, SURFACES, KEY_STEP } from './surfaces.js';
 
-export const PPM = 4;            // pixels per metre in the baked VISUAL raster
-export const MAP_PPM = 3;        // pixels per metre in the surface-id raster
+// Phones get a coarser visual raster: the full-size bake is ~31 MB of canvas and
+// the extra detail is invisible on a small screen anyway.
+const LOW_SPEC = typeof window !== 'undefined'
+  && (window.innerWidth < 900 || (navigator.maxTouchPoints || 0) > 1);
+export const PPM = LOW_SPEC ? 3 : 4;   // pixels per metre in the baked VISUAL raster
+export const MAP_PPM = 3;              // pixels per metre in the surface-id raster
 export const ORIGIN = { x: 80, y: 130 };
 export const WORLD = { w: 820, h: 590 };
 

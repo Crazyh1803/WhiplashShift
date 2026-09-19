@@ -90,6 +90,8 @@ const run = async () => {
     `${geo.points} nodes, ${geo.length.toFixed(0)} m`);
   check('two induction gates, one per spec', geo.gates.length === 2 && new Set(geo.gates).size === 2,
     geo.gates.join('/'));
+  check('touch overlay stays off for a mouse pointer',
+    await page.evaluate(() => !document.querySelector('.ws-touch')));
   check('surface map reads back correctly',
     geo.startSurface === 'tarmac' && geo.mudSurface === 'mud' && geo.iceSurface === 'ice' && geo.offSurface === 'off',
     `${geo.startSurface}/${geo.mudSurface}/${geo.iceSurface}/${geo.offSurface}`);
@@ -249,6 +251,118 @@ const run = async () => {
     !lap.nan && isFinite(lap.s.x) && isFinite(lap.s.y) && isFinite(lap.s.speed) && isFinite(lap.s.av));
 
   check('still no runtime errors at the end of the run', errors.length === 0, errors.slice(0, 2).join(' | '));
+
+  // ------------------------------------------------------------------ touch
+  console.log('\ntouch controls (emulated phone, landscape)');
+  const mobile = await browser.newContext({
+    viewport: { width: 844, height: 390 },
+    deviceScaleFactor: 2, hasTouch: true, isMobile: true,
+  });
+  const mp = await mobile.newPage();
+  const mErrors = [];
+  mp.on('pageerror', (e) => mErrors.push(String(e)));
+  mp.on('console', (m) => { if (m.type() === 'error') mErrors.push(m.text()); });
+  await mp.goto(`${URL}?touch=1`, { waitUntil: 'load' });
+  await mp.waitForFunction(() => !!window.__WS, null, { timeout: 15000 });
+
+  const present = await mp.evaluate(() => ({
+    overlay: !!document.querySelector('.ws-touch'),
+    go: !!document.querySelector('.ws-go'),
+    swap: !!document.querySelector('.ws-swap'),
+    steer: !!document.querySelector('.ws-steer'),
+    hbrk: !!document.querySelector('.ws-hbrk'),
+  }));
+  check('controls render on a touch device',
+    present.overlay && present.go && present.swap && present.steer && present.hbrk);
+
+  // buttons must sit inside the viewport and clear of each other
+  const boxes = await mp.evaluate(() => {
+    const pick = (s) => {
+      const el = document.querySelector(s);
+      const r = el.getBoundingClientRect();
+      return { s, x: r.x, y: r.y, w: r.width, h: r.height, r: r.right, b: r.bottom };
+    };
+    return ['.ws-go', '.ws-brake', '.ws-hbrk', '.ws-swap', '.ws-steer', '.ws-util'].map(pick);
+  });
+  const vw = 844, vh = 390;
+  const onScreen = boxes.every((b) => b.x >= -1 && b.y >= -1 && b.r <= vw + 1 && b.b <= vh + 1);
+  const bigEnough = boxes.filter((b) => b.s !== '.ws-steer' && b.s !== '.ws-util')
+    .every((b) => Math.min(b.w, b.h) >= 40);
+  check('every control is on screen', onScreen,
+    boxes.filter((b) => b.r > vw + 1 || b.b > vh + 1).map((b) => b.s).join(',') || 'all inside');
+  check('touch targets are at least 40px', bigEnough,
+    boxes.map((b) => `${b.s.slice(4)}:${Math.round(Math.min(b.w, b.h))}`).join(' '));
+
+  const hold = (sel, id) => mp.dispatchEvent(sel, 'pointerdown', { pointerId: id, isPrimary: true, bubbles: true });
+  const release = (sel, id) => mp.dispatchEvent(sel, 'pointerup', { pointerId: id, bubbles: true });
+
+  await mp.evaluate(() => window.__WS.begin());
+  await hold('.ws-go', 1);
+  await mp.waitForTimeout(1200);
+  const throttled = await mp.evaluate(() => window.__WS.sample().speed);
+  await release('.ws-go', 1);
+  check('GO drives the car', throttled > 5, `${(throttled * 3.6).toFixed(0)} km/h after 1.2 s`);
+
+  const swapped = await mp.evaluate(async () => {
+    const before = window.__WS.sample();
+    document.querySelector('.ws-swap').dispatchEvent(
+      new PointerEvent('pointerdown', { pointerId: 2, bubbles: true }));
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const after = window.__WS.sample();
+    return { before: before.end, after: after.end,
+      vx: [before.vx, after.vx], label: document.querySelector('.ws-swap').textContent };
+  });
+  check('SWAP hands the drive across and keeps momentum',
+    swapped.before !== swapped.after,
+    `${swapped.before} \u2192 ${swapped.after}, button now reads "${swapped.label.trim()}"`);
+
+  const steered = await mp.evaluate(async () => {
+    const zone = document.querySelector('.ws-steer');
+    const r = zone.getBoundingClientRect();
+    const cx = r.x + r.width / 2, cy = r.y + r.height / 2;
+    zone.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 3, clientX: cx, clientY: cy, bubbles: true }));
+    zone.dispatchEvent(new PointerEvent('pointermove', { pointerId: 3, clientX: cx + 90, clientY: cy, bubbles: true }));
+    await new Promise((r2) => requestAnimationFrame(r2));
+    const right = window.__WS.touch.state.steer;
+    zone.dispatchEvent(new PointerEvent('pointerup', { pointerId: 3, bubbles: true }));
+    await new Promise((r2) => requestAnimationFrame(r2));
+    return { right, released: window.__WS.touch.state.steer };
+  });
+  check('steering pad reads full lock and recentres on release',
+    steered.right === 1 && steered.released === 0, `lock ${steered.right}, released ${steered.released}`);
+
+  const hudFits = await mp.evaluate(() => {
+    // the compact HUD must leave the bottom of the screen to the thumbs
+    const r = document.querySelector('.ws-swap').getBoundingClientRect();
+    return { swapTop: r.top, h: window.innerHeight };
+  });
+  check('compact HUD keeps clear of the control cluster',
+    hudFits.swapTop > hudFits.h * 0.45, `cluster starts at ${Math.round(hudFits.swapTop)}px of ${hudFits.h}`);
+
+  // a tablet is roomy but its bottom edge is still under the thumbs
+  const tablet = await browser.newContext({
+    viewport: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true,
+  });
+  const tp2 = await tablet.newPage();
+  await tp2.goto(`${URL}?touch=1`, { waitUntil: 'load' });
+  await tp2.waitForFunction(() => !!window.__WS, null, { timeout: 15000 });
+  const tabletOk = await tp2.evaluate(() => {
+    const r = document.querySelector('.ws-go').getBoundingClientRect();
+    return { compact: window.innerWidth >= 1000 && window.innerHeight >= 620, goTop: r.top, h: window.innerHeight };
+  });
+  check('tablet keeps the compact HUD despite having room for the wide one',
+    tabletOk.compact && tabletOk.goTop > tabletOk.h * 0.6,
+    `${tabletOk.h}px tall, cluster at ${Math.round(tabletOk.goTop)}px`);
+  await tablet.close();
+
+  if (SHOTS) {
+    await hold('.ws-go', 4);
+    await mp.waitForTimeout(2500);
+    await mp.screenshot({ path: path.join(path.resolve(ROOT, SHOT_DIR), '05-touch-phone.png') });
+    await release('.ws-go', 4);
+  }
+  check('no runtime errors on the touch build', mErrors.length === 0, mErrors.slice(0, 2).join(' | '));
+  await mobile.close();
 
   await browser.close();
   if (server) server.kill();

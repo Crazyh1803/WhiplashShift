@@ -6,6 +6,7 @@ import { SID, SURFACES, preferredEnd } from './surfaces.js';
 import { buildTrack } from './track.js';
 import { createVehicle, stepVehicle, swapEnds, fireBoost, forwardVec } from './vehicle.js';
 import { createInput } from './input.js';
+import { createTouch, shouldUseTouch } from './touch.js';
 import { createAudio } from './audio.js';
 import { createCopilot, stepCopilot, noteSwap, noteGate, say } from './ai.js';
 import { createRivals, rivalControl } from './rivals.js';
@@ -20,6 +21,30 @@ const canvas = document.getElementById('game');
 const track = buildTrack();
 const renderer = createRenderer(canvas, track);
 const input = createInput(window);
+const touch = shouldUseTouch() ? createTouch(document.body) : null;
+if (touch) {
+  canvas.style.touchAction = 'none';
+  // the standfirst is a desktop nicety; on a phone it just sits over the track
+  const brand = document.getElementById('brand');
+  if (brand) brand.style.display = 'none';
+}
+
+// What the sim actually reads: keyboard and touch merged, so both work at once.
+const liveControl = { throttle: 0, brake: 0, steer: 0, handbrake: false };
+function mergeControls() {
+  const k = input.state;
+  if (!touch) {
+    liveControl.throttle = k.throttle; liveControl.brake = k.brake;
+    liveControl.steer = k.steer; liveControl.handbrake = k.handbrake;
+    return;
+  }
+  const t = touch.state;
+  liveControl.throttle = Math.max(k.throttle, t.throttle);
+  liveControl.brake = Math.max(k.brake, t.brake);
+  liveControl.steer = Math.max(-1, Math.min(1, k.steer + t.steer));
+  liveControl.handbrake = k.handbrake || t.handbrake;
+}
+const tapped = (name) => input.tapped(name) || (touch ? touch.tapped(name) : false);
 const audio = createAudio();
 const ordnance = createOrdnance();
 const copilot = createCopilot();
@@ -141,7 +166,7 @@ function simulate(dt) {
     player.ai.missileCd = 999;
     game.scripted = rivalControl(player, track, rivals[0] || player, ordnance, dt);
   }
-  const raw = game.scripted || input.state;
+  const raw = game.scripted || liveControl;
   const ctrl = {
     throttle: raw.throttle, brake: raw.brake, steer: raw.steer,
     handbrake: !!raw.handbrake, assistSteer: copilot.assistSteer,
@@ -251,23 +276,32 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'KeyM') audio.toggle();
 }, { passive: true });
 
+// First touch anywhere unlocks audio and clears the controls card.
+window.addEventListener('pointerdown', () => {
+  audio.start();
+  game.showHelp = false;
+}, { passive: true });
+
 function frame(now) {
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   input.update(dt);
+  if (touch) touch.update(dt);
+  mergeControls();
 
-  if (input.tapped('help')) game.showHelp = !game.showHelp;
-  if (input.tapped('pause')) game.paused = !game.paused;
-  if (input.tapped('camera')) renderer.cam.mode = renderer.cam.mode === 'swing' ? 'snap' : 'swing';
-  if (input.tapped('assist')) {
+  if (tapped('help')) game.showHelp = !game.showHelp;
+  if (tapped('pause')) game.paused = !game.paused;
+  if (tapped('camera')) renderer.cam.mode = renderer.cam.mode === 'swing' ? 'snap' : 'swing';
+  if (tapped('assist')) {
     copilot.enabled = !copilot.enabled;
     say(copilot, copilot.enabled ? 'COPILOT ACTIVE' : 'COPILOT STOOD DOWN', 'info');
   }
-  if (input.tapped('tune')) tunePanel.classList.toggle('open');
-  if (input.tapped('recover')) recover();
-  if (input.tapped('swap')) { audio.start(); game.showHelp = false; doSwap(); }
-  if (input.tapped('boost')) { if (fireBoost(player)) audio.reward(); }
-  if (input.state.throttle > 0.01 && !audio.ready) { audio.start(); game.showHelp = false; }
+  if (tapped('tune')) tunePanel.classList.toggle('open');
+  if (tapped('recover')) recover();
+  if (tapped('swap')) { audio.start(); game.showHelp = false; doSwap(); }
+  if (tapped('boost')) { if (fireBoost(player)) audio.reward(); }
+  if (liveControl.throttle > 0.01 && !audio.ready) { audio.start(); game.showHelp = false; }
+  if (touch) touch.setEnd(player.activeEnd, player.cooldown > 0);
 
   const running = !game.paused && !game.finished && !game.showHelp;
   if (running) {
@@ -283,13 +317,13 @@ function frame(now) {
   const cfg = T[player.activeEnd];
   audio.update(
     Math.min(1, Math.abs(player.fwdSpeed) / Math.max(4, cfg.topSpeed)),
-    Math.max(input.state.throttle, player.boostTimer > 0 ? 1 : 0),
+    Math.max(liveControl.throttle, player.boostTimer > 0 ? 1 : 0),
     Math.min(1, player.slip * 0.6 + player.spin * 0.8),
     player.activeEnd === 'B',
   );
 
   drawHud(renderer.ctx, w, h, {
-    player, rivals, copilot, timing, track, renderer, audio,
+    player, rivals, copilot, timing, track, renderer, audio, touch: !!touch,
     paused: game.paused, showHelp: game.showHelp, finished: game.finished,
     position: game.position, fieldSize: 1 + rivals.length,
   });
@@ -312,7 +346,7 @@ requestAnimationFrame(frame);
 
 // ---------------------------------------------------------------- test hook
 window.__WS = {
-  T, track, player, copilot, ordnance, renderer, timing, game,
+  T, track, player, copilot, ordnance, renderer, timing, game, touch,
   get rivals() { return rivals; },
   setControl(c) { game.autopilot = false; game.scripted = { throttle: 0, brake: 0, steer: 0, handbrake: false, ...c }; },
   releaseControl() { game.autopilot = false; game.scripted = null; },

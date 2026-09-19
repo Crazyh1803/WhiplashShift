@@ -41,6 +41,14 @@ function label(c, text, x, y, size = 11, color = 'rgba(170,185,200,0.75)', align
 }
 
 export function drawHud(c, w, h, state) {
+  // Below this the wide layout collides with itself. Touch always gets the
+  // compact one whatever the screen size: a tablet is roomy, but the bottom of
+  // it is still under the player's thumbs.
+  if (state.touch || w < 1000 || h < 620) return drawCompactHud(c, w, h, state);
+  return drawWideHud(c, w, h, state);
+}
+
+function drawWideHud(c, w, h, state) {
   const { player: v, copilot: cp, timing, track, renderer, paused, showHelp, finished, audio } = state;
   const cfg = T[v.activeEnd];
   const other = v.activeEnd === 'A' ? 'B' : 'A';
@@ -165,13 +173,136 @@ export function drawHud(c, w, h, state) {
   }
 
   // ---------- overlays ----------
-  if (showHelp) drawHelp(c, w, h, audio);
+  if (showHelp) drawHelp(c, w, h, audio, state.touch);
   if (paused && !finished) centreCard(c, w, h, 'PAUSED', 'P to resume · H for controls');
   if (finished) {
     centreCard(c, w, h, 'RUN COMPLETE',
       `${timing.total} laps · best ${fmtTime(timing.best)} · R to run it again`);
   }
 
+  c.textAlign = 'left';
+}
+
+// ---------------------------------------------------------------------------
+// Compact layout: everything lives in the top strip, so the bottom two thirds
+// of a phone screen belong to the player's thumbs.
+// ---------------------------------------------------------------------------
+function drawCompactHud(c, w, h, state) {
+  const { player: v, copilot: cp, timing, renderer, paused, showHelp, finished, audio } = state;
+  const cfg = T[v.activeEnd];
+  const now = performance.now() / 1000;
+  const s = Math.max(0.68, Math.min(1, Math.min(w / 900, h / 460)));
+  const pad = 10 * s;
+
+  // ---- left: speed, active end, condition ----
+  const pw = 176 * s, ph = 104 * s;
+  panel(c, pad, pad, pw, ph, 0.66);
+  label(c, `LAP ${Math.min(timing.lap + 1, timing.total)}/${timing.total}`, pad + 10 * s, pad + 16 * s, 10 * s);
+  label(c, `P${state.position}/${state.fieldSize}`, pad + pw - 10 * s, pad + 16 * s, 10 * s,
+    'rgba(170,185,200,0.75)', 'right');
+
+  c.font = `${34 * s}px ${MONO}`;
+  c.fillStyle = '#e8eef5';
+  c.textAlign = 'left';
+  c.fillText(String(Math.round(v.speed * 3.6)).padStart(3, ' '), pad + 8 * s, pad + 50 * s);
+  label(c, 'KM/H', pad + pw - 10 * s, pad + 50 * s, 10 * s, 'rgba(170,185,200,0.7)', 'right');
+
+  const pillW = 54 * s, pillY = pad + 58 * s;
+  c.fillStyle = cfg.color;
+  c.beginPath();
+  c.roundRect(pad + 8 * s, pillY, pillW, 16 * s, 3 * s);
+  c.fill();
+  c.font = `${11 * s}px ${MONO}`;
+  c.fillStyle = '#0b0d0c';
+  c.textAlign = 'center';
+  c.fillText(`END ${v.activeEnd}`, pad + 8 * s + pillW / 2, pillY + 12 * s);
+  label(c, SURFACES[v.surfaceUnder].name, pad + pw - 10 * s, pillY + 12 * s, 10 * s,
+    v.wrongEnd ? '#ff7864' : 'rgba(200,215,230,0.85)', 'right');
+
+  bar(c, pad + 8 * s, pad + 80 * s, pw - 16 * s, 5 * s, 1 - v.damage / T.damage.max,
+    v.damage > 70 ? '#ff5a46' : v.damage > 40 ? '#ffa63d' : '#8fd94f');
+  bar(c, pad + 8 * s, pad + 88 * s, pw - 16 * s, 5 * s, v.boost,
+    v.boostTimer > 0 ? '#fff2a0' : '#4fd2ff');
+  label(c, fmtTime(timing.lapTime), pad + 8 * s, pad + ph - 3 * s, 9 * s, 'rgba(170,185,200,0.7)');
+  label(c, timing.best ? fmtTime(timing.best) : '--', pad + pw - 10 * s, pad + ph - 3 * s, 9 * s,
+    timing.best ? '#8fd94f' : 'rgba(170,185,200,0.5)', 'right');
+
+  // ---- right: minimap ----
+  const mw = Math.round(renderer.mini.width * 0.62 * s);
+  const mh = Math.round(renderer.mini.height * 0.62 * s);
+  const mx = w - mw - pad, my = pad;
+  panel(c, mx - 4 * s, my - 4 * s, mw + 8 * s, mh + 8 * s, 0.7);
+  c.globalAlpha = 0.85;
+  c.drawImage(renderer.mini, mx, my, mw, mh);
+  c.globalAlpha = 1;
+  const toMini = (x, y) => [mx + ((x - ORIGIN.x) / WORLD.w) * mw, my + ((y - ORIGIN.y) / WORLD.h) * mh];
+  for (const r of state.rivals) {
+    const [rx, ry] = toMini(r.x, r.y);
+    c.fillStyle = r.color;
+    c.beginPath(); c.arc(rx, ry, 2.5 * s, 0, 6.3); c.fill();
+  }
+  const [px, py] = toMini(v.x, v.y);
+  c.fillStyle = cfg.color;
+  c.beginPath(); c.arc(px, py, 3.5 * s, 0, 6.3); c.fill();
+  c.strokeStyle = '#fff'; c.lineWidth = 1; c.stroke();
+
+  // ---- centre: the surface-change warning, the one thing you must not miss ----
+  if (cp.nextChange) {
+    const eta = cp.nextChange.eta;
+    const urgency = Math.max(0, Math.min(1, 1 - eta / T.ai.lookahead));
+    const gap = w - (pad * 2 + pw) - (mw + pad * 2);
+    const bw = Math.min(300 * s, Math.max(150 * s, gap - 16 * s));
+    const bx = (pad + pw + (w - mw - pad)) / 2 - bw / 2;
+    const by = pad;
+    const flash = eta < 1.4 ? 0.55 + 0.45 * Math.sin(now * 18) : 1;
+    panel(c, bx, by, bw, 44 * s, 0.55 + 0.3 * urgency);
+    const endCol = T[cp.nextChange.end].color;
+    label(c, `${SURFACES[cp.nextChange.sid].name} ${cp.nextChange.dist.toFixed(0)}M`,
+      bx + 10 * s, by + 19 * s, 11 * s, '#e8eef5');
+    c.globalAlpha = flash;
+    label(c, `END ${cp.nextChange.end}`, bx + bw - 10 * s, by + 19 * s, 13 * s, endCol, 'right');
+    c.globalAlpha = 1;
+    bar(c, bx + 10 * s, by + 27 * s, bw - 20 * s, 6 * s, urgency, endCol);
+  }
+
+  // ---- callouts: just the freshest two ----
+  let cyy = pad + ph + 18 * s;
+  for (const co of cp.callouts.slice(-2)) {
+    const a = Math.max(0, 1 - co.age / 6);
+    if (a <= 0) continue;
+    const col = co.level === 'alert' ? `rgba(255,120,100,${a})`
+      : co.level === 'warn' ? `rgba(255,190,90,${a})`
+        : co.level === 'good' ? `rgba(143,217,79,${a})`
+          : `rgba(200,215,230,${a})`;
+    label(c, `▸ ${co.text}`, pad + 2 * s, cyy, 10 * s, col);
+    cyy += 15 * s;
+  }
+
+  if (v.wrongEnd && v.speed > 11 && SURFACES[v.surfaceUnder].dmg > 0) {
+    const a = 0.55 + 0.45 * Math.sin(now * 14);
+    c.textAlign = 'center';
+    c.font = `${15 * s}px ${MONO}`;
+    c.fillStyle = `rgba(255,90,70,${a})`;
+    c.fillText(`END ${v.activeEnd} ON ${SURFACES[v.surfaceUnder].name} — SWAP`, w / 2, h * 0.30);
+  }
+
+  if (v.lastWhiplash && v.lastWhiplash.age < 2.2) {
+    const a = Math.max(0, 1 - v.lastWhiplash.age / 2.2);
+    c.textAlign = 'center';
+    c.font = `${24 * s}px ${MONO}`;
+    c.fillStyle = `rgba(255,242,160,${a})`;
+    c.fillText(v.lastWhiplash.kind, w / 2, h * 0.42);
+    c.font = `${11 * s}px ${MONO}`;
+    c.fillStyle = `rgba(230,238,245,${a * 0.85})`;
+    c.fillText(`${Math.round(v.lastWhiplash.retained * 100)}% MOMENTUM · +BOOST`, w / 2, h * 0.42 + 18 * s);
+  }
+
+  if (showHelp) drawHelp(c, w, h, audio, state.touch);
+  if (paused && !finished) centreCard(c, w, h, 'PAUSED', state.touch ? 'tap II to resume' : 'P to resume');
+  if (finished) {
+    centreCard(c, w, h, 'RUN COMPLETE',
+      `${timing.total} laps · best ${fmtTime(timing.best)} · ${state.touch ? 'RESET' : 'R'} to run again`);
+  }
   c.textAlign = 'left';
 }
 
@@ -251,18 +382,34 @@ function centreCard(c, w, h, title, sub) {
   c.textAlign = 'left';
 }
 
-function drawHelp(c, w, h, audio) {
-  const bw = 420, bh = 60 + CONTROLS.length * 22;
+function drawHelp(c, w, h, audio, touch) {
+  const rows = touch ? TOUCH_CONTROLS : CONTROLS;
+  const s = Math.max(0.7, Math.min(1, Math.min(w / 900, h / 520)));
+  const bw = Math.min(w - 32, 420 * s), bh = (60 + rows.length * 22) * s;
   const x = w / 2 - bw / 2, y = h / 2 - bh / 2;
-  c.fillStyle = 'rgba(6,8,10,0.86)';
+  c.fillStyle = 'rgba(6,8,10,0.88)';
   c.fillRect(0, 0, w, h);
   panel(c, x, y, bw, bh, 0.9);
-  label(c, 'WHIPLASH SHIFT — CONTROLS', x + 20, y + 30, 15, '#e8eef5');
-  let yy = y + 56;
-  for (const [k, d] of CONTROLS) {
-    label(c, k, x + 20, yy, 12, '#4fd2ff');
-    label(c, d, x + 150, yy, 12, 'rgba(200,215,230,0.85)');
-    yy += 22;
+  label(c, 'WHIPLASH SHIFT \u2014 CONTROLS', x + 20 * s, y + 30 * s, 15 * s, '#e8eef5');
+  let yy = y + 56 * s;
+  for (const [k, d] of rows) {
+    label(c, k, x + 20 * s, yy, 12 * s, '#4fd2ff');
+    label(c, d, x + bw * 0.42, yy, 12 * s, 'rgba(200,215,230,0.85)');
+    yy += 22 * s;
   }
-  label(c, `M mutes audio (${audio && audio.enabled ? 'on' : 'off'}) · H closes this`, x + 20, y + bh - 14, 11);
+  label(c, touch
+    ? 'tap anywhere to drive'
+    : `M mutes audio (${audio && audio.enabled ? 'on' : 'off'}) \u00b7 H closes this`,
+  x + 20 * s, y + bh - 14 * s, 11 * s);
 }
+
+const TOUCH_CONTROLS = [
+  ['GO', 'throttle'],
+  ['BRAKE', 'brake \u00b7 reverse'],
+  ['left pad', 'steer'],
+  ['SWAP', 'hand the drive to the other end'],
+  ['H-BRK', 'handbrake \u2014 hold after a swap to spin'],
+  ['BOOST', 'spend a charge earned from clean swaps'],
+  ['RESET', 'back to the last checkpoint'],
+  ['CAM / AI / TUNE', 'camera \u00b7 copilot \u00b7 tuning panel'],
+];
