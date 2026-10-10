@@ -1,0 +1,9 @@
+{
+  "name": "Blackjack brushed alloy", "type": "graph", "label": "Graph",
+  "nodes": [
+    {"name":"grain","type":"perlin","seed_int":17,"node_position":{"x":0,"y":0},"parameters":{"scale_x":256,"scale_y":4,"iterations":3,"persistence":0.4}},
+    {"name":"rough","type":"colorize","node_position":{"x":200,"y":0},"parameters":{"gradient":{"type":"Gradient","interpolation":1,"points":[{"pos":0,"r":0.23,"g":0.23,"b":0.23,"a":1},{"pos":1,"r":0.38,"g":0.38,"b":0.38,"a":1}]}}},
+    {"name":"Material","type":"material","node_position":{"x":400,"y":0},"parameters":{"size":9,"metallic":0.94,"roughness":1,"ao":1,"normal":1,"albedo_color":{"type":"Color","r":0.38,"g":0.42,"b":0.44,"a":1}}}
+  ],
+  "connections":[{"from":"grain","from_port":0,"to":"rough","to_port":0},{"from":"rough","from_port":0,"to":"Material","to_port":2}]
+}

@@ -1,0 +1,1053 @@
+{
+  "asset_status": "candidate_only",
+  "objects": {
+    "Body_TracedShell.001": {
+      "vertices": 7994,
+      "faces": 7708,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 0.5753466520338352,
+      "unassigned_material_faces": 0
+    },
+    "Glass_ArmoredSide_-1.001": {
+      "vertices": 51,
+      "faces": 80,
+      "boundary_edges": 20,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rubber_ArmoredWindowGasket_-1.001": {
+      "vertices": 200,
+      "faces": 200,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Glass_InterceptorSide_-1.001": {
+      "vertices": 61,
+      "faces": 96,
+      "boundary_edges": 24,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rubber_InterceptorWindowGasket_-1.001": {
+      "vertices": 240,
+      "faces": 240,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_ArmoredSeam_-1.001": {
+      "vertices": 240,
+      "faces": 240,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_InterceptorSeam_-1.001": {
+      "vertices": 240,
+      "faces": 240,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.434_0.001": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.434_0.002": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.434_0.003": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.434_0.006": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.434_0.007": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.434_0.008": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.208_0.001": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.208_0.002": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.208_0.003": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.208_0.006": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.208_0.007": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_-1_-0.208_0.008": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_Handle_Rugged_-1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_Handle_Interceptor_-1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Glass_ArmoredSide_1.001": {
+      "vertices": 51,
+      "faces": 80,
+      "boundary_edges": 20,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rubber_ArmoredWindowGasket_1.001": {
+      "vertices": 200,
+      "faces": 200,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Glass_InterceptorSide_1.001": {
+      "vertices": 61,
+      "faces": 96,
+      "boundary_edges": 24,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rubber_InterceptorWindowGasket_1.001": {
+      "vertices": 240,
+      "faces": 240,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_ArmoredSeam_1.001": {
+      "vertices": 240,
+      "faces": 240,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_InterceptorSeam_1.001": {
+      "vertices": 240,
+      "faces": 240,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.434_0.001": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.434_0.002": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.434_0.003": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.434_0.006": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.434_0.007": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.434_0.008": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.208_0.001": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.208_0.002": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.208_0.003": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.208_0.006": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.208_0.007": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "PlateRivet_1_-0.208_0.008": {
+      "vertices": 26,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_Handle_Rugged_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_Handle_Interceptor_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Glass_ArmoredWindshield_-1.001": {
+      "vertices": 41,
+      "faces": 64,
+      "boundary_edges": 16,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rubber_RuggedFrontGasket_-1.001": {
+      "vertices": 32,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Glass_ArmoredWindshield_1.001": {
+      "vertices": 41,
+      "faces": 64,
+      "boundary_edges": 16,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rubber_RuggedFrontGasket_1.001": {
+      "vertices": 32,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Glass_InterceptorWindshield.001": {
+      "vertices": 41,
+      "faces": 64,
+      "boundary_edges": 16,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rubber_InterceptorWindshieldSeal.001": {
+      "vertices": 32,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Hood_PanelSeam_-0.001": {
+      "vertices": 104,
+      "faces": 92,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Hood_PanelSeam_0.001": {
+      "vertices": 104,
+      "faces": 92,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Armor_BogieFender_-1.001": {
+      "vertices": 48,
+      "faces": 36,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Body_InterceptorArchEdge_-1.001": {
+      "vertices": 216,
+      "faces": 204,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Armor_CenterEquipment_-1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_-1_0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_-1_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_-1_2.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_-1_3.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_-1_4.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_-1_5.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_-1_6.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Armor_BogieFender_1.001": {
+      "vertices": 48,
+      "faces": 36,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Body_InterceptorArchEdge_1.001": {
+      "vertices": 216,
+      "faces": 204,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Armor_CenterEquipment_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_1_0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_1_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_1_2.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_1_3.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_1_4.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_1_5.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_ArmorVent_1_6.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_InterceptorLampPocket_-1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_Interceptor_-1_-0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_Interceptor_-1_0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_WeaponPocket_-1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Gun_Barrel_-1_-0.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Gun_Barrel_-1_0.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_Rugged_-1_0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_Rugged_-1_-0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Mirror_RuggedMount_-1.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Mirror_RuggedHousing_-1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Mirror_RuggedLens_-1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 8
+    },
+    "Mirror_SportMount_-1.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Mirror_SportHousing_-1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Mirror_SportLens_-1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 8
+    },
+    "Grille_InterceptorLampPocket_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_Interceptor_1_-0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_Interceptor_1_0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_WeaponPocket_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Gun_Barrel_1_-0.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Gun_Barrel_1_0.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_Rugged_1_0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_Rugged_1_-0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Mirror_RuggedMount_1.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Mirror_RuggedHousing_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Mirror_RuggedLens_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 8
+    },
+    "Mirror_SportMount_1.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Mirror_SportHousing_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Mirror_SportLens_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 8
+    },
+    "Grille_RuggedBacking.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_RuggedSlat_0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_RuggedSlat_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_RuggedSlat_2.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_RuggedSlat_3.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_RuggedSlat_4.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_RuggedSlat_5.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_RuggedSlat_6.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_RuggedSlat_7.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_RuggedSlat_8.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_InterceptorBacking.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_InterceptorSlat_-0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_InterceptorSlat_-0.002": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Armor_RuggedBumper.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Armor_InterceptorAirDam.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "BrushGuardBar_-0.001": {
+      "vertices": 48,
+      "faces": 36,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "BrushGuardBar_-0.002": {
+      "vertices": 48,
+      "faces": 36,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "BrushGuardBar_0.001": {
+      "vertices": 48,
+      "faces": 36,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "BrushGuardUpright_-0.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "BrushGuardMount_-0.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "BrushGuardUpright_0.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "BrushGuardMount_0.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Grille_RuggedRoofVent.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_RoofMarker_-0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_RoofMarker_-0.003": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_RoofMarker_0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Lights_RoofMarker_0.003": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Exhaust_Stack.001": {
+      "vertices": 120,
+      "faces": 102,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Exhaust_Seat_0.001": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Exhaust_Seat_0.002": {
+      "vertices": 96,
+      "faces": 82,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Exhaust_Tip.001": {
+      "vertices": 120,
+      "faces": 102,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Chassis_RuggedRail_-1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Chassis_BogieClevis_-1_-0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Chassis_BogieClevis_-1_-0.002": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Chassis_BogieClevis_-1_-0.003": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "InnerFender_Liner_-1_-0.001": {
+      "vertices": 100,
+      "faces": 98,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "InnerFender_Liner_-1_-0.002": {
+      "vertices": 100,
+      "faces": 98,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "InnerFender_Liner_-1_0.001": {
+      "vertices": 100,
+      "faces": 98,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_Hinge_Rugged_-1_0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_Hinge_Rugged_-1_0.002": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Armor_TransitionAccess_-1.001": {
+      "vertices": 160,
+      "faces": 160,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Chassis_RuggedRail_1.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Chassis_BogieClevis_1_-0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Chassis_BogieClevis_1_-0.002": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Chassis_BogieClevis_1_-0.003": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "InnerFender_Liner_1_-0.001": {
+      "vertices": 100,
+      "faces": 98,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "InnerFender_Liner_1_-0.002": {
+      "vertices": 100,
+      "faces": 98,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "InnerFender_Liner_1_0.001": {
+      "vertices": 100,
+      "faces": 98,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_Hinge_Rugged_1_0.001": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Door_Hinge_Rugged_1_0.002": {
+      "vertices": 56,
+      "faces": 54,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Armor_TransitionAccess_1.001": {
+      "vertices": 160,
+      "faces": 160,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    }
+  },
+  "physics_changed": false,
+  "shell": {
+    "vertices": 7994,
+    "faces": 7708,
+    "boundary_edges": 0,
+    "nonmanifold_nonboundary_edges": 0,
+    "zero_area_faces": 0,
+    "signed_volume": 0.5753466520338352,
+    "unassigned_material_faces": 0
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "vehicle": "Blackjack X-17",
+  "generator": "Blender 5.2.2 blueprint-traced continuous-cage builder",
+  "source": "tools/vehicle_pipeline/blender/blackjack_refined.blend",
+  "gameplay": {
+    "path": "godot/assets/vehicles/models/blackjack/blackjack_refined.glb",
+    "objects": 148,
+    "vertices": 18317,
+    "triangles": 35684
+  },
+  "lod1": {
+    "path": "godot/assets/vehicles/models/blackjack/blackjack_refined_lod1.glb",
+    "objects": 148,
+    "vertices": 9024,
+    "triangles": 17158
+  },
+  "materials": [
+    "ArmorProtected",
+    "BrushedMetal",
+    "Glass",
+    "Grille",
+    "Gunmetal",
+    "Lights",
+    "Mirror",
+    "Paint_Accent",
+    "Paint_Primary",
+    "Paint_Secondary",
+    "Rubber"
+  ],
+  "references": [
+    "godot/assets/vehicles/models/blackjack/blackjack_realistic_candidate_v2.png",
+    "godot/assets/vehicles/models/blackjack/blackjack_rugged_front.png",
+    "godot/assets/vehicles/models/blackjack/blackjack_interceptor_front.png"
+  ],
+  "renders": {
+    "side": "godot/assets/vehicles/models/blackjack/blackjack_refined_side.png",
+    "three_quarter": "godot/assets/vehicles/models/blackjack/blackjack_refined_three_quarter.png",
+    "rugged_front": "godot/assets/vehicles/models/blackjack/blackjack_refined_rugged_front.png",
+    "interceptor_front": "godot/assets/vehicles/models/blackjack/blackjack_refined_interceptor_front.png"
+  },
+  "physics_changed": false,
+  "asset_status": "candidate_only; visual acceptance pending",
+  "material_source": "tools/vehicle_pipeline/materials/blackjack_*.ptex (Material Maker 1.7)",
+  "blueprint": "/home/crazyh/Downloads/WhiplashShiftModels/SpyHunter.jpg",
+  "modular_rims": {
+    "aero": "godot/assets/vehicles/models/blackjack/blackjack_refined_rim_aero.glb",
+    "rugged": "godot/assets/vehicles/models/blackjack/blackjack_refined_rim_rugged.glb"
+  },
+  "modular_tires": {
+    "aero": "godot/assets/vehicles/models/blackjack/blackjack_refined_tire_aero.glb",
+    "rugged": "godot/assets/vehicles/models/blackjack/blackjack_refined_tire_rugged.glb"
+  },
+  "triangle_budget_scope": "body GLB only; modular wheels and runtime parts are additional",
+  "assembled_minimum_triangles": 104608,
+  "assembled_budget_passed": false,
+  "module_triangles": {
+    "rim_aero": 5532,
+    "rim_rugged": 9953,
+    "tire_aero": 3008,
+    "tire_rugged": 3008
+  }
+}

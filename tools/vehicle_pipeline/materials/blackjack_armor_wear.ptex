@@ -1,0 +1,9 @@
+{
+  "name":"Blackjack protected armor wear", "type":"graph", "label":"Graph",
+  "nodes":[
+    {"name":"wear","type":"scratches2","seed_int":41,"node_position":{"x":0,"y":0},"parameters":{"angle":15,"layers":5,"length":0.25,"randomness":0.3,"waviness":0.1,"width":0.15}},
+    {"name":"rough","type":"colorize","node_position":{"x":200,"y":0},"parameters":{"gradient":{"type":"Gradient","interpolation":1,"points":[{"pos":0,"r":0.38,"g":0.38,"b":0.38,"a":1},{"pos":1,"r":0.65,"g":0.65,"b":0.65,"a":1}]}}},
+    {"name":"Material","type":"material","node_position":{"x":400,"y":0},"parameters":{"size":9,"metallic":0.78,"roughness":1,"ao":1,"normal":1,"albedo_color":{"type":"Color","r":0.12,"g":0.15,"b":0.14,"a":1}}}
+  ],
+  "connections":[{"from":"wear","from_port":0,"to":"rough","to_port":0},{"from":"rough","from_port":0,"to":"Material","to_port":2}]
+}

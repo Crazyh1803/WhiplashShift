@@ -1,0 +1,9 @@
+{
+  "name":"Blackjack rubber", "type":"graph", "label":"Graph",
+  "nodes":[
+    {"name":"grain","type":"perlin","seed_int":23,"node_position":{"x":0,"y":0},"parameters":{"scale_x":96,"scale_y":96,"iterations":3,"persistence":0.5}},
+    {"name":"rough","type":"colorize","node_position":{"x":200,"y":0},"parameters":{"gradient":{"type":"Gradient","interpolation":1,"points":[{"pos":0,"r":0.78,"g":0.78,"b":0.78,"a":1},{"pos":1,"r":0.96,"g":0.96,"b":0.96,"a":1}]}}},
+    {"name":"Material","type":"material","node_position":{"x":400,"y":0},"parameters":{"size":9,"metallic":0,"roughness":1,"ao":1,"normal":1,"albedo_color":{"type":"Color","r":0.008,"g":0.010,"b":0.012,"a":1}}}
+  ],
+  "connections":[{"from":"grain","from_port":0,"to":"rough","to_port":0},{"from":"rough","from_port":0,"to":"Material","to_port":2}]
+}

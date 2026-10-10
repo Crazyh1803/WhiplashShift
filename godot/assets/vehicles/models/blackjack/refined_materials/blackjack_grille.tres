@@ -1,0 +1,6 @@
+[gd_resource type="ORMMaterial3D" load_steps=2 format=3]
+
+[ext_resource path="res://assets/vehicles/models/blackjack/refined_materials/blackjack_grille_orm.png" type="Texture2D" id="1"]
+[resource]
+albedo_color = Color(0.00999999977648, 0.01300000026822, 0.01499999966472, 1.0)
+orm_texture = ExtResource("1")
