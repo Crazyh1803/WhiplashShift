@@ -16,13 +16,63 @@ except Exception:
     report['validation_passed']=False
     (OUTPUT/'blackjack_blueprint_topology.json').write_text(json.dumps(report,indent=2)+'\n')
     raise
+# Invalidate the receipt until all blueprint-specific checks finish as well.
+report['validation_passed']=False
+(OUTPUT/'blackjack_blueprint_topology.json').write_text(json.dumps(report,indent=2)+'\n')
 from mathutils import Matrix,Vector
 from mathutils.bvhtree import BVHTree
 pose = Matrix.Translation((0,.064,0)) @ Matrix.Rotation(-.0905,4,'Z')
+# Independent exterior samples catch grey cage faces mislabeled as protected.
+# The builder bakes INVERSE_POSE into exports. POSE below restores the level
+# blueprint frame used by source_point; inverse-transforming rays would be wrong.
+level_transform=pose @ shell.matrix_world
+frame_error=max(abs(level_transform[row][column]-(1 if row==column else 0))
+                for row in range(4) for column in range(4))
+assert frame_error<1e-6, ('Blueprint landmark frame is misaligned',frame_error)
+report['source_level_transform_identity_error']=frame_error
+surface = BVHTree.FromPolygons([pose @ shell.matrix_world @ v.co for v in shell.data.vertices],
+                              [p.vertices for p in shell.data.polygons])
+def source_point(px,py,z=0):
+    scale=1.364606/334
+    return Vector(((px-527)*scale-.02485,(235-py)*scale-.395,z))
+paint_landmarks={}
+for name,px,py,expected in [('truck_door',382,135,'Paint_Primary'),
+                            ('equipment_panel',432,135,'Paint_Secondary'),
+                            ('transition_panel',511,120,'Paint_Secondary'),
+                            ('coupe_door',601,191,'Paint_Primary')]:
+    for side in (-1,1):
+        _,_,index,_=surface.ray_cast(source_point(px,py,side*.8),Vector((0,0,-side)))
+        assert index is not None, ('Missing body sample',name,side)
+        actual=shell.data.materials[shell.data.polygons[index].material_index].name
+        paint_landmarks[name+str(side)]=actual
+        assert actual==expected, ('Fixed grey body paint leak',name,side,actual,expected)
+for name,px,expected in [('rugged_hood',305,'Paint_Secondary'),
+                        ('coupe_hood',733,'Paint_Primary'),
+                        ('coupe_roof',588,'Paint_Secondary')]:
+    origin=source_point(px,0)
+    origin.y=1.5
+    _,_,index,_=surface.ray_cast(origin,Vector((0,-1,0)))
+    assert index is not None, ('Missing roof sample',name)
+    actual=shell.data.materials[shell.data.polygons[index].material_index].name
+    paint_landmarks[name]=actual
+    assert actual==expected, ('Fixed grey roof paint leak',name,actual,expected)
+for px in (510,750):
+    origin=source_point(px,235)
+    origin.y=-1.5
+    _,_,index,_=surface.ray_cast(origin,Vector((0,1,0)))
+    assert index is not None and shell.data.materials[shell.data.polygons[index].material_index].name=='ArmorProtected', ('Underbody must remain protected',px)
+    paint_landmarks['underside'+str(px)]='ArmorProtected'
+report['paint_landmarks']=paint_landmarks
 glass_clearance = {}
 for name in ('GAMEPLAY_EXPORT','LOD1_EXPORT'):
     group = bpy.data.collections[name]
     skin = next(obj for obj in group.objects if obj.name.startswith('Body_BlueprintShell'))
+    bm=bmesh.new()
+    bm.from_mesh(skin.data)
+    assert all(edge.is_manifold for edge in bm.edges), ('Open/nonmanifold shell',name)
+    assert all(face.calc_area()>1e-12 for face in bm.faces), ('Degenerate shell face',name)
+    assert bm.calc_volume(signed=True)>0, ('Reversed shell normals',name)
+    bm.free()
     surface = BVHTree.FromPolygons([pose @ skin.matrix_world @ v.co for v in skin.data.vertices],
                                   [p.vertices for p in skin.data.polygons])
     for obj in group.objects:

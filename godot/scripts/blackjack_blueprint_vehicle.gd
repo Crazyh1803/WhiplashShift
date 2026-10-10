@@ -215,6 +215,24 @@ func _configure_imported_meshes(node: Node) -> void:
 	mesh.layers=3 if paintable else 1
 
 
+func _configure_blackjack_semantic_surface(mesh: MeshInstance3D,surface: int,lower_name: String) -> void:
+	# Apply the finish at the hook that creates each independent paint override,
+	# on initial construction as well as every later customization rebuild.
+	super._configure_blackjack_semantic_surface(mesh,surface,lower_name)
+	if not _enabled():
+		return
+	var source := mesh.mesh.surface_get_material(surface)
+	if source==null or not source.resource_name.begins_with("Paint_"):
+		return
+	var coating := mesh.get_surface_override_material(surface) as StandardMaterial3D
+	if coating!=null:
+		coating.metallic=.28
+		coating.roughness=.32
+		coating.clearcoat_enabled=true
+		coating.clearcoat=.5
+		coating.clearcoat_roughness=.16
+
+
 func _rebuild_visuals() -> void:
 	super._rebuild_visuals()
 	if _enabled():

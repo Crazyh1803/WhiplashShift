@@ -2,12 +2,12 @@
   "asset_status": "candidate_only",
   "objects": {
     "Body_BlueprintShell.001": {
-      "vertices": 2250,
-      "faces": 4493,
+      "vertices": 2244,
+      "faces": 4461,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0,
-      "signed_volume": 0.3219746978008508,
+      "signed_volume": 0.3219508581142997,
       "unassigned_material_faces": 0
     },
     "Glass_RuggedSide_-1.001": {
@@ -18,8 +18,8 @@
       "zero_area_faces": 0
     },
     "Glass_RuggedGasket_-1.001": {
-      "vertices": 82,
-      "faces": 164,
+      "vertices": 36,
+      "faces": 72,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
@@ -32,8 +32,8 @@
       "zero_area_faces": 0
     },
     "Glass_CoupeGasket_-1.001": {
-      "vertices": 96,
-      "faces": 192,
+      "vertices": 42,
+      "faces": 84,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
@@ -46,330 +46,799 @@
       "zero_area_faces": 0
     },
     "Glass_CoupeQuarterSeal_-1.001": {
-      "vertices": 55,
-      "faces": 110,
+      "vertices": 24,
+      "faces": 48,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Door_Rugged_-1.001": {
-      "vertices": 82,
-      "faces": 164,
+      "vertices": 36,
+      "faces": 72,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_EquipmentPlate_-1.001": {
-      "vertices": 55,
-      "faces": 110,
+      "vertices": 24,
+      "faces": 48,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_TransitionInset_-1.001": {
-      "vertices": 55,
-      "faces": 110,
+      "vertices": 24,
+      "faces": 48,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Door_Coupe_-1.001": {
-      "vertices": 82,
-      "faces": 164,
+      "vertices": 36,
+      "faces": 72,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Body_CoupeShoulder_-1.001": {
-      "vertices": 29,
-      "faces": 32,
-      "boundary_edges": 22,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 15,
+      "faces": 16,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_-1_582_205.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_-1_582_205.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_-1_594_205.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_-1_594_205.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_-1_608_205.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_-1_608_205.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_-1_622_205.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_-1_622_205.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_-1_637_205.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_-1_637_205.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_-1_645_186.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_-1_645_186.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_-1_646_197.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_-1_646_197.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_-1_567_179.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_-1_567_179.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_-1_574_193.001": {
-      "vertices": 12,
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_-1_574_193.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandlePocket_Truck_-1.001": {
+      "vertices": 25,
+      "faces": 36,
+      "boundary_edges": 12,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleMount_Truck_-1-1.001": {
+      "vertices": 112,
+      "faces": 106,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleMount_Truck_-11.001": {
+      "vertices": 112,
+      "faces": 106,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleBridge_Truck_-1.001": {
+      "vertices": 32,
       "faces": 20,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleLock_Truck_-1.001": {
+      "vertices": 112,
+      "faces": 106,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Handle_Truck_-1.001": {
+    "Detail_HandlePocket_Coupe_-1.001": {
       "vertices": 25,
-      "faces": 46,
+      "faces": 36,
+      "boundary_edges": 12,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleMount_Coupe_-1-1.001": {
+      "vertices": 112,
+      "faces": 106,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Handle_Coupe_-1.001": {
-      "vertices": 25,
-      "faces": 46,
+    "Detail_HandleMount_Coupe_-11.001": {
+      "vertices": 112,
+      "faces": 106,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleBridge_Coupe_-1.001": {
+      "vertices": 32,
+      "faces": 20,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleLock_Coupe_-1.001": {
+      "vertices": 112,
+      "faces": 106,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_405_84.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_405_84.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_405_94.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_405_94.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_405_104.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_405_104.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_405_114.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_405_114.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_405_124.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_405_124.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_405_134.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_405_134.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_405_144.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_405_144.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_457_84.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_457_84.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_457_94.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_457_94.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_457_104.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_457_104.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_457_114.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_457_114.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_457_124.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_457_124.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_457_134.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_-1_457_134.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_-1_457_144.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
+    "FastenerContact_Rivet_Armor_-1_457_144.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_-1_414_83.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_-1_414_83.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_-1_414_146.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_-1_414_146.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_-1_428_83.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_-1_428_83.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_-1_428_146.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_-1_428_146.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_-1_442_83.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_-1_442_83.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_-1_442_146.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_-1_442_146.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_-1_453_83.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_-1_453_83.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_-1_453_146.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_-1_453_146.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_-1_351_119.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_-1_351_119.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_-1_351_138.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_-1_351_138.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_-1_362_149.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_-1_362_149.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_-1_381_149.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_-1_381_149.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_-1_392_137.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_-1_392_137.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_-1_393_118.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_-1_393_118.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_-1_490_95.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_-1_490_95.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_-1_490_133.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_-1_490_133.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_-1_512_121.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_-1_512_121.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_-1_526_121.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_-1_526_121.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
     "Hinge_Truck_-1_89.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Hinge_Truck_-1_144.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Armor_FenderFold_-1.001": {
-      "vertices": 49,
-      "faces": 94,
+    "Body_FenderFold_-1.001": {
+      "vertices": 22,
+      "faces": 40,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "InnerFender_-1_360.001": {
-      "vertices": 37,
-      "faces": 70,
+      "vertices": 17,
+      "faces": 30,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "InnerFender_-1_440.001": {
-      "vertices": 37,
-      "faces": 70,
+      "vertices": 17,
+      "faces": 30,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "InnerFender_-1_694.001": {
-      "vertices": 37,
-      "faces": 70,
+      "vertices": 17,
+      "faces": 30,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Drivetrain_Tank_-1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Tank_Strap_-1_502.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Tank_Strap_-1_525.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Drivetrain_ExternalPipe_-1.001": {
-      "vertices": 27,
-      "faces": 32,
-      "boundary_edges": 18,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 16,
+      "faces": 18,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "Vent_Armor_-1_0.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Vent_Armor_-1_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Vent_Armor_-1_2.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Vent_Armor_-1_3.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Vent_Armor_-1_4.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_AccessLatch_-1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
@@ -382,8 +851,8 @@
       "zero_area_faces": 0
     },
     "Glass_RuggedGasket_1.001": {
-      "vertices": 82,
-      "faces": 164,
+      "vertices": 36,
+      "faces": 72,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
@@ -396,8 +865,8 @@
       "zero_area_faces": 0
     },
     "Glass_CoupeGasket_1.001": {
-      "vertices": 96,
-      "faces": 192,
+      "vertices": 42,
+      "faces": 84,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
@@ -410,330 +879,799 @@
       "zero_area_faces": 0
     },
     "Glass_CoupeQuarterSeal_1.001": {
-      "vertices": 55,
-      "faces": 110,
+      "vertices": 24,
+      "faces": 48,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Door_Rugged_1.001": {
-      "vertices": 82,
-      "faces": 164,
+      "vertices": 36,
+      "faces": 72,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_EquipmentPlate_1.001": {
-      "vertices": 55,
-      "faces": 110,
+      "vertices": 24,
+      "faces": 48,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_TransitionInset_1.001": {
-      "vertices": 55,
-      "faces": 110,
+      "vertices": 24,
+      "faces": 48,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Door_Coupe_1.001": {
-      "vertices": 82,
-      "faces": 164,
+      "vertices": 36,
+      "faces": 72,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Body_CoupeShoulder_1.001": {
-      "vertices": 29,
-      "faces": 32,
-      "boundary_edges": 22,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 15,
+      "faces": 16,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_1_582_205.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_1_582_205.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_1_594_205.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_1_594_205.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_1_608_205.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_1_608_205.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_1_622_205.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_1_622_205.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_1_637_205.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_1_637_205.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_1_645_186.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_1_645_186.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_1_646_197.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_1_646_197.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_1_567_179.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_1_567_179.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_CoupePanel_1_574_193.001": {
-      "vertices": 12,
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_CoupePanel_1_574_193.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandlePocket_Truck_1.001": {
+      "vertices": 25,
+      "faces": 36,
+      "boundary_edges": 12,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleMount_Truck_1-1.001": {
+      "vertices": 112,
+      "faces": 106,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleMount_Truck_11.001": {
+      "vertices": 112,
+      "faces": 106,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleBridge_Truck_1.001": {
+      "vertices": 32,
       "faces": 20,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleLock_Truck_1.001": {
+      "vertices": 112,
+      "faces": 106,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Handle_Truck_1.001": {
+    "Detail_HandlePocket_Coupe_1.001": {
       "vertices": 25,
-      "faces": 46,
+      "faces": 36,
+      "boundary_edges": 12,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleMount_Coupe_1-1.001": {
+      "vertices": 112,
+      "faces": 106,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Handle_Coupe_1.001": {
-      "vertices": 25,
-      "faces": 46,
+    "Detail_HandleMount_Coupe_11.001": {
+      "vertices": 112,
+      "faces": 106,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleBridge_Coupe_1.001": {
+      "vertices": 32,
+      "faces": 20,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HandleLock_Coupe_1.001": {
+      "vertices": 112,
+      "faces": 106,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_405_84.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_405_84.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_405_94.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_405_94.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_405_104.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_405_104.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_405_114.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_405_114.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_405_124.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_405_124.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_405_134.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_405_134.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_405_144.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_405_144.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_457_84.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_457_84.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_457_94.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_457_94.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_457_104.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_457_104.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_457_114.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_457_114.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_457_124.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_457_124.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_457_134.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_Armor_1_457_134.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Rivet_Armor_1_457_144.001": {
-      "vertices": 12,
-      "faces": 20,
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
+    "FastenerContact_Rivet_Armor_1_457_144.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_1_414_83.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_1_414_83.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_1_414_146.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_1_414_146.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_1_428_83.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_1_428_83.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_1_428_146.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_1_428_146.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_1_442_83.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_1_442_83.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_1_442_146.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_1_442_146.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_1_453_83.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_1_453_83.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_EquipmentEdge_1_453_146.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_EquipmentEdge_1_453_146.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_1_351_119.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_1_351_119.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_1_351_138.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_1_351_138.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_1_362_149.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_1_362_149.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_1_381_149.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_1_381_149.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_1_392_137.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_1_392_137.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_1_393_118.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_1_393_118.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_1_490_95.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_1_490_95.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_1_490_133.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_1_490_133.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_1_512_121.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_1_512_121.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_DoorAndTransition_1_526_121.001": {
+      "vertices": 16,
+      "faces": 10,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_DoorAndTransition_1_526_121.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
     "Hinge_Truck_1_89.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Hinge_Truck_1_144.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Armor_FenderFold_1.001": {
-      "vertices": 49,
-      "faces": 94,
+    "Body_FenderFold_1.001": {
+      "vertices": 22,
+      "faces": 40,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "InnerFender_1_360.001": {
-      "vertices": 37,
-      "faces": 70,
+      "vertices": 17,
+      "faces": 30,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "InnerFender_1_440.001": {
-      "vertices": 37,
-      "faces": 70,
+      "vertices": 17,
+      "faces": 30,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "InnerFender_1_694.001": {
-      "vertices": 37,
-      "faces": 70,
+      "vertices": 17,
+      "faces": 30,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Drivetrain_Tank_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Tank_Strap_1_502.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Tank_Strap_1_525.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Drivetrain_ExternalPipe_1.001": {
-      "vertices": 27,
-      "faces": 32,
-      "boundary_edges": 18,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 16,
+      "faces": 18,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "Vent_Armor_1_0.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Vent_Armor_1_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Vent_Armor_1_2.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Vent_Armor_1_3.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Vent_Armor_1_4.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_AccessLatch_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
@@ -746,17 +1684,17 @@
       "zero_area_faces": 0
     },
     "Glass_TruckFrontSeal_-1.001": {
-      "vertices": 13,
-      "faces": 26,
+      "vertices": 11,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Wiper_Truck_-1.001": {
-      "vertices": 16,
-      "faces": 12,
-      "boundary_edges": 16,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 9,
+      "faces": 4,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "Glass_TruckFront_1.001": {
@@ -767,17 +1705,17 @@
       "zero_area_faces": 0
     },
     "Glass_TruckFrontSeal_1.001": {
-      "vertices": 13,
-      "faces": 26,
+      "vertices": 11,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Wiper_Truck_1.001": {
-      "vertices": 16,
-      "faces": 12,
-      "boundary_edges": 16,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 9,
+      "faces": 4,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "Glass_CoupeWindshield.001": {
@@ -788,883 +1726,1037 @@
       "zero_area_faces": 0
     },
     "Glass_CoupeWindshieldSeal.001": {
-      "vertices": 13,
-      "faces": 26,
+      "vertices": 12,
+      "faces": 24,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Roof_ArmoredAccessHatch.001": {
-      "vertices": 23,
-      "faces": 30,
-      "boundary_edges": 14,
+      "vertices": 13,
+      "faces": 13,
+      "boundary_edges": 11,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Roof_ArmoredHatchSeal.001": {
-      "vertices": 27,
-      "faces": 54,
+      "vertices": 17,
+      "faces": 34,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_TransitionServiceVent.001": {
-      "vertices": 12,
-      "faces": 14,
-      "boundary_edges": 8,
+      "vertices": 8,
+      "faces": 7,
+      "boundary_edges": 7,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_TransitionVentFrame.001": {
-      "vertices": 13,
-      "faces": 26,
+      "vertices": 11,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_TransitionVentSlat_500.001": {
-      "vertices": 22,
-      "faces": 18,
-      "boundary_edges": 22,
+      "vertices": 12,
+      "faces": 8,
+      "boundary_edges": 12,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_TransitionVentSlat_503.001": {
-      "vertices": 22,
-      "faces": 18,
-      "boundary_edges": 22,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 12,
+      "faces": 8,
+      "boundary_edges": 10,
+      "nonmanifold_nonboundary_edges": 1,
       "zero_area_faces": 0
     },
     "Armor_TransitionVentSlat_506.001": {
-      "vertices": 22,
-      "faces": 18,
-      "boundary_edges": 22,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 12,
+      "faces": 8,
+      "boundary_edges": 10,
+      "nonmanifold_nonboundary_edges": 1,
       "zero_area_faces": 0
     },
     "Armor_TransitionVentSlat_509.001": {
-      "vertices": 22,
-      "faces": 18,
-      "boundary_edges": 22,
+      "vertices": 12,
+      "faces": 8,
+      "boundary_edges": 12,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_TransitionVentSlat_512.001": {
-      "vertices": 22,
-      "faces": 18,
-      "boundary_edges": 22,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 12,
+      "faces": 8,
+      "boundary_edges": 10,
+      "nonmanifold_nonboundary_edges": 1,
       "zero_area_faces": 0
     },
     "Armor_TransitionVentSlat_515.001": {
-      "vertices": 22,
-      "faces": 18,
-      "boundary_edges": 22,
+      "vertices": 12,
+      "faces": 8,
+      "boundary_edges": 12,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_TransitionVentSlat_518.001": {
-      "vertices": 22,
-      "faces": 18,
-      "boundary_edges": 22,
+      "vertices": 12,
+      "faces": 8,
+      "boundary_edges": 12,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_TransitionVentSlat_521.001": {
-      "vertices": 22,
-      "faces": 18,
-      "boundary_edges": 22,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 12,
+      "faces": 8,
+      "boundary_edges": 10,
+      "nonmanifold_nonboundary_edges": 1,
       "zero_area_faces": 0
     },
     "Roof_ArmoredSideRail_-0.001": {
-      "vertices": 25,
-      "faces": 24,
-      "boundary_edges": 22,
+      "vertices": 15,
+      "faces": 12,
+      "boundary_edges": 14,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Roof_ArmoredSideRail_0.001": {
-      "vertices": 26,
-      "faces": 25,
-      "boundary_edges": 23,
+      "vertices": 15,
+      "faces": 11,
+      "boundary_edges": 15,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Hood_CoupeSeam_-0.001": {
-      "vertices": 74,
-      "faces": 115,
-      "boundary_edges": 29,
+      "vertices": 38,
+      "faces": 50,
+      "boundary_edges": 22,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Hood_CoupeSeam_0.001": {
-      "vertices": 74,
-      "faces": 115,
-      "boundary_edges": 29,
+      "vertices": 38,
+      "faces": 50,
+      "boundary_edges": 22,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Weapons_RetractableCover_-0.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Weapons_CoverFastener_-0.116_686_-0.001": {
-      "vertices": 12,
-      "faces": 20,
+    "Rivet_WeaponsCover_-0.116_686_-0.001": {
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Weapons_CoverFastener_-0.116_686_0.001": {
-      "vertices": 12,
-      "faces": 20,
+    "FastenerContact_Rivet_WeaponsCover_-0.116_686_-0.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_WeaponsCover_-0.116_686_0.001": {
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Weapons_CoverFastener_-0.116_699_-0.001": {
-      "vertices": 12,
-      "faces": 20,
+    "FastenerContact_Rivet_WeaponsCover_-0.116_686_0.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_WeaponsCover_-0.116_699_-0.001": {
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Weapons_CoverFastener_-0.116_699_0.001": {
-      "vertices": 12,
-      "faces": 20,
+    "FastenerContact_Rivet_WeaponsCover_-0.116_699_-0.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_WeaponsCover_-0.116_699_0.001": {
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_WeaponsCover_-0.116_699_0.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Weapons_RetractableCover_0.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Weapons_CoverFastener_0.116_686_-0.001": {
-      "vertices": 12,
-      "faces": 20,
+    "Rivet_WeaponsCover_0.116_686_-0.001": {
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Weapons_CoverFastener_0.116_686_0.001": {
-      "vertices": 12,
-      "faces": 20,
+    "FastenerContact_Rivet_WeaponsCover_0.116_686_-0.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_WeaponsCover_0.116_686_0.001": {
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Weapons_CoverFastener_0.116_699_-0.001": {
-      "vertices": 12,
-      "faces": 20,
+    "FastenerContact_Rivet_WeaponsCover_0.116_686_0.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_WeaponsCover_0.116_699_-0.001": {
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
-    "Weapons_CoverFastener_0.116_699_0.001": {
-      "vertices": 12,
-      "faces": 20,
+    "FastenerContact_Rivet_WeaponsCover_0.116_699_-0.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Rivet_WeaponsCover_0.116_699_0.001": {
+      "vertices": 16,
+      "faces": 10,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "FastenerContact_Rivet_WeaponsCover_0.116_699_0.001": {
+      "vertices": 8,
+      "faces": 1,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Hood_CoupePanelPerimeter.001": {
-      "vertices": 20,
-      "faces": 40,
+      "vertices": 18,
+      "faces": 36,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Hood_ShoulderVent_-1.001": {
-      "vertices": 14,
-      "faces": 15,
-      "boundary_edges": 11,
+      "vertices": 9,
+      "faces": 7,
+      "boundary_edges": 9,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HoodIntakeCollar_-1.001": {
+      "vertices": 8,
+      "faces": 4,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Hood_ShoulderVentSlat_-1_660.001": {
-      "vertices": 16,
-      "faces": 12,
-      "boundary_edges": 16,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 9,
+      "faces": 4,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "Hood_ShoulderVentSlat_-1_664.001": {
-      "vertices": 16,
-      "faces": 12,
-      "boundary_edges": 16,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 9,
+      "faces": 4,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "Hood_ShoulderVentSlat_-1_668.001": {
-      "vertices": 16,
-      "faces": 12,
-      "boundary_edges": 16,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 9,
+      "faces": 4,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "Hood_ShoulderVent_1.001": {
-      "vertices": 14,
-      "faces": 15,
-      "boundary_edges": 11,
+      "vertices": 9,
+      "faces": 7,
+      "boundary_edges": 9,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_HoodIntakeCollar_1.001": {
+      "vertices": 8,
+      "faces": 4,
+      "boundary_edges": 8,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Hood_ShoulderVentSlat_1_660.001": {
-      "vertices": 16,
-      "faces": 12,
-      "boundary_edges": 16,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 9,
+      "faces": 4,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "Hood_ShoulderVentSlat_1_664.001": {
-      "vertices": 16,
-      "faces": 12,
-      "boundary_edges": 16,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 9,
+      "faces": 4,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "Hood_ShoulderVentSlat_1_668.001": {
-      "vertices": 16,
-      "faces": 12,
-      "boundary_edges": 16,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 9,
+      "faces": 4,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "LampPocket_Coupe_-1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_CoupeOvalLens_-1_-0.001": {
-      "vertices": 50,
-      "faces": 96,
+      "vertices": 22,
+      "faces": 40,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_LampBezel_Coupe_-1_-0.001": {
+      "vertices": 32,
+      "faces": 16,
+      "boundary_edges": 32,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_CoupeOvalLens_-1_0.001": {
-      "vertices": 50,
-      "faces": 96,
+      "vertices": 22,
+      "faces": 40,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
+    "Detail_LampBezel_Coupe_-1_0.001": {
+      "vertices": 32,
+      "faces": 16,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
     "WeaponFrame_Coupe_-1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "WeaponPocket_Coupe_-1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Weapon_BoredMuzzle_-1_190.001": {
-      "vertices": 27,
-      "faces": 54,
+      "vertices": 12,
+      "faces": 24,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Weapon_DarkBore_-1_190.001": {
-      "vertices": 42,
-      "faces": 80,
+      "vertices": 40,
+      "faces": 76,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 32
     },
     "Weapon_BoredMuzzle_-1_198.001": {
-      "vertices": 27,
-      "faces": 54,
+      "vertices": 12,
+      "faces": 24,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Weapon_DarkBore_-1_198.001": {
-      "vertices": 42,
-      "faces": 80,
+      "vertices": 40,
+      "faces": 76,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 32
     },
     "LampHousing_Rugged_-1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_Rugged_-1_151.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_RuggedLampSeal_-1_151.001": {
+      "vertices": 32,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_RuggedLampEdging_-1_151.001": {
+      "vertices": 32,
+      "faces": 32,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_Rugged_-1_167.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_RuggedLampSeal_-1_167.001": {
+      "vertices": 32,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_RuggedLampEdging_-1_167.001": {
+      "vertices": 32,
+      "faces": 32,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorMount_Truck_-1.001": {
-      "vertices": 45,
-      "faces": 86,
+      "vertices": 20,
+      "faces": 36,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorHousing_Truck_-1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorLens_Truck_-1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorMount_Coupe_-1.001": {
-      "vertices": 32,
-      "faces": 60,
+      "vertices": 15,
+      "faces": 26,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorHousing_Coupe_-1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorLens_Coupe_-1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Stack_-1_348.001": {
-      "vertices": 42,
-      "faces": 80,
+      "vertices": 19,
+      "faces": 34,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_BentTip_-1_348.001": {
-      "vertices": 31,
-      "faces": 31,
-      "boundary_edges": 27,
+      "vertices": 19,
+      "faces": 15,
+      "boundary_edges": 19,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Mount_-1_348_95.001": {
-      "vertices": 61,
-      "faces": 118,
+      "vertices": 28,
+      "faces": 52,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Mount_-1_348_120.001": {
-      "vertices": 61,
-      "faces": 118,
+      "vertices": 28,
+      "faces": 52,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Stack_-1_472.001": {
-      "vertices": 42,
-      "faces": 80,
+      "vertices": 19,
+      "faces": 34,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_BentTip_-1_472.001": {
-      "vertices": 31,
-      "faces": 31,
-      "boundary_edges": 27,
+      "vertices": 19,
+      "faces": 15,
+      "boundary_edges": 19,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Mount_-1_472_95.001": {
-      "vertices": 61,
-      "faces": 118,
+      "vertices": 28,
+      "faces": 52,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Mount_-1_472_120.001": {
-      "vertices": 61,
-      "faces": 118,
+      "vertices": 28,
+      "faces": 52,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "LampPocket_Coupe_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_CoupeOvalLens_1_-0.001": {
-      "vertices": 50,
-      "faces": 96,
+      "vertices": 22,
+      "faces": 40,
       "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_LampBezel_Coupe_1_-0.001": {
+      "vertices": 32,
+      "faces": 16,
+      "boundary_edges": 32,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_CoupeOvalLens_1_0.001": {
-      "vertices": 50,
-      "faces": 96,
+      "vertices": 22,
+      "faces": 40,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
+    "Detail_LampBezel_Coupe_1_0.001": {
+      "vertices": 32,
+      "faces": 16,
+      "boundary_edges": 32,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
     "WeaponFrame_Coupe_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "WeaponPocket_Coupe_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Weapon_BoredMuzzle_1_190.001": {
-      "vertices": 27,
-      "faces": 54,
+      "vertices": 12,
+      "faces": 24,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Weapon_DarkBore_1_190.001": {
-      "vertices": 42,
-      "faces": 80,
+      "vertices": 40,
+      "faces": 76,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 32
     },
     "Weapon_BoredMuzzle_1_198.001": {
-      "vertices": 27,
-      "faces": 54,
+      "vertices": 12,
+      "faces": 24,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Weapon_DarkBore_1_198.001": {
-      "vertices": 42,
-      "faces": 80,
+      "vertices": 40,
+      "faces": 76,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 32
     },
     "LampHousing_Rugged_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_Rugged_1_151.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_RuggedLampSeal_1_151.001": {
+      "vertices": 32,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_RuggedLampEdging_1_151.001": {
+      "vertices": 32,
+      "faces": 32,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_Rugged_1_167.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_RuggedLampSeal_1_167.001": {
+      "vertices": 32,
+      "faces": 32,
+      "boundary_edges": 0,
+      "nonmanifold_nonboundary_edges": 0,
+      "zero_area_faces": 0
+    },
+    "Detail_RuggedLampEdging_1_167.001": {
+      "vertices": 32,
+      "faces": 32,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorMount_Truck_1.001": {
-      "vertices": 32,
-      "faces": 60,
+      "vertices": 15,
+      "faces": 26,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorHousing_Truck_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorLens_Truck_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorMount_Coupe_1.001": {
-      "vertices": 32,
-      "faces": 60,
+      "vertices": 15,
+      "faces": 26,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorHousing_Coupe_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "MirrorLens_Coupe_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Stack_1_348.001": {
-      "vertices": 42,
-      "faces": 80,
+      "vertices": 19,
+      "faces": 34,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_BentTip_1_348.001": {
-      "vertices": 31,
-      "faces": 31,
-      "boundary_edges": 27,
+      "vertices": 19,
+      "faces": 15,
+      "boundary_edges": 19,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Mount_1_348_95.001": {
-      "vertices": 61,
-      "faces": 118,
+      "vertices": 28,
+      "faces": 52,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Mount_1_348_120.001": {
-      "vertices": 61,
-      "faces": 118,
+      "vertices": 28,
+      "faces": 52,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Stack_1_472.001": {
-      "vertices": 42,
-      "faces": 80,
+      "vertices": 19,
+      "faces": 34,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_BentTip_1_472.001": {
-      "vertices": 31,
-      "faces": 31,
-      "boundary_edges": 27,
+      "vertices": 19,
+      "faces": 15,
+      "boundary_edges": 19,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Mount_1_472_95.001": {
-      "vertices": 61,
-      "faces": 118,
+      "vertices": 28,
+      "faces": 52,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Exhaust_Mount_1_472_120.001": {
-      "vertices": 61,
-      "faces": 118,
+      "vertices": 28,
+      "faces": 52,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckBacking.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckFin_0.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckFin_1.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckFin_2.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckFin_3.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckFin_4.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckFin_5.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckFin_6.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckFin_7.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckFin_8.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckFin_9.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_TruckFin_10.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Grille_CoupeIntake.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_CoupeLayeredAirDam.001": {
-      "vertices": 33,
-      "faces": 62,
+      "vertices": 16,
+      "faces": 28,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_RuggedBumper.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Armor_RuggedAngledSkid.001": {
-      "vertices": 30,
-      "faces": 56,
+      "vertices": 14,
+      "faces": 24,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "BrushGuard_139.001": {
-      "vertices": 23,
-      "faces": 25,
-      "boundary_edges": 17,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 16,
+      "faces": 18,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "BrushGuard_165.001": {
-      "vertices": 23,
-      "faces": 25,
-      "boundary_edges": 17,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 13,
+      "faces": 12,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "BrushGuard_183.001": {
-      "vertices": 23,
-      "faces": 25,
-      "boundary_edges": 17,
-      "nonmanifold_nonboundary_edges": 0,
+      "vertices": 13,
+      "faces": 12,
+      "boundary_edges": 6,
+      "nonmanifold_nonboundary_edges": 2,
       "zero_area_faces": 0
     },
     "BrushGuardUpright_-0.001": {
-      "vertices": 32,
-      "faces": 60,
+      "vertices": 15,
+      "faces": 26,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "BrushGuardSeat_-0.001": {
-      "vertices": 32,
-      "faces": 60,
+      "vertices": 15,
+      "faces": 26,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "BrushGuardUpright_0.001": {
-      "vertices": 32,
-      "faces": 60,
+      "vertices": 15,
+      "faces": 26,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "BrushGuardSeat_0.001": {
-      "vertices": 32,
-      "faces": 60,
+      "vertices": 15,
+      "faces": 26,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Roof_TruckProtectedVent.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_RoofMarker_-0.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_RoofMarker_-0.002": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_RoofMarker_0.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Lights_RoofMarker_0.002": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Chassis_Frame_-0.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Chassis_CenterRail_-0.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Chassis_Frame_0.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Chassis_CenterRail_0.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Chassis_VisibleClevis_-1_1.5836503505706787.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Chassis_VisibleClevis_1_1.5836503505706787.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Chassis_VisibleClevis_-1_0.8203195929527283.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Chassis_VisibleClevis_1_0.8203195929527283.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Chassis_VisibleClevis_-1_-1.6049870252609253.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
     },
     "Chassis_VisibleClevis_1_-1.6049870252609253.001": {
-      "vertices": 25,
-      "faces": 46,
+      "vertices": 13,
+      "faces": 22,
       "boundary_edges": 0,
       "nonmanifold_nonboundary_edges": 0,
       "zero_area_faces": 0
@@ -1672,104 +2764,121 @@
   },
   "physics_changed": false,
   "shell": {
-    "vertices": 2250,
-    "faces": 4493,
+    "vertices": 2244,
+    "faces": 4461,
     "boundary_edges": 0,
     "nonmanifold_nonboundary_edges": 0,
     "zero_area_faces": 0,
-    "signed_volume": 0.3219746978008508,
+    "signed_volume": 0.3219508581142997,
     "unassigned_material_faces": 0
+  },
+  "validation_passed": true,
+  "source_level_transform_identity_error": 2.3283064365386963e-10,
+  "paint_landmarks": {
+    "truck_door-1": "Paint_Primary",
+    "truck_door1": "Paint_Primary",
+    "equipment_panel-1": "Paint_Secondary",
+    "equipment_panel1": "Paint_Secondary",
+    "transition_panel-1": "Paint_Secondary",
+    "transition_panel1": "Paint_Secondary",
+    "coupe_door-1": "Paint_Primary",
+    "coupe_door1": "Paint_Primary",
+    "rugged_hood": "Paint_Secondary",
+    "coupe_hood": "Paint_Primary",
+    "coupe_roof": "Paint_Secondary",
+    "underside510": "ArmorProtected",
+    "underside750": "ArmorProtected"
   },
   "protected_glass_clearance": {
     "GAMEPLAY_EXPORT/Glass_RuggedSide_-1.001": {
       "samples": 600,
-      "minimum_source_clearance": 0.0029964621644467115,
-      "maximum_source_clearance": 0.003680105321109295
+      "minimum_source_clearance": 0.002779906615614891,
+      "maximum_source_clearance": 0.003632159437984228
     },
     "GAMEPLAY_EXPORT/Glass_CoupeSide_-1.001": {
       "samples": 700,
-      "minimum_source_clearance": 0.0012038672575727105,
-      "maximum_source_clearance": 0.003697963897138834
+      "minimum_source_clearance": 0.0016923717921599746,
+      "maximum_source_clearance": 0.003970608115196228
     },
     "GAMEPLAY_EXPORT/Glass_CoupeQuarter_-1.001": {
       "samples": 400,
-      "minimum_source_clearance": 0.003301365301012993,
-      "maximum_source_clearance": 0.004615880083292723
+      "minimum_source_clearance": 0.0033514697570353746,
+      "maximum_source_clearance": 0.004383463878184557
     },
     "GAMEPLAY_EXPORT/Glass_RuggedSide_1.001": {
       "samples": 600,
-      "minimum_source_clearance": 0.0029852415900677443,
-      "maximum_source_clearance": 0.003688205499202013
+      "minimum_source_clearance": 0.002826234558597207,
+      "maximum_source_clearance": 0.003657315857708454
     },
     "GAMEPLAY_EXPORT/Glass_CoupeSide_1.001": {
       "samples": 700,
-      "minimum_source_clearance": 0.0013352177338674664,
-      "maximum_source_clearance": 0.003845085622742772
+      "minimum_source_clearance": 0.0013534401077777147,
+      "maximum_source_clearance": 0.0040227193385362625
     },
     "GAMEPLAY_EXPORT/Glass_CoupeQuarter_1.001": {
       "samples": 400,
-      "minimum_source_clearance": 0.003289665561169386,
-      "maximum_source_clearance": 0.004517433233559132
+      "minimum_source_clearance": 0.0033422589767724276,
+      "maximum_source_clearance": 0.004481060430407524
     },
     "GAMEPLAY_EXPORT/Glass_TruckFront_-1.001": {
       "samples": 400,
-      "minimum_source_clearance": 0.003303583012893796,
-      "maximum_source_clearance": 0.004159179516136646
+      "minimum_source_clearance": 0.0032649626955389977,
+      "maximum_source_clearance": 0.0043385447934269905
     },
     "GAMEPLAY_EXPORT/Glass_TruckFront_1.001": {
       "samples": 400,
-      "minimum_source_clearance": 0.003316953545436263,
-      "maximum_source_clearance": 0.004140699747949839
+      "minimum_source_clearance": 0.003290456021204591,
+      "maximum_source_clearance": 0.00399054167792201
     },
     "GAMEPLAY_EXPORT/Glass_CoupeWindshield.001": {
       "samples": 400,
-      "minimum_source_clearance": 0.0027481280267238617,
-      "maximum_source_clearance": 0.003500201040878892
+      "minimum_source_clearance": 0.0021233675070106983,
+      "maximum_source_clearance": 0.0035182225983589888
     },
     "LOD1_EXPORT/Glass_RuggedSide_-1.002": {
       "samples": 600,
-      "minimum_source_clearance": 0.0024155050050467253,
-      "maximum_source_clearance": 0.004090167116373777
+      "minimum_source_clearance": 0.0015384032158181071,
+      "maximum_source_clearance": 0.005800738465040922
     },
     "LOD1_EXPORT/Glass_CoupeSide_-1.002": {
       "samples": 700,
-      "minimum_source_clearance": 0.0010918236803263426,
-      "maximum_source_clearance": 0.003911959007382393
+      "minimum_source_clearance": 0.0033885498996824026,
+      "maximum_source_clearance": 0.006681903265416622
     },
     "LOD1_EXPORT/Glass_CoupeQuarter_-1.002": {
       "samples": 400,
-      "minimum_source_clearance": 0.00348644214682281,
-      "maximum_source_clearance": 0.003966574557125568
+      "minimum_source_clearance": 0.004744857084006071,
+      "maximum_source_clearance": 0.00632547028362751
     },
     "LOD1_EXPORT/Glass_RuggedSide_1.002": {
       "samples": 600,
-      "minimum_source_clearance": 0.002397075528278947,
-      "maximum_source_clearance": 0.0041225082240998745
+      "minimum_source_clearance": 0.0028564275708049536,
+      "maximum_source_clearance": 0.006412168964743614
     },
     "LOD1_EXPORT/Glass_CoupeSide_1.002": {
       "samples": 700,
-      "minimum_source_clearance": 0.001106733689084649,
-      "maximum_source_clearance": 0.003842088161036372
+      "minimum_source_clearance": 0.0032181194983422756,
+      "maximum_source_clearance": 0.00603558449074626
     },
     "LOD1_EXPORT/Glass_CoupeQuarter_1.002": {
       "samples": 400,
-      "minimum_source_clearance": 0.0034502740018069744,
-      "maximum_source_clearance": 0.004267023876309395
+      "minimum_source_clearance": 0.0043516820296645164,
+      "maximum_source_clearance": 0.007308180443942547
     },
     "LOD1_EXPORT/Glass_TruckFront_-1.002": {
       "samples": 400,
-      "minimum_source_clearance": 0.003138088621199131,
-      "maximum_source_clearance": 0.004630479495972395
+      "minimum_source_clearance": 0.004882988519966602,
+      "maximum_source_clearance": 0.009578628465533257
     },
     "LOD1_EXPORT/Glass_TruckFront_1.002": {
       "samples": 400,
-      "minimum_source_clearance": 0.003361038165166974,
-      "maximum_source_clearance": 0.00469414796680212
+      "minimum_source_clearance": 0.004586547147482634,
+      "maximum_source_clearance": 0.007943346165120602
     },
     "LOD1_EXPORT/Glass_CoupeWindshield.002": {
       "samples": 400,
-      "minimum_source_clearance": 0.0020466302521526814,
-      "maximum_source_clearance": 0.0035001931246370077
+      "minimum_source_clearance": 0.0030602121260017157,
+      "maximum_source_clearance": 0.005687748547643423
     }
   },
   "modules": {
@@ -1798,13 +2907,12 @@
       "signed_volume": 0.6344335229869392
     }
   },
-  "validation_passed": true,
-  "glb_sha256": "48f01b95cfccb9b9e838cc078e69674d6dc77b1a542c25a146c970e88364396d",
-  "shell_ply_sha256": "436591422ad1eeda0416994d90f785dd69c24ca91436fc5b1ca4b3f8e04bdbad",
+  "glb_sha256": "e654ec512a24bf790c9e359ad96f71f1a37be842df2beacc5951c36260bb0133",
+  "shell_ply_sha256": "038d32d0f5721c7458d63e327a1ad2a873d4d4695c93dfdc0e9d7d69ba812066",
   "paint_uv_anisotropy": {
-    "triangles": 2185,
-    "median": 1.0277339798410066,
-    "p95": 1.162885487382409,
-    "maximum": 1193.223646204215
+    "triangles": 3441,
+    "median": 1.0290267328765343,
+    "p95": 1.1698182013725382,
+    "maximum": 7.395588743669778
   }
 }

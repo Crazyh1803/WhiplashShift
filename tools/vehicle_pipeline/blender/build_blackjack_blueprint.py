@@ -47,7 +47,36 @@ body_target = 17000
 def is_glass_panel(obj):
     return len(obj.data.materials)==1 and obj.data.materials[0].name=='Glass'
 
-def seat_glass(collection):
+def preserve_paint_borders(obj,modifier,window_collection=None):
+    # Zero-weight vertices are excluded from native collapse (Blender BMesh).
+    # Keeping a continuous mesh avoids cracks between separately reduced colors.
+    import bmesh
+    bm=bmesh.new()
+    bm.from_mesh(obj.data)
+    bm.verts.index_update()
+    borders={v.index for edge in bm.edges if len({f.material_index for f in edge.link_faces})>1 for v in edge.verts}
+    bm.free()
+    if window_collection is not None:
+        from mathutils.bvhtree import BVHTree
+        inverse=obj.matrix_world.inverted()
+        for window in window_collection.objects:
+            if not is_glass_panel(window):
+                continue
+            transform=inverse @ window.matrix_world
+            surface=BVHTree.FromPolygons([transform @ v.co for v in window.data.vertices],
+                                        [p.vertices for p in window.data.polygons])
+            # Retain the skin supporting the windows: collapse must not pull a
+            # small quarter-light beyond the reduced greenhouse silhouette.
+            borders.update(v.index for v in obj.data.vertices
+                           if surface.find_nearest(v.co,.014)[0] is not None)
+    group=obj.vertex_groups.get('CollapseAllowed') or obj.vertex_groups.new(name='CollapseAllowed')
+    group.add(list(range(len(obj.data.vertices))),1,'REPLACE')
+    if borders:
+        group.add(sorted(borders),0,'REPLACE')
+    modifier.vertex_group=group.name
+    modifier.vertex_group_factor=1
+
+def seat_glass(collection,clearance=.0035):
     from mathutils.bvhtree import BVHTree
     body = next(obj for obj in collection.objects if obj.name.startswith('Body_BlueprintShell'))
     surface = BVHTree.FromPolygons([POSE @ body.matrix_world @ v.co for v in body.data.vertices],
@@ -67,7 +96,7 @@ def seat_glass(collection):
                 origin,direction = Vector((level.x,1.5,level.z)),Vector((0,-1,0))
             hit,normal,_,_ = surface.ray_cast(origin,direction)
             assert hit is not None, 'Protected window misses optimized shell: '+obj.name
-            vertex.co = inverse @ (hit+normal*.0035)
+            vertex.co = inverse @ (hit+normal*clearance)
         recalc(obj)
         smooth(obj)
 for obj in game.objects:
@@ -78,20 +107,23 @@ for obj in game.objects:
             mod = obj.modifiers.new('ReservedShellBudget','DECIMATE')
             mod.ratio = 4500/count
             mod.use_collapse_triangulate = True
+            preserve_paint_borders(obj,mod)
             apply_modifier(obj,mod)
         # Exact recess Booleans can leave subpixel needles that collapse into a
         # pinched edge during decimation. Weld only the non-manifold neighborhood
-        # (under one quarter blueprint pixel), never an arbitrary large hole.
+        # (under half a blueprint pixel), never an arbitrary large hole.
         import bmesh
         bm=bmesh.new()
         bm.from_mesh(obj.data)
-        bad={v for edge in bm.edges if not edge.is_manifold for v in edge.verts}
-        if bad:
-            bmesh.ops.remove_doubles(bm,verts=list(bad),dist=.001)
+        for distance in (.001,.002):
+            bad={v for edge in bm.edges if not edge.is_manifold for v in edge.verts}
+            if not bad:
+                break
+            bmesh.ops.remove_doubles(bm,verts=list(bad),dist=distance)
             bmesh.ops.dissolve_degenerate(bm,edges=list(bm.edges),dist=.00005)
             bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces))
-            assert all(edge.is_manifold for edge in bm.edges), 'Shell retopology requires manual repair'
-            bm.to_mesh(obj.data)
+        assert all(edge.is_manifold for edge in bm.edges), 'Shell retopology requires manual repair'
+        bm.to_mesh(obj.data)
         bm.free()
 for budget_pass in range(3):
     eligible = []
@@ -99,7 +131,7 @@ for budget_pass in range(3):
     for obj in game.objects:
         obj.data.calc_loop_triangles()
         count = len(obj.data.loop_triangles)
-        if count > 24 and not obj.name.startswith('Body_BlueprintShell') and not is_glass_panel(obj):
+        if count > 24 and not obj.name.startswith(('Body_BlueprintShell','Rivet_','Detail_')) and not is_glass_panel(obj):
             eligible.append((obj,count))
         else:
             fixed_triangles += count
@@ -122,17 +154,28 @@ assert 15000<=triangle_count(game)[1]<=body_target+150, 'Gameplay body exceeded 
 print('BLUEPRINT_STAGE gameplay budget and UV complete',flush=True)
 bake_collection(game, COL['LOD1_EXPORT'])
 for obj in COL['LOD1_EXPORT'].objects:
+    if obj.name.startswith('Rivet_'):
+        mod = obj.modifiers.new('LOD_FastenerReduction','DECIMATE')
+        mod.ratio = .45
+        mod.use_collapse_triangulate = True
+        apply_modifier(obj,mod)
     if len(obj.data.polygons)>48 and not is_glass_panel(obj):
         mod = obj.modifiers.new('LOD_SurfaceReduction','DECIMATE')
         mod.ratio = .45
         mod.use_collapse_triangulate = True
+        if obj.name.startswith('Body_BlueprintShell'):
+            preserve_paint_borders(obj,mod,COL['LOD1_EXPORT'])
         apply_modifier(obj,mod)
     if len(obj.data.polygons)>20 and not is_glass_panel(obj):
         mod = obj.modifiers.new('LOD_DetailReduction','DECIMATE')
         mod.ratio = .72
         mod.use_collapse_triangulate = True
+        if obj.name.startswith('Body_BlueprintShell'):
+            preserve_paint_borders(obj,mod,COL['LOD1_EXPORT'])
         apply_modifier(obj,mod)
-seat_glass(COL['LOD1_EXPORT'])
+# Allow the lower-resolution skin's interpolation error beneath the thin glass.
+# Independent triangle-interior sampling still gates intersection and floating.
+seat_glass(COL['LOD1_EXPORT'],clearance=.0055)
 # Partition only export copies. Godot's decal cull masks operate per instance,
 # not per material; the editable cage and closed validation shell stay whole.
 native_export_collection = export_collection
@@ -180,6 +223,15 @@ evaluated = projected.evaluated_get(bpy.context.evaluated_depsgraph_get())
 mesh = bpy.data.meshes.new_from_object(evaluated, depsgraph=bpy.context.evaluated_depsgraph_get())
 mesh.transform(projected.matrix_world)
 bvh = BVHTree.FromPolygons([v.co for v in mesh.vertices], [p.vertices for p in mesh.polygons])
+intake_depths = []
+for side in (-1,1):
+    origin=Vector((point(665,0).x,1.5,side*.260))
+    before=hood_surface.ray_cast(origin,Vector((0,-1,0)))[0]
+    after=bvh.ray_cast(origin,Vector((0,-1,0)))[0]
+    assert before is not None and after is not None, 'Missing hood intake floor'
+    depth=before.y-after.y
+    assert .003<depth<.018, ('Hood intake recess lost during optimization',side,depth)
+    intake_depths.append({'side':side,'gameplay_recess_depth_metres':depth*2.345})
 errors = []
 width_errors = []
 sill_errors = []
@@ -224,6 +276,7 @@ report = {
         count*(MODULE_COUNTS['rim_'+style]+MODULE_COUNTS['tire_'+style])
         for style,count in [('aero',2),('rugged',4)]),
     'semantic_materials':sorted(MAT), 'physics_changed':False,
+    'hood_intake_recesses':intake_depths,
     'visual_radius_metres':{'A':wheel_radius('A')*2.345,'B':wheel_radius('B')*2.345},
     'visual_track_metres':{'A':WHEELS[-1][3]*2.345,'B':WHEELS[0][3]*2.345},
     'roof_surface_measurements':errors,

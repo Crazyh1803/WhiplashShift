@@ -33,17 +33,26 @@ func _ready() -> void:
 	_check("body LOD reduction",_triangles(low)<body_triangles*.60)
 	low.free()
 	var names := {}
+	var fastener_count := 0
 	for mesh: MeshInstance3D in model.find_children("*","MeshInstance3D",true,false):
+		if mesh.name.begins_with("Rivet_"):
+			fastener_count+=1
+			_check("gameplay preserves fastener topology",_mesh_triangles(mesh)>=28)
 		for i in range(mesh.mesh.get_surface_count()):
 			var mat := mesh.mesh.surface_get_material(i) as StandardMaterial3D
 			_check("known semantic material",mat!=null and SEMANTICS.has(mat.resource_name))
 			if mat!=null:
 				names[mat.resource_name]=true
+				if mat.resource_name.begins_with("Paint_"):
+					_check("initial build has complete automotive coating",_has_automotive_coating(mesh.get_surface_override_material(i) as StandardMaterial3D))
 				_check("decal layers protect non-paint",(mesh.layers & 2)!=0 if mat.resource_name.begins_with("Paint_") else (mesh.layers & 2)==0)
 			var arrays := mesh.mesh.surface_get_arrays(i)
 			_check("UVs on every surface",(arrays[Mesh.ARRAY_TEX_UV] as PackedVector2Array).size()==(arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size())
 	for name: String in SEMANTICS:
 		_check("all material slots: "+name,names.has(name))
+	_check("blueprint perimeter fasteners present",fastener_count>=90)
+	_check("four seated door handles",model.find_children("Detail_HandleBridge*","MeshInstance3D",true,false).size()==4)
+	_check("four protected lamp bezels",model.find_children("Detail_LampBezel*","MeshInstance3D",true,false).size()==4)
 	var paint := VehicleCatalog.default_customization("blackjack")
 	paint["primary_color"]="e32636"
 	paint["secondary_color"]="25cf5c"
@@ -61,6 +70,8 @@ func _ready() -> void:
 			var override := mesh.get_surface_override_material(i) as StandardMaterial3D
 			if expected.has(mat.resource_name):
 				_check("paint channel isolated",override!=null and override.albedo_color.is_equal_approx(expected[mat.resource_name]))
+				_check("automotive paint retains color and clearcoat",_has_automotive_coating(override))
+				_check("no primer texture or whole-mesh override masks paint",override!=null and override.albedo_texture==null and mesh.material_override==null)
 			else:
 				_check("protected surface untouched",override==null)
 	for wheel: Wheel in candidate.visual_wheels:
@@ -210,6 +221,19 @@ func _triangles(root: Node) -> int:
 			var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 			count+=int((indices.size() if not indices.is_empty() else vertices.size())/3.0)
 	return count
+
+
+func _has_automotive_coating(material: StandardMaterial3D) -> bool:
+	return material!=null and is_equal_approx(material.metallic,.28) and is_equal_approx(material.roughness,.32) and material.clearcoat_enabled and is_equal_approx(material.clearcoat,.5) and is_equal_approx(material.clearcoat_roughness,.16)
+
+
+func _mesh_triangles(mesh: MeshInstance3D) -> int:
+	var result := 0
+	for surface in range(mesh.mesh.get_surface_count()):
+		var arrays := mesh.mesh.surface_get_arrays(surface)
+		var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+		result+=int((indices.size() if not indices.is_empty() else (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size())/3.0)
+	return result
 
 
 func _collisions(vehicle: Vehicle) -> Array:

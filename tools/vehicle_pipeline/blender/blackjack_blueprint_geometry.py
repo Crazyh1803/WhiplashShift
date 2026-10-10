@@ -99,16 +99,20 @@ def build_shell():
         c = sum((Vector(vertices[i]) for i in poly.vertices),Vector())/len(poly.vertices)
         px = (c.x-X_OFFSET)/SCALE+527
         py = GROUND_PIXEL-(c.y-GROUND_Y)/SCALE
+        # The exterior cage is painted sheet metal, not protected hardware.
+        # Reserve ArmorProtected for its underside; mechanical armor is modular.
+        poly.material_index = 0 if poly.index < (len(rings)-1)*n and poly.index%n in (0,1,n-2,n-1) else 1
+        if poly.material_index==0:
+            continue
         if px > 550:
             poly.material_index = 3 if py > 209 else 1
             if 560 < px < 615 and poly.index % n in range(10,16):
                 poly.material_index = 2
-        elif 343 < px < 397 and py < 153:
-            poly.material_index = 1
-        elif 348 < px < 470 and py < 72:
+        elif px < 343 or 397 <= px <= 550:
             poly.material_index = 2
-        elif 548 < px < 565 and py > 190:
-            poly.material_index = 3
+        # The tall cabin's roof is secondary; its door skins stay primary.
+        elif 348 < px < 397 and py < 72:
+            poly.material_index = 2
     recalc(shell)
     crease = shell.data.attributes.new('crease_edge','FLOAT','EDGE')
     for edge in shell.data.edges:
@@ -161,6 +165,29 @@ for side in (-1,1):
     cut_box('Coupe_Gun_'+str(side),779,194,side*.116,(.095,.065,.070))
 cut_box('Coupe_AirDam',779,213,0,(.095,.030,.36))
 cut_box('Truck_Grille',281,157,0,(.095,.115,.385))
+# Shallow, angled hood pockets create real occlusion at the intake shoulders.
+# Their floors ramp upward toward the nose; the centerline profile stays intact.
+bpy.context.view_layer.update()
+hood_surface = BVHTree.FromObject(shell,bpy.context.evaluated_depsgraph_get())
+intake_collars = {}
+for side in (-1,1):
+    outline = [(656,side*.244),(670,side*.251),(677,side*.278),(660,side*.276)]
+    tops = []
+    for px,z in outline:
+        hit,normal,_,_ = hood_surface.ray_cast(Vector((point(px,0).x,1.5,z)),Vector((0,-1,0)))
+        assert hit is not None, 'Hood intake misses shell'
+        tops.append(hit+normal*.002)
+    bottoms = [v-Vector((0,.014 if i in (0,3) else .006,0)) for i,v in enumerate(tops)]
+    cutter = mesh_object(f'Cutter_AngledHoodIntake_{side}',tops+bottoms,
+        [(0,1,2,3),(7,6,5,4),(0,4,5,1),(1,5,6,2),(2,6,7,3),(3,7,4,0)],MAT['ArmorProtected'],CUTTERS)
+    recalc(cutter)
+    cutter.hide_render=True
+    cutter.display_type='WIRE'
+    mod=shell.modifiers.new(f'AngledHoodIntake_{side}','BOOLEAN')
+    mod.operation='DIFFERENCE'
+    mod.solver='EXACT'
+    mod.object=cutter
+    intake_collars[side]=tops
 weighted = shell.modifiers.new('ControlledPanelNormals','WEIGHTED_NORMAL')
 weighted.keep_sharp = True
 
@@ -216,6 +243,59 @@ def side_seam(name,outline,side,radius=.0013,mat=None):
     return tube(name,vertices,radius,mat or MAT['Rubber'],cyclic=True)
 
 
+def rivet(name,location,collection=BODY,normal=None):
+    # A seated domed head and its contact ring remain recognizable after export.
+    if normal is None:
+        hit,normal,_,_=bvh.find_nearest(Vector(location))
+    else:
+        hit=Vector(location)
+    tangent=normal.cross(Vector((1,0,0)))
+    if tangent.length_squared<.01:
+        tangent=normal.cross(Vector((0,0,1)))
+    tangent.normalize()
+    bitangent=normal.cross(tangent)
+    center=hit+normal*.00025
+    vertices=[center+normal*h+(tangent*math.cos(i*math.tau/8)+bitangent*math.sin(i*math.tau/8))*r
+              for h,r in ((0,.0034),(.0019,.0025)) for i in range(8)]
+    faces=[tuple(reversed(range(8))),tuple(range(8,16))]+[(i,(i+1)%8,(i+1)%8+8,i+8) for i in range(8)]
+    obj=mesh_object(name,vertices,faces,MAT['BrushedMetal'],collection)
+    recalc(obj)
+    ring=[hit+normal*.0001+(tangent*math.cos(i*math.tau/8)+bitangent*math.sin(i*math.tau/8))*.0041 for i in range(8)]
+    contact=mesh_object('FastenerContact_'+name,ring,[tuple(range(8))],MAT['Gunmetal'],collection)
+    recalc(contact)
+    return obj
+
+
+def door_handle(name,px,py,side,length):
+    center=side_point(px,py,side,.0008)
+    _,normal,_,_=bvh.find_nearest(center)
+    # Recessed-looking pocket and seated bridge rather than a flat bright bar.
+    pocket=[(px-length/(2*SCALE),py-2),(px+length/(2*SCALE),py-2),
+            (px+length/(2*SCALE),py+2),(px-length/(2*SCALE),py+2)]
+    def project_handle(x,y):
+        return side_point(x,y,side,.001)
+    panel('Detail_HandlePocket_'+name,pocket,project_handle,MAT['Rubber'])
+    for sign in (-1,1):
+        foot=side_point(px+sign*length*.36/SCALE,py,side,.001)
+        cylinder_between('Detail_HandleMount_'+name+str(sign),foot,foot+normal*.005,.0025,MAT['Gunmetal'],8)
+    bar=[side_point(px+sign*length*.36/SCALE,py,side,.001)+normal*.006 for sign in (-1,1)]
+    tube('Detail_HandleBridge_'+name,bar,.0023,MAT['BrushedMetal'])
+    lock=side_point(px+length*.55/SCALE,py,side,.001)
+    cylinder_between('Detail_HandleLock_'+name,lock,lock+normal*.0012,.002,MAT['Gunmetal'],8)
+
+
+def lamp_bezel(name,center,half_y,half_z,forward):
+    center=Vector(center)
+    vertices=[center+Vector((forward*.0015,r*half_y*math.cos(i*math.tau/16),r*half_z*math.sin(i*math.tau/16)))
+              for r in (1,1.18) for i in range(16)]
+    faces=[(i,(i+1)%16,(i+1)%16+16,i+16) for i in range(16)]
+    if forward>0:
+        faces=[tuple(reversed(face)) for face in faces]
+    obj=mesh_object('Detail_LampBezel_'+name,vertices,faces,MAT['BrushedMetal'])
+    recalc(obj)
+    return obj
+
+
 for side in (-1,1):
     def project_side(px,py):
         return side_point(px,py,side,.0035)
@@ -245,20 +325,24 @@ for side in (-1,1):
     for px,py in [(582,205),(594,205),(608,205),(622,205),(637,205),
                   (645,186),(646,197),(567,179),(574,193)]:
         obj = rivet(f'Rivet_CoupePanel_{side}_{px}_{py}',side_point(px,py,side,.002))
-        obj.scale = (.30,.30,.30)
-    box(f'Handle_Truck_{side}',side_point(382,124,side,.004),(.035,.008,.010),MAT['Gunmetal'],bevel_width=.002)
-    box(f'Handle_Coupe_{side}',side_point(569,161,side,.004),(.034,.008,.009),MAT['BrushedMetal'],bevel_width=.002)
+    door_handle(f'Truck_{side}',382,124,side,.057)
+    door_handle(f'Coupe_{side}',569,161,side,.051)
     for px in (405,457):
         for py in (84,94,104,114,124,134,144):
             obj = rivet(f'Rivet_Armor_{side}_{px}_{py}',side_point(px,py,side,.003))
-            obj.scale = (.42,.42,.42)
+    for px in (414,428,442,453):
+        for py in (83,146):
+            rivet(f'Rivet_EquipmentEdge_{side}_{px}_{py}',side_point(px,py,side))
+    for px,py in [(351,119),(351,138),(362,149),(381,149),(392,137),(393,118),
+                  (490,95),(490,133),(512,121),(526,121)]:
+        rivet(f'Rivet_DoorAndTransition_{side}_{px}_{py}',side_point(px,py,side))
     for py in (89,144):
         box(f'Hinge_Truck_{side}_{py}',side_point(346,py,side,.004),(.010,.017,.010),MAT['Gunmetal'],bevel_width=.002)
     # Real folded wheel-bay overhang, with a thin seam instead of a trim ring.
     fender = [(322,187),(337,155),(462,155),(480,184),
               (477,188),(459,161),(340,161),(325,190)]
     verts = [point(px,py,side*(top_width(px)+.002)) for px,py in fender]
-    fascia = mesh_object(f'Armor_FenderFold_{side}',verts,[tuple(range(len(verts)))],MAT['ArmorProtected'])
+    fascia = mesh_object(f'Body_FenderFold_{side}',verts,[tuple(range(len(verts)))],MAT['Paint_Secondary'])
     recalc(fascia)
     solid = fascia.modifiers.new('FoldedFasciaThickness','SOLIDIFY')
     solid.thickness = .012
@@ -324,8 +408,9 @@ for z in (-.116,.116):
     bevel(obj,.003,2)
     for px in (686,699):
         for dz in (-.016,.016):
-            obj = rivet(f'Weapons_CoverFastener_{z}_{px}_{dz}',top_point(px,z+dz,.003))
-            obj.scale = (.28,.28,.28)
+            # Match the cover's 26-to-15 mm ramp over source pixels 683..707.
+            cap=top_point(px,z+dz,.001)+Vector((0,.026-(px-683)/24*.011,0))
+            obj = rivet(f'Rivet_WeaponsCover_{z}_{px}_{dz}',cap,normal=Vector((0,1,0)))
 hood_outline = [(659,-.188),(757,-.188),(775,-.161),
                 (775,.161),(757,.188),(659,.188)]
 tube('Hood_CoupePanelPerimeter',[top_point(px,z,.002) for px,z in hood_outline],
@@ -334,6 +419,12 @@ tube('Hood_CoupePanelPerimeter',[top_point(px,z,.002) for px,z in hood_outline],
 for side in (-1,1):
     outline = [(656,side*.244),(670,side*.251),(677,side*.278),(660,side*.276)]
     panel(f'Hood_ShoulderVent_{side}',outline,project_top,MAT['Grille'])
+    ring=intake_collars[side]
+    center=sum(ring,Vector())/4
+    outside=[center+(v-center)*1.12 for v in ring]
+    collar=mesh_object(f'Detail_HoodIntakeCollar_{side}',ring+outside,
+        [(i,(i+1)%4,(i+1)%4+4,i+4) for i in range(4)],MAT['Gunmetal'])
+    recalc(collar)
     for px in (660,664,668):
         tube(f'Hood_ShoulderVentSlat_{side}_{px}',
              [top_point(px,side*z,.0025) for z in (.252,.268)],.0008,MAT['BrushedMetal'])
@@ -347,6 +438,7 @@ for side in (-1,1):
         obj.scale=(.006,.014,.024)
         bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
         obj.data.materials.append(MAT['Lights'])
+        lamp_bezel(f'Coupe_{side}_{offset}',point(782,197,side*.223+offset),.014,.024,1)
     box(f'WeaponFrame_Coupe_{side}',point(777,194,side*.116),(.017,.062,.067),MAT['Gunmetal'],bevel_width=.007)
     box(f'WeaponPocket_Coupe_{side}',point(779,194,side*.116),(.018,.054,.054),MAT['Grille'],bevel_width=.006)
     for py in (190,198):
@@ -362,6 +454,12 @@ for side in (-1,1):
     box(f'LampHousing_Rugged_{side}',point(281,157,side*.252),(.026,.118,.088),MAT['Gunmetal'],bevel_width=.007)
     for py in (151,167):
         box(f'Lights_Rugged_{side}_{py}',point(278,py,side*.252),(.012,.046,.070),MAT['Lights'],bevel_width=.006)
+        # Rectangular gasket follows the housing, with fine bright inner edging.
+        p=point(278,py,side*.252)
+        for name,radius,mat in [('Seal',.0017,MAT['Rubber']),('Edging',.0007,MAT['BrushedMetal'])]:
+            hy,hz=(.025,.037) if name=='Seal' else (.023,.035)
+            loop=[p+Vector((-.0065,dy,dz)) for dy,dz in [(-hy,-hz),(-hy,hz),(hy,hz),(hy,-hz)]]
+            tube(f'Detail_RuggedLamp{name}_{side}_{py}',loop,radius,mat,cyclic=True)
     root = side_point(345,112,side)
     cylinder_between(f'MirrorMount_Truck_{side}',root,point(342,105,side*.383),.004,MAT['Gunmetal'],12)
     box(f'MirrorHousing_Truck_{side}',point(342,105,side*.390),(.039,.075,.022),MAT['Gunmetal'],bevel_width=.006)
@@ -424,8 +522,14 @@ for end,(px,py,radius,track) in zip(('B','M','A'),WHEELS):
 
 # Existing local native Material Maker graphs supply protected procedural PBR.
 for semantic,color in {'Paint_Primary':(.46,.49,.52),'Paint_Secondary':(.18,.23,.22),
-                       'Paint_Accent':(.56,.59,.62),'ArmorProtected':(.17,.22,.20)}.items():
+                       'Paint_Accent':(.56,.59,.62),'ArmorProtected':(.035,.042,.038)}.items():
     MAT[semantic].node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value = (*color,1)
+    if semantic.startswith('Paint_'):
+        coating=MAT[semantic].node_tree.nodes['Principled BSDF']
+        coating.inputs['Metallic'].default_value=.28
+        coating.inputs['Roughness'].default_value=.32
+        coating.inputs['Coat Weight'].default_value=.5
+        coating.inputs['Coat Roughness'].default_value=.16
 MAT['Glass'].node_tree.nodes['Principled BSDF'].inputs['Transmission Weight'].default_value = 0
 MAT['Lights'].node_tree.nodes['Principled BSDF'].inputs['Emission Strength'].default_value = .22
 for semantic,filename in {'BrushedMetal':'blackjack_brushed_metal','Rubber':'blackjack_rubber',

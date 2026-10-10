@@ -3,6 +3,10 @@ extends "res://tests/blackjack_refined_visual_qa.gd"
 
 func _ready() -> void:
 	_build_studio()
+	var qa_environment := find_children("*","WorldEnvironment",false,false)[0] as WorldEnvironment
+	qa_environment.environment.ssao_enabled=true
+	qa_environment.environment.ssao_radius=.16
+	qa_environment.environment.ssao_intensity=1.15
 	var ground := StaticBody3D.new()
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
@@ -31,6 +35,11 @@ func _ready() -> void:
 	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_side.png",Vector3(7,.8,0),Vector3(0,.8,0))
 	camera.size = 4.2
 	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_three_quarter.png",Vector3(5,3.1,-5.2),Vector3(0,.9,0))
+	camera.size=1.3
+	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_door_detail.png",Vector3(4,1.18,1.28),Vector3(0,1.18,1.28))
+	camera.size=1.4
+	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_hood_detail.png",Vector3(2.8,2.1,-3.3),Vector3(0,.85,-1.85))
+	camera.size=4.2
 	var neutral := paint.duplicate(true)
 	paint["primary_color"]="ce3849"
 	paint["secondary_color"]="3a9857"
@@ -44,6 +53,11 @@ func _ready() -> void:
 	vehicle.add_livery_decal(ImageTexture.create_from_image(image),placement,Vector3(.6,.45,1.2))
 	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_paint_qa.png",Vector3(5,3.1,-5.2),Vector3(0,.9,0))
 	vehicle.clear_livery_decals()
+	var monochrome := neutral.duplicate(true)
+	for channel: String in ["primary_color","secondary_color","accent_color"]:
+		monochrome[channel]="df512a"
+	vehicle.apply_customization(monochrome)
+	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_paint_coverage.png",Vector3(5,3.1,-5.2),Vector3(0,.9,0))
 	neutral["parts"]["hood_engine"]="supercharger"
 	vehicle.apply_customization(neutral)
 	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_engine_qa.png",Vector3(5,3.1,-5.2),Vector3(0,.9,0))
