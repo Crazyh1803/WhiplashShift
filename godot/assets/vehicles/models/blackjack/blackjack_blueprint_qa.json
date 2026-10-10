@@ -1,0 +1,439 @@
+{
+  "asset_status": "candidate; blueprint visual QA required",
+  "source": "tools/vehicle_pipeline/blender/blackjack_blueprint.blend",
+  "blueprint": "tools/vehicle_pipeline/references/SpyHunter.jpg",
+  "uniform_side_scale": 0.0040856467065868264,
+  "reference_stretch": 1.0,
+  "body_triangles": 16830,
+  "lod1_body_triangles": 8823,
+  "module_triangles": {
+    "rim_aero": 792,
+    "rim_rugged": 1334,
+    "tire_aero": 1536,
+    "tire_rugged": 1536,
+    "supercharger": 2280
+  },
+  "assembled_minimum_triangles": 32966,
+  "semantic_materials": [
+    "ArmorProtected",
+    "BrushedMetal",
+    "Glass",
+    "Grille",
+    "Gunmetal",
+    "Lights",
+    "Mirror",
+    "Paint_Accent",
+    "Paint_Primary",
+    "Paint_Secondary",
+    "Rubber"
+  ],
+  "physics_changed": false,
+  "visual_radius_metres": {
+    "A": 0.3065869288622755,
+    "B": 0.3257486119161677
+  },
+  "visual_track_metres": {
+    "A": 0.8043350000000001,
+    "B": 0.8442000000000001
+  },
+  "roof_surface_measurements": [
+    {
+      "pixel_x": 298,
+      "roof_error_pixels": 0.7471366511576047
+    },
+    {
+      "pixel_x": 326,
+      "roof_error_pixels": 1.4185155356833068
+    },
+    {
+      "pixel_x": 335,
+      "roof_error_pixels": 1.1068515522446538
+    },
+    {
+      "pixel_x": 343,
+      "roof_error_pixels": 0.2348211754966383
+    },
+    {
+      "pixel_x": 349,
+      "roof_error_pixels": 0.1349681973848875
+    },
+    {
+      "pixel_x": 354,
+      "roof_error_pixels": 0.034568139620979405
+    },
+    {
+      "pixel_x": 360,
+      "roof_error_pixels": 0.48358194053024467
+    },
+    {
+      "pixel_x": 397,
+      "roof_error_pixels": 0.4675926258965273
+    },
+    {
+      "pixel_x": 459,
+      "roof_error_pixels": 0.4838372443679181
+    },
+    {
+      "pixel_x": 469,
+      "roof_error_pixels": 0.4772139333791337
+    },
+    {
+      "pixel_x": 474,
+      "roof_error_pixels": 1.5166142117104733
+    },
+    {
+      "pixel_x": 482,
+      "roof_error_pixels": 0.4790265906266149
+    },
+    {
+      "pixel_x": 490,
+      "roof_error_pixels": 0.15856191918359142
+    },
+    {
+      "pixel_x": 509,
+      "roof_error_pixels": 0.4315072520402316
+    },
+    {
+      "pixel_x": 531,
+      "roof_error_pixels": 0.3286581010334993
+    },
+    {
+      "pixel_x": 545,
+      "roof_error_pixels": 0.6255199326836162
+    },
+    {
+      "pixel_x": 548,
+      "roof_error_pixels": 2.1814477440978233
+    },
+    {
+      "pixel_x": 551,
+      "roof_error_pixels": 0.43400877374972086
+    },
+    {
+      "pixel_x": 560,
+      "roof_error_pixels": 0.07208868576476772
+    },
+    {
+      "pixel_x": 568,
+      "roof_error_pixels": 0.522896907933109
+    },
+    {
+      "pixel_x": 596,
+      "roof_error_pixels": 0.30651231671417173
+    },
+    {
+      "pixel_x": 615,
+      "roof_error_pixels": 0.22903307277681406
+    },
+    {
+      "pixel_x": 631,
+      "roof_error_pixels": 0.2523200880455273
+    },
+    {
+      "pixel_x": 648,
+      "roof_error_pixels": 0.19225929035822045
+    },
+    {
+      "pixel_x": 655,
+      "roof_error_pixels": 1.20463656927125
+    },
+    {
+      "pixel_x": 669,
+      "roof_error_pixels": 0.8200122198220587
+    },
+    {
+      "pixel_x": 687,
+      "roof_error_pixels": 0.6995088084402104
+    },
+    {
+      "pixel_x": 703,
+      "roof_error_pixels": 0.4818695812189923
+    },
+    {
+      "pixel_x": 720,
+      "roof_error_pixels": 0.7277910028579023
+    },
+    {
+      "pixel_x": 742,
+      "roof_error_pixels": 0.73532976046463
+    },
+    {
+      "pixel_x": 764,
+      "roof_error_pixels": 0.7095185424758484
+    },
+    {
+      "pixel_x": 778,
+      "roof_error_pixels": 0.6840100418945939
+    }
+  ],
+  "width_surface_measurements": [
+    {
+      "pixel_x": 298,
+      "half_width_error_pixels": 0.49868972023792535
+    },
+    {
+      "pixel_x": 326,
+      "half_width_error_pixels": 0.01976240038276556
+    },
+    {
+      "pixel_x": 335,
+      "half_width_error_pixels": 0.15102909033842205
+    },
+    {
+      "pixel_x": 343,
+      "half_width_error_pixels": 0.05135117771536159
+    },
+    {
+      "pixel_x": 349,
+      "half_width_error_pixels": 0.06176757429243662
+    },
+    {
+      "pixel_x": 354,
+      "half_width_error_pixels": 0.06146120968722853
+    },
+    {
+      "pixel_x": 360,
+      "half_width_error_pixels": 0.06141014891969385
+    },
+    {
+      "pixel_x": 397,
+      "half_width_error_pixels": 0.06114025629129625
+    },
+    {
+      "pixel_x": 459,
+      "half_width_error_pixels": 0.10263807150626815
+    },
+    {
+      "pixel_x": 469,
+      "half_width_error_pixels": 0.12903244290698407
+    },
+    {
+      "pixel_x": 474,
+      "half_width_error_pixels": 0.048145171457713236
+    },
+    {
+      "pixel_x": 482,
+      "half_width_error_pixels": 0.0423742295712006
+    },
+    {
+      "pixel_x": 490,
+      "half_width_error_pixels": 0.3213516291752755
+    },
+    {
+      "pixel_x": 509,
+      "half_width_error_pixels": 0.06372823702112851
+    },
+    {
+      "pixel_x": 531,
+      "half_width_error_pixels": 0.19180246009814295
+    },
+    {
+      "pixel_x": 545,
+      "half_width_error_pixels": 0.8211823225793953
+    },
+    {
+      "pixel_x": 548,
+      "half_width_error_pixels": 0.035746999656544286
+    },
+    {
+      "pixel_x": 551,
+      "half_width_error_pixels": 0.5041184697442883
+    },
+    {
+      "pixel_x": 560,
+      "half_width_error_pixels": 0.32949383051190384
+    },
+    {
+      "pixel_x": 568,
+      "half_width_error_pixels": 0.3303123956605787
+    },
+    {
+      "pixel_x": 596,
+      "half_width_error_pixels": 0.06224820795226826
+    },
+    {
+      "pixel_x": 615,
+      "half_width_error_pixels": 0.03437307429304658
+    },
+    {
+      "pixel_x": 631,
+      "half_width_error_pixels": 0.018686875283889594
+    },
+    {
+      "pixel_x": 648,
+      "half_width_error_pixels": 0.03098602229843895
+    },
+    {
+      "pixel_x": 655,
+      "half_width_error_pixels": 0.07205021920639945
+    },
+    {
+      "pixel_x": 669,
+      "half_width_error_pixels": 0.17751663276630397
+    },
+    {
+      "pixel_x": 687,
+      "half_width_error_pixels": 0.7767001509950676
+    },
+    {
+      "pixel_x": 703,
+      "half_width_error_pixels": 0.9475972909529992
+    },
+    {
+      "pixel_x": 720,
+      "half_width_error_pixels": 0.20474661065301344
+    },
+    {
+      "pixel_x": 742,
+      "half_width_error_pixels": 0.05778563085878466
+    },
+    {
+      "pixel_x": 764,
+      "half_width_error_pixels": 0.10021228683133737
+    },
+    {
+      "pixel_x": 778,
+      "half_width_error_pixels": 0.14646387399682914
+    }
+  ],
+  "sill_surface_measurements": [
+    {
+      "pixel_x": 298,
+      "sill_error_pixels": 0.4600866930689291
+    },
+    {
+      "pixel_x": 482,
+      "sill_error_pixels": 0.5801560879267327
+    },
+    {
+      "pixel_x": 490,
+      "sill_error_pixels": 0.014876919340997571
+    },
+    {
+      "pixel_x": 509,
+      "sill_error_pixels": 0.007279806571373168
+    },
+    {
+      "pixel_x": 531,
+      "sill_error_pixels": 0.39139901914173925
+    },
+    {
+      "pixel_x": 545,
+      "sill_error_pixels": 0.4513589490181796
+    },
+    {
+      "pixel_x": 548,
+      "sill_error_pixels": 0.5403833972148968
+    },
+    {
+      "pixel_x": 551,
+      "sill_error_pixels": 1.0614366467202356
+    },
+    {
+      "pixel_x": 560,
+      "sill_error_pixels": 0.6578596345214749
+    },
+    {
+      "pixel_x": 568,
+      "sill_error_pixels": 0.40036747823943797
+    },
+    {
+      "pixel_x": 596,
+      "sill_error_pixels": 0.016915702844703784
+    },
+    {
+      "pixel_x": 615,
+      "sill_error_pixels": 0.013618636141035777
+    },
+    {
+      "pixel_x": 631,
+      "sill_error_pixels": 0.012903785395550236
+    },
+    {
+      "pixel_x": 648,
+      "sill_error_pixels": 0.10937945845464996
+    },
+    {
+      "pixel_x": 655,
+      "sill_error_pixels": 0.034378485341564874
+    },
+    {
+      "pixel_x": 742,
+      "sill_error_pixels": 0.019286381337385427
+    },
+    {
+      "pixel_x": 764,
+      "sill_error_pixels": 0.1762034143668239
+    },
+    {
+      "pixel_x": 778,
+      "sill_error_pixels": 6.671402937406714
+    }
+  ],
+  "arch_centers": {
+    "B_L": [
+      -0.8442001342773438,
+      -0.547403872013092,
+      1.5836502313613892
+    ],
+    "B_R": [
+      0.8441998958587646,
+      -0.547403872013092,
+      1.5836503505706787
+    ],
+    "M_L": [
+      -0.844200074672699,
+      -0.4781331419944763,
+      0.8203195333480835
+    ],
+    "M_R": [
+      0.8441999554634094,
+      -0.4781331419944763,
+      0.820319652557373
+    ],
+    "A_L": [
+      -0.8043348789215088,
+      -0.27728182077407837,
+      -1.6049871444702148
+    ],
+    "A_R": [
+      0.8043351173400879,
+      -0.27728182077407837,
+      -1.6049870252609253
+    ]
+  },
+  "preview_pitch": -0.0905,
+  "preview_height": 0.7277873754501343,
+  "part_socket_positions": {
+    "hood_engine": [
+      4.302832792291156e-07,
+      0.11214825510978699,
+      -1.5891835689544678
+    ],
+    "roof": [
+      5.495922778209206e-06,
+      0.7697986960411072,
+      1.125898003578186
+    ],
+    "front_a": [
+      1.8895362074999866e-07,
+      -0.205430269241333,
+      -2.5027663707733154
+    ],
+    "front_b": [
+      -1.8183996530751756e-07,
+      -0.46833789348602295,
+      2.408543109893799
+    ],
+    "left": [
+      -0.6019312143325806,
+      0.05664820596575737,
+      0.12387626618146896
+    ],
+    "right": [
+      0.6019235253334045,
+      0.056655120104551315,
+      0.12387614697217941
+    ]
+  }
+}

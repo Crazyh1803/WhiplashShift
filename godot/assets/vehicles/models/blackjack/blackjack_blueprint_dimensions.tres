@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/blackjack_blueprint_dimensions.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_radius = {"A": 0.3065869288622755, "B": 0.3257486119161677}
+display_track = {"A": 0.8043350000000001, "B": 0.8442000000000001}
+arch_centers = {
+"B_L": Vector3(-0.844200134, -0.547403872, 1.58365023),
+"B_R": Vector3(0.844199896, -0.547403872, 1.58365035),
+"M_L": Vector3(-0.844200075, -0.478133142, 0.820319533),
+"M_R": Vector3(0.844199955, -0.478133142, 0.820319653),
+"A_L": Vector3(-0.804334879, -0.277281821, -1.60498714),
+"A_R": Vector3(0.804335117, -0.277281821, -1.60498703)
+}
+preview_pitch = -0.0905
+preview_height = 0.7277873754501343
+part_socket_positions = {
+"hood_engine": Vector3(4.30283279e-07, 0.112148255, -1.58918357),
+"roof": Vector3(5.49592278e-06, 0.769798696, 1.125898),
+"front_a": Vector3(1.88953621e-07, -0.205430269, -2.50276637),
+"front_b": Vector3(-1.81839965e-07, -0.468337893, 2.40854311),
+"left": Vector3(-0.601931214, 0.056648206, 0.123876266),
+"right": Vector3(0.601923525, 0.0566551201, 0.123876147)
+}

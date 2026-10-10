@@ -1,0 +1,30 @@
+{
+  "engine": "MeshLab 2025.07 / PyMeshLab 2025.7.post1",
+  "glb_sha256": "48f01b95cfccb9b9e838cc078e69674d6dc77b1a542c25a146c970e88364396d",
+  "filters": [
+    "get_topological_measures",
+    "get_geometric_measures"
+  ],
+  "topology": {
+    "boundary_edges": 0,
+    "connected_components_number": 1,
+    "edges_number": 6744,
+    "faces_number": 4496,
+    "genus": 0,
+    "incident_faces_on_non_two_manifold_edges": 0,
+    "incident_faces_on_non_two_manifold_vertices": 0,
+    "is_mesh_two_manifold": true,
+    "non_two_manifold_edges": 0,
+    "non_two_manifold_vertices": 0,
+    "number_holes": 0,
+    "unreferenced_vertices": 0,
+    "vertices_number": 2250
+  },
+  "source_shell_extents": [
+    2.0866600275039673,
+    0.607226625084877,
+    0.6801292598247528
+  ],
+  "game_scale": 2.345,
+  "source_shell_volume": 0.32197470158010777
+}
