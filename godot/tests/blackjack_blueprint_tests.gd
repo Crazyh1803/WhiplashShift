@@ -8,6 +8,7 @@ var failed := 0
 
 
 func _ready() -> void:
+	_palette_checks()
 	var baseline := Vehicle.new()
 	baseline.tuning = TuningProfile.new()
 	baseline.freeze = true
@@ -31,6 +32,16 @@ func _ready() -> void:
 	_check("complete assembled budget",full_triangles>=20000 and full_triangles<=40000)
 	var low := (load("res://assets/vehicles/models/blackjack/blackjack_blueprint_lod1.glb") as PackedScene).instantiate()
 	_check("body LOD reduction",_triangles(low)<body_triangles*.60)
+	for root: Node in [model,low]:
+		var trim_count:=0
+		for mesh: MeshInstance3D in root.find_children("*","MeshInstance3D",true,false):
+			if mesh.name.begins_with("Glass_TruckFrontSeal") or mesh.name.begins_with("Glass_CoupeWindshieldSeal"):
+				trim_count+=1
+				_check("windshield seals retain complete profile",_mesh_triangles(mesh)==64)
+			elif mesh.name.begins_with("Wiper_Truck"):
+				trim_count+=1
+				_check("wiper profiles never collapse over glass",_mesh_triangles(mesh)==28)
+		_check("complete preserved windshield trim assembly",trim_count==5)
 	low.free()
 	var names := {}
 	var fastener_count := 0
@@ -53,6 +64,8 @@ func _ready() -> void:
 	_check("blueprint perimeter fasteners present",fastener_count>=90)
 	_check("four seated door handles",model.find_children("Detail_HandleBridge*","MeshInstance3D",true,false).size()==4)
 	_check("four protected lamp bezels",model.find_children("Detail_LampBezel*","MeshInstance3D",true,false).size()==4)
+	_check("three preserved guard rails",model.find_children("Detail_BrushGuardRail*","MeshInstance3D",true,false).size()==3)
+	_check("two guard uprights and seated mounts",model.find_children("Detail_BrushGuardUpright*","MeshInstance3D",true,false).size()==2 and model.find_children("Detail_BrushGuardSeat*","MeshInstance3D",true,false).size()==2)
 	var paint := VehicleCatalog.default_customization("blackjack")
 	paint["primary_color"]="e32636"
 	paint["secondary_color"]="25cf5c"
@@ -149,7 +162,14 @@ func _garage_paths() -> void:
 	var garage: Variant = load("res://scenes/garage.tscn").instantiate()
 	add_child(garage)
 	for id: String in ["blackjack","boilerfang","blackjack"]:
+		for index in range(VehicleCatalog.VEHICLES.size()):
+			if VehicleCatalog.VEHICLES[index]["id"]==id:
+				garage._index=index
+		garage._load_customization_controls()
+		_check("real garage gates preset controls by vehicle",garage._primary_picker.preset.visible==(id=="blackjack") and garage._primary_picker.unrestricted.visible==(id!="blackjack"))
 		garage._refresh_customization_preview(id,VehicleCatalog.default_customization(id))
+		var environment: Environment=garage._preview_environment.environment
+		_check("studio reflections are Blackjack-only",environment.sky!=null if id=="blackjack" else environment.sky==null and environment.ambient_light_source==Environment.AMBIENT_SOURCE_COLOR and is_equal_approx(environment.ambient_light_energy,.72))
 		var preview: Vehicle = garage._preview_vehicle
 		_check("real garage retains frozen preview",preview.freeze and preview.process_mode==Node.PROCESS_MODE_DISABLED)
 		_check("real garage selects production art rig",preview.get_script()==load("res://scripts/blackjack_blueprint_vehicle.gd") if id=="blackjack" else preview.get_script()==Vehicle)
@@ -159,6 +179,23 @@ func _garage_paths() -> void:
 				var center: Vector3 = preview._visual_config["arch_centers"][preview._arch_key(wheel)]
 				_check("real garage aligns arches",preview.to_local(assembly.global_position).distance_to(center)<.0001)
 				_check("real garage seats tires",absf(assembly.global_position.y-ART.DISPLAY_RADIUS[wheel.end])<.002)
+	var saved_cache: Dictionary=GameSession.vehicle_customizations.duplicate(true)
+	var legacy: Dictionary=GameSession.customization_for("blackjack")
+	legacy["primary_color"]="123456"
+	legacy["secondary_color"]="101820" # Ensure the loading test actually emits a change.
+	GameSession.vehicle_customizations["blackjack"]=legacy
+	garage._index=0
+	garage._load_customization_controls()
+	garage._customization_loading=true # Prevent the UI signal from saving profile data.
+	var loading_cache: Dictionary=GameSession.vehicle_customizations.duplicate(true)
+	garage._secondary_picker.choose_palette(2)
+	_check("loading swatch cannot commit customization",GameSession.vehicle_customizations==loading_cache)
+	_check("changing another channel retains saved custom primary",garage._primary_picker.color.to_html(false)=="123456")
+	legacy["secondary_color"]=garage._secondary_picker.color.to_html(false)
+	GameSession.vehicle_customizations["blackjack"]=GameSession._sanitize_customization("blackjack",legacy)
+	garage._load_customization_controls()
+	_check("legacy primary survives serialization and reload",garage._primary_picker.color.to_html(false)=="123456")
+	GameSession.vehicle_customizations=saved_cache
 	garage.free()
 
 
@@ -223,8 +260,45 @@ func _triangles(root: Node) -> int:
 	return count
 
 
+func _palette_checks() -> void:
+	var palette:=preload("res://scripts/blackjack_paint_palette.gd")
+	var factory:=VehicleCatalog.default_customization("blackjack")
+	for channel: String in ["primary_color","secondary_color","accent_color"]:
+		_check("factory paint belongs to metallic palette",palette.label_for(Color(factory[channel]))!="SAVED CUSTOM")
+	var picker:=preload("res://scripts/vehicle_paint_picker.gd").new()
+	var names: Dictionary={}
+	var colors: Dictionary={}
+	_check("exactly twelve metallic swatches",palette.SWATCHES.size()==12 and picker.preset.get_popup().item_count==12)
+	for i in range(palette.SWATCHES.size()):
+		var swatch: Dictionary=palette.SWATCHES[i]
+		names[swatch["name"]]=true
+		colors[swatch["hex"]]=true
+		picker.choose_palette(i)
+		_check("swatch selects exact saved hex",picker.color.to_html(false)==swatch["hex"])
+	_check("palette colors and names are unique",names.size()==12 and colors.size()==12)
+	picker.color=Color("123456")
+	picker.limit_to_palette(true)
+	_check("legacy color is not quantized on load",picker.color.to_html(false)=="123456" and picker.preset.text=="SAVED CUSTOM")
+	_check("Blackjack only exposes twelve presets",picker.preset.visible and not picker.unrestricted.visible)
+	picker.limit_to_palette(false)
+	_check("other vehicles retain unrestricted picker",picker.unrestricted.visible and not picker.preset.visible and picker.color.to_html(false)=="123456")
+	picker.choose_palette(-1)
+	_check("invalid palette selection preserves color",picker.color.to_html(false)=="123456")
+	var emissions: Array[Color]=[]
+	picker.color_changed.connect(func(value: Color) -> void: emissions.append(value))
+	picker.choose_palette(0)
+	picker.choose_palette(0)
+	_check("reselecting current finish avoids another save signal",emissions.size()==1)
+	picker.free()
+	var studio:=preload("res://scripts/blackjack_studio_finish.gd")
+	var first:=studio.environment(Color.BLACK)
+	var second:=studio.environment(Color.WHITE)
+	_check("independent studio environments with shared reflection sky",first!=second and first.sky==second.sky and first.reflected_light_source==Environment.REFLECTION_SOURCE_SKY)
+	_check("neutral HDR sky retains bright softboxes",((first.sky.sky_material as PanoramaSkyMaterial).panorama as ImageTexture).get_image().get_pixel(61,21).r>1)
+
+
 func _has_automotive_coating(material: StandardMaterial3D) -> bool:
-	return material!=null and is_equal_approx(material.metallic,.28) and is_equal_approx(material.roughness,.32) and material.clearcoat_enabled and is_equal_approx(material.clearcoat,.5) and is_equal_approx(material.clearcoat_roughness,.16)
+	return material!=null and is_equal_approx(material.metallic,.58) and is_equal_approx(material.roughness,.24) and material.clearcoat_enabled and is_equal_approx(material.clearcoat,.85) and is_equal_approx(material.clearcoat_roughness,.12)
 
 
 func _mesh_triangles(mesh: MeshInstance3D) -> int:

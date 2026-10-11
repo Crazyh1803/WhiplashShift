@@ -47,6 +47,11 @@ body_target = 17000
 def is_glass_panel(obj):
     return len(obj.data.materials)==1 and obj.data.materials[0].name=='Glass'
 
+def is_windshield_trim(obj):
+    # Four-corner cyclic seals and slender wipers must not collapse into broad
+    # triangles over the glass. Their complete native profiles are inexpensive.
+    return obj.name.startswith(('Glass_TruckFrontSeal','Glass_CoupeWindshieldSeal','Wiper_Truck'))
+
 def preserve_paint_borders(obj,modifier,window_collection=None):
     # Zero-weight vertices are excluded from native collapse (Blender BMesh).
     # Keeping a continuous mesh avoids cracks between separately reduced colors.
@@ -59,9 +64,32 @@ def preserve_paint_borders(obj,modifier,window_collection=None):
     if window_collection is not None:
         from mathutils.bvhtree import BVHTree
         inverse=obj.matrix_world.inverted()
+        level=POSE @ obj.matrix_world
+        shell_surface=BVHTree.FromPolygons([level @ v.co for v in obj.data.vertices],
+                                          [p.vertices for p in obj.data.polygons])
+        support=set()
         for window in window_collection.objects:
             if not is_glass_panel(window):
                 continue
+            # Pin complete supporting faces, not just nearby vertices: a large
+            # triangle can span a window while its corners lie outside its edge.
+            window_level=POSE @ window.matrix_world
+            side_window=any(n in window.name for n in ('RuggedSide','CoupeSide','CoupeQuarter'))
+            window.data.calc_loop_triangles()
+            samples=[window_level @ v.co for v in window.data.vertices]
+            for tri in window.data.loop_triangles:
+                corners=[window_level @ window.data.vertices[i].co for i in tri.vertices]
+                samples.append(sum(corners,Vector())/3)
+                samples.extend((corners[i]+corners[(i+1)%3])*.5 for i in range(3))
+            for sample in samples:
+                if side_window:
+                    side=-1 if sample.z<0 else 1
+                    origin,direction=Vector((sample.x,sample.y,side*.8)),Vector((0,0,-side))
+                else:
+                    origin,direction=Vector((sample.x,1.5,sample.z)),Vector((0,-1,0))
+                _,_,index,_=shell_surface.ray_cast(origin,direction)
+                if index is not None:
+                    support.update(obj.data.polygons[index].vertices)
             transform=inverse @ window.matrix_world
             surface=BVHTree.FromPolygons([transform @ v.co for v in window.data.vertices],
                                         [p.vertices for p in window.data.polygons])
@@ -69,6 +97,15 @@ def preserve_paint_borders(obj,modifier,window_collection=None):
             # small quarter-light beyond the reduced greenhouse silhouette.
             borders.update(v.index for v in obj.data.vertices
                            if surface.find_nearest(v.co,.014)[0] is not None)
+        bm=bmesh.new()
+        bm.from_mesh(obj.data)
+        bm.verts.ensure_lookup_table()
+        bm.verts.index_update()
+        for index in list(support):
+            for face in bm.verts[index].link_faces:
+                support.update(v.index for v in face.verts)
+        bm.free()
+        borders.update(support)
     group=obj.vertex_groups.get('CollapseAllowed') or obj.vertex_groups.new(name='CollapseAllowed')
     group.add(list(range(len(obj.data.vertices))),1,'REPLACE')
     if borders:
@@ -131,7 +168,7 @@ for budget_pass in range(3):
     for obj in game.objects:
         obj.data.calc_loop_triangles()
         count = len(obj.data.loop_triangles)
-        if count > 24 and not obj.name.startswith(('Body_BlueprintShell','Rivet_','Detail_')) and not is_glass_panel(obj):
+        if count > 24 and not obj.name.startswith(('Body_BlueprintShell','Rivet_','Detail_')) and not is_glass_panel(obj) and not is_windshield_trim(obj):
             eligible.append((obj,count))
         else:
             fixed_triangles += count
@@ -149,16 +186,21 @@ for budget_pass in range(3):
         smooth(obj)
 seat_glass(game)
 for obj in game.objects:
-    smart_uv(obj)
+    smart_uv(obj,finalize=True)
 assert 15000<=triangle_count(game)[1]<=body_target+150, 'Gameplay body exceeded its allocation'
 print('BLUEPRINT_STAGE gameplay budget and UV complete',flush=True)
 bake_collection(game, COL['LOD1_EXPORT'])
-for obj in COL['LOD1_EXPORT'].objects:
-    if obj.name.startswith('Rivet_'):
-        mod = obj.modifiers.new('LOD_FastenerReduction','DECIMATE')
-        mod.ratio = .45
-        mod.use_collapse_triangulate = True
-        apply_modifier(obj,mod)
+for obj in list(COL['LOD1_EXPORT'].objects):
+    # Subpixel fasteners are retained in gameplay, not paid for at distant LOD.
+    if obj.name.startswith(('Rivet_','FastenerContact_')):
+        data=obj.data
+        bpy.data.objects.remove(obj,do_unlink=True)
+        if data.users==0:
+            bpy.data.meshes.remove(data)
+        continue
+    # A crooked guard is visible even at distance; preserve the entire assembly.
+    if obj.name.startswith('Detail_BrushGuard') or is_windshield_trim(obj):
+        continue
     if len(obj.data.polygons)>48 and not is_glass_panel(obj):
         mod = obj.modifiers.new('LOD_SurfaceReduction','DECIMATE')
         mod.ratio = .45
@@ -168,14 +210,13 @@ for obj in COL['LOD1_EXPORT'].objects:
         apply_modifier(obj,mod)
     if len(obj.data.polygons)>20 and not is_glass_panel(obj):
         mod = obj.modifiers.new('LOD_DetailReduction','DECIMATE')
-        mod.ratio = .72
+        mod.ratio = .72 if obj.name.startswith('Body_BlueprintShell') else .55
         mod.use_collapse_triangulate = True
         if obj.name.startswith('Body_BlueprintShell'):
             preserve_paint_borders(obj,mod,COL['LOD1_EXPORT'])
         apply_modifier(obj,mod)
-# Allow the lower-resolution skin's interpolation error beneath the thin glass.
-# Independent triangle-interior sampling still gates intersection and floating.
-seat_glass(COL['LOD1_EXPORT'],clearance=.0055)
+seat_glass(COL['LOD1_EXPORT'])
+smart_uv(next(obj for obj in COL['LOD1_EXPORT'].objects if obj.name.startswith('Body_BlueprintShell')),finalize=True)
 # Partition only export copies. Godot's decal cull masks operate per instance,
 # not per material; the editable cage and closed validation shell stay whole.
 native_export_collection = export_collection
@@ -277,6 +318,7 @@ report = {
         for style,count in [('aero',2),('rugged',4)]),
     'semantic_materials':sorted(MAT), 'physics_changed':False,
     'hood_intake_recesses':intake_depths,
+    'brush_guard_paths':{str(py):[list(p) for p in points] for py,points in GUARD_PATHS.items()},
     'visual_radius_metres':{'A':wheel_radius('A')*2.345,'B':wheel_radius('B')*2.345},
     'visual_track_metres':{'A':WHEELS[-1][3]*2.345,'B':WHEELS[0][3]*2.345},
     'roof_surface_measurements':errors,

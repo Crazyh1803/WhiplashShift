@@ -226,11 +226,11 @@ func _configure_blackjack_semantic_surface(mesh: MeshInstance3D,surface: int,low
 		return
 	var coating := mesh.get_surface_override_material(surface) as StandardMaterial3D
 	if coating!=null:
-		coating.metallic=.28
-		coating.roughness=.32
+		coating.metallic=.58
+		coating.roughness=.24
 		coating.clearcoat_enabled=true
-		coating.clearcoat=.5
-		coating.clearcoat_roughness=.16
+		coating.clearcoat=.85
+		coating.clearcoat_roughness=.12
 
 
 func _rebuild_visuals() -> void:

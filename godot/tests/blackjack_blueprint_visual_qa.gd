@@ -4,9 +4,7 @@ extends "res://tests/blackjack_refined_visual_qa.gd"
 func _ready() -> void:
 	_build_studio()
 	var qa_environment := find_children("*","WorldEnvironment",false,false)[0] as WorldEnvironment
-	qa_environment.environment.ssao_enabled=true
-	qa_environment.environment.ssao_radius=.16
-	qa_environment.environment.ssao_intensity=1.15
+	qa_environment.environment=preload("res://scripts/blackjack_studio_finish.gd").environment(Color("55616b"))
 	var ground := StaticBody3D.new()
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
@@ -35,6 +33,22 @@ func _ready() -> void:
 	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_side.png",Vector3(7,.8,0),Vector3(0,.8,0))
 	camera.size = 4.2
 	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_three_quarter.png",Vector3(5,3.1,-5.2),Vector3(0,.9,0))
+	camera.size=2.2
+	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_guard_front.png",Vector3(0,1.1,6),Vector3(0,1.1,1.65))
+	camera.size=4.2
+	var showcase:=paint.duplicate(true)
+	showcase["primary_color"]="2558a4"
+	showcase["secondary_color"]="101820"
+	showcase["accent_color"]="c5a468"
+	vehicle.apply_customization(showcase)
+	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_metallic_showcase.png",Vector3(5,3.1,-5.2),Vector3(0,.9,0))
+	var red_finish:=showcase.duplicate(true)
+	red_finish["primary_color"]="b51f32"
+	red_finish["secondary_color"]="303943"
+	red_finish["accent_color"]="9ca6ad"
+	vehicle.apply_customization(red_finish)
+	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_metallic_red.png",Vector3(5,3.1,-5.2),Vector3(0,.9,0))
+	vehicle.apply_customization(paint)
 	camera.size=1.3
 	await _capture("res://assets/vehicles/models/blackjack/blackjack_blueprint_godot_door_detail.png",Vector3(4,1.18,1.28),Vector3(0,1.18,1.28))
 	camera.size=1.4
@@ -94,6 +108,16 @@ func _ready() -> void:
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	garage._preview_viewport.get_texture().get_image().save_png("res://assets/vehicles/models/blackjack/blackjack_blueprint_garage_three_quarter.png")
+	# UI evidence without choosing/saving a different user profile color.
+	garage._customization_loading=true
+	for pair: Array in [[garage._primary_picker,"primary_color"],[garage._secondary_picker,"secondary_color"],[garage._accent_picker,"accent_color"]]:
+		pair[0].limit_to_palette(true)
+		pair[0].color=Color(showcase[pair[1]])
+	garage._refresh_customization_preview("blackjack",showcase)
+	for i in range(4):
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	garage._customization_popup.get_viewport().get_texture().get_image().save_png("res://assets/vehicles/models/blackjack/blackjack_blueprint_garage_metallic_ui.png")
 	garage.free()
 	if not "--inspect" in OS.get_cmdline_user_args():
 		get_tree().quit()

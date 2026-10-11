@@ -1,0 +1,102 @@
+diff --git a/godot/scripts/garage.gd b/godot/scripts/garage.gd
+index b8c157f..5c8a860 100644
+--- a/godot/scripts/garage.gd
++++ b/godot/scripts/garage.gd
+@@ -25,13 +25,16 @@ var _stat_fills: Dictionary = {}
+ var _stat_values: Dictionary = {}
+ var _roster_buttons: Array[Button] = []
+ var _customization_popup: PopupPanel
+-var _primary_picker: ColorPickerButton
+-var _secondary_picker: ColorPickerButton
+-var _accent_picker: ColorPickerButton
++const PAINT_PICKER := preload("res://scripts/vehicle_paint_picker.gd")
++var _primary_picker: PAINT_PICKER
++var _secondary_picker: PAINT_PICKER
++var _accent_picker: PAINT_PICKER
+ var _wheel_style: OptionButton
+ var _part_options: Dictionary = {}
+ var _customization_loading: bool = false
+ var _preview_viewport: SubViewport
++var _preview_environment: WorldEnvironment
++var _standard_preview_environment: Environment
+ var _preview_vehicle: Vehicle
+ var _preview_vehicle_id: String = ""
+ var _preview_container: SubViewportContainer
+@@ -297,9 +300,8 @@ func _build_customization_popup() -> void:
+ 		var column := VBoxContainer.new()
+ 		column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ 		column.add_child(_label(String(paint_spec[0]), 10, MUTED))
+-		var picker := ColorPickerButton.new()
++		var picker := PAINT_PICKER.new()
+ 		picker.custom_minimum_size = Vector2(130, 38)
+-		picker.edit_alpha = false
+ 		picker.color = paint_spec[2]
+ 		picker.color_changed.connect(func(_color: Color) -> void: _commit_customization())
+ 		column.add_child(picker)
+@@ -355,23 +357,24 @@ func _build_customization_preview(parent: VBoxContainer) -> void:
+ 	_preview_container.gui_input.connect(_preview_gui_input)
+ 	parent.add_child(_preview_container)
+ 	_preview_viewport = SubViewport.new()
++	_preview_viewport.own_world_3d = true
+ 	_preview_viewport.size = Vector2i(1656, 600)
+ 	_preview_viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+ 	_preview_viewport.msaa_3d = Viewport.MSAA_2X
+ 	_preview_container.add_child(_preview_viewport)
+ 
+-	var world_environment := WorldEnvironment.new()
+-	var environment := Environment.new()
+-	environment.background_mode = Environment.BG_COLOR
+-	environment.background_color = Color("091117")
+-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+-	environment.ambient_light_color = Color("b8d1db")
+-	environment.ambient_light_energy = 0.72
+-	environment.ssao_enabled = true
+-	environment.ssao_radius = 0.16
+-	environment.ssao_intensity = 1.15
+-	world_environment.environment = environment
+-	_preview_viewport.add_child(world_environment)
++	_preview_environment = WorldEnvironment.new()
++	_standard_preview_environment = Environment.new()
++	_standard_preview_environment.background_mode = Environment.BG_COLOR
++	_standard_preview_environment.background_color = Color("091117")
++	_standard_preview_environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
++	_standard_preview_environment.ambient_light_color = Color("b8d1db")
++	_standard_preview_environment.ambient_light_energy = 0.72
++	_standard_preview_environment.ssao_enabled = true
++	_standard_preview_environment.ssao_radius = 0.16
++	_standard_preview_environment.ssao_intensity = 1.15
++	_preview_environment.environment = _standard_preview_environment
++	_preview_viewport.add_child(_preview_environment)
+ 	var key_light := DirectionalLight3D.new()
+ 	key_light.rotation_degrees = Vector3(-46.0, -32.0, 0.0)
+ 	key_light.light_energy = 1.25
+@@ -464,6 +467,8 @@ func _load_customization_controls() -> void:
+ 	_primary_picker.color = Color.from_string("#" + String(data["primary_color"]), Color("ff4d2e"))
+ 	_secondary_picker.color = Color.from_string("#" + String(data["secondary_color"]), Color("101820"))
+ 	_accent_picker.color = Color.from_string("#" + String(data["accent_color"]), Color("ffb238"))
++	for picker in [_primary_picker,_secondary_picker,_accent_picker]:
++		picker.limit_to_palette(vehicle_id=="blackjack")
+ 	_select_option(_wheel_style, String(data["wheel_style"]))
+ 	var parts: Dictionary = data["parts"]
+ 	for socket_name: String in _part_options:
+@@ -503,6 +508,7 @@ func _refresh_customization_preview(vehicle_id: String, data: Dictionary) -> voi
+ 	if _preview_vehicle == null:
+ 		return
+ 	if _preview_vehicle_id != vehicle_id:
++		_preview_environment.environment = preload("res://scripts/blackjack_studio_finish.gd").environment(Color("091117")) if vehicle_id=="blackjack" else _standard_preview_environment
+ 		var spec := VehicleCatalog.get_vehicle(vehicle_id)
+ 		spec["customization"] = data
+ 		_preview_vehicle.free()
+diff --git a/godot/scripts/vehicle_catalog.gd b/godot/scripts/vehicle_catalog.gd
+index ba84a36..904d374 100644
+--- a/godot/scripts/vehicle_catalog.gd
++++ b/godot/scripts/vehicle_catalog.gd
+@@ -181,6 +181,8 @@ static func default_customization(vehicle_id: String) -> Dictionary:
+ 			primary = String(vehicle["color"])
+ 			break
+ 	var accent := Color.from_string("#" + primary, Color("ff4d2e")).lightened(0.20).to_html(false)
++	if vehicle_id == "blackjack":
++		accent = "c5a468" # Factory gold belongs to the twelve metallic finishes.
+ 	return {
+ 		"primary_color": primary,
+ 		"secondary_color": "101820",

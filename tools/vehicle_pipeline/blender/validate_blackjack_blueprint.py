@@ -38,7 +38,7 @@ def source_point(px,py,z=0):
 paint_landmarks={}
 for name,px,py,expected in [('truck_door',382,135,'Paint_Primary'),
                             ('equipment_panel',432,135,'Paint_Secondary'),
-                            ('transition_panel',511,120,'Paint_Secondary'),
+                            ('transition_panel',511,120,'Paint_Primary'),
                             ('coupe_door',601,191,'Paint_Primary')]:
     for side in (-1,1):
         _,_,index,_=surface.ray_cast(source_point(px,py,side*.8),Vector((0,0,-side)))
@@ -46,9 +46,9 @@ for name,px,py,expected in [('truck_door',382,135,'Paint_Primary'),
         actual=shell.data.materials[shell.data.polygons[index].material_index].name
         paint_landmarks[name+str(side)]=actual
         assert actual==expected, ('Fixed grey body paint leak',name,side,actual,expected)
-for name,px,expected in [('rugged_hood',305,'Paint_Secondary'),
+for name,px,expected in [('rugged_hood',305,'Paint_Primary'),
                         ('coupe_hood',733,'Paint_Primary'),
-                        ('coupe_roof',588,'Paint_Secondary')]:
+                        ('coupe_roof',588,'Paint_Primary')]:
     origin=source_point(px,0)
     origin.y=1.5
     _,_,index,_=surface.ray_cast(origin,Vector((0,-1,0)))
@@ -63,6 +63,38 @@ for px in (510,750):
     assert index is not None and shell.data.materials[shell.data.polygons[index].material_index].name=='ArmorProtected', ('Underbody must remain protected',px)
     paint_landmarks['underside'+str(px)]='ArmorProtected'
 report['paint_landmarks']=paint_landmarks
+guard_report={}
+for group_name in ('GAMEPLAY_EXPORT','LOD1_EXPORT'):
+    count=0
+    for obj in bpy.data.collections[group_name].objects:
+        if not obj.name.startswith('Detail_BrushGuardRail_'):
+            continue
+        py=int(obj.name.split('_')[-1].split('.')[0])
+        vertices=[pose @ obj.matrix_world @ v.co for v in obj.data.vertices]
+        guard=BVHTree.FromPolygons(vertices,[p.vertices for p in obj.data.polygons])
+        mirror_error=max(guard.find_nearest(Vector((v.x,v.y,-v.z)))[3] for v in vertices)
+        assert mirror_error<.00005, ('Lopsided guard mesh',obj.name,mirror_error)
+        heights=[]
+        for z in (-.22,-.11,0,.11,.22):
+            x=source_point(270,py).x
+            top=guard.ray_cast(Vector((x,1.5,z)),Vector((0,-1,0)))[0]
+            bottom=guard.ray_cast(Vector((x,-1.5,z)),Vector((0,1,0)))[0]
+            assert top is not None and bottom is not None, ('Guard rail missing section',obj.name,z)
+            heights.append((top.y+bottom.y)/2)
+            # Native tube uses the fixed eight-sided bevel section: allow its
+            # polygonal silhouette's sagitta, but reject collapsed flat rails.
+            assert .0067<(top.y-bottom.y)/2<.0072, ('Crushed eight-sided guard section',obj.name,z)
+            y=source_point(270,py).y
+            front=guard.ray_cast(Vector((-1.5,y,z)),Vector((1,0,0)))[0]
+            back=guard.ray_cast(Vector((1.5,y,z)),Vector((-1,0,0)))[0]
+            assert front is not None and back is not None, ('Missing guard depth section',obj.name,z)
+            assert .0067<(back.x-front.x)/2<.0072, ('Flattened guard depth section',obj.name,z)
+        error=max(abs(height-source_point(270,py).y) for height in heights)
+        assert error<.00005, ('Uneven guard rail',obj.name,error)
+        guard_report[group_name+'/'+obj.name]={'mirror_error':mirror_error,'rail_level_error':error}
+        count+=1
+    assert count==3, ('Missing three preserved brush-guard rails',group_name)
+report['brush_guard']=guard_report
 glass_clearance = {}
 for name in ('GAMEPLAY_EXPORT','LOD1_EXPORT'):
     group = bpy.data.collections[name]
@@ -117,30 +149,36 @@ report['modules'] = modules
 report['validation_passed']=True
 for key,filename in [('glb_sha256','blackjack_blueprint.glb'),('shell_ply_sha256','blackjack_blueprint_shell.ply')]:
     report[key]=subprocess.check_output(['sha256sum',str(OUTPUT/filename)],text=True).split()[0]
-# Angular distortion of the actual gameplay UVs, not merely UV presence.
-stretch = []
-shell.data.calc_loop_triangles()
-uv = shell.data.uv_layers.active.data
-for tri in shell.data.loop_triangles:
-    if not shell.data.materials[tri.material_index].name.startswith('Paint_'):
-        continue
-    p0,p1,p2 = [shell.data.vertices[i].co for i in tri.vertices]
-    t0,t1,t2 = [uv[i].uv for i in tri.loops]
-    length = (p1-p0).length
-    if length < 1e-8:
-        continue
-    x = (p2-p0).dot(p1-p0)/length
-    y = math.sqrt(max(0,(p2-p0).length_squared-x*x))
-    if y < 1e-8:
-        continue
-    a,c = (t1-t0)/length
-    b,d = ((t2-t0)-(t1-t0)*x/length)/y
-    trace = a*a+b*b+c*c+d*d
-    det = a*d-b*c
-    root = math.sqrt(max(0,trace*trace-4*det*det))
-    stretch.append(math.sqrt((trace+root)/max(1e-20,trace-root)))
-stretch.sort()
-report['paint_uv_anisotropy'] = {'triangles':len(stretch),
-    'median':stretch[len(stretch)//2],'p95':stretch[int(len(stretch)*.95)],'maximum':max(stretch)}
+# Independent angular distortion of both export UVs, not merely UV presence.
+for collection_name,key in [('GAMEPLAY_EXPORT','paint_uv_anisotropy'),
+                            ('LOD1_EXPORT','lod1_paint_uv_anisotropy')]:
+    skin=next(obj for obj in bpy.data.collections[collection_name].objects
+              if obj.name.startswith('Body_BlueprintShell'))
+    stretch=[]
+    skin.data.calc_loop_triangles()
+    uv=skin.data.uv_layers.active.data
+    for tri in skin.data.loop_triangles:
+        if not skin.data.materials[tri.material_index].name.startswith('Paint_'):
+            continue
+        p0,p1,p2=[skin.data.vertices[i].co for i in tri.vertices]
+        t0,t1,t2=[uv[i].uv for i in tri.loops]
+        length=(p1-p0).length
+        if length<1e-8:
+            continue
+        x=(p2-p0).dot(p1-p0)/length
+        y=math.sqrt(max(0,(p2-p0).length_squared-x*x))
+        if y<1e-8:
+            continue
+        a,c=(t1-t0)/length
+        b,d=((t2-t0)-(t1-t0)*x/length)/y
+        trace=a*a+b*b+c*c+d*d
+        det=a*d-b*c
+        root=math.sqrt(max(0,trace*trace-4*det*det))
+        stretch.append(math.sqrt((trace+root)/max(1e-20,trace-root)))
+    stretch.sort()
+    report[key]={'triangles':len(stretch),'median':stretch[len(stretch)//2],
+                 'p95':stretch[int(len(stretch)*.95)],'maximum':max(stretch)}
+    assert all(math.isfinite(value) and value<4 for value in stretch), ('Collapsed paint UV island',collection_name)
+    assert report[key]['p95']<2, ('Paint UV distortion exceeds the livery gate',collection_name)
 (OUTPUT/'blackjack_blueprint_topology.json').write_text(json.dumps(report,indent=2)+'\n')
 print('BLUEPRINT_MODULE_TOPOLOGY',json.dumps(modules))

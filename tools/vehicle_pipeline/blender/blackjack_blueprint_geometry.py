@@ -21,7 +21,37 @@ def smooth(obj):
         obj.data.set_sharp_from_angle(angle=math.radians(40))
 
 
-def smart_uv(obj):
+def uv_outlier_faces(mesh,limit=4):
+    # Isolate only collapsed UV corners, not the large door/hood/roof islands.
+    mesh.calc_loop_triangles()
+    uv=mesh.uv_layers.active.data
+    bad=set()
+    for tri in mesh.loop_triangles:
+        material=mesh.materials[tri.material_index]
+        assert material is not None, 'Missing semantic material in UV validation'
+        if not material.name.startswith('Paint_'):
+            continue
+        p0,p1,p2=[mesh.vertices[i].co for i in tri.vertices]
+        t0,t1,t2=[uv[i].uv for i in tri.loops]
+        length=(p1-p0).length
+        if length<1e-8:
+            continue
+        x=(p2-p0).dot(p1-p0)/length
+        y=math.sqrt(max(0,(p2-p0).length_squared-x*x))
+        if y<1e-8:
+            continue
+        a,c=(t1-t0)/length
+        b,d=((t2-t0)-(t1-t0)*x/length)/y
+        trace=a*a+b*b+c*c+d*d
+        determinant=a*d-b*c
+        root=math.sqrt(max(0,trace*trace-4*determinant*determinant))
+        ratio=math.sqrt((trace+root)/max(1e-20,trace-root))
+        if not math.isfinite(ratio) or ratio>limit:
+            bad.add(tri.polygon_index)
+    return bad
+
+
+def smart_uv(obj,finalize=False):
     if obj.type != 'MESH' or not obj.data.polygons:
         return
     bpy.ops.object.select_all(action='DESELECT')
@@ -47,6 +77,29 @@ def smart_uv(obj):
     else:
         bpy.ops.uv.smart_project(angle_limit=math.radians(65),island_margin=.012)
     bpy.ops.object.mode_set(mode='OBJECT')
+    if obj.name.startswith('Body_BlueprintShell') and finalize:
+        # New paint seams can make a tiny roof corner collapse under ABF.
+        # Add bounded local seams and re-pack; never triangulate the editable
+        # subdivision cage merely to repair UVs. The builder explicitly marks
+        # final export UV work after reduction, never the transient raw bake.
+        for attempt in range(4):
+            bad=uv_outlier_faces(obj.data,limit=3)
+            if not bad:
+                break
+            bm=bmesh.new()
+            bm.from_mesh(obj.data)
+            bm.faces.ensure_lookup_table()
+            for index in bad:
+                for edge in bm.faces[index].edges:
+                    edge.seam=True
+            bm.to_mesh(obj.data)
+            bm.free()
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.uv.unwrap(method='ANGLE_BASED',margin=.014)
+            bpy.ops.uv.pack_islands(rotate=True,margin=.014)
+            bpy.ops.object.mode_set(mode='OBJECT')
+        assert not uv_outlier_faces(obj.data), 'Export shell has collapsed paint UVs'
     obj.select_set(False)
 
 
@@ -106,12 +159,13 @@ def build_shell():
             continue
         if px > 550:
             poly.material_index = 3 if py > 209 else 1
-            if 560 < px < 615 and poly.index % n in range(10,16):
+            # Secondary follows shoulder blades and a narrow lower-side rail;
+            # cabin roofs belong to the continuous primary-color silhouette.
+            if (px > 655 and poly.index%n in (8,9,n-10,n-9)) or poly.index%n in (2,3,n-4,n-3):
                 poly.material_index = 2
-        elif px < 343 or 397 <= px <= 550:
-            poly.material_index = 2
-        # The tall cabin's roof is secondary; its door skins stay primary.
-        elif 348 < px < 397 and py < 72:
+            if px < 655 and poly.index%n in (6,n-7):
+                poly.material_index = 3
+        elif 405 < px < 458 and 85 < py < 146:
             poly.material_index = 2
     recalc(shell)
     crease = shell.data.attributes.new('crease_edge','FLOAT','EDGE')
@@ -384,7 +438,7 @@ panel('Glass_CoupeWindshield',glass,project_top,MAT['Glass'])
 tube('Glass_CoupeWindshieldSeal',[top_point(px,z,.003) for px,z in glass],.0022,MAT['Rubber'],cyclic=True)
 roof_hatch = [(354,-.200),(362,-.213),(452,-.213),(459,-.200),
               (459,.200),(452,.213),(362,.213),(354,.200)]
-panel('Roof_ArmoredAccessHatch',roof_hatch,project_top,MAT['Paint_Secondary'])
+panel('Roof_ArmoredAccessHatch',roof_hatch,project_top,MAT['Paint_Primary'])
 tube('Roof_ArmoredHatchSeal',[top_point(px,z,.003) for px,z in roof_hatch],.002,MAT['Rubber'],cyclic=True)
 transition_vent = [(498,-.099),(523,-.099),(523,.099),(498,.099)]
 panel('Armor_TransitionServiceVent',transition_vent,project_top,MAT['Grille'])
@@ -501,11 +555,34 @@ faces += [tuple(i*2 for i in reversed(range(6))),tuple(i*2+1 for i in range(6))]
 skid = mesh_object('Armor_RuggedAngledSkid',verts,faces,MAT['ArmorProtected'])
 recalc(skid)
 bevel(skid,.0025,2)
+def rounded_guard_path(points,radius=.014,segments=5):
+    result=[points[0]]
+    for previous,corner,following in zip(points,points[1:],points[2:]):
+        a=(previous-corner).normalized()
+        b=(following-corner).normalized()
+        angle=math.acos(max(-1,min(1,a.dot(b))))
+        reach=min(radius/math.tan(angle/2),(previous-corner).length*.4,(following-corner).length*.4)
+        actual_radius=reach*math.tan(angle/2)
+        center=corner+(a+b).normalized()*actual_radius/math.sin(angle/2)
+        first=corner+a*reach-center
+        last=corner+b*reach-center
+        axis=first.cross(last).normalized()
+        sweep=first.angle(last)
+        for i in range(segments+1):
+            t=sweep*i/segments
+            result.append(center+first*math.cos(t)+axis.cross(first)*math.sin(t))
+    result.append(points[-1])
+    return result
+
+GUARD_PATHS={}
 for py in (139,165,183):
-    tube(f'BrushGuard_{py}',[point(285,py,-.310),point(270,py,-.270),point(270,py,.270),point(285,py,.310)],.007,MAT['BrushedMetal'])
+    path=rounded_guard_path([point(285,py,-.310),point(270,py,-.270),point(270,py,.270),point(285,py,.310)])
+    GUARD_PATHS[py]=path
+    guard=tube(f'Detail_BrushGuardRail_{py}',path,.007,MAT['BrushedMetal'])
+    guard.data.use_fill_caps=True
 for z in (-.225,.225):
-    cylinder_between(f'BrushGuardUpright_{z}',point(270,130,z),point(270,203,z),.009,MAT['Gunmetal'],12)
-    cylinder_between(f'BrushGuardSeat_{z}',point(288,191,z),point(270,191,z),.011,MAT['Gunmetal'],12)
+    cylinder_between(f'Detail_BrushGuardUpright_{z}',point(270,130,z),point(270,203,z),.009,MAT['Gunmetal'],12)
+    cylinder_between(f'Detail_BrushGuardSeat_{z}',point(288,191,z),point(270,191,z),.011,MAT['Gunmetal'],12)
 box('Roof_TruckProtectedVent',point(426,67),(.19,.014,.065),MAT['Grille'],bevel_width=.003)
 for z in (-.222,-.074,.074,.222):
     box(f'Lights_RoofMarker_{z}',point(356,67,z),(.016,.014,.018),MAT['Lights'],bevel_width=.003)
@@ -526,10 +603,10 @@ for semantic,color in {'Paint_Primary':(.46,.49,.52),'Paint_Secondary':(.18,.23,
     MAT[semantic].node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value = (*color,1)
     if semantic.startswith('Paint_'):
         coating=MAT[semantic].node_tree.nodes['Principled BSDF']
-        coating.inputs['Metallic'].default_value=.28
-        coating.inputs['Roughness'].default_value=.32
-        coating.inputs['Coat Weight'].default_value=.5
-        coating.inputs['Coat Roughness'].default_value=.16
+        coating.inputs['Metallic'].default_value=.58
+        coating.inputs['Roughness'].default_value=.24
+        coating.inputs['Coat Weight'].default_value=.85
+        coating.inputs['Coat Roughness'].default_value=.12
 MAT['Glass'].node_tree.nodes['Principled BSDF'].inputs['Transmission Weight'].default_value = 0
 MAT['Lights'].node_tree.nodes['Principled BSDF'].inputs['Emission Strength'].default_value = .22
 for semantic,filename in {'BrushedMetal':'blackjack_brushed_metal','Rubber':'blackjack_rubber',
