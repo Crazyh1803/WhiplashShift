@@ -1,0 +1,25 @@
+{
+  "vehicle_id": "deadbolt",
+  "source": "tools/vehicle_pipeline/blender/deadbolt_blueprint.blend",
+  "blueprint": "tools/vehicle_pipeline/references/80sFord.jpg",
+  "blueprint_packed": true,
+  "mesh_objects": 95,
+  "source_triangles_before_export_modifiers": 5950,
+  "dimensions_m": {
+    "length": 5.16,
+    "width": 2.06,
+    "height": 1.65
+  },
+  "materials": [
+    "Deadbolt_BrushedMetal",
+    "Deadbolt_Glass",
+    "Deadbolt_Grille",
+    "Deadbolt_Gunmetal",
+    "Deadbolt_Headlight",
+    "Deadbolt_Marker",
+    "Deadbolt_Paint",
+    "Deadbolt_Rubber",
+    "Deadbolt_Secondary",
+    "Deadbolt_Stripe"
+  ]
+}

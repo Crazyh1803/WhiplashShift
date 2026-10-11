@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "mesh_objects": 95,
+  "evaluated_triangles": 18988,
+  "bbox_min": [
+    -2.735,
+    -1.1061,
+    -0.0
+  ],
+  "bbox_max": [
+    2.61,
+    1.1061,
+    1.6033
+  ],
+  "size": [
+    5.345,
+    2.2122,
+    1.6033
+  ],
+  "materials": 10,
+  "uv_complete": true,
+  "blueprint_packed": true,
+  "wheel_dimensions_verified": true,
+  "source_sha256": "d5ea97dc8911971826d9930017c274aee584b79ee55d89b58f4fca4e16eb8c8c",
+  "output_sha256": {
+    "deadbolt_blueprint.glb": "02768795f552dbce4c833ecd9f1ac24f8fd6e72802b9634251f8714ed76cd172",
+    "deadbolt_blueprint_LOD1.glb": "a6ffc21495be6087200a3c7a7923d3e80887fe76dcc7772eed7eaa9ed074b123",
+    "deadbolt_blueprint_LOD2.glb": "ae98db940e835fd79baa36ccf94f6d395cf0793809801ca339439d4ab0c2e6d9",
+    "deadbolt_blueprint_preview.png": "9e01944da654617cc5bcb21c8d32c8bd176ab1ecf87fd90e9300f3573afb9480"
+  }
+}
