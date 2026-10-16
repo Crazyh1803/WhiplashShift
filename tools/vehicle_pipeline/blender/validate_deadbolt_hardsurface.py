@@ -4,7 +4,6 @@ Run: ak-blender tools/vehicle_pipeline/blender/validate_deadbolt_hardsurface.py 
          tools/vehicle_pipeline/blender/deadbolt_hardsurface.blend
 Numbers prove geometry contracts only; visual quality is judged from renders (ak-look).
 """
-import hashlib
 import json
 import sys
 from pathlib import Path
@@ -108,6 +107,12 @@ for style, count, radius, width in (("Truck", 9, 0.43, 0.34), ("Coupe", 13, 0.40
               {"dims": [round(d, 4) for d in dims]})
         check(f"wheel_axis_Y_{key}", dims.y < dims.x and abs(dims.y - width) < 0.01,
               {"width": round(dims.y, 4)})
+        outer = abs(centre.y) + width / 2
+        fender = T.half_width(T.PX(centre.x))
+        wheel_report[key]["tyre_outer_face_m"] = round(outer, 4)
+        wheel_report[key]["fender_half_width_m"] = round(fender, 4)
+        check(f"tyre_under_fender_{key}", outer <= fender + 0.002,
+              {"tyre_outer": round(outer, 4), "fender": round(fender, 4)})
         tire_mesh = C.evaluated_mesh(tire)
         clear = min(shell_tree.find_nearest(v.co)[3] for v in tire_mesh.vertices)
         wheel_report[key]["arch_clearance_mm"] = round(clear * 1000, 1)
@@ -191,19 +196,14 @@ for key, path in glbs.items():
 results["triangles"] = tris
 check("budget_visible_vehicle_20k_40k", 20000 <= tris["gameplay"] <= 40000, tris["gameplay"])
 check("lod_monotonic", tris["gameplay"] > tris["lod1"] > tris["lod2"] > 5000, tris)
-results["object_signatures"] = {
-    n: [len(o.data.vertices), len(o.data.polygons),
-        round(sum(v.co.x + 2 * v.co.y + 3 * v.co.z for v in o.data.vertices), 4)]
-    for n, o in sorted(meshes.items())}
-results["geometry_sha256"] = hashlib.sha256(json.dumps(
-    sorted((n, len(o.data.vertices), len(o.data.polygons), round(sum(v.co.x + 2 * v.co.y + 3 * v.co.z for v in o.data.vertices), 4))
-           for n, o in meshes.items())).encode()).hexdigest()
+results["object_counts"] = {n: [len(o.data.vertices), len(o.data.polygons)] for n, o in sorted(meshes.items())}
+results["visual_half_track_m"] = T.TRACK_Y
 
 status = "FAIL" if failures else "PASS"
 report = {"status": status, "failures": failures, "results": results}
 out = MODEL_DIR / f"{STEM}_qa.json"
 out.write_text(json.dumps(report, indent=2, default=str) + "\n")
 print("AK: " + json.dumps({"status": status, "failures": failures, "triangles": tris,
-                           "geometry_sha256": results["geometry_sha256"][:16]}))
+                           "visual_half_track_m": T.TRACK_Y}))
 if failures:
     sys.exit(1)

@@ -29,7 +29,9 @@ export BLENDER_BIN=/usr/bin/blender PYTHONPATH=$HOME/.cache/ak-pylibs   # numpy 
 ak-blender tools/vehicle_pipeline/blender/build_deadbolt_hardsurface.py            # --no-renders / --no-export
 ak-blender tools/vehicle_pipeline/blender/validate_deadbolt_hardsurface.py \
     tools/vehicle_pipeline/blender/deadbolt_hardsurface.blend
-python3 tools/vehicle_pipeline/blender/check_deadbolt_idempotence.py qa_a.json qa_b.json
+# rebuild equivalence: copy the .blend after build A, rebuild, then compare
+ak-blender tools/vehicle_pipeline/blender/check_deadbolt_idempotence.py /tmp/build_a.blend -- \
+    tools/vehicle_pipeline/blender/deadbolt_hardsurface.blend
 ```
 
 ## Construction
@@ -53,8 +55,9 @@ python3 tools/vehicle_pipeline/blender/check_deadbolt_idempotence.py qa_a.json q
 
 ## Contracts kept
 
-Source axes X long / Y width / Z up; wheel hubs (coupe 1.66, truck -1.72, y +/-0.91, z 0.40 /
-0.43); tyre 0.80 / 0.86 m dia and 0.29 / 0.34 m wide; mesh prefixes `Wheel_Coupe_*` /
+Source axes X long / Y width / Z up; wheel hubs (coupe 1.66, truck -1.72, z 0.40 / 0.43; visual y +/-0.82,
+handoff `visual_half_track_m`; the physical hardpoints at 0.91 are untouched and the runtime
+derives the visible pivot from the authored tyre centre); tyre 0.80 / 0.86 m dia and 0.29 / 0.34 m wide; mesh prefixes `Wheel_Coupe_*` /
 `Wheel_Truck_*` with origins at the hubs; materials `Deadbolt_Paint`, `Deadbolt_Secondary`,
 `Deadbolt_Stripe` plus protected glass/rubber/metal/lamp materials. Verified by swapping the
 catalog scene path in a throw-away copy of the project: `consolidation_tests` 59/59.
@@ -63,10 +66,24 @@ catalog scene path in a throw-away copy of the project: `consolidation_tests` 59
 
 * Numbers prove geometry contracts only; the visual verdict comes from renders (ak-look).
 * The cabin is a solid body under dark glass (no modelled interior).
-* The wheel track is fixed by the physics (outer tyre face 1.08 m) so tyres stand about 7 cm
-  proud of the 1.01 m flared fenders, wider than the drawing shows.
+* Visual half-track 0.82 m puts the outer tyre faces at 0.99 m (truck) / 0.965 m (coupe)
+  under the 1.00 m traced flare (validator `tyre_under_fender_*`; arch clearance 50 / 60 mm).
+  The runtime must offset the rendered assembly (done in the code lane), not the hardpoints.
+* Coupe wheels: one caliper per wheel (42 deg arc) is intentional; brake rotor and rim well are
+  dark so the chrome blades read against them. The A-pillar black seal border can look jagged
+  at close range in the ak-look renders; a faint shading pinch sits above the coupe door handle.
 * The model is 5.33 m long, 2.23 m wide, 1.82 m high (the draft was ~5.16 x 2.06 x 1.65):
   the traced truck cab is 1.8 m tall and the coupe nose overhangs the front wheel by 1.08 m.
   Garage/preview camera framing may need a look.
-* Booleans are not bit-reproducible: rebuilds agree to micrometres and topology; LOD triangle
-  counts can differ by one.
+* Rebuild equivalence is measured, not bit-exact: two builds match in object names, material
+  slots, per-material face counts and vertex/face counts for all 184 meshes; worst vertex
+  Hausdorff 0.55 mm (exact-Boolean retriangulation of the shell; limit 1 mm) and worst
+  vertex-to-surface distance 0.00006 mm (limit 0.01 mm). LOD triangle counts can differ by one.
+
+## Review evidence
+
+* Wheel geometry review (HIGH partial lathe/caliper non-manifold, MED open rotor/cap profiles)
+  fixed: `lathe` wraps only for full turns, profiles are closed. Chunk logs that are empty were
+  denied by command permissions and are not approvals.
+* Full geometry no-tool text review at 36d46bf: APPROVE (`.ai/reviews/deadbolt-geometry-text-review.md`).
+* Final delta review (gemini, diff-in-prompt): APPROVE; `ak-look` wheel/fender fit PASS.

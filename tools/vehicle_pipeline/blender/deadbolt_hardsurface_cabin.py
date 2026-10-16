@@ -70,6 +70,6 @@ def seat_glass(builder, shell_surface, specs):
             def caster(p):
                 return (p.x, p.y, 3.0), (0, 0, -1)
         objs.append(K.glass_panel(builder, spec["name"], pts, shell_surface, caster,
-                                  GLASS_CLEARANCE, thickness=GLASS_CLEARANCE,
+                                  GLASS_CLEARANCE,
                                   axes=(0, 2) if spec["kind"] == "side" else (0, 1)))
     return objs

@@ -13,7 +13,10 @@ WHEEL_PX = {"truck": (346.0, 205.0, 36.5), "coupe": (667.0, 205.0, 36.5)}
 WHEEL_X = {"truck": -1.72, "coupe": 1.66}
 WHEEL_R = {"truck": 0.43, "coupe": 0.40}
 WHEEL_W = {"truck": 0.34, "coupe": 0.29}
-TRACK_Y = 0.91
+# Visible half-track of the artwork. The physical hardpoints are unchanged (runtime offsets the
+# rendered assembly); 0.82 puts the outer tyre faces (0.99 truck / 0.965 coupe) just inside the
+# traced fender line (blueprint top view: body edge at 316-320 px = 0.94-0.98 m).
+TRACK_Y = 0.82
 WHEELBASE = WHEEL_X["coupe"] - WHEEL_X["truck"]
 SCALE = WHEELBASE / (WHEEL_PX["coupe"][0] - WHEEL_PX["truck"][0])  # m per px
 CENTER_PX = WHEEL_PX["truck"][0] - WHEEL_X["truck"] / SCALE
@@ -76,9 +79,9 @@ SILL = [
 ]
 # Body half-width (metres) from the top-down view; flared at the wheel arches.
 HALF = [
-    (285, 0.86), (292, 0.90), (300, 0.94), (318, 0.995), (346, 1.010), (374, 0.995),
-    (392, 0.965), (420, 0.950), (508, 0.950), (540, 0.950), (600, 0.960), (628, 0.980),
-    (667, 1.010), (704, 0.990), (730, 0.950), (750, 0.92), (762, 0.88), (770, 0.80),
+    (285, 0.86), (292, 0.90), (300, 0.94), (318, 0.985), (346, 1.000), (374, 0.985),
+    (392, 0.965), (420, 0.950), (508, 0.950), (540, 0.950), (600, 0.960), (628, 0.970),
+    (667, 1.000), (704, 0.980), (730, 0.950), (750, 0.92), (762, 0.88), (770, 0.80),
 ]
 # Hood / roof top half-width (metres): narrower greenhouse between the hoods.
 TOP_HALF = [

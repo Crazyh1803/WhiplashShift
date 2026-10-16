@@ -73,6 +73,7 @@ def main():
     result["handoff"] = {
         "vehicle_id": "deadbolt", "candidate_scene": f"res://assets/vehicles/models/deadbolt/{STEM}.glb",
         "source_axes": "X long (coupe +X), Y width, Z up; runtime yaw +90 deg unchanged",
+        "visual_half_track_m": T.TRACK_Y,
         "wheel_centres": {"coupe": [T.WHEEL_X["coupe"], T.TRACK_Y, T.WHEEL_R["coupe"]],
                           "truck": [T.WHEEL_X["truck"], T.TRACK_Y, T.WHEEL_R["truck"]]},
         "semantic_materials": ["Deadbolt_Paint", "Deadbolt_Secondary", "Deadbolt_Stripe"],

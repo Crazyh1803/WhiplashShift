@@ -151,8 +151,10 @@ def lathe(bm, profile, segments, axis=1, center=(0, 0, 0), start=0.0, turn=math.
     """Revolve (radius, axial) points around `axis` (0=x,1=y,2=z); returns vertex rings."""
     rings = []
     cx, cy, cz = center
+    full = abs(turn - math.tau) < 1e-6
+    steps = segments if full else segments - 1  # partial sweeps keep both end rings
     for k in range(segments):
-        ang = start + turn * k / segments
+        ang = start + turn * k / steps
         ca, sa = math.cos(ang), math.sin(ang)
         ring = []
         for r, h in profile:
@@ -165,7 +167,7 @@ def lathe(bm, profile, segments, axis=1, center=(0, 0, 0), start=0.0, turn=math.
             ring.append(bm.verts.new(co))
         rings.append(ring)
     m = len(profile)
-    for k in range(segments):
+    for k in range(segments if full else segments - 1):
         r0, r1 = rings[k], rings[(k + 1) % segments]
         for i in range(m - 1):
             if profile[i][0] == 0 and profile[i + 1][0] == 0:
