@@ -1,3 +1,5 @@
+> Historical checkpoint. Superseded by `deadbolt-finish.md`; its wheel-track, triangle-count and repeat-build claims below describe an earlier candidate.
+
 # Deadbolt hard-surface rebuild: progress
 
 Branch asset/deadbolt-graphics. Asset lead: Claude. Blender in this environment is 4.0.2 (/usr/bin/blender); no 5.x installed.

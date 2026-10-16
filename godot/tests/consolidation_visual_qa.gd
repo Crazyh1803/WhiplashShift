@@ -19,6 +19,8 @@ func _ready() -> void:
 	await _capture("deadbolt_roster")
 	garage._open_customization()
 	await _capture("deadbolt_garage")
+	garage._preview_vehicle.rotate_y(PI)
+	await _capture("deadbolt_garage_coupe")
 	garage.queue_free()
 	await get_tree().process_frame
 	GameSession.configure("ROADGHOST", "deadbolt", ["blackjack", "nightshift"])
