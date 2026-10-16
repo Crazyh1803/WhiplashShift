@@ -1,6 +1,4 @@
 """Mirrored, support-looped station cage for the Deadbolt body shell."""
-import bpy
-from mathutils import Vector
 
 import deadbolt_hardsurface_trace as T
 

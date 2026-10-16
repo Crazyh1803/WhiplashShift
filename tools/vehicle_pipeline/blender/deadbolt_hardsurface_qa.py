@@ -83,7 +83,7 @@ def configure(view, width=1280, height=720):
         "front_coupe": ((9.8, 0.0, 0.9), (2.7, 0, 0.6)),
         "three_quarter_truck": ((-7.0, -6.0, 2.1), (-0.1, 0, 0.75)),
         "three_quarter_coupe": ((7.2, -5.8, 2.0), (0.1, 0, 0.7)),
-        "rear_three_quarter": ((5.5, 5.4, 2.2), (-0.2, 0, 0.7)),
+        "far_side_three_quarter": ((6.4, 6.3, 2.5), (0.2, 0, 0.7)),
         "wheel_truck": ((-0.9, -3.3, 0.85), (-1.72, -0.9, 0.43)),
         "wheel_coupe": ((2.55, -3.1, 0.8), (1.66, -0.9, 0.40)),
         "truck_detail": ((-5.0, -2.8, 1.1), (-2.3, 0, 0.8)),

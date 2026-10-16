@@ -39,7 +39,7 @@ def glaze(builder, surface):
                           "outline": inset_xz(outline, GLASS_MARGIN)})
     for name, span in (("TruckWindshield", T.WINDSHIELD_TRUCK),
                        ("CoupeWindshield", T.WINDSHIELD_COUPE)):
-        outline = windshield_outline(span, 0.095)
+        outline = windshield_outline(span, 0.105)
         flat = [Vector((x, y, 0.0)) for x, y in outline]
         K.make_recess_cutter(builder, f"Cutter_Glass_{name}", flat, "top", surface, 1,
                              RECESS_DEPTH)

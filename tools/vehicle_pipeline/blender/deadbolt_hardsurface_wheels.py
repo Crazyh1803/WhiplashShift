@@ -2,10 +2,8 @@
 import math
 
 import bmesh
-import bpy
 from mathutils import Matrix, Vector
 
-import deadbolt_hardsurface_core as C
 import deadbolt_hardsurface_prims as P
 import deadbolt_hardsurface_trace as T
 

@@ -5,12 +5,10 @@ Optional args after `--`: --no-renders, --no-export.  Existing deadbolt_blueprin
 draft files are never touched. Deterministic: rebuilding gives identical geometry.
 """
 import json
-import math
 import sys
 from pathlib import Path
 
 import bpy
-from mathutils import Vector
 
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
@@ -20,7 +18,6 @@ import deadbolt_hardsurface_cabin as CAB  # noqa: E402
 import deadbolt_hardsurface_core as C  # noqa: E402
 import deadbolt_hardsurface_cuts as K  # noqa: E402
 import deadbolt_hardsurface_details as D  # noqa: E402
-import deadbolt_hardsurface_qa as Q  # noqa: E402
 import deadbolt_hardsurface_shell as SH  # noqa: E402
 import deadbolt_hardsurface_trace as T  # noqa: E402
 import deadbolt_hardsurface_wheels as W  # noqa: E402
@@ -73,6 +70,16 @@ def main():
         result.update(X.export_all(cols, MODEL_DIR, STEM))
     if "--no-renders" not in argv:
         X.render_qa(cols, MODEL_DIR, STEM, BLUEPRINT)
+    result["handoff"] = {
+        "vehicle_id": "deadbolt", "candidate_scene": f"res://assets/vehicles/models/deadbolt/{STEM}.glb",
+        "source_axes": "X long (coupe +X), Y width, Z up; runtime yaw +90 deg unchanged",
+        "wheel_centres": {"coupe": [T.WHEEL_X["coupe"], T.TRACK_Y, T.WHEEL_R["coupe"]],
+                          "truck": [T.WHEEL_X["truck"], T.TRACK_Y, T.WHEEL_R["truck"]]},
+        "semantic_materials": ["Deadbolt_Paint", "Deadbolt_Secondary", "Deadbolt_Stripe"],
+        "blueprint_scale_m_per_px": T.SCALE, "wheelbase_m": T.WHEELBASE,
+    }
+    if "--no-export" not in argv:
+        (MODEL_DIR / f"{STEM}_build.json").write_text(json.dumps(result, indent=2) + "\n")
     print("AK: build " + json.dumps(result))
 
 

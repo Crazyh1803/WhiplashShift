@@ -123,4 +123,4 @@ WINDOW_COUPE_SIDE = [(520, 141), (520, 87), (548, 96), (574, 112), (597, 131), (
                      (604, 149)]
 # Windshield footprints: (start px, end px) along the slope.
 WINDSHIELD_TRUCK = (406.0, 438.0)
-WINDSHIELD_COUPE = (546.0, 612.0)
+WINDSHIELD_COUPE = (549.0, 611.0)

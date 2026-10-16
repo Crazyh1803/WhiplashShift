@@ -197,7 +197,6 @@ def build_truck_end(sd, surf):
         lens = P.prism(b, f"Truck_Headlamp_{tag}", P.rounded_rect(yb - ya - 0.03, 0.21, 0.014, 2),
                        "lamp", 0.016, 0.004, matrix=_matrix(p + n * 0.006, n))
         objs.append(lens)
-        sx = 0.625 + (0.885 - 0.625) / 2
         pz, nz = sd.front_pt((ya + yb) / 2, 0.7275, TRUCK_NOSE)
         objs.append(P.prism(b, f"Truck_Signal_{tag}", P.rounded_rect(yb - ya - 0.03, 0.065, 0.01, 2),
                             "amber", 0.014, 0.003, matrix=_matrix(pz + nz * 0.004, nz)))
@@ -294,8 +293,6 @@ def build_coupe_end(sd, surf):
             hit, n = sd.s.top(x, sign * 0.30)
             objs.append(sd.box(f"Coupe_HoodSlat_{sign:+d}_{k}", "grille", (0.012, 0.22, 0.014),
                                hit - Vector((0, 0, 0.012)), (0, 0, 1), 0.002, up=(0, 1, 0)))
-    for tag, ys in (("A", -1), ("B", 1)):
-        pass
     return objs
 
 

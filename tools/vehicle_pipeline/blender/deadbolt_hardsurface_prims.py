@@ -2,8 +2,7 @@
 import math
 
 import bmesh
-import bpy
-from mathutils import Euler, Matrix, Vector
+from mathutils import Matrix, Vector
 
 import deadbolt_hardsurface_core as C
 

@@ -1,11 +1,6 @@
 """Scene finalisation, GLB/LOD export and QA renders for the Deadbolt candidate."""
-import json
-import math
-from pathlib import Path
 
-import bmesh
 import bpy
-from mathutils import Vector
 
 import deadbolt_hardsurface_core as C
 import deadbolt_hardsurface_qa as Q
@@ -165,7 +160,7 @@ def render_qa(cols, model_dir, stem, blueprint):
     out_dir.mkdir(parents=True, exist_ok=True)
     studio = Q.build_studio(cols)
     for view in ("side", "top", "front_truck", "front_coupe", "three_quarter_truck",
-                 "three_quarter_coupe", "rear_three_quarter", "cabin", "truck_detail",
+                 "three_quarter_coupe", "far_side_three_quarter", "cabin", "truck_detail",
                  "coupe_detail", "wheel_truck", "wheel_coupe"):
         Q.configure(view, 1280, 720)
         Q.render(out_dir / f"{stem}_{view}.png")
