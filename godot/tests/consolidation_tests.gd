@@ -129,11 +129,40 @@ func _test_deadbolt_physics() -> void:
 func _test_garage_and_race() -> void:
 	var garage: Variant = load("res://scenes/garage.tscn").instantiate()
 	add_child(garage)
+	for frame in 2:
+		await get_tree().process_frame
+	var controls_fit := true
+	var visible := get_viewport().get_visible_rect()
+	for button: Button in garage._roster_buttons:
+		controls_fit = controls_fit and visible.encloses(button.get_global_rect())
+	controls_fit = controls_fit and visible.encloses(garage._next_button.get_global_rect())
+	controls_fit = controls_fit and visible.encloses(garage._prev_button.get_global_rect())
+	controls_fit = controls_fit and visible.encloses(garage._start_button.get_global_rect())
+	controls_fit = controls_fit and visible.encloses(garage._dossier_panel.get_global_rect())
+	_check("All named vehicle and ignition buttons fit the garage", controls_fit)
+	if not controls_fit:
+		print("LAYOUT_DEBUG viewport=", visible, " image=", garage._image_panel.get_global_rect(),
+			" image_min=", garage._image_panel.custom_minimum_size,
+			" dossier=", garage._dossier_panel.get_global_rect(),
+			" last=", garage._roster_buttons[-1].get_global_rect(),
+			" next=", garage._next_button.get_global_rect(), " ignite=", garage._start_button.get_global_rect())
+	_check("Garage exposes seven named vehicle buttons", garage._roster_buttons.size() == 7
+		and garage._roster_buttons[5].text == "DEADBOLT")
+	garage._roster_buttons[5].pressed.emit()
+	_check("Deadbolt button selects the chassis directly", garage._index == 5
+		and garage._name_label.text == "DEADBOLT RS" and garage._roster_buttons[5].button_pressed)
+	garage._open_customization()
+	_check("Customize opens the selected Deadbolt model", garage._preview_vehicle.vehicle_id == "deadbolt")
+	garage._customization_popup.hide()
 	for id: String in ["blackjack", "deadbolt", "nightshift", "deadbolt"]:
 		garage._refresh_customization_preview(id, VehicleCatalog.default_customization(id))
 		_check("Garage preview switches to %s" % id, garage._preview_vehicle.vehicle_id == id)
 	garage.free()
 	GameSession.configure("CONSOLIDATION", "deadbolt", ["blackjack", "nightshift"])
+	garage = load("res://scenes/garage.tscn").instantiate()
+	add_child(garage)
+	_check("Returning from a Deadbolt race keeps Deadbolt selected", garage._index == 5)
+	garage.free()
 	var race: Variant = load("res://scenes/proving_ground.tscn").instantiate()
 	add_child(race)
 	await get_tree().physics_frame

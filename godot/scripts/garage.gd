@@ -49,7 +49,12 @@ func _ready() -> void:
 	_build_interface()
 	_build_customization_popup()
 	_load_profile()
-	_select(0)
+	var selected_index := 0
+	for i: int in VehicleCatalog.VEHICLES.size():
+		if VehicleCatalog.VEHICLES[i]["id"] == GameSession.selected_vehicle_id:
+			selected_index = i
+			break
+	_select(selected_index)
 	queue_redraw()
 
 
@@ -89,7 +94,7 @@ func _build_interface() -> void:
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 26)
 	page.add_child(header)
-	var title := _label("WHIPLASH SHIFT", 76, INK)
+	var title := _label("WHIPLASH SHIFT", 64, INK)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title.add_theme_constant_override("outline_size", 10)
 	title.add_theme_color_override("font_outline_color", Color("00000099"))
@@ -134,43 +139,41 @@ func _build_stage(parent: HBoxContainer) -> void:
 	_image.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	frame_margin.add_child(_image)
 
-	var overlay := VBoxContainer.new()
-	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	overlay.add_theme_constant_override("separation", 0)
-	_image_panel.add_child(overlay)
 	var top_line := HBoxContainer.new()
 	top_line.add_theme_constant_override("separation", 8)
-	overlay.add_child(top_line)
+	stage.add_child(top_line)
+	stage.move_child(top_line, 0)
 	var cleared := _label("  CHASSIS // CLEARED", 12, _accent)
 	cleared.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_line.add_child(cleared)
 	_model_number = _label("01 / 07  ", 13, INK)
 	top_line.add_child(_model_number)
-	var spacer := Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	overlay.add_child(spacer)
-	var dossier := _label("  BIDIRECTIONAL VEHICLE PROGRAM // TECHNICAL DOSSIER", 11, Color("8da3aeaa"))
-	overlay.add_child(dossier)
-
+	stage.add_child(_label("SELECT VEHICLE // 7 CHASSIS", 13, MUTED))
+	var roster := GridContainer.new()
+	roster.columns = 4
+	roster.add_theme_constant_override("h_separation", 8)
+	roster.add_theme_constant_override("v_separation", 8)
+	stage.add_child(roster)
+	for i: int in VehicleCatalog.VEHICLES.size():
+		var vehicle: Dictionary = VehicleCatalog.VEHICLES[i]
+		var choice := _button(String(vehicle["id"]).to_upper(), 13)
+		choice.name = "Select_%s" % vehicle["id"]
+		choice.toggle_mode = true
+		choice.custom_minimum_size = Vector2(145, 40)
+		choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		choice.tooltip_text = "Select " + String(vehicle["name"])
+		choice.pressed.connect(_select.bind(i))
+		roster.add_child(choice)
+		_roster_buttons.append(choice)
 	var nav := HBoxContainer.new()
 	nav.alignment = BoxContainer.ALIGNMENT_CENTER
 	nav.add_theme_constant_override("separation", 14)
 	stage.add_child(nav)
-	_prev_button = _button("<", 17)
+	_prev_button = _button("←  PREVIOUS VEHICLE", 13)
 	_prev_button.tooltip_text = "Previous chassis"
 	_prev_button.pressed.connect(func() -> void: _select(_index - 1))
 	nav.add_child(_prev_button)
-	for i: int in VehicleCatalog.VEHICLES.size():
-		var dot := Button.new()
-		dot.text = "—"
-		dot.flat = true
-		dot.focus_mode = Control.FOCUS_ALL
-		dot.tooltip_text = String(VehicleCatalog.VEHICLES[i]["name"])
-		dot.pressed.connect(_select.bind(i))
-		nav.add_child(dot)
-		_roster_buttons.append(dot)
-	_next_button = _button(">", 17)
+	_next_button = _button("NEXT VEHICLE  →", 13)
 	_next_button.tooltip_text = "Next chassis"
 	_next_button.pressed.connect(func() -> void: _select(_index + 1))
 	nav.add_child(_next_button)
@@ -189,10 +192,10 @@ func _build_dossier(parent: HBoxContainer) -> void:
 	margin.add_theme_constant_override("margin_bottom", 22)
 	_dossier_panel.add_child(margin)
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 10)
+	box.add_theme_constant_override("separation", 6)
 	margin.add_child(box)
 	box.add_child(_label("SELECT CHASSIS", 13, _accent))
-	_name_label = _label("", 46, INK)
+	_name_label = _label("", 38, INK)
 	_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_name_label)
 	_class_label = _label("", 12, MUTED)
@@ -208,7 +211,7 @@ func _build_dossier(parent: HBoxContainer) -> void:
 	box.add_child(divider)
 	for stat_key: String in ["speed", "accel", "handling", "armor"]:
 		_build_stat(box, stat_key)
-	var customize := _button("CUSTOMIZE  //  PAINT & PARTS", 14)
+	var customize := _button("VIEW 3D  //  PAINT & PARTS", 14)
 	customize.pressed.connect(_open_customization)
 	box.add_child(customize)
 
@@ -552,7 +555,9 @@ func _select(next_index: int) -> void:
 		(_stat_fills[stat_key] as ProgressBar).add_theme_stylebox_override("fill", _panel_style(_accent, Color.TRANSPARENT, 0))
 		(_stat_values[stat_key] as Label).text = str(value)
 	for i: int in _roster_buttons.size():
-		_roster_buttons[i].text = "━━━━" if i == _index else "—"
+		_roster_buttons[i].set_pressed_no_signal(i == _index)
+		_roster_buttons[i].add_theme_stylebox_override("normal", _panel_style(Color("101a20"), _accent if i == _index else Color("42535c"), 2))
+		_roster_buttons[i].add_theme_stylebox_override("pressed", _panel_style(_accent.darkened(0.72), _accent, 2))
 		_roster_buttons[i].add_theme_color_override("font_color", _accent if i == _index else MUTED)
 	_image_panel.add_theme_stylebox_override("panel", _panel_style(Color("08213ae6"), _accent, 2))
 	_dossier_panel.add_theme_stylebox_override("panel", _panel_style(PANEL, Color("52646d44"), 1))

@@ -24,7 +24,9 @@ godot --path godot
 
 The main scene is `scenes/garage.tscn`. Arrow keys or the on-screen controls cycle
 through all seven technical blueprints; `Enter` or **IGNITE** starts the race. The
-callsign is saved to `user://profile.cfg`. Selection passes through the `GameSession`
+callsign is saved to `user://profile.cfg`. All seven chassis have named buttons,
+including **DEADBOLT**. **VIEW 3D // PAINT & PARTS** opens the selected model preview.
+Returning from a race keeps that chassis selected. Selection passes through the `GameSession`
 autoload, which also assigns two unique CPU vehicles from the remaining roster.
 
 Each chassis has bounded multipliers for top speed, drive, grip, mass, and braking.

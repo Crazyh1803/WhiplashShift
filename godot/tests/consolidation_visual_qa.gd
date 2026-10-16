@@ -9,10 +9,14 @@ func _ready() -> void:
 	var garage: Variant = load("res://scenes/garage.tscn").instantiate()
 	add_child(garage)
 	await _capture("garage_roster")
+	print("QA_LAYOUT viewport=", get_viewport().get_visible_rect(), " garage=", garage.size,
+		" last_vehicle=", garage._roster_buttons[-1].get_global_rect(),
+		" next=", garage._next_button.get_global_rect(), " ignite=", garage._start_button.get_global_rect())
 	garage._open_customization()
 	await _capture("blackjack_garage")
 	garage._customization_popup.hide()
 	garage._select(5)
+	await _capture("deadbolt_roster")
 	garage._open_customization()
 	await _capture("deadbolt_garage")
 	garage.queue_free()
