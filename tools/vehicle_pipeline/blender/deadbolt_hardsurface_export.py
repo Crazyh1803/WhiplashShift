@@ -68,7 +68,11 @@ def _join(objs, name, col):
     for o in objs:
         o.select_set(True)
     bpy.context.view_layer.objects.active = objs[0]
+    spare = [o.data for o in objs[1:]]
     bpy.ops.object.join()
+    for mesh in spare:
+        if mesh.users == 0:
+            bpy.data.meshes.remove(mesh)
     joined = bpy.context.view_layer.objects.active
     joined.name = name
     joined.data.name = name + "_mesh"

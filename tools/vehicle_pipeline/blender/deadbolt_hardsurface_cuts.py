@@ -194,7 +194,7 @@ def arch_cutters(builder):
             for v in geom["verts"]:
                 # cone axis is Z: rotate onto Y, then move to the wheel centre
                 x, y, z = v.co
-                v.co = Vector((x + T.WHEEL_X[end], side * (0.62 + 0.4) + z * 1.0,
+                v.co = Vector((x + T.WHEEL_X[end], side * (0.60 + 0.4) + z * 1.0,
                                y + T.WHEEL_R[end]))
             # the axis swap mirrors the cone; make the shell outward-facing explicitly
             faces = list({f for v in geom["verts"] for f in v.link_faces})
@@ -254,8 +254,8 @@ def add_boolean(shell, collection):
     return mod
 
 
-def glass_panel(builder, name, outline_pts, surface, cast_dir_fn, clearance, thickness=0.004,
-                step=0.11, mat="glass", axes=(0, 2)):
+def glass_panel(builder, name, outline_pts, surface, cast_dir_fn, clearance, step=0.11,
+                mat="glass", axes=(0, 2)):
     """Planar fill of a (near planar) 3D outline, projected onto `surface`.
 
     `cast_dir_fn(point)` returns (origin, direction) for the ray that finds the recess

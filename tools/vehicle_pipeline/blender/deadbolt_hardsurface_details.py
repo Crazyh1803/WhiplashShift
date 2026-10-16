@@ -230,7 +230,8 @@ def build_truck_end(sd, surf):
                             [(gx, y, 0.60), (xb + 0.01, y, 0.60)], "chrome", radius=0.018, sides=8))
     # hood latch / ornament
     p, n = sd.top_pt(T.X(291.0) + 0.03, 0.0)
-    objs.append(sd.box("Truck_HoodOrnament", "chrome", (0.16, 0.02, 0.012), p, n, 0.004))
+    objs.append(sd.box("Truck_HoodOrnament", "chrome", (0.16, 0.02, 0.012), p, n, 0.004,
+                       up=(0, 1, 0)))
     return objs
 
 

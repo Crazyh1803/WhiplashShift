@@ -26,7 +26,7 @@ def reset_scene():
 
 
 def make_material(name, color, metallic=0.0, roughness=0.5, coat=0.0, coat_rough=0.05,
-                  emission=None, emission_strength=0.0, alpha=1.0):
+                  emission=None, emission_strength=0.0):
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     bsdf = mat.node_tree.nodes["Principled BSDF"]
@@ -171,16 +171,6 @@ def smart_uv(obj, angle=66, margin=0.012):
     bpy.ops.uv.smart_project(angle_limit=math.radians(angle), island_margin=margin)
     bpy.ops.object.mode_set(mode="OBJECT")
     obj.select_set(False)
-
-
-def box_geom(center, size, bevel=0.0):
-    """Return (verts, faces) of an axis aligned box."""
-    cx, cy, cz = center
-    sx, sy, sz = (s * 0.5 for s in size)
-    verts = [(cx + dx * sx, cy + dy * sy, cz + dz * sz)
-             for dx in (-1, 1) for dy in (-1, 1) for dz in (-1, 1)]
-    faces = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
-    return verts, faces
 
 
 def harden(obj, angle_deg=32.0, keep_flat=False):

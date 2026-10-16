@@ -1,36 +1,37 @@
 {
-  "shell_volume_m3": 8.9851,
+  "shell_volume_m3": 8.9388,
   "blend": "tools/vehicle_pipeline/blender/deadbolt_hardsurface.blend",
   "exports": {
     "lod0": {
-      "triangles": 32335,
+      "triangles": 32587,
       "objects": 60,
-      "bytes": 1433760
+      "bytes": 1449860
     },
     "lod1": {
-      "triangles": 23316,
+      "triangles": 23598,
       "objects": 60,
-      "bytes": 1124916
+      "bytes": 1141732
     },
     "lod2": {
-      "triangles": 16294,
+      "triangles": 16596,
       "objects": 60,
-      "bytes": 828604
+      "bytes": 845624
     }
   },
   "handoff": {
     "vehicle_id": "deadbolt",
     "candidate_scene": "res://assets/vehicles/models/deadbolt/deadbolt_hardsurface.glb",
     "source_axes": "X long (coupe +X), Y width, Z up; runtime yaw +90 deg unchanged",
+    "visual_half_track_m": 0.82,
     "wheel_centres": {
       "coupe": [
         1.66,
-        0.91,
+        0.82,
         0.4
       ],
       "truck": [
         -1.72,
-        0.91,
+        0.82,
         0.43
       ]
     },

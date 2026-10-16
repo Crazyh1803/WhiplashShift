@@ -8,9 +8,9 @@ import deadbolt_hardsurface_prims as P
 import deadbolt_hardsurface_trace as T
 
 STYLE = {
-    "truck": {"R": 0.43, "W": 0.34, "rim": 0.215, "flange": 0.240, "segments": 60,
+    "truck": {"R": 0.43, "W": 0.34, "flange": 0.240, "segments": 60,
               "spokes": 6, "tread_depth": 0.024, "lug_every": 3},
-    "coupe": {"R": 0.40, "W": 0.29, "rim": 0.205, "flange": 0.232, "segments": 64,
+    "coupe": {"R": 0.40, "W": 0.29, "flange": 0.232, "segments": 64,
               "spokes": 10, "tread_depth": 0.007, "lug_every": 1},
 }
 
@@ -111,16 +111,13 @@ def build_rim(builder, style, side, location):
         bm.faces.new((a_[m - 1], a_[0], b_[0], b_[m - 1]))
     bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=1e-5)
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
-    mat = "chrome" if style == "coupe" else "dark"
+    for f in bm.faces:  # inner barrel well is dark so the gaps between spokes read as depth
+        c = f.calc_center_median()
+        if math.hypot(c.x, c.z) < br - 0.004:
+            f.material_index = 1
+    mat = ["chrome" if style == "coupe" else "dark", "dark"]
     return P.finish(builder, f"Wheel_{style.title()}_Rim_{side:+d}", bm, mat, location=location,
                     smooth_angle=40)
-
-
-def _sector(r0, r1, a0, a1, steps, sweep=0.0):
-    """Arc-bounded polygon in the (radius, angle) plane; `sweep` curls it with radius."""
-    outer = [(r1, a0 + (a1 - a0) * k / steps + sweep) for k in range(steps + 1)]
-    inner = [(r0, a1 - (a1 - a0) * k / steps) for k in range(steps + 1)]
-    return outer + inner
 
 
 def build_spoke(builder, style, side, index, location):
@@ -151,11 +148,11 @@ def build_spoke(builder, style, side, index, location):
             bm.faces.new((bot[i], bot[j], top[j], top[i]))
         bm.faces.new(list(reversed(bot)) if side > 0 else bot)
         bm.faces.new(top if side > 0 else list(reversed(top)))
-        mat = "dark"
+        mat = "chrome"  # brushed steel web against the gunmetal rim and rotor
     else:
         # curved turbine blade: narrow at the hub, widening at the rim, raked in angle
         r0, r1 = 0.092, barrel_radius(st) + 0.002
-        w0, w1 = 0.12 * pitch, 0.30 * pitch
+        w0, w1 = 0.12 * pitch, 0.27 * pitch
         steps = 5
         poly = []
         for k in range(steps + 1):
@@ -215,7 +212,8 @@ def build_hub(builder, style, side, location):
                                   (plate_r, side * (web - 0.012)), (0.0, side * (web - 0.012))], 28))
     # centre cap dome (chrome)
     piece(0, lambda: P.lathe(bm, [(0.0, side * (web + 0.034)), (cap_r * 0.6, side * (web + 0.031)),
-                                  (cap_r, side * (web + 0.014)), (cap_r, side * (web + 0.012))], 20))
+                                  (cap_r, side * (web + 0.014)), (cap_r, side * (web + 0.012)),
+                                  (0.0, side * (web + 0.012))], 20))
 
     def lugs():
         count = 5 if coupe else 6
@@ -232,15 +230,17 @@ def build_hub(builder, style, side, location):
     # brake rotor behind the web and a caliper clamping its rim
     rotor_r = barrel_radius(st) - 0.030
     h_rotor = web - 0.070
-    piece(0, lambda: P.lathe(bm, [(0.050, side * (h_rotor - 0.010)), (rotor_r, side * (h_rotor - 0.010)),
-                                  (rotor_r, side * (h_rotor + 0.010)), (0.050, side * (h_rotor + 0.010))], 28))
+    # dark rotor so the chrome blades read against it instead of a solid grey disc
+    piece(1, lambda: P.lathe(bm, [(0.050, side * (h_rotor - 0.010)), (rotor_r, side * (h_rotor - 0.010)),
+                                  (rotor_r, side * (h_rotor + 0.010)), (0.050, side * (h_rotor + 0.010)),
+                                  (0.050, side * (h_rotor - 0.010))], 28))
 
     def caliper():
         arc = [(rotor_r - 0.048, side * (h_rotor - 0.036)), (rotor_r + 0.008, side * (h_rotor - 0.036)),
                (rotor_r + 0.008, side * (h_rotor + 0.036)), (rotor_r - 0.048, side * (h_rotor + 0.036))]
-        rings = P.lathe(bm, arc, 7, start=math.radians(35), turn=math.radians(42))
-        bm.faces.new(rings[0])
-        bm.faces.new(list(reversed(rings[-1])))
+        rings = P.lathe(bm, arc + arc[:1], 7, start=math.radians(35), turn=math.radians(42))
+        bm.faces.new(rings[0][:-1])
+        bm.faces.new(list(reversed(rings[-1][:-1])))
     piece(2, caliper)
     bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=1e-5)
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
