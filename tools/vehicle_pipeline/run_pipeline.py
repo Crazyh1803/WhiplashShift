@@ -30,6 +30,17 @@ def load_json(path: Path) -> Any:
         return json.load(handle)
 
 
+def load_config(path: Path) -> dict[str, Any]:
+    config = load_json(path)
+    project_root = (path.resolve().parent / Path(config["project_root"]).expanduser()).resolve()
+    config["project_root"] = str(project_root)
+    for key, value in config["workflows"].items():
+        config["workflows"][key] = str(project_root / Path(value).expanduser())
+    for vehicle in config["vehicles"]:
+        vehicle["blueprint"] = str(project_root / Path(vehicle["blueprint"]).expanduser())
+    return config
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -201,7 +212,7 @@ def prompt_for(config: dict[str, Any], vehicle: dict[str, str], part: str) -> tu
 
 
 def execute(config_path: Path, selected_ids: set[str]) -> None:
-    config = load_json(config_path)
+    config = load_config(config_path)
     project_root = Path(config["project_root"]).expanduser().resolve()
     work_root = Path(config["work_root"]).expanduser().resolve()
     render_workflow_path = Path(config["workflows"]["render_api"]).expanduser().resolve()
@@ -297,7 +308,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         if args.preflight:
-            config = load_json(args.config)
+            config = load_config(args.config)
             assert_api_workflow(Path(config["workflows"]["render_api"]), TOKENS)
             assert_api_workflow(
                 Path(config["workflows"]["mesh_api"]),

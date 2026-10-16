@@ -4,6 +4,11 @@ This runner sends each blueprint through two ComfyUI API-format workflows: a
 controlled neutral render, then Hunyuan3D/TRELLIS image-to-3D. It generates the body,
 End A wheel, and End B wheel independently so wheel geometry is physically separate.
 
+Project/workflow/blueprint paths now resolve relative to this configuration's project
+root, using the seven reference images saved in `godot/assets/vehicles/`. Running
+the consolidated copy installs into this project, not the original worktree. Local
+ComfyUI model paths and its output directory still refer to the installed toolchain.
+
 ## Required workflow preparation
 
 1. Start ComfyUI with `/home/crazyh/ComfyUI/run_comfyui.sh --listen 127.0.0.1 --port 8188`.

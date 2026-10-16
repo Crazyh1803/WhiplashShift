@@ -154,6 +154,8 @@ func _garage_paths() -> void:
 			preview.add_livery_decal(ImageTexture.create_from_image(image),Transform3D.IDENTITY,Vector3.ONE)
 			preview.apply_customization(spec["customization"])
 			_check("paint refresh retains decal",preview.get_node("VisualRoot").find_children("ProtectedLiveryDecal*","Decal",false,false).size()==1)
+		elif id == "deadbolt":
+			_check("Deadbolt uses its own saved-art adapter", preview.get_script() == preload("res://scripts/deadbolt_blueprint_vehicle.gd"))
 		else:
 			_check("other vehicles have no blueprint overrides",preview.get_script()==Vehicle)
 		preview.free()

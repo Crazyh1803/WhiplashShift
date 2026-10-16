@@ -272,8 +272,15 @@ func _build_stat(parent: VBoxContainer, stat_key: String) -> void:
 
 
 func _build_customization_popup() -> void:
+	var shade := ColorRect.new()
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.color = Color(0.0, 0.0, 0.0, 0.85)
+	shade.hide()
+	add_child(shade)
 	_customization_popup = PopupPanel.new()
 	_customization_popup.title = "VEHICLE CUSTOMIZATION"
+	_customization_popup.add_theme_stylebox_override("panel", _panel_style(Color("0b1115"), Color("42535c"), 2))
+	_customization_popup.visibility_changed.connect(func() -> void: shade.visible = _customization_popup.visible)
 	add_child(_customization_popup)
 	var margin := MarginContainer.new()
 	margin.custom_minimum_size = Vector2(880, 800)

@@ -42,8 +42,11 @@ func _process(delta: float) -> void:
 		_yaw += d if absf(d) < rate else signf(d) * rate
 	rotation.y = _yaw
 
-	var lead: Vector3 = f * minf(14.0, target.speed * 0.4)
-	global_position = global_position.lerp(
-		target.global_position + lead, 1.0 - exp(-7.0 * delta))
 	var want_z: float = 8.0 + target.speed * 0.14
 	cam.position.z = lerpf(cam.position.z, want_z, 1.0 - exp(-3.0 * delta))
+	# Keep clearance behind the car as lookahead grows; always frame the chassis
+	# while the orbit swings around to the newly active end.
+	var lead: Vector3 = f * minf(target.speed * 0.4, maxf(0.0, cam.position.z - 7.0))
+	global_position = global_position.lerp(
+		target.global_position + lead, 1.0 - exp(-7.0 * delta))
+	cam.look_at(target.global_position + Vector3.UP * 0.75)

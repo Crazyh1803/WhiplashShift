@@ -7,3 +7,9 @@ node_modules/
 .ai/looks/
 .ai/captures/
 .ai/last-test.log
+.ai/consolidation-import.log
+.ai/visual-qa.log
+.ai/godot-editor.log
+.ai/godot-game.log
+.ai/reviews/*.log
+__pycache__/

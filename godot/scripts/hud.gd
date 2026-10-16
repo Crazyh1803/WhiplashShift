@@ -29,10 +29,11 @@ func _ready() -> void:
 	_hint.modulate = Color(1, 1, 1, 0.45)
 	_cpu = _label(15, Vector2.ZERO)
 	_cpu.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_cpu.offset_left = -300.0
+	_cpu.offset_left = -640.0
 	_cpu.offset_top = 18.0
 	_cpu.offset_right = -18.0
 	_cpu.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_cpu.clip_text = true
 	var menu_button := Button.new()
 	menu_button.name = "MainMenuButton"
 	menu_button.text = "←  MAIN MENU"

@@ -1,0 +1,61 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BLUEPRINT_OPTIONAL_ENGINE full triangles=39881 base=0.11212596297264
+BLACKJACK_BLUEPRINT_TESTS 3555 passed, 0 failed; body 17081; full 37537
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] blackjack reference survives consolidation
+  [pass] blackjack constructs four physical wheels
+  [pass] boilerfang reference survives consolidation
+  [pass] boilerfang constructs four physical wheels
+  [pass] helix reference survives consolidation
+  [pass] helix constructs four physical wheels
+  [pass] ramjet reference survives consolidation
+  [pass] ramjet constructs four physical wheels
+  [pass] knifeedge reference survives consolidation
+  [pass] knifeedge constructs four physical wheels
+  [pass] deadbolt reference survives consolidation
+  [pass] deadbolt constructs four physical wheels
+  [pass] Deadbolt loads the saved production mesh
+  [pass] Deadbolt coupe faces End A
+  [pass] Deadbolt embedded wheel copies are hidden
+  [pass] Wheel_A_L has exactly one complete authored wheel
+  [pass] Wheel_A_L art follows suspension and steering
+  [pass] Wheel_A_R has exactly one complete authored wheel
+  [pass] Wheel_A_R art follows suspension and steering
+  [pass] Wheel_B_L has exactly one complete authored wheel
+  [pass] Wheel_B_L art follows suspension and steering
+  [pass] Wheel_B_R has exactly one complete authored wheel
+  [pass] Wheel_B_R art follows suspension and steering
+  [pass] A axle follows the authored wheel hubs
+  [pass] B axle follows the authored wheel hubs
+  [pass] Deadbolt loads the saved production mesh
+  [pass] Deadbolt coupe faces End A
+  [pass] Deadbolt embedded wheel copies are hidden
+  [pass] Wheel_A_L has exactly one complete authored wheel
+  [pass] Wheel_A_L art follows suspension and steering
+  [pass] Wheel_A_R has exactly one complete authored wheel
+  [pass] Wheel_A_R art follows suspension and steering
+  [pass] Wheel_B_L has exactly one complete authored wheel
+  [pass] Wheel_B_L art follows suspension and steering
+  [pass] Wheel_B_R has exactly one complete authored wheel
+  [pass] Wheel_B_R art follows suspension and steering
+  [pass] A axle follows the authored wheel hubs
+  [pass] B axle follows the authored wheel hubs
+  [pass] Deadbolt_Paint paint changes
+  [pass] Deadbolt_Secondary paint changes
+  [pass] Deadbolt_Stripe paint changes
+  [pass] Deadbolt glass and hardware retain authored materials
+  [pass] nightshift reference survives consolidation
+  [pass] nightshift constructs four physical wheels
+  [pass] Deadbolt swap preserves momentum and orientation
+  [pass] Deadbolt swap preserves momentum and orientation
+  [pass] Deadbolt artwork preserves driving/braking/swap physics
+  [pass] Deadbolt accelerates with the saved handling
+  [pass] Garage preview switches to blackjack
+  [pass] Garage preview switches to deadbolt
+  [pass] Garage preview switches to nightshift
+  [pass] Garage preview switches to deadbolt
+  [pass] Race builds Deadbolt player and two CPU drivers
+  [pass] Race player uses Deadbolt production art
+CONSOLIDATION: 54 passed, 0 failed

@@ -1,13 +1,19 @@
-# Whiplash Shift — driving foundation and CPU drivers (Godot 4.6)
+# Whiplash Shift — driving foundation and CPU drivers (Godot 4.7.2)
 
 The original physics spike now opens through a native garage with seven selectable
 chassis, persistent callsign entry, and a randomized CPU roster. Reusable course,
 progress tracking, and vehicle-specific handling feed the proving-ground race.
 Race countdowns, results, and the four-course arcade mode are the next phase.
 
+The consolidated project also loads the saved Deadbolt truck/coupe model through
+the same garage, player and CPU factory as Blackjack. Deadbolt retains its authored
+glass, metal, tires and lights; the three paint channels remain customizable.
+Its authored wheel meshes follow the original four physics wheels. The other five
+chassis keep their greybox fallback until production models exist.
+
 ## Running it
 
-Godot **4.6** or newer (Jolt is the default 3D physics engine from 4.6). Open `godot/`
+Verified with Godot **4.7.2** (the original port used 4.6 and Jolt). Open `godot/`
 as a project and press play, or:
 
 ```
@@ -40,7 +46,7 @@ side-by-side comparison isn't confounded by different bindings.
 | `C` | camera: 180° swing vs. instant snap |
 | `F1` | debug overlay — per-wheel load, slip, spin, and the force budget |
 | `F2` | pause/resume both CPU cars |
-| `Esc` | quit |
+| `Esc` | return to garage |
 
 ## What's here
 

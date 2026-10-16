@@ -1,13 +1,13 @@
 {
   "server": "http://127.0.0.1:8188",
-  "project_root": "/home/crazyh/Documents/ChatGPT/Whiplash Shift",
+  "project_root": "../..",
   "work_root": "/home/crazyh/ComfyUI/output/whiplash_vehicle_pipeline",
   "timeout_seconds": 5400,
   "poll_seconds": 2,
   "denoise": {"body": 0.95, "wheel_a": 0.88, "wheel_b": 0.88},
   "workflows": {
-    "render_api": "/home/crazyh/Documents/ChatGPT/Whiplash Shift/tools/vehicle_pipeline/workflows/vehicle_render_api.json",
-    "mesh_api": "/home/crazyh/Documents/ChatGPT/Whiplash Shift/tools/vehicle_pipeline/workflows/hunyuan3d_api.json"
+    "render_api": "tools/vehicle_pipeline/workflows/vehicle_render_api.json",
+    "mesh_api": "tools/vehicle_pipeline/workflows/hunyuan3d_api.json"
   },
   "required_files": [
     "/home/crazyh/ComfyUI/models/diffusion_models/z_image_turbo_bf16.safetensors",
@@ -23,12 +23,12 @@
     "negative_wheel": "vehicle body, chassis, suspension, axle, logo, text, baked lighting, reflections, shadow, scenery, cropped wheel, multiple wheels"
   },
   "vehicles": [
-    {"id": "blackjack", "blueprint": "/home/crazyh/Downloads/WhiplashShiftModels/SpyHunter.jpg"},
-    {"id": "boilerfang", "blueprint": "/home/crazyh/Downloads/WhiplashShiftModels/SteamPunk.jpg"},
-    {"id": "helix", "blueprint": "/home/crazyh/Downloads/WhiplashShiftModels/R-Type.jpg"},
-    {"id": "ramjet", "blueprint": "/home/crazyh/Downloads/WhiplashShiftModels/dodge.jpg"},
-    {"id": "knifeedge", "blueprint": "/home/crazyh/Downloads/WhiplashShiftModels/Hot Wheels.jpg"},
-    {"id": "deadbolt", "blueprint": "/home/crazyh/Downloads/WhiplashShiftModels/80sFord.jpg"},
-    {"id": "nightshift", "blueprint": "/home/crazyh/Downloads/WhiplashShiftModels/80s.jpg"}
+    {"id": "blackjack", "blueprint": "godot/assets/vehicles/spy-hunter.jpg"},
+    {"id": "boilerfang", "blueprint": "godot/assets/vehicles/steam-punk.jpg"},
+    {"id": "helix", "blueprint": "godot/assets/vehicles/r-type.jpg"},
+    {"id": "ramjet", "blueprint": "godot/assets/vehicles/dodge.jpg"},
+    {"id": "knifeedge", "blueprint": "godot/assets/vehicles/hot-wheels.jpg"},
+    {"id": "deadbolt", "blueprint": "godot/assets/vehicles/80s-ford.jpg"},
+    {"id": "nightshift", "blueprint": "godot/assets/vehicles/80s.jpg"}
   ]
 }

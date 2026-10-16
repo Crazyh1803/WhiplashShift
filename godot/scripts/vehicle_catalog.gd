@@ -124,9 +124,11 @@ const VISUALS: Dictionary = {
 		"wheel_scene_b": "res://assets/vehicles/models/knifeedge/wheel_b.glb",
 	},
 	"deadbolt": {
-		"scene": "res://assets/vehicles/models/deadbolt/deadbolt.glb",
-		"wheel_scene_a": "res://assets/vehicles/models/deadbolt/wheel_a.glb",
-		"wheel_scene_b": "res://assets/vehicles/models/deadbolt/wheel_b.glb",
+		"rig": "deadbolt_blueprint",
+		"scene": "res://assets/vehicles/models/deadbolt/deadbolt_blueprint.glb",
+		"rotation_degrees": Vector3(0.0, 90.0, 0.0),
+		"offset": Vector3(0.0, -0.62, 0.0),
+		"collision_boxes": [], # Keep the original tuning-owned chassis collider.
 	},
 	"nightshift": {
 		"scene": "res://assets/vehicles/models/nightshift/nightshift.glb",

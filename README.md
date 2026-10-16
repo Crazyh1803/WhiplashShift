@@ -3,6 +3,37 @@
 A bi-directional combat racer: one chassis, two ends, and a swap that hands the drive from
 one to the other **without touching the body's momentum**.
 
+## Consolidated project — 2026-10-16
+
+This folder brings forward the saved gameplay and Blackjack work from `Whiplash Shift`
+and the Deadbolt asset branch from `Whiplash Shift - Deadbolt`. Both original folders
+are preserved. The earlier Git history and local gameplay changes are committed here.
+
+Open `godot/project.godot` in Godot 4.7.2 and press **F5** for the project.
+The garage offers seven chassis; **CUSTOMIZE** opens the rotatable 3D preview.
+Blackjack and Deadbolt use their saved authored models; the other five use greybox
+vehicles with their saved handling and blueprint images. Enter a callsign and choose
+**IGNITE** to drive against two CPU opponents. `Esc` returns to the garage.
+
+Run `ak-test` for the core handling, CPU, Blackjack and consolidation suites. Set
+`GODOT_BIN` to use another installed executable. For rendered garage and driving
+captures, run:
+
+```sh
+godot --path godot --fixed-fps 120 res://tests/consolidation_visual_qa.tscn
+```
+
+Captures go to `.ai/captures/`. Historical reports live separately under
+`.ai/history/whiplash-shift/`; they are not current verification results.
+
+Deadbolt's saved source and LODs are retained unchanged. Its rendered wheel meshes
+follow the existing suspension and steering; only its three paint materials are
+customized. The physics hardpoints, tire radii and original tuning-owned collider
+are preserved. The body artwork extends beyond the simplified collider near the noses.
+Visual review confirmed that Deadbolt's overly smooth body and detached side-window
+panels already exist in the saved Blender preview. They remain an art-quality
+limitation; this consolidation does not remodel that source asset.
+
 | | |
 |---|---|
 | **`godot/`** | the game — Godot 4.6, 3D, where development happens now. See [godot/README.md](godot/README.md). |

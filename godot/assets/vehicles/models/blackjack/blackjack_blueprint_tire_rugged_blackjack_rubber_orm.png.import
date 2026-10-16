@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://s5f61ycw32t1"
-path="res://.godot/imported/blackjack_blueprint_tire_rugged_blackjack_rubber_orm.png-c96b65c2364a8e243933b5565b993391.ctex"
+path.s3tc="res://.godot/imported/blackjack_blueprint_tire_rugged_blackjack_rubber_orm.png-c96b65c2364a8e243933b5565b993391.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "293737665a84c29cfd666595c3d5e5d0"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/vehicles/models/blackjack/blackjack_blueprint_tire_rugged_blackjack_rubber_orm.png"
-dest_files=["res://.godot/imported/blackjack_blueprint_tire_rugged_blackjack_rubber_orm.png-c96b65c2364a8e243933b5565b993391.ctex"]
+dest_files=["res://.godot/imported/blackjack_blueprint_tire_rugged_blackjack_rubber_orm.png-c96b65c2364a8e243933b5565b993391.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0
