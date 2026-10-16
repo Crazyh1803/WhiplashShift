@@ -38,6 +38,74 @@ static func build(parent: Node3D, pts: Array) -> void:
 		i = j + 1
 
 
+## A single collision body follows both edges of the circuit. Keeping the whole
+## barrier in one concave shape is substantially cheaper than making a static
+## body for every 3.5 m centreline sample, and the metadata gives impact audio a
+## stable target regardless of which triangle was hit.
+static func build_guard_rails(parent: Node3D, pts: Array) -> StaticBody3D:
+	var body := StaticBody3D.new()
+	body.name = "GuardRails"
+	body.set_meta("guard_rail", true)
+
+	var collision_verts := PackedVector3Array()
+	var visual_verts := PackedVector3Array()
+	var visual_normals := PackedVector3Array()
+	var n := pts.size()
+	for i in n:
+		var a: Dictionary = pts[i]
+		var b: Dictionary = pts[(i + 1) % n]
+		for side: float in [-1.0, 1.0]:
+			var an := Vector3(-a["dir"].z, 0.0, a["dir"].x) * side
+			var bn := Vector3(-b["dir"].z, 0.0, b["dir"].x) * side
+			var ac: Vector3 = a["pos"] + an * (a["w"] * 0.5 + 0.8)
+			var bc: Vector3 = b["pos"] + bn * (b["w"] * 0.5 + 0.8)
+
+			# The invisible collision panel reaches the ground, while the visible
+			# steel beam is raised like a conventional roadside guard rail.
+			var a0 := ac + Vector3.UP * 0.04
+			var a1 := ac + Vector3.UP * 1.35
+			var b0 := bc + Vector3.UP * 0.04
+			var b1 := bc + Vector3.UP * 1.35
+			collision_verts.append_array([a0, b0, a1, a1, b0, b1])
+
+			var va0 := ac + Vector3.UP * 0.58
+			var va1 := ac + Vector3.UP * 1.14
+			var vb0 := bc + Vector3.UP * 0.58
+			var vb1 := bc + Vector3.UP * 1.14
+			visual_verts.append_array([va0, vb0, va1, va1, vb0, vb1])
+			var face_normal := (-an).normalized()
+			for _v in 6:
+				visual_normals.append(face_normal)
+
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = visual_verts
+	arrays[Mesh.ARRAY_NORMAL] = visual_normals
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color(0.72, 0.76, 0.82)
+	material.metallic = 0.55
+	material.roughness = 0.42
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var mi := MeshInstance3D.new()
+	mi.name = "RailMesh"
+	mi.mesh = mesh
+	mi.material_override = material
+	body.add_child(mi)
+
+	var concave := ConcavePolygonShape3D.new()
+	concave.set_faces(collision_verts)
+	concave.backface_collision = true
+	var cs := CollisionShape3D.new()
+	cs.name = "RailCollision"
+	cs.shape = concave
+	body.add_child(cs)
+	parent.add_child(body, true)
+	return body
+
+
 static func _build_run(parent: Node3D, run: Array, sid: int, index: int) -> void:
 	if run.size() < 2:
 		return

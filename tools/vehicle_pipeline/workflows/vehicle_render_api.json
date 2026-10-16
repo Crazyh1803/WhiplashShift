@@ -1,0 +1,44 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {"image": "{{INPUT_IMAGE}}"}
+  },
+  "2": {
+    "class_type": "ImageCrop",
+    "inputs": {"image": ["1", 0], "width": 620, "height": 300, "x": 205, "y": 0}
+  },
+  "3": {
+    "class_type": "ImageScale",
+    "inputs": {
+      "image": ["2", 0],
+      "upscale_method": "lanczos",
+      "width": 1024,
+      "height": 496,
+      "crop": "disabled"
+    }
+  },
+  "4": {
+    "class_type": "LoadBackgroundRemovalModel",
+    "inputs": {"bg_removal_name": "birefnet.safetensors"}
+  },
+  "5": {
+    "class_type": "RemoveBackground",
+    "inputs": {"bg_removal_model": ["4", 0], "image": ["3", 0]}
+  },
+  "6": {
+    "class_type": "ImageCropToMask",
+    "inputs": {
+      "images": ["3", 0],
+      "masks": ["5", 0],
+      "width": 1024,
+      "height": 1024,
+      "pad_factor": 1.15,
+      "grow_mask": 2,
+      "background": "#ffffff"
+    }
+  },
+  "7": {
+    "class_type": "SaveImage",
+    "inputs": {"images": ["6", 0], "filename_prefix": "{{OUTPUT_PREFIX}}"}
+  }
+}

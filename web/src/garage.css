@@ -1,0 +1,96 @@
+.garage-shell {
+  --vehicle-accent: #ff4d2e;
+  position: fixed; inset: 0; z-index: 50; overflow-y: auto; overflow-x: hidden;
+  color: #f1eee7; background:
+    radial-gradient(circle at 22% 42%, color-mix(in srgb, var(--vehicle-accent) 14%, transparent), transparent 38%),
+    radial-gradient(circle at 82% 4%, rgba(34,105,150,.18), transparent 31%),
+    linear-gradient(120deg, #080b0d 0%, #0b1115 51%, #050607 100%);
+  font-family: 'Barlow Condensed', Impact, sans-serif;
+  transition: opacity .5s ease, visibility .5s ease;
+}
+.garage-shell::before { content: ''; position: fixed; inset: 0; pointer-events: none; opacity: .35; background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px); background-size: 42px 42px; }
+.garage-shell::after { content: ''; position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 180px #000; }
+.garage-noise { position: fixed; inset: 0; pointer-events: none; z-index: 4; opacity: .06; background: repeating-linear-gradient(0deg, transparent 0 2px, #fff 3px, transparent 4px); mix-blend-mode: overlay; }
+.garage-brand { position: relative; z-index: 5; display: grid; grid-template-columns: 1fr auto; align-items: end; padding: clamp(18px,3vh,34px) clamp(22px,4vw,68px) 8px; border-bottom: 1px solid rgba(191,211,222,.18); }
+.garage-eyebrow { grid-column: 1/-1; color: var(--vehicle-accent); font: 600 11px/1 'Share Tech Mono', monospace; letter-spacing: .28em; margin-bottom: 7px; }
+.garage-title { margin: 0; font-size: clamp(44px,7.2vw,104px); line-height: .78; letter-spacing: -.045em; font-weight: 900; font-style: italic; text-transform: uppercase; filter: drop-shadow(5px 6px 0 rgba(0,0,0,.65)); }
+.garage-title span { -webkit-text-stroke: 1px rgba(241,238,231,.86); color: transparent; }
+.garage-tagline { margin: 0; padding: 0 0 4px 28px; font: 600 12px/1.3 'Share Tech Mono', monospace; letter-spacing: .16em; color: rgba(215,224,226,.57); }
+.garage-layout { position: relative; z-index: 5; min-height: calc(100vh - 145px); display: grid; grid-template-columns: minmax(0,1.65fr) minmax(330px,.72fr); }
+.garage-stage { position: relative; min-height: 500px; padding: clamp(26px,4vw,60px); display: grid; align-content: center; border-right: 1px solid rgba(191,211,222,.16); overflow: hidden; }
+.garage-stage::before { content: 'BIDIRECTIONAL VEHICLE PROGRAM'; position: absolute; left: 18px; bottom: 52px; writing-mode: vertical-rl; transform: rotate(180deg); font: 10px 'Share Tech Mono', monospace; letter-spacing: .24em; color: rgba(197,211,217,.28); }
+.garage-image-frame { position: relative; width: min(100%, 960px); margin: auto; aspect-ratio: 16/9; background: #08213a; border: 1px solid rgba(115,194,241,.46); box-shadow: 0 32px 80px rgba(0,0,0,.52), 0 0 70px color-mix(in srgb, var(--vehicle-accent) 13%, transparent); transform: perspective(1100px) rotateX(1.8deg) rotateY(-1.4deg); overflow: hidden; }
+.garage-image-frame::before, .garage-image-frame::after { content: ''; position: absolute; z-index: 3; width: 42px; height: 42px; border-color: var(--vehicle-accent); }
+.garage-image-frame::before { left: 10px; top: 10px; border-left: 2px solid; border-top: 2px solid; }
+.garage-image-frame::after { right: 10px; bottom: 10px; border-right: 2px solid; border-bottom: 2px solid; }
+.garage-image { display: block; width: 100%; height: 100%; object-fit: cover; filter: saturate(.75) contrast(1.16) brightness(.79); transition: opacity .18s ease, filter .35s ease; }
+.garage-image-frame:hover .garage-image { filter: saturate(.95) contrast(1.1) brightness(.9); }
+.garage-scan { position: absolute; inset: -100% 0 auto; height: 45%; z-index: 2; background: linear-gradient(transparent, color-mix(in srgb, var(--vehicle-accent) 15%, transparent), transparent); animation: garage-scan 5s linear infinite; pointer-events: none; }
+@keyframes garage-scan { to { transform: translateY(450%); } }
+.garage-stamp { position: absolute; z-index: 4; left: 20px; bottom: 18px; padding: 7px 10px; border: 1px solid var(--vehicle-accent); color: var(--vehicle-accent); background: rgba(0,0,0,.62); font: 11px 'Share Tech Mono', monospace; letter-spacing: .12em; transform: rotate(-1.5deg); }
+.garage-model-no { position: absolute; z-index: 4; right: 20px; top: 16px; font: 600 13px 'Share Tech Mono', monospace; color: rgba(225,235,238,.8); }
+.garage-nav { position: absolute; z-index: 8; top: 50%; width: 46px; height: 78px; border: 1px solid rgba(218,232,235,.26); color: #fff; background: rgba(2,5,7,.62); font-size: 22px; cursor: pointer; transition: .2s ease; }
+.garage-prev { left: max(22px, 2.5vw); }.garage-next { right: max(22px, 2.5vw); }
+.garage-nav:hover, .garage-nav:focus-visible { color: #050607; background: var(--vehicle-accent); border-color: var(--vehicle-accent); outline: none; }
+.garage-roster { display: flex; justify-content: center; gap: 11px; margin-top: 26px; }
+.garage-roster-dot { width: 30px; height: 4px; padding: 0; border: 0; background: rgba(198,215,221,.25); cursor: pointer; transition: width .2s, background .2s, box-shadow .2s; }
+.garage-roster-dot.is-active { width: 62px; background: var(--vehicle-accent); box-shadow: 0 0 14px color-mix(in srgb, var(--vehicle-accent) 65%, transparent); }
+.garage-dossier { display: flex; flex-direction: column; padding: clamp(28px,4vw,64px) clamp(24px,4vw,58px) 24px; background: linear-gradient(150deg, rgba(14,21,25,.94), rgba(5,7,8,.96)); }
+.garage-kicker { font: 600 11px 'Share Tech Mono', monospace; letter-spacing: .25em; color: var(--vehicle-accent); }
+.garage-name { margin: 8px 0 0; font-size: clamp(42px,5vw,72px); font-style: italic; line-height: .88; letter-spacing: -.035em; text-transform: uppercase; }
+.garage-class { margin-top: 10px; color: rgba(220,229,232,.58); font: 11px 'Share Tech Mono', monospace; letter-spacing: .14em; }
+.garage-description { min-height: 42px; margin: 20px 0 18px; max-width: 52ch; font-size: 16px; line-height: 1.35; color: rgba(224,230,229,.75); }
+.garage-rule { height: 3px; margin-bottom: 19px; background: linear-gradient(90deg, var(--vehicle-accent) 0 31%, rgba(200,215,220,.13) 31% 100%); }
+.garage-stats { display: grid; gap: 10px; }
+.garage-stat > div:first-child { display: flex; justify-content: space-between; font: 10px 'Share Tech Mono', monospace; letter-spacing: .12em; color: rgba(210,223,226,.65); }
+.garage-stat b { color: #e8eeee; font-weight: 400; }
+.garage-stat-track { height: 5px; margin-top: 5px; background: rgba(184,204,210,.12); transform: skewX(-18deg); overflow: hidden; }
+.garage-stat-fill { display: block; width: 0; height: 100%; background: linear-gradient(90deg, color-mix(in srgb, var(--vehicle-accent) 55%, #111), var(--vehicle-accent)); box-shadow: 0 0 12px var(--vehicle-accent); transition: width .55s cubic-bezier(.17,.84,.44,1); }
+.garage-cpu { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; margin: 22px 0 17px; padding: 10px 12px; border: 1px solid rgba(176,198,205,.14); font: 9px 'Share Tech Mono', monospace; letter-spacing: .12em; color: rgba(214,225,228,.5); }
+.garage-cpu i { width: 6px; height: 6px; border-radius: 50%; background: #a7ef4e; box-shadow: 0 0 10px #a7ef4e; animation: garage-pulse 1.2s infinite; }
+.garage-cpu b { color: #a7ef4e; font-weight: 400; }
+@keyframes garage-pulse { 50% { opacity: .3; } }
+.garage-field span { display: block; margin-bottom: 6px; font: 10px 'Share Tech Mono', monospace; letter-spacing: .18em; color: rgba(211,224,227,.62); }
+.garage-field input { width: 100%; height: 47px; border: 1px solid rgba(200,219,225,.24); border-left: 3px solid var(--vehicle-accent); outline: none; background: rgba(0,0,0,.38); padding: 0 14px; color: #fff; font: 700 20px 'Barlow Condensed', sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+.garage-field input:focus { border-color: var(--vehicle-accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--vehicle-accent) 30%, transparent); }
+.garage-validation { height: 18px; padding-top: 4px; color: #ff755f; font: 10px 'Share Tech Mono', monospace; }
+.garage-start { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 9px; min-height: 58px; border: 0; padding: 0 18px; color: #090b0c; background: var(--vehicle-accent); font-family: inherit; cursor: pointer; text-align: left; clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%); transition: filter .2s, transform .2s; }
+.garage-start span { font-size: 24px; font-weight: 900; font-style: italic; }.garage-start b { font: 10px 'Share Tech Mono', monospace; letter-spacing: .12em; }.garage-start i { font-style: normal; font-size: 16px; }
+.garage-start:hover, .garage-start:focus-visible { filter: brightness(1.2); transform: translateX(4px); outline: none; }
+.garage-hints { display: flex; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 22px; font: 8px 'Share Tech Mono', monospace; letter-spacing: .1em; color: rgba(201,216,220,.34); }
+.garage-shell.is-launching .garage-image-frame { animation: garage-ignite .55s cubic-bezier(.4,0,.2,1) forwards; }
+.garage-shell.is-launching .garage-start { filter: brightness(2); }
+.garage-shell.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.garage-shake .garage-field { animation: garage-shake .28s linear; }
+@keyframes garage-ignite { 35% { filter: brightness(2.2); transform: scale(1.025); } 100% { filter: brightness(.25); transform: scale(.985); } }
+@keyframes garage-shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+@media (max-width: 880px) {
+  .garage-shell { overflow: auto; }
+  .garage-brand { grid-template-columns: 1fr; padding: 22px 22px 12px; }
+  .garage-tagline { padding: 9px 0 0; }
+  .garage-layout { display: block; }
+  .garage-stage { min-height: auto; padding: 28px 48px 14px; border-right: 0; }
+  .garage-dossier { padding: 24px 24px 30px; }
+  .garage-nav { width: 38px; height: 58px; }.garage-prev { left: 8px; }.garage-next { right: 8px; }
+  .garage-name { font-size: 44px; }
+  .garage-description { min-height: 0; }
+}
+@media (min-width: 881px) and (max-width: 1200px) {
+  .garage-brand { grid-template-columns: 1fr auto; padding-inline: 42px; }
+  .garage-title { font-size: 66px; }
+  .garage-tagline { font-size: 9px; padding-left: 16px; }
+  .garage-layout { grid-template-columns: minmax(0, 1.48fr) minmax(360px, .72fr); }
+  .garage-dossier { padding-inline: 32px; }
+  .garage-name { font-size: 46px; }
+}
+@media (max-width: 560px) {
+  .garage-title { font-size: 45px; }
+  .garage-image-frame { aspect-ratio: 4/3; }.garage-image { object-fit: cover; }
+  .garage-hints span:last-child { display: none; }
+  .garage-cpu { grid-template-columns: auto 1fr; }.garage-cpu b { grid-column: 2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .garage-scan, .garage-cpu i, .garage-shell.is-launching .garage-image-frame { animation: none; }
+  .garage-shell *, .garage-shell { transition-duration: .01ms !important; }
+}

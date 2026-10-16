@@ -50,6 +50,9 @@ func _run_all() -> void:
 	print("\nthe real scene (authoring -> mesh -> collision -> metadata -> raycast)")
 	await _test_scene_builds()
 
+	print("\nBlackjack production customization")
+	await _test_blackjack_customization()
+
 
 # ---------------------------------------------------------------- harness
 func _check(name: String, ok: bool, detail: String = "") -> void:
@@ -71,6 +74,131 @@ func _make_ground() -> StaticBody3D:
 	sb.add_child(cs)
 	sb.set_meta("surface_type", "tarmac")
 	return sb
+
+
+func _test_blackjack_customization() -> void:
+	var production_car := Vehicle.new()
+	production_car.tuning = TuningProfile.new()
+	var spec := VehicleCatalog.get_vehicle("blackjack")
+	var custom := VehicleCatalog.default_customization("blackjack")
+	custom["primary_color"] = "1f75ff"
+	custom["secondary_color"] = "0b1018"
+	custom["accent_color"] = "ffd447"
+	custom["wheel_style"] = "interceptor"
+	spec["customization"] = custom
+	production_car.apply_vehicle_spec(spec)
+	add_child(production_car)
+	var initial_axles_aligned := true
+	for end: String in ["A", "B"]:
+		var axle := production_car.get_node_or_null("AxleVisuals/Axle_%s" % end) as Node3D
+		var paired_mount_y := 0.0
+		var paired_wheels := 0
+		for wheel: Wheel in production_car.wheels:
+			if wheel.end == end:
+				paired_mount_y += wheel.position.y
+				paired_wheels += 1
+		initial_axles_aligned = initial_axles_aligned and axle != null and paired_wheels == 2
+		if axle != null and paired_wheels > 0:
+			initial_axles_aligned = initial_axles_aligned and is_equal_approx(
+				axle.position.y, paired_mount_y / paired_wheels
+			)
+	_check("axles begin centered on their wheel mounts", initial_axles_aligned)
+	await get_tree().physics_frame
+
+	_check("production GLB is instanced",
+		production_car.get_node_or_null("VisualRoot/ProductionModel") != null)
+	var semantic_channels := {
+		"paint_primary": false,
+		"paint_secondary": false,
+		"paint_accent": false,
+	}
+	var protected_materials_ok := true
+	var production_model := production_car.get_node_or_null("VisualRoot/ProductionModel")
+	if production_model != null:
+		for child: Node in production_model.find_children("*", "MeshInstance3D", true, false):
+			var mesh_instance := child as MeshInstance3D
+			for surface_index: int in mesh_instance.mesh.get_surface_count():
+				var source := mesh_instance.mesh.surface_get_material(surface_index)
+				if source == null:
+					continue
+				var semantic_name := source.resource_name.to_lower()
+				var override := mesh_instance.get_surface_override_material(surface_index)
+				if semantic_channels.has(semantic_name):
+					semantic_channels[semantic_name] = override is StandardMaterial3D
+				else:
+					protected_materials_ok = protected_materials_ok and override == null
+	_check("all three semantic paint channels are customizable",
+		semantic_channels.values().all(func(value: bool) -> bool: return value))
+	_check("protected Blackjack materials reject garage paint", protected_materials_ok)
+	_check("dual-front collision uses three tuned volumes",
+		production_car.find_children("ChassisCollision_*", "CollisionShape3D", false, false).size() == 3)
+	var sockets_ok := true
+	for socket_name: String in ["front_a", "front_b", "roof", "left", "right", "hood_engine"]:
+		sockets_ok = sockets_ok and production_car.get_part_socket(socket_name) != null
+	_check("all six modular part sockets exist", sockets_ok)
+	var hood_socket := production_car.get_node_or_null("VisualRoot/Socket_HoodEngine")
+	_check("Blackjack loads its default modular supercharger",
+		hood_socket != null and hood_socket.get_child_count() == 1)
+
+	var modular_ok := production_car.wheels.size() == 4
+	var wheel_finish_ok := production_car.wheels.size() == 4
+	for wheel: Wheel in production_car.wheels:
+		modular_ok = modular_ok and wheel.visible
+		modular_ok = modular_ok and wheel.get_node_or_null("ModularWheelVisual/Tire") != null
+		modular_ok = modular_ok and wheel.get_node_or_null("ModularWheelVisual/SwappableRim") != null
+		var tire := wheel.get_node_or_null("ModularWheelVisual/Tire") as MeshInstance3D
+		wheel_finish_ok = wheel_finish_ok and tire != null
+		wheel_finish_ok = wheel_finish_ok and tire.material_override is ShaderMaterial
+		wheel_finish_ok = wheel_finish_ok and wheel.get_node_or_null(
+			"ModularWheelVisual/BrakeDisc"
+		) != null
+		wheel_finish_ok = wheel_finish_ok and wheel.get_node_or_null(
+			"ModularWheelVisual/BrakeCaliper"
+		) != null
+	_check("four modular wheel assemblies are mounted", modular_ok)
+	_check("wheels use tread rubber and visible brake hardware", wheel_finish_ok)
+	var axles_ok := true
+	for end: String in ["A", "B"]:
+		axles_ok = axles_ok and production_car.get_node_or_null(
+			"AxleVisuals/Axle_%s/Shaft" % end
+		) != null
+		axles_ok = axles_ok and production_car.get_node_or_null(
+			"AxleVisuals/Axle_%s/Differential" % end
+		) != null
+	_check("both suspension pairs have visible axle hardware", axles_ok)
+	var bogie := production_car.get_node_or_null("VisualMiddleBogie") as Node3D
+	var bogie_ok := bogie != null and bogie.visible
+	if bogie_ok:
+		bogie_ok = bogie.get_node_or_null("Bogie_L/ModularWheelVisual/Tire") != null
+		bogie_ok = bogie_ok and bogie.get_node_or_null(
+			"Bogie_R/ModularWheelVisual/Tire"
+		) != null
+		bogie_ok = bogie_ok and bogie.get_node_or_null("Shaft") != null
+	_check("six-wheel silhouette uses a visual-only middle bogie", bogie_ok)
+
+	var stock_car := Vehicle.new()
+	stock_car.tuning = TuningProfile.new()
+	var stock_spec := VehicleCatalog.get_vehicle("blackjack")
+	stock_spec["customization"] = VehicleCatalog.default_customization("blackjack")
+	stock_car.apply_vehicle_spec(stock_spec)
+	add_child(stock_car)
+	await get_tree().physics_frame
+	var stock_mounted := true
+	for wheel: Wheel in stock_car.wheels:
+		stock_mounted = stock_mounted and wheel.visible
+		stock_mounted = stock_mounted and wheel.get_node_or_null("ModularWheelVisual/Tire") != null
+	_check("factory package uses suspension-mounted wheels", stock_mounted)
+
+	var sanitized := GameSession._sanitize_customization("blackjack", {
+		"primary_color": "#abcdef",
+		"wheel_style": "interceptor",
+		"parts": {"roof": "none", "unknown_socket": "bad"},
+	})
+	_check("save schema normalizes paint values", sanitized["primary_color"] == "abcdef")
+	_check("save schema preserves valid wheel and socket selections",
+		sanitized["wheel_style"] == "interceptor" and sanitized["parts"]["roof"] == "none")
+	_check("save schema drops unknown sockets", not sanitized["parts"].has("unknown_socket"))
+
 
 
 func _reset(end: String, surface: String, speed: float = 0.0) -> void:
@@ -279,6 +407,19 @@ func _test_scene_builds() -> void:
 	add_child(scene)
 	await get_tree().physics_frame
 
+	var course := scene.get("course") as CourseDefinition
+	_check("scene exposes a reusable course definition",
+		course != null and course.course_id == "split_shift")
+	if course != null:
+		_check("course owns the authored centreline", course.points.size() > 400,
+			"%d points" % course.points.size())
+		_check("course derives its closed-loop length", course.total_length > 1200.0,
+			"%.0f m" % course.total_length)
+		_check("course derives recovery checkpoints", course.checkpoints.size() >= 10,
+			"%d checkpoints" % course.checkpoints.size())
+		_check("course definition validates", course.validate().is_empty(),
+			"; ".join(course.validate()))
+
 	var runs := 0
 	var proving := 0
 	for c: Node in scene.get_children():
@@ -288,8 +429,23 @@ func _test_scene_builds() -> void:
 			proving += 1
 	_check("circuit built as surface runs", runs >= 12, "%d runs" % runs)
 	_check("proving ground built beside it", proving >= 6, "%d strips" % proving)
+	var rails := scene.get_node_or_null("GuardRails") as StaticBody3D
+	_check("course has one continuous guard-rail body", rails != null)
+	if rails != null:
+		_check("guard rails identify themselves for impact audio",
+			bool(rails.get_meta("guard_rail", false)))
+		_check("guard rails have visible and collision geometry",
+			rails.get_node_or_null("RailMesh") != null
+			and rails.get_node_or_null("RailCollision") != null)
 
 	var scar: Vehicle = scene.get_node("Car")
+	var scene_audio := scene.get_node_or_null("VehicleAudio")
+	var scene_hud := scene.get("hud") as Hud
+	_check("race HUD exposes a main-menu button",
+		scene_hud != null and scene_hud.get_node_or_null("MainMenuButton") is Button)
+	_check("procedural vehicle audio is attached", scene_audio != null)
+	_check("rail contacts are enabled for impact audio",
+		scar.contact_monitor and scar.max_contacts_reported >= 8)
 	for i in 180:
 		await get_tree().physics_frame
 	var planted := true

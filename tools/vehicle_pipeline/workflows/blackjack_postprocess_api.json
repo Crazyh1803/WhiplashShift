@@ -1,0 +1,86 @@
+{
+  "1": {
+    "class_type": "Load3DAdvanced",
+    "inputs": {
+      "model_file": "3d/blackjack_source.glb",
+      "viewport_state": {},
+      "width": 1024,
+      "height": 1024
+    }
+  },
+  "2": {
+    "class_type": "Get3DComponents",
+    "inputs": {"model_3d": ["1", 0]}
+  },
+  "3": {
+    "class_type": "DecimateMesh",
+    "inputs": {
+      "mesh": ["2", 0],
+      "target_face_count": 80000,
+      "placement_mode": "midpoint"
+    }
+  },
+  "4": {
+    "class_type": "MeshSmoothNormals",
+    "inputs": {"mesh": ["3", 0], "crease_angle": 55.0}
+  },
+  "5": {
+    "class_type": "UnwrapMesh",
+    "inputs": {
+      "mesh": ["4", 0],
+      "segmenter": "pec",
+      "resolution": 1024,
+      "padding": 4,
+      "weld_distance": 0.0
+    }
+  },
+  "6": {
+    "class_type": "BakeNormalMapFromMesh",
+    "inputs": {
+      "low_poly": ["5", 0],
+      "high_poly": ["2", 0],
+      "resolution": 1024,
+      "cage_distance": 0.04,
+      "ignore_backfaces": false
+    }
+  },
+  "7": {
+    "class_type": "BakeAmbientOcclusion",
+    "inputs": {
+      "low_poly": ["5", 0],
+      "high_poly": ["2", 0],
+      "resolution": 512,
+      "samples": 16,
+      "max_distance": 0.22,
+      "strength": 0.85,
+      "bias": 0.008
+    }
+  },
+  "8": {
+    "class_type": "EmptyImage",
+    "inputs": {"width": 1024, "height": 1024, "batch_size": 1, "color": 16777215}
+  },
+  "9": {
+    "class_type": "EmptyImage",
+    "inputs": {"width": 512, "height": 512, "batch_size": 1, "color": 5000268}
+  },
+  "10": {
+    "class_type": "EmptyImage",
+    "inputs": {"width": 512, "height": 512, "batch_size": 1, "color": 6710886}
+  },
+  "11": {
+    "class_type": "ApplyTextureToMesh",
+    "inputs": {
+      "mesh": ["5", 0],
+      "base_color": ["8", 0],
+      "metallic": ["9", 0],
+      "roughness": ["10", 0],
+      "occlusion": ["7", 0],
+      "normal_map": ["6", 0]
+    }
+  },
+  "12": {
+    "class_type": "SaveGLB",
+    "inputs": {"mesh": ["11", 0], "filename_prefix": "qa/blackjack_production"}
+  }
+}

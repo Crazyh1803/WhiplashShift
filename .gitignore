@@ -1,3 +1,9 @@
 shots/
 node_modules/
 .DS_Store
+.godot/
+*.blend1
+.ai/scout/
+.ai/looks/
+.ai/captures/
+.ai/last-test.log

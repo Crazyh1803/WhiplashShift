@@ -1,0 +1,109 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {"image": "{{FRONT_IMAGE}}"}
+  },
+  "2": {
+    "class_type": "LoadImage",
+    "inputs": {"image": "{{LEFT_IMAGE}}"}
+  },
+  "3": {
+    "class_type": "LoadImage",
+    "inputs": {"image": "{{BACK_IMAGE}}"}
+  },
+  "4": {
+    "class_type": "ImageOnlyCheckpointLoader",
+    "inputs": {"ckpt_name": "hunyuan_3d_v2.1.safetensors"}
+  },
+  "5": {
+    "class_type": "CLIPVisionEncode",
+    "inputs": {
+      "clip_vision": ["4", 1],
+      "image": ["1", 0],
+      "crop": "none"
+    }
+  },
+  "6": {
+    "class_type": "CLIPVisionEncode",
+    "inputs": {
+      "clip_vision": ["4", 1],
+      "image": ["2", 0],
+      "crop": "none"
+    }
+  },
+  "7": {
+    "class_type": "CLIPVisionEncode",
+    "inputs": {
+      "clip_vision": ["4", 1],
+      "image": ["3", 0],
+      "crop": "none"
+    }
+  },
+  "8": {
+    "class_type": "Hunyuan3Dv2ConditioningMultiView",
+    "inputs": {
+      "front": ["5", 0],
+      "left": ["6", 0],
+      "back": ["7", 0]
+    }
+  },
+  "9": {
+    "class_type": "EmptyLatentHunyuan3Dv2",
+    "inputs": {"resolution": 3072, "batch_size": 1}
+  },
+  "10": {
+    "class_type": "ModelSamplingAuraFlow",
+    "inputs": {"model": ["4", 0], "shift": 1.0}
+  },
+  "11": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["10", 0],
+      "positive": ["8", 0],
+      "negative": ["8", 1],
+      "latent_image": ["9", 0],
+      "seed": 29574068133482,
+      "steps": 35,
+      "cfg": 5.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0
+    }
+  },
+  "12": {
+    "class_type": "VAEDecodeHunyuan3D",
+    "inputs": {
+      "samples": ["11", 0],
+      "vae": ["4", 2],
+      "num_chunks": 8000,
+      "octree_resolution": 256
+    }
+  },
+  "13": {
+    "class_type": "VoxelToMesh",
+    "inputs": {
+      "voxel": ["12", 0],
+      "algorithm": "surface net",
+      "threshold": 0.6
+    }
+  },
+  "14": {
+    "class_type": "DecimateMesh",
+    "inputs": {
+      "mesh": ["13", 0],
+      "target_face_count": 50000,
+      "placement_mode": "midpoint"
+    }
+  },
+  "15": {
+    "class_type": "MeshSmoothNormals",
+    "inputs": {"mesh": ["14", 0], "crease_angle": 55.0}
+  },
+  "16": {
+    "class_type": "SaveGLB",
+    "inputs": {
+      "mesh": ["15", 0],
+      "filename_prefix": "{{OUTPUT_PREFIX}}"
+    }
+  }
+}

@@ -13,11 +13,24 @@
 class_name Vehicle
 extends RigidBody3D
 
+const BLACKJACK_LIVERY_SHADER: Shader = preload("res://assets/vehicles/blackjack_livery.gdshader")
+
 signal swapped(record: Dictionary)
 signal whiplash(record: Dictionary)
 
 @export var tuning: TuningProfile
 @export var active_end: String = "A"
+
+var vehicle_id: String = "blackjack"
+var vehicle_label: String = "BLACKJACK X-17"
+var vehicle_color: Color = Color("4fd2ff")
+var vehicle_secondary_color: Color = Color("101820")
+var vehicle_accent_color: Color = Color("ffb238")
+var top_speed_multiplier: float = 1.0
+var drive_multiplier: float = 1.0
+var grip_multiplier: float = 1.0
+var mass_multiplier: float = 1.0
+var brake_multiplier: float = 1.0
 
 # --- control inputs, written from outside each frame ---
 var throttle: float = 0.0
@@ -47,6 +60,14 @@ var _prev_lv: Vector3 = Vector3.ZERO
 var _pending: Dictionary = {}
 var _inertia: Vector3 = Vector3.ONE
 var _static_load: float = 3434.0
+var _visual_config: Dictionary = {}
+var _customization: Dictionary = {}
+var _visual_root: Node3D
+var _collision_shapes: Array[CollisionShape3D] = []
+var _part_sockets: Dictionary = {}
+var _axle_root: Node3D
+var _axle_visuals: Dictionary = {}
+var _bogie_root: Node3D
 
 
 func _ready() -> void:
@@ -56,7 +77,6 @@ func _ready() -> void:
 
 
 func _build() -> void:
-	mass = tuning.mass
 	can_sleep = false
 	# REPLACE, not the default COMBINE: otherwise the project-wide default damp of
 	# 0.1 is added to ours and quietly eats ~4.6 kN at 120 km/h. Our model owns all
@@ -69,39 +89,52 @@ func _build() -> void:
 	center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
 	center_of_mass = Vector3.ZERO
 
-	var w: float = tuning.body_width
-	var h: float = tuning.body_height
-	var l: float = tuning.body_length
-	# Explicit inertia rather than letting the shape decide, so handling is
-	# predictable and the yaw figure matches the web model exactly (2935).
-	_inertia = Vector3(
-		mass * (h * h + l * l) / 12.0,
-		mass * (w * w + l * l) / 12.0,
-		mass * (w * w + h * h) / 12.0,
-	)
-	inertia = _inertia
-	_static_load = mass * 9.81 / 4.0
+	_refresh_mass_properties()
 
-	var shape := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = Vector3(w, h * 0.75, l)
-	shape.shape = box
-	# sits above the centre of mass: CoM at hub height is what keeps it upright
-	shape.position = Vector3(0.0, 0.25, 0.0)
-	add_child(shape)
-
-	_build_visuals()
+	_rebuild_collision()
+	_rebuild_visuals()
 	_build_wheels()
+	_build_axles()
+	_build_visual_bogie()
 
 
-func _build_visuals() -> void:
+func _rebuild_visuals() -> void:
+	if _visual_root != null:
+		remove_child(_visual_root)
+		_visual_root.free()
+	_visual_root = Node3D.new()
+	_visual_root.name = "VisualRoot"
+	add_child(_visual_root)
+
+	var scene_path := String(_visual_config.get("scene", ""))
+	if not scene_path.is_empty() and ResourceLoader.exists(scene_path):
+		var packed := load(scene_path) as PackedScene
+		if packed != null:
+			var model := packed.instantiate() as Node3D
+			if model != null:
+				model.name = "ProductionModel"
+				model.scale = _config_vec3("scale", Vector3.ONE)
+				model.position = _config_vec3("offset", Vector3.ZERO)
+				model.rotation_degrees = _config_vec3("rotation_degrees", Vector3.ZERO)
+				_visual_root.add_child(model)
+				_configure_imported_meshes(model)
+				_build_part_sockets()
+				_rebuild_parts()
+				return
+
+	_build_placeholder_visuals(_visual_root)
+	_build_part_sockets()
+	_rebuild_parts()
+
+
+func _build_placeholder_visuals(parent: Node3D) -> void:
 	var spine := MeshInstance3D.new()
 	var bm := BoxMesh.new()
 	bm.size = Vector3(tuning.body_width * 0.78, 0.5, tuning.body_length * 0.5)
 	spine.mesh = bm
 	spine.position = Vector3(0.0, 0.25, 0.0)
 	spine.material_override = _mat(Color(0.20, 0.22, 0.26))
-	add_child(spine)
+	parent.add_child(spine)
 
 	# End A: low, slim, sharp. End B: tall, blunt, wide. The asymmetry has to be
 	# readable at a glance or none of the comedy lands.
@@ -110,18 +143,92 @@ func _build_visuals() -> void:
 	am.size = Vector3(tuning.body_width * 0.72, 0.34, 1.5)
 	a.mesh = am
 	a.position = Vector3(0.0, 0.12, -tuning.half_base - 0.35)
-	a.material_override = _mat(Color("4fd2ff"))
+	a.material_override = _mat(vehicle_color)
 	a.name = "EndAVisual"
-	add_child(a)
+	parent.add_child(a)
 
 	var b := MeshInstance3D.new()
 	var bmesh := BoxMesh.new()
 	bmesh.size = Vector3(tuning.body_width * 0.95, 0.78, 1.5)
 	b.mesh = bmesh
 	b.position = Vector3(0.0, 0.42, tuning.half_base + 0.35)
-	b.material_override = _mat(Color("ffa63d"))
+	b.material_override = _mat(vehicle_color.darkened(0.32))
 	b.name = "EndBVisual"
-	add_child(b)
+	parent.add_child(b)
+
+
+func _configure_imported_meshes(node: Node) -> void:
+	if node is MeshInstance3D:
+		var mesh_instance := node as MeshInstance3D
+		var lower_name := String(mesh_instance.name).to_lower()
+		var is_wheel_geometry := false
+		for marker: String in ["wheel", "rim", "tire", "tyre"]:
+			is_wheel_geometry = is_wheel_geometry or marker in lower_name
+		mesh_instance.visible = not is_wheel_geometry
+		if not is_wheel_geometry:
+			for surface_index: int in mesh_instance.mesh.get_surface_count():
+				if vehicle_id == "blackjack":
+					if bool(_visual_config.get("semantic_materials", false)):
+						_configure_blackjack_semantic_surface(
+							mesh_instance, surface_index, lower_name
+						)
+						continue
+					var current := mesh_instance.get_surface_override_material(surface_index)
+					if current is ShaderMaterial and current.shader == BLACKJACK_LIVERY_SHADER:
+						current.set_shader_parameter("primary_color", vehicle_color)
+						current.set_shader_parameter("secondary_color", vehicle_secondary_color)
+						current.set_shader_parameter("accent_color", vehicle_accent_color)
+						current.set_shader_parameter("hide_embedded_wheels", not _wheel_style_embedded())
+						continue
+					var source := mesh_instance.mesh.surface_get_material(surface_index) as StandardMaterial3D
+					if source != null:
+						mesh_instance.set_surface_override_material(
+							surface_index, _blackjack_production_material(source)
+						)
+				else:
+					mesh_instance.set_surface_override_material(surface_index, _mat(vehicle_color))
+	for child: Node in node.get_children():
+		_configure_imported_meshes(child)
+
+
+func _configure_blackjack_semantic_surface(
+	mesh_instance: MeshInstance3D, surface_index: int, _lower_name: String
+) -> void:
+	# The v2 production GLB carries explicit semantic materials. Mesh names are
+	# deliberately ignored here so protected shell, glass and hardware cannot be
+	# recolored merely because they are part of a body assembly.
+	var source := mesh_instance.mesh.surface_get_material(surface_index) as StandardMaterial3D
+	if source == null:
+		return
+	var semantic_name := source.resource_name.to_lower()
+	if not semantic_name.begins_with("paint_"):
+		return
+	var paint_color := vehicle_color
+	if semantic_name == "paint_secondary":
+		paint_color = vehicle_secondary_color
+	elif semantic_name == "paint_accent":
+		paint_color = vehicle_accent_color
+	var paint := source.duplicate() as StandardMaterial3D
+	paint.albedo_color = paint_color
+	paint.metallic = maxf(paint.metallic, 0.42)
+	paint.roughness = 0.32
+	mesh_instance.set_surface_override_material(surface_index, paint)
+
+
+func _blackjack_production_material(source: StandardMaterial3D) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = BLACKJACK_LIVERY_SHADER
+	material.set_shader_parameter("source_albedo", source.albedo_texture)
+	material.set_shader_parameter("source_normal", source.normal_texture)
+	var orm_texture: Texture2D = source.ao_texture
+	if orm_texture == null:
+		orm_texture = source.metallic_texture
+	material.set_shader_parameter("source_orm", orm_texture)
+	material.set_shader_parameter("primary_color", vehicle_color)
+	material.set_shader_parameter("secondary_color", vehicle_secondary_color)
+	material.set_shader_parameter("accent_color", vehicle_accent_color)
+	material.set_shader_parameter("hide_embedded_wheels", not _wheel_style_embedded())
+	return material
 
 
 func _mat(c: Color) -> StandardMaterial3D:
@@ -129,6 +236,87 @@ func _mat(c: Color) -> StandardMaterial3D:
 	m.albedo_color = c
 	m.roughness = 0.65
 	return m
+
+
+func set_paint_color(color: Color) -> void:
+	vehicle_color = color
+	_customization["primary_color"] = color.to_html(false)
+	if _visual_root != null:
+		_configure_imported_meshes(_visual_root)
+
+
+func apply_customization(customization: Dictionary) -> void:
+	_customization = customization.duplicate(true)
+	vehicle_color = Color.from_string("#" + String(_customization.get("primary_color", vehicle_color.to_html(false))), vehicle_color)
+	vehicle_secondary_color = Color.from_string("#" + String(_customization.get("secondary_color", "101820")), Color("101820"))
+	vehicle_accent_color = Color.from_string("#" + String(_customization.get("accent_color", "ffb238")), Color("ffb238"))
+	if is_inside_tree():
+		_rebuild_visuals()
+		_refresh_wheel_visuals_and_mounts()
+
+
+func apply_vehicle_spec(spec: Dictionary) -> void:
+	vehicle_id = String(spec.get("id", "blackjack"))
+	vehicle_label = String(spec.get("name", "BLACKJACK X-17"))
+	vehicle_color = Color.from_string("#" + String(spec.get("color", "4fd2ff")), Color("4fd2ff"))
+	_customization = spec.get("customization", VehicleCatalog.default_customization(vehicle_id)).duplicate(true)
+	vehicle_color = Color.from_string("#" + String(_customization.get("primary_color", vehicle_color.to_html(false))), vehicle_color)
+	vehicle_secondary_color = Color.from_string("#" + String(_customization.get("secondary_color", "101820")), Color("101820"))
+	vehicle_accent_color = Color.from_string("#" + String(_customization.get("accent_color", "ffb238")), Color("ffb238"))
+	var physics: Dictionary = spec.get("physics", {})
+	top_speed_multiplier = float(physics.get("top_speed", 1.0))
+	drive_multiplier = float(physics.get("drive", 1.0))
+	grip_multiplier = float(physics.get("grip", 1.0))
+	mass_multiplier = float(physics.get("mass", 1.0))
+	brake_multiplier = float(physics.get("brake", 1.0))
+	_visual_config = spec.get("visual", {}).duplicate(true)
+	if tuning != null and is_inside_tree():
+		_refresh_mass_properties()
+		_rebuild_collision()
+		_rebuild_visuals()
+		_refresh_wheel_visuals_and_mounts()
+
+
+func _refresh_mass_properties() -> void:
+	mass = tuning.mass * mass_multiplier
+	var w: float = tuning.body_width
+	var h: float = tuning.body_height
+	var l: float = tuning.body_length
+	# Explicit inertia keeps the chassis response deterministic across visual specs.
+	_inertia = Vector3(
+		mass * (h * h + l * l) / 12.0,
+		mass * (w * w + l * l) / 12.0,
+		mass * (w * w + h * h) / 12.0,
+	)
+	inertia = _inertia
+	_static_load = mass * 9.81 / 4.0
+
+
+func _rebuild_collision() -> void:
+	for old_shape: CollisionShape3D in _collision_shapes:
+		remove_child(old_shape)
+		old_shape.queue_free()
+	_collision_shapes.clear()
+
+	var boxes: Array = []
+	var scene_path := String(_visual_config.get("scene", ""))
+	if not scene_path.is_empty() and ResourceLoader.exists(scene_path):
+		boxes = _visual_config.get("collision_boxes", [])
+	if boxes.is_empty():
+		boxes = [{
+			"size": Vector3(tuning.body_width, tuning.body_height * 0.75, tuning.body_length),
+			"position": Vector3(0.0, 0.25, 0.0),
+		}]
+	for box_spec: Dictionary in boxes:
+		var collision := CollisionShape3D.new()
+		collision.name = "ChassisCollision_%d" % _collision_shapes.size()
+		var box := BoxShape3D.new()
+		box.size = _value_vec3(box_spec.get("size"), Vector3.ONE)
+		collision.shape = box
+		collision.position = _value_vec3(box_spec.get("position"), Vector3.ZERO)
+		collision.rotation_degrees = _value_vec3(box_spec.get("rotation_degrees"), Vector3.ZERO)
+		add_child(collision)
+		_collision_shapes.append(collision)
 
 
 func _build_wheels() -> void:
@@ -143,14 +331,268 @@ func _build_wheels() -> void:
 		var side: int = s[1]
 		var wheel := Wheel.new()
 		wheel.name = "Wheel_%s_%s" % [end, "L" if side < 0 else "R"]
-		wheel.position = Vector3(
-			side * tuning.half_track,
-			0.0,
-			(-tuning.half_base if end == "A" else tuning.half_base),
-		)
+		wheel.position = _wheel_mount(end, side)
 		add_child(wheel)
-		wheel.setup(end, side, tuning.wheel_radius(end))
+		wheel.setup(
+			end, side, tuning.wheel_radius(end),
+			_wheel_scene_path(end), _wheel_visual_config(end, side),
+		)
+		wheel.visible = not _wheel_style_embedded()
 		wheels.append(wheel)
+
+
+func _refresh_wheel_visuals_and_mounts() -> void:
+	for wheel: Wheel in wheels:
+		wheel.position = _wheel_mount(wheel.end, wheel.side)
+		wheel.set_visual_scene(
+			_wheel_scene_path(wheel.end), _wheel_visual_config(wheel.end, wheel.side)
+		)
+		wheel.visible = not _wheel_style_embedded()
+	_build_axles()
+	_build_visual_bogie()
+
+
+func _build_visual_bogie() -> void:
+	if _bogie_root != null:
+		remove_child(_bogie_root)
+		_bogie_root.free()
+	_bogie_root = Node3D.new()
+	_bogie_root.name = "VisualMiddleBogie"
+	_bogie_root.visible = bool(_visual_config.get("visual_middle_bogie", false)) \
+		and not _wheel_style_embedded()
+	add_child(_bogie_root)
+	if not _bogie_root.visible:
+		return
+	var bogie_z := float(_visual_config.get("middle_bogie_z", 0.66))
+	for side: int in [-1, 1]:
+		var visual_wheel := Wheel.new()
+		visual_wheel.name = "Bogie_%s" % ("L" if side < 0 else "R")
+		visual_wheel.position = Vector3(
+			side * tuning.half_track, 0.0, bogie_z
+		)
+		_bogie_root.add_child(visual_wheel)
+		visual_wheel.setup(
+			"B", side, tuning.wheel_radius("B"),
+			_wheel_scene_path("B"), _wheel_visual_config("B", side),
+		)
+	var metal := StandardMaterial3D.new()
+	metal.albedo_color = Color("161c20")
+	metal.metallic = 0.86
+	metal.roughness = 0.34
+	var shaft := MeshInstance3D.new()
+	shaft.name = "Shaft"
+	var shaft_mesh := CylinderMesh.new()
+	shaft_mesh.top_radius = 0.082
+	shaft_mesh.bottom_radius = 0.082
+	shaft_mesh.height = tuning.half_track * 2.0 - 0.24
+	shaft_mesh.radial_segments = 14
+	shaft.mesh = shaft_mesh
+	shaft.rotation_degrees = Vector3(0.0, 0.0, 90.0)
+	shaft.position.z = bogie_z
+	shaft.material_override = metal
+	_bogie_root.add_child(shaft)
+	_update_visual_bogie()
+
+
+func _update_visual_bogie() -> void:
+	if _bogie_root == null or not _bogie_root.visible:
+		return
+	var pair := _wheel_pair("B")
+	if pair.size() != 2:
+		return
+	var ride_y := 0.0
+	for wheel: Wheel in pair:
+		var assembly := wheel.get_node_or_null("ModularWheelVisual") as Node3D
+		if assembly != null:
+			ride_y += assembly.position.y * 0.5
+	_bogie_root.position.y = ride_y
+
+
+func _build_axles() -> void:
+	if _axle_root != null:
+		remove_child(_axle_root)
+		_axle_root.free()
+	_axle_visuals.clear()
+	_axle_root = Node3D.new()
+	_axle_root.name = "AxleVisuals"
+	_axle_root.visible = not _wheel_style_embedded()
+	add_child(_axle_root)
+
+	var metal := StandardMaterial3D.new()
+	metal.albedo_color = Color("161c20")
+	metal.metallic = 0.86
+	metal.roughness = 0.34
+	for end: String in ["A", "B"]:
+		var pair := _wheel_pair(end)
+		if pair.size() != 2:
+			continue
+		var left := pair[0] as Wheel
+		var right := pair[1] as Wheel
+		var assembly := Node3D.new()
+		assembly.name = "Axle_%s" % end
+		_axle_root.add_child(assembly)
+		var shaft := MeshInstance3D.new()
+		shaft.name = "Shaft"
+		var shaft_mesh := CylinderMesh.new()
+		shaft_mesh.top_radius = 0.065 if end == "A" else 0.082
+		shaft_mesh.bottom_radius = shaft_mesh.top_radius
+		shaft_mesh.height = maxf(0.35, absf(right.position.x - left.position.x) - 0.24)
+		shaft_mesh.radial_segments = 14
+		shaft.mesh = shaft_mesh
+		shaft.rotation_degrees = Vector3(0.0, 0.0, 90.0)
+		shaft.material_override = metal
+		assembly.add_child(shaft)
+		var differential := MeshInstance3D.new()
+		differential.name = "Differential"
+		var differential_mesh := SphereMesh.new()
+		differential_mesh.radius = 0.13 if end == "A" else 0.17
+		differential_mesh.height = differential_mesh.radius * 1.55
+		differential_mesh.radial_segments = 16
+		differential_mesh.rings = 8
+		differential.mesh = differential_mesh
+		differential.scale = Vector3(1.35, 0.78, 0.92)
+		differential.material_override = metal
+		assembly.add_child(differential)
+		_axle_visuals[end] = assembly
+	_update_axle_visuals()
+
+
+func _wheel_pair(end: String) -> Array[Wheel]:
+	var pair: Array[Wheel] = []
+	for wheel: Wheel in wheels:
+		if wheel.end == end:
+			pair.append(wheel)
+	pair.sort_custom(func(a: Wheel, b: Wheel) -> bool: return a.side < b.side)
+	return pair
+
+
+func _update_axle_visuals() -> void:
+	if _axle_root == null:
+		return
+	_axle_root.visible = not _wheel_style_embedded()
+	for end: String in _axle_visuals:
+		var pair := _wheel_pair(end)
+		if pair.size() != 2:
+			continue
+		var left := pair[0] as Wheel
+		var right := pair[1] as Wheel
+		var left_y := left.position.y - (left.ride_distance - left.radius)
+		var right_y := right.position.y - (right.ride_distance - right.radius)
+		var assembly := _axle_visuals[end] as Node3D
+		assembly.position = Vector3(
+			(left.position.x + right.position.x) * 0.5,
+			(left_y + right_y) * 0.5,
+			(left.position.z + right.position.z) * 0.5,
+		)
+	_update_visual_bogie()
+
+
+func _build_part_sockets() -> void:
+	_part_sockets.clear()
+	var socket_specs: Dictionary = _visual_config.get("part_sockets", {})
+	for socket_name: String in socket_specs:
+		var socket := Node3D.new()
+		socket.name = "Socket_%s" % socket_name.to_pascal_case()
+		var transform_spec: Dictionary = socket_specs[socket_name]
+		socket.position = _value_vec3(transform_spec.get("position"), Vector3.ZERO)
+		socket.rotation_degrees = _value_vec3(transform_spec.get("rotation_degrees"), Vector3.ZERO)
+		socket.scale = _value_vec3(transform_spec.get("scale"), Vector3.ONE)
+		_visual_root.add_child(socket)
+		_part_sockets[socket_name] = socket
+
+
+func _rebuild_parts() -> void:
+	var selections: Dictionary = _customization.get("parts", {})
+	var scene_map: Dictionary = _visual_config.get("part_scenes", {})
+	for socket_name: String in _part_sockets:
+		var socket := _part_sockets[socket_name] as Node3D
+		for child: Node in socket.get_children():
+			child.queue_free()
+		var selection := String(selections.get(socket_name, "stock"))
+		if selection in ["", "none", "stock"]:
+			continue
+		var socket_scenes: Dictionary = scene_map.get(socket_name, {})
+		var scene_path := String(socket_scenes.get(selection, ""))
+		if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
+			continue
+		var packed := load(scene_path) as PackedScene
+		if packed != null:
+			var part_instance := packed.instantiate() as Node3D
+			if part_instance == null:
+				continue
+			if socket_name == "hood_engine":
+				var engine_material := StandardMaterial3D.new()
+				engine_material.albedo_color = Color("343a3d")
+				engine_material.metallic = 0.82
+				engine_material.roughness = 0.28
+				if part_instance is MeshInstance3D:
+					(part_instance as MeshInstance3D).material_override = engine_material
+				for mesh_node: Node in part_instance.find_children(
+					"*", "MeshInstance3D", true, false
+				):
+					(mesh_node as MeshInstance3D).material_override = engine_material
+			socket.add_child(part_instance)
+
+
+func get_part_socket(socket_name: String) -> Node3D:
+	return _part_sockets.get(socket_name) as Node3D
+
+
+func _wheel_mount(end: String, side: int) -> Vector3:
+	var fallback := Vector3(
+		side * tuning.half_track,
+		0.0,
+		-tuning.half_base if end == "A" else tuning.half_base,
+	)
+	var mounts: Dictionary = _visual_config.get("wheel_mounts", {})
+	var key := "%s_%s" % [end, "L" if side < 0 else "R"]
+	return _value_vec3(mounts.get(key), fallback)
+
+
+func _wheel_scene_path(end: String) -> String:
+	var style := _selected_wheel_style()
+	var key := "wheel_scene_a" if end == "A" else "wheel_scene_b"
+	return String(style.get(key, _visual_config.get(key, "")))
+
+
+func _selected_wheel_style() -> Dictionary:
+	var style_name := String(_customization.get("wheel_style", "stock"))
+	var wheel_styles: Dictionary = _visual_config.get("wheel_styles", {})
+	return wheel_styles.get(style_name, {}) as Dictionary
+
+
+func _wheel_style_embedded() -> bool:
+	return bool(_selected_wheel_style().get(
+		"embedded", _visual_config.get("embedded_wheels", false)
+	))
+
+
+func _wheel_visual_config(end: String, side: int) -> Dictionary:
+	var style := _selected_wheel_style().duplicate(true)
+	var suffix := "a" if end == "A" else "b"
+	for key: String in [
+		"rim_scale", "rim_offset", "rim_rotation_degrees", "assembly_offset", "tread_scale"
+	]:
+		var end_key := "%s_%s" % [key, suffix]
+		if style.has(end_key):
+			style[key] = style[end_key]
+	# Move the rim face toward the exterior side of the tire.
+	var offset := _value_vec3(style.get("rim_offset"), Vector3.ZERO)
+	offset.x *= side
+	style["rim_offset"] = offset
+	return style
+
+
+func _config_vec3(key: String, fallback: Vector3) -> Vector3:
+	return _value_vec3(_visual_config.get(key), fallback)
+
+
+static func _value_vec3(value: Variant, fallback: Vector3) -> Vector3:
+	if value is Vector3:
+		return value
+	if value is Array and value.size() == 3:
+		return Vector3(float(value[0]), float(value[1]), float(value[2]))
+	return fallback
 
 
 # ---------------------------------------------------------------- the swap
@@ -235,6 +677,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		wheel.cast(space, exclude, hp, basis.y, tuning.susp_rest(wheel.end))
 		hardpoints.append(hp)
 		r_worlds.append(r_world)
+	_update_axle_visuals()
 
 	# ---- drive command, from what the ACTIVE pair is standing on ----
 	reversing = brake > 0.05 and throttle < 0.05 and fwd_speed < 0.6 and speed < 2.5
@@ -262,14 +705,14 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		accel_mod = 1.0
 		top_mod = 1.0
 
-	var top: float = tuning.top_speed(active_end) * top_mod
+	var top: float = tuning.top_speed(active_end) * top_speed_multiplier * top_mod
 	# Taper against speed IN THE DIRECTION WE ARE DRIVING, not raw speed. This is
 	# what lets End B pull full torque against the momentum it inherited.
 	var drive_dir: float = 1.0 if thr >= 0.0 else -1.0
 	var dir_top: float = maxf(4.0, top * (1.0 if drive_dir > 0.0 else 0.45))
 	var taper: float = clampf(1.0 - (fwd_speed * drive_dir) / dir_top, 0.0, 1.0)
 	var gate_open: float = 0.0 if power_cut > 0.0 else engage
-	var drive_per_wheel: float = thr * tuning.drive(active_end) * accel_mod * taper * gate_open / 2.0
+	var drive_per_wheel: float = thr * tuning.drive(active_end) * drive_multiplier * accel_mod * taper * gate_open / 2.0
 	dbg["taper"] = taper
 	dbg["top"] = top
 	dbg["accel_mod"] = accel_mod
@@ -320,7 +763,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 
 		var sid: int = wheel.surface_id
 		var hb: bool = handbrake and wheel.end == hb_end
-		var mu: float = tuning.tire_grip(wheel.end) * Surfaces.GRIP[sid] * Surfaces.mod_grip(wheel.end, sid)
+		var mu: float = tuning.tire_grip(wheel.end) * grip_multiplier * Surfaces.GRIP[sid] * Surfaces.mod_grip(wheel.end, sid)
 		if hb:
 			mu *= tuning.handbrake_grip
 		var max_f: float = mu * load
@@ -335,7 +778,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		# bog on the wrong end is crippled rather than welded to the spot.
 		var bog: float = 0.4 + 0.6 * minf(1.0, absf(lon) / 8.0)
 		fx -= Surfaces.ROLL[sid] * load * _soft(lon) * bog
-		fx -= brk * tuning.brake_force(active_end) * 0.25 * _soft(lon)
+		fx -= brk * tuning.brake_force(active_end) * brake_multiplier * 0.25 * _soft(lon)
 		if hb:
 			fx -= max_f * tuning.handbrake_lock * _soft(lon, 6.0)
 		var fy: float = -max_f * tanh(lat * tuning.slip_k)
@@ -401,7 +844,7 @@ func _tick_timers(dt: float) -> void:
 
 
 func _tick_steering(dt: float) -> void:
-	var top_ref: float = maxf(1.0, tuning.top_speed(active_end))
+	var top_ref: float = maxf(1.0, tuning.top_speed(active_end) * top_speed_multiplier)
 	var lock: float = tuning.max_steer(active_end) * (
 		1.0 - tuning.steer_falloff(active_end) * minf(1.0, speed / top_ref))
 	# Negated: a positive rotation about +Y turns the forward vector toward -X,

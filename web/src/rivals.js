@@ -13,20 +13,30 @@ function angDelta(a, b) {
   return d;
 }
 
-export function createRivals(track, count = T.rivals.count) {
+export function createRivals(track, count = T.rivals.count, vehiclePool = []) {
   const out = [];
   const palette = ['#d94f6a', '#8fd94f'];
+  const shuffled = [...vehiclePool].sort(() => Math.random() - 0.5);
   for (let i = 0; i < count; i++) {
     const idx = (track.pts.length - 18 * (i + 1)) % track.pts.length;
     const p = track.pts[idx];
     const off = (i % 2 ? 1 : -1) * 5;
     const end = preferredEnd(p.s);
+    const model = shuffled.length ? shuffled[i % shuffled.length] : null;
     // body angle is flipped for End B so the ACTIVE end points down the track
     const v = createVehicle(
       p.x - Math.sin(p.ang) * off,
       p.y + Math.cos(p.ang) * off,
       p.ang + (end === 'B' ? Math.PI : 0),
-      { isRival: true, color: palette[i % palette.length], name: `RIVAL ${i + 1}`, activeEnd: end },
+      {
+        isRival: true,
+        color: model?.color || palette[i % palette.length],
+        name: model?.name || `RIVAL ${i + 1}`,
+        vehicleId: model?.id,
+        vehicleLabel: model?.name,
+        spec: model?.physics,
+        activeEnd: end,
+      },
     );
     v.trackIdx = idx;
     v.ai = { missileCd: 3 + i * 2.5, lane: off, skill: T.rivals.skill - i * 0.05 };
@@ -99,7 +109,7 @@ export function rivalControl(v, track, player, ordnance, dt) {
   // mud sweeper at 150 km/h and leave the circuit entirely.
   const horizon = 40 + v.speed * 2.8;
   const limit = Math.min(
-    cfg.topSpeed * skill,
+    cfg.topSpeed * (v.spec?.topSpeed || 1) * skill,
     cornerLimit(track, v.trackIdx, horizon, T[v.activeEnd].tireGrip) * skill,
   );
   let throttle = 0, brake = 0;

@@ -1,0 +1,42 @@
+{
+  "vehicle": "Blackjack X-17",
+  "generator": "Blender 5.2.2 blueprint-traced continuous-cage builder",
+  "source": "/home/crazyh/Documents/ChatGPT/Whiplash Shift/tools/vehicle_pipeline/blender/blackjack_production_v2.blend",
+  "gameplay": {
+    "path": "/home/crazyh/Documents/ChatGPT/Whiplash Shift/godot/assets/vehicles/models/blackjack/blackjack_production_v2.glb",
+    "objects": 97,
+    "vertices": 17820,
+    "triangles": 35108
+  },
+  "lod1": {
+    "path": "/home/crazyh/Documents/ChatGPT/Whiplash Shift/godot/assets/vehicles/models/blackjack/blackjack_production_v2_lod1.glb",
+    "objects": 97,
+    "vertices": 8404,
+    "triangles": 16357
+  },
+  "materials": [
+    "ArmorProtected",
+    "BrushedMetal",
+    "Glass",
+    "Grille",
+    "Gunmetal",
+    "Lights",
+    "Mirror",
+    "Paint_Accent",
+    "Paint_Primary",
+    "Paint_Secondary",
+    "Rubber"
+  ],
+  "references": [
+    "/home/crazyh/Documents/ChatGPT/Whiplash Shift/godot/assets/vehicles/models/blackjack/blackjack_realistic_candidate_v2.png",
+    "/home/crazyh/Documents/ChatGPT/Whiplash Shift/godot/assets/vehicles/models/blackjack/blackjack_rugged_front.png",
+    "/home/crazyh/Documents/ChatGPT/Whiplash Shift/godot/assets/vehicles/models/blackjack/blackjack_interceptor_front.png"
+  ],
+  "renders": {
+    "side": "/home/crazyh/Documents/ChatGPT/Whiplash Shift/godot/assets/vehicles/models/blackjack/blackjack_production_v2_side.png",
+    "three_quarter": "/home/crazyh/Documents/ChatGPT/Whiplash Shift/godot/assets/vehicles/models/blackjack/blackjack_production_v2_three_quarter.png",
+    "rugged_front": "/home/crazyh/Documents/ChatGPT/Whiplash Shift/godot/assets/vehicles/models/blackjack/blackjack_production_v2_rugged_front.png",
+    "interceptor_front": "/home/crazyh/Documents/ChatGPT/Whiplash Shift/godot/assets/vehicles/models/blackjack/blackjack_production_v2_interceptor_front.png"
+  },
+  "physics_changed": false
+}

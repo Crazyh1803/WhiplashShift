@@ -1,0 +1,80 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "z_image_turbo_bf16.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_3_4b.safetensors",
+      "type": "lumina2",
+      "device": "default"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {"vae_name": "ae.safetensors"}
+  },
+  "4": {
+    "class_type": "ModelSamplingAuraFlow",
+    "inputs": {
+      "model": ["1", 0],
+      "shift": 3.0,
+      "sampling": "flow"
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": ["2", 0],
+      "text": "Isolated production game-asset reference render of one complete belt-driven Roots supercharger and engine blower assembly for a retro-futuristic interceptor car. Instantly recognizable automotive engine hardware: rectangular ribbed aluminum blower case, twin rectangular air intake scoops on top, injector hat, visible front drive pulley and toothed belt, compact intake manifold base, bolts, mechanical seams and realistic proportions. Hard-surface industrial design, dark gunmetal steel and brushed aluminum, neutral three-quarter isometric view showing front and both sides, centered object, pure white studio background, flat even lighting, sharp silhouette, no cast shadow."
+    }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": ["2", 0],
+      "text": "car, vehicle, hood, full engine block, wheels, chassis, background scenery, floor, dramatic lighting, shadow, smoke, flames, exhaust pipes, organic shape, toy, cartoon, text, logo, watermark, cropped object, duplicate object, multiple views, exploded view"
+    }
+  },
+  "7": {
+    "class_type": "EmptySD3LatentImage",
+    "inputs": {
+      "width": 768,
+      "height": 768,
+      "batch_size": 1
+    }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["4", 0],
+      "positive": ["5", 0],
+      "negative": ["6", 0],
+      "latent_image": ["7", 0],
+      "seed": 68021497531,
+      "steps": 18,
+      "cfg": 2.0,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1.0
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["8", 0],
+      "vae": ["3", 0]
+    }
+  },
+  "10": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["9", 0],
+      "filename_prefix": "whiplash/blackjack/supercharger_reference"
+    }
+  }
+}

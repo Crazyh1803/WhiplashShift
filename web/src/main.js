@@ -13,6 +13,7 @@ import { createRivals, rivalControl } from './rivals.js';
 import { createOrdnance, stepOrdnance, sampleHazard, puff } from './weapons.js';
 import { createRenderer } from './render.js';
 import { drawHud } from './hud.js';
+import { createGarage, VEHICLES } from './garage.js';
 
 const DT = 1 / 120;
 const TOTAL_LAPS = 3;
@@ -51,7 +52,11 @@ const copilot = createCopilot();
 
 const gateByIdx = new Map(track.gates.map((g) => [g.idx, g]));
 
-const player = createVehicle(track.start.x, track.start.y, track.start.ang, { name: 'YOU' });
+let selectedVehicle = VEHICLES[0];
+const player = createVehicle(track.start.x, track.start.y, track.start.ang, {
+  name: 'YOU', vehicleId: selectedVehicle.id, vehicleLabel: selectedVehicle.name,
+  color: selectedVehicle.color, spec: selectedVehicle.physics,
+});
 let rivals = createRivals(track);
 const all = () => [player, ...rivals];
 
@@ -66,7 +71,28 @@ const timing = { lap: 0, total: TOTAL_LAPS, lapTime: 0, best: null, laps: [] };
 const game = {
   paused: false, showHelp: true, finished: false, started: false,
   scripted: null, autopilot: false, lastCheckpoint: 0, sinceLap: 0, position: 1,
+  inGarage: true,
 };
+
+const brand = document.getElementById('brand');
+if (brand) brand.style.display = 'none';
+const cpuPool = () => VEHICLES.filter((vehicle) => vehicle.id !== selectedVehicle.id);
+const garage = createGarage({
+  root: document.getElementById('garage-root'),
+  onStart({ callsign, vehicle }) {
+    selectedVehicle = vehicle;
+    player.name = callsign;
+    player.vehicleId = vehicle.id;
+    player.vehicleLabel = vehicle.name;
+    player.color = vehicle.color;
+    player.spec = { ...vehicle.physics };
+    rivals = createRivals(track, T.rivals.count, cpuPool());
+    game.inGarage = false;
+    game.showHelp = false;
+    if (brand) brand.style.display = '';
+    audio.start();
+  },
+});
 
 // ---------------------------------------------------------------- lap/gates
 function advance(v, onIndex) {
@@ -260,7 +286,7 @@ function restart() {
   timing.lap = 0; timing.lapTime = 0; timing.laps.length = 0;
   game.finished = false; game.started = false; game.sinceLap = 0; game.lastCheckpoint = 0;
   ordnance.missiles.length = 0; ordnance.bullets.length = 0; ordnance.hazards.length = 0;
-  rivals = createRivals(track);
+  rivals = createRivals(track, T.rivals.count, cpuPool());
   say(copilot, 'GRID RESET', 'info');
 }
 
@@ -303,7 +329,7 @@ function frame(now) {
   if (liveControl.throttle > 0.01 && !audio.ready) { audio.start(); game.showHelp = false; }
   if (touch) touch.setEnd(player.activeEnd, player.cooldown > 0);
 
-  const running = !game.paused && !game.finished && !game.showHelp;
+  const running = !game.inGarage && !game.paused && !game.finished && !game.showHelp;
   if (running) {
     acc += dt;
     let guard = 0;
@@ -346,7 +372,7 @@ requestAnimationFrame(frame);
 
 // ---------------------------------------------------------------- test hook
 window.__WS = {
-  T, track, player, copilot, ordnance, renderer, timing, game, touch,
+  T, track, player, copilot, ordnance, renderer, timing, game, touch, garage, vehicles: VEHICLES,
   get rivals() { return rivals; },
   setControl(c) { game.autopilot = false; game.scripted = { throttle: 0, brake: 0, steer: 0, handbrake: false, ...c }; },
   releaseControl() { game.autopilot = false; game.scripted = null; },
@@ -381,5 +407,5 @@ window.__WS = {
     };
   },
   surfaceAt: (x, y) => SURFACES[track.sampleSurface(x, y)].key,
-  begin() { game.showHelp = false; game.paused = false; },
+  begin() { if (game.inGarage) garage.startForTests(); game.showHelp = false; game.paused = false; },
 };

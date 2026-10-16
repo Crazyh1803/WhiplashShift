@@ -1,4 +1,4 @@
-## M0 scene: the greybox circuit, a flat proving ground beside it, one car.
+## Driving scene: the greybox circuit, proving ground, player and CPU drivers.
 ##
 ## Controls are deliberately identical to the web prototype so muscle memory
 ## transfers and a side-by-side comparison is honest rather than a confound.
@@ -7,18 +7,24 @@
 extends Node3D
 
 const SPAWN_LIFT := 1.4
+const VEHICLE_AUDIO_SCRIPT := preload("res://scripts/vehicle_audio.gd")
 
 var car: Vehicle
 var rig: CameraRig
 var hud: Hud
 var overlay: DebugOverlay
+var vehicle_audio: Node
+var course: CourseDefinition
 var track: Array
+var cpu_drivers: Array[CpuDriver] = []
+var cpu_cars: Array[Vehicle] = []
 var _spawn: Transform3D
 
 
 func _ready() -> void:
 	_build_world()
 	_build_car()
+	_build_cpu_drivers()
 	_build_ui()
 
 
@@ -62,25 +68,50 @@ func _build_world() -> void:
 	ground.add_child(gm)
 	add_child(ground)
 
-	track = TrackData.author()
+	course = TrackData.build_course()
+	track = course.points
 	TrackBuilder.build(self, track)
+	TrackBuilder.build_guard_rails(self, track)
 	TrackBuilder.build_proving_ground(self, Vector3(-620.0, 0.0, 0.0))
 
 
 func _build_car() -> void:
-	car = Vehicle.new()
+	car = preload("res://scripts/vehicle_factory.gd").create(GameSession.selected_vehicle())
 	car.name = "Car"
 	var tune: Resource = load("res://resources/default_tuning.tres")
 	car.tuning = tune as TuningProfile if tune else TuningProfile.new()
 	add_child(car)
 
-	var p: Dictionary = track[0]
-	var dir: Vector3 = p["dir"]
-	_spawn = Transform3D.IDENTITY
-	# yaw so the ACTIVE end (End A, body -Z) points down the track
-	_spawn.basis = Basis(Vector3.UP, atan2(-dir.x, -dir.z))
-	_spawn.origin = p["pos"] + Vector3(0.0, SPAWN_LIFT, 0.0)
+	_spawn = course.start_transform(SPAWN_LIFT)
 	_respawn()
+
+	vehicle_audio = VEHICLE_AUDIO_SCRIPT.new()
+	vehicle_audio.name = "VehicleAudio"
+	vehicle_audio.target = car
+	add_child(vehicle_audio)
+
+
+func _build_cpu_drivers() -> void:
+	var roster: Array[String] = GameSession.cpu_vehicle_ids.duplicate()
+	if roster.size() < 2:
+		roster = VehicleCatalog.random_cpu_roster(2, GameSession.selected_vehicle_id)
+	for i in 2:
+		var spec := VehicleCatalog.get_vehicle(roster[i])
+		var cpu := preload("res://scripts/vehicle_factory.gd").create(spec)
+		cpu.name = "CPU_%d_%s" % [i + 1, String(spec["name"]).replace(" ", "_")]
+		cpu.tuning = car.tuning
+		add_child(cpu)
+		var driver := CpuDriver.new()
+		driver.name = "CpuDriver_%d" % (i + 1)
+		driver.lane_offset = -4.0 if i == 0 else 4.0
+		driver.skill = 0.72 if i == 0 else 0.80
+		driver.setup(cpu, course, 4 + i * 5)
+		add_child(driver)
+		driver.reset(4 + i * 5)
+		cpu_cars.append(cpu)
+		cpu_drivers.append(driver)
+	for driver: CpuDriver in cpu_drivers:
+		driver.peers.assign([car] + cpu_cars)
 
 
 func _build_ui() -> void:
@@ -89,7 +120,10 @@ func _build_ui() -> void:
 	add_child(rig)
 	hud = Hud.new()
 	hud.target = car
+	hud.pilot_callsign = GameSession.callsign
+	hud.cpu_drivers = cpu_drivers
 	add_child(hud)
+	hud.main_menu_requested.connect(_return_to_menu)
 	overlay = DebugOverlay.new()
 	overlay.target = car
 	add_child(overlay)
@@ -118,12 +152,29 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				car.swap_ends("manual")
 		KEY_R:
 			_respawn()
+			for i in cpu_drivers.size():
+				cpu_drivers[i].reset(4 + i * 5)
 		KEY_C:
 			rig.toggle_mode()
 		KEY_F1:
 			overlay.toggle()
+		KEY_F2:
+			for driver: CpuDriver in cpu_drivers:
+				driver.enabled = not driver.enabled
+				if not driver.enabled:
+					driver.target.throttle = 0.0
+					driver.target.brake = 0.0
+					driver.target.steer = 0.0
+					driver.target.handbrake = false
+					driver.target.freeze = true
+				else:
+					driver.target.freeze = false
 		KEY_ESCAPE:
-			get_tree().quit()
+			_return_to_menu()
+
+
+func _return_to_menu() -> void:
+	get_tree().change_scene_to_file("res://scenes/garage.tscn")
 
 
 func _physics_process(_delta: float) -> void:

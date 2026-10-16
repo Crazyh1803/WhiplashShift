@@ -9,6 +9,16 @@ extends RefCounted
 const STEP := 3.5
 const CENTRE := Vector2(490.0, 425.0)   # web ORIGIN + WORLD/2
 
+
+static func build_course() -> CourseDefinition:
+	return CourseDefinition.new().configure(
+		"split_shift",
+		"Split Shift",
+		"industrial_scrub",
+		3,
+		author(),
+	)
+
 static func _straight(out: Array, x0: float, y0: float, x1: float, y1: float, w: float, s: int) -> void:
 	var d := Vector2(x1 - x0, y1 - y0)
 	var n := maxi(1, int(round(d.length() / STEP)))

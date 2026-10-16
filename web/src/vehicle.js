@@ -41,9 +41,12 @@ export function createVehicle(x, y, ang, opts = {}) {
     isRival: !!opts.isRival,
     color: opts.color || '#e8eef5',
     name: opts.name || 'PLAYER',
+    vehicleId: opts.vehicleId || 'prototype',
+    vehicleLabel: opts.vehicleLabel || opts.name || 'PROTOTYPE',
+    spec: { topSpeed: 1, drive: 1, grip: 1, mass: 1, brake: 1, ...(opts.spec || {}) },
 
     // read-only-ish telemetry the HUD and AI consume
-    speed: 0, fwdSpeed: 0, surfaceUnder: SID.TARMAC, wrongEnd: false,
+    speed: 0, fwdSpeed: 0, slip: 0, spin: 0, surfaceUnder: SID.TARMAC, wrongEnd: false,
     trackIdx: 0, lap: 0, progress: 0,
   };
   return v;
@@ -101,7 +104,8 @@ export function stepVehicle(v, ctrl, dt, world) {
   const c = T.chassis;
   const cfg = cfgOf(v);
   const fs = forwardSign(v);
-  const mass = c.mass;
+  const spec = v.spec || { topSpeed: 1, drive: 1, grip: 1, mass: 1, brake: 1 };
+  const mass = c.mass * spec.mass;
   const inertia = mass * (c.length * c.length + c.width * c.width) / 12;
   const baseLoad = (mass * 9.81) / 4;
 
@@ -121,7 +125,7 @@ export function stepVehicle(v, ctrl, dt, world) {
   if (v.lastSwap) v.lastSwap.t += dt;
 
   // --- steering ---
-  const topRef = Math.max(1, cfg.topSpeed);
+  const topRef = Math.max(1, cfg.topSpeed * spec.topSpeed);
   const lock = cfg.maxSteer * (1 - cfg.steerFalloff * Math.min(1, v.speed / topRef));
   let steerCmd = ctrl.steer;
   if (ctrl.assistSteer) steerCmd = Math.max(-1, Math.min(1, steerCmd + ctrl.assistSteer));
@@ -153,7 +157,7 @@ export function stepVehicle(v, ctrl, dt, world) {
   accelMod = n ? accelMod / n : 1;
   topMod = n ? topMod / n : 1;
 
-  const topSpeed = cfg.topSpeed * topMod;
+  const topSpeed = cfg.topSpeed * topMod * spec.topSpeed;
   // Taper against speed IN THE DIRECTION WE ARE DRIVING, not raw speed. This is
   // what lets End B pull full torque against the momentum it inherited from the
   // swap - the Pure Reversal depends on it.
@@ -161,7 +165,7 @@ export function stepVehicle(v, ctrl, dt, world) {
   const dirTop = Math.max(4, topSpeed * (driveDir > 0 ? 1 : 0.45));
   const taper = Math.max(0, Math.min(1, 1 - (v.fwdSpeed * driveDir) / dirTop));
   const gateOpen = v.powerCut > 0 ? 0 : v.engage;
-  const drivePerWheel = (throttle * cfg.maxDrive * accelMod * taper * gateOpen) / 2;
+  const drivePerWheel = (throttle * cfg.maxDrive * spec.drive * accelMod * taper * gateOpen) / 2;
 
   // The handbrake locks the pair TRAILING the velocity vector, not the inactive
   // pair. In normal driving those are the same thing. Straight after a high-speed
@@ -199,7 +203,7 @@ export function stepVehicle(v, ctrl, dt, world) {
       load *= 1 + cfg.downforce * Math.pow(Math.min(v.speed, 80) / 60, 2);
     }
     const hb = ctrl.handbrake && w.end === hbEnd;
-    let mu = T[w.end].tireGrip * surf.grip * em.grip;
+    let mu = T[w.end].tireGrip * spec.grip * surf.grip * em.grip;
     if (hb) mu *= T.grip.handbrakeGrip;
     const maxF = mu * load;
 
@@ -212,7 +216,7 @@ export function stepVehicle(v, ctrl, dt, world) {
     // bog on the wrong end is crippled rather than welded to the spot.
     const bog = 0.4 + 0.6 * Math.min(1, Math.abs(lon) / 8);
     fx -= surf.roll * load * soft(lon) * bog;
-    fx -= brake * cfg.brake * 0.25 * soft(lon);
+    fx -= brake * cfg.brake * spec.brake * 0.25 * soft(lon);
     if (hb) fx -= maxF * T.grip.handbrakeLock * soft(lon, 6);
     let fy = -maxF * Math.tanh(lat * T.grip.slipK);
 

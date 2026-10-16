@@ -1,7 +1,9 @@
-# Whiplash Shift — M0 physics spike (Godot 4.6)
+# Whiplash Shift — driving foundation and CPU drivers (Godot 4.6)
 
-One question: **does the swap still feel right in 3D?** No networking, no weapons, no
-bots, no round structure. Handling and nothing else.
+The original physics spike now opens through a native garage with seven selectable
+chassis, persistent callsign entry, and a randomized CPU roster. Reusable course,
+progress tracking, and vehicle-specific handling feed the proving-ground race.
+Race countdowns, results, and the four-course arcade mode are the next phase.
 
 ## Running it
 
@@ -11,6 +13,17 @@ as a project and press play, or:
 ```
 godot --path godot
 ```
+
+## Garage
+
+The main scene is `scenes/garage.tscn`. Arrow keys or the on-screen controls cycle
+through all seven technical blueprints; `Enter` or **IGNITE** starts the race. The
+callsign is saved to `user://profile.cfg`. Selection passes through the `GameSession`
+autoload, which also assigns two unique CPU vehicles from the remaining roster.
+
+Each chassis has bounded multipliers for top speed, drive, grip, mass, and braking.
+`BLACKJACK X-17` is the 1.0 baseline, so the original handling and regression figures
+remain unchanged. CPU speed planning reads the same modifiers as the physical car.
 
 ## Controls
 
@@ -26,14 +39,29 @@ side-by-side comparison isn't confounded by different bindings.
 | `R` | respawn on the grid |
 | `C` | camera: 180° swing vs. instant snap |
 | `F1` | debug overlay — per-wheel load, slip, spin, and the force budget |
+| `F2` | pause/resume both CPU cars |
 | `Esc` | quit |
 
 ## What's here
 
-The greybox circuit (tarmac → rumble → mud sweeper → water → boulders → ice → hairpin →
+The guarded greybox circuit (tarmac → rumble → mud sweeper → water → boulders → ice → hairpin →
 gravel return → rumble → tarmac) and, off to the west at x ≈ −620, a flat **proving
 ground**: strips of each surface plus a launch ramp. Use the circuit to judge the game
 and the proving ground to isolate a handling problem when the circuit makes it ambiguous.
+
+The vehicle audio is generated at runtime: engine load and pitch follow acceleration,
+lift-off/braking brings in a deceleration whine, and swaps and rail impacts have distinct
+synthesised one-shots. No external audio assets are required.
+
+Two CPU cars start ahead of the player in separate lanes. They use identical tuning
+and physical inputs, plan speed from upcoming curvature and surface grip, perform
+swaps through physical turns, and brake for cars ahead. The top-right HUD shows each
+CPU's speed, active end, and lap. `R` resets the player and CPU drivers together.
+The current drivers keep End B over the short ice patch to avoid two consecutive
+turnarounds, while still slowing for its low grip.
+
+Off-course, stuck, or overturned CPUs recover to their last valid checkpoint.
+Recovery does not award distance or laps.
 
 ## Tuning
 
@@ -42,13 +70,23 @@ move values **while it runs**. That's the point of the spike — findings are mu
 useful as numbers than as adjectives. If something feels wrong, open `F1` first: "it feels
 floaty" is hard to act on, "wheel loads drop 40% over crests" isn't.
 
+## Production vehicle assets
+
+`../tools/vehicle_pipeline/run_pipeline.py` batches the seven blueprints through the
+local ComfyUI img2img and Hunyuan3D workflows. It installs a body, aerodynamic End A
+wheel, rugged End B wheel, and manifest under `assets/vehicles/models/<vehicle-id>/`.
+Until a body GLB exists, the runtime keeps the current primitive fallback. Imported art
+is visual-only: `scripts/vehicle.gd` retains the tuned rigid-body force model, applies
+the selected paint through a flat material override, and uses catalog-owned collision
+boxes and four independent wheel hardpoints.
+
 ## Tests
 
 ```
 godot --headless --fixed-fps 120 --path godot res://tests/test_main.tscn
 ```
 
-35 checks, ~30 s. Exits non-zero on failure. `--fixed-fps` decouples from wall clock, so
+45 checks. Exits non-zero on failure. `--fixed-fps` decouples from wall clock, so
 ~4 minutes of simulated driving runs in seconds. No addon — just a scene and
 `await get_tree().physics_frame`, so the tests read as straight-line code.
 
@@ -57,16 +95,33 @@ sign traps, suspension behaviour, and **faithfulness to the web prototype**: ter
 on each surface for each end, measured against the 2D model at matched duration. Every case
 lands within 8%.
 
+CPU integration checks:
+
+```sh
+godot --headless --fixed-fps 120 --path godot res://tests/cpu_main.tscn
+```
+
+17 checks, including 420 seconds of simulated two-car driving. Both drivers must
+complete at least two laps with bounded recoveries. The suite also checks swap
+momentum, real off-course recovery, braking for stopped peers, and progress
+accounting around the finish line and checkpoint resets.
+
 ## Structure
 
 | file | role |
 |---|---|
+| `scenes/garage.tscn`, `scripts/garage.gd` | login, blueprint carousel, stats and ignition flow |
+| `scripts/vehicle_catalog.gd`, `scripts/game_session.gd` | chassis data and cross-scene selection state |
 | `scripts/vehicle.gd` | the thesis: rigid body, four wheels, the swap |
 | `scripts/wheel.gd` | suspension raycast and what it found |
 | `scripts/surfaces.gd` | surface table + per-end modifiers |
 | `scripts/tuning.gd` | every tunable number |
-| `scripts/track_data.gd` | the circuit, ported from the web build's authoring |
+| `scripts/course_definition.gd` | reusable course identity, laps, length, checkpoints and start transform |
+| `scripts/track_progress.gd` | centreline projection, measured travel, laps and recovery anchors |
+| `scripts/cpu_driver.gd` | pursuit steering, speed planning, swaps, traffic braking and recovery |
+| `scripts/track_data.gd` | the first circuit, ported from the web build's authoring |
 | `scripts/track_builder.gd` | extrudes it into a ribbon with surface metadata |
+| `scripts/vehicle_audio.gd` | procedural engine, deceleration, swap, and rail-impact audio |
 | `scripts/camera_rig.gd` | the 180° swing |
 | `scripts/hud.gd`, `debug_overlay.gd` | readouts |
 | `scripts/proving_ground.gd` | scene assembly and input |

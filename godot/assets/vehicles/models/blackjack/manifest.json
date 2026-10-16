@@ -1,0 +1,34 @@
+{
+  "vehicle_id": "blackjack",
+  "generator": "ComfyUI Hunyuan3D v2.1",
+  "source_blueprint": "/home/crazyh/Downloads/WhiplashShiftModels/SpyHunter.jpg",
+  "assets": {
+    "body": {
+      "file": "blackjack.glb",
+      "sha256": "d6201f816f1247ff351cb63383bbfb8e077c33d192ee0a9cf0a9e696e1db8420",
+      "vertices": 38477,
+      "triangles": 51376,
+      "textures": 3
+    },
+    "wheel_aero": {
+      "file": "wheel_aero.glb",
+      "sha256": "7f867f18fb1faac6a415186feb13793750600d859a8b38b70d3ec8e117ace93c",
+      "vertices": 4080,
+      "triangles": 2681,
+      "textures": 0
+    },
+    "wheel_rugged": {
+      "file": "wheel_rugged.glb",
+      "sha256": "fc445a6f08522e0a0b1579142386cc710d214066ea9c3fb182919f4a1b98538d",
+      "vertices": 4532,
+      "triangles": 2987,
+      "textures": 0
+    }
+  },
+  "runtime": {
+    "paint": "primary, secondary, and accent shader channels",
+    "decals": "UV/tangent body surface remains compatible with Godot Decal projection",
+    "wheels": "aero and rugged rims are separate GLBs mounted inside modular tire assemblies",
+    "physics": "visual-only replacement; tuned RigidBody3D and suspension parameters are unchanged"
+  }
+}
