@@ -2,7 +2,6 @@
 extends Vehicle
 
 const DISPLAY_RADIUS := {"A": 0.40, "B": 0.43}
-const SOURCE_X := {"A": 1.66, "B": -1.72}
 
 
 func _configure_imported_meshes(node: Node) -> void:
@@ -43,12 +42,21 @@ func _install_authored_wheels() -> void:
 		return
 	var meshes := model.find_children("Wheel_*", "MeshInstance3D", true, false)
 	for wheel: Wheel in wheels:
-		var source_center := Vector3(
-			float(SOURCE_X[wheel.end]), float(DISPLAY_RADIUS[wheel.end]), wheel.side * 0.91
-		)
-		# Source GLB is X-long, with the coupe on +X. The catalog turns it toward -Z.
-		# Work entirely in car-local coordinates even when spawned away from origin.
-		var center := to_local(model.to_global(source_center))
+		var parts: Array[MeshInstance3D] = []
+		var tire: MeshInstance3D
+		for source: MeshInstance3D in meshes:
+			var is_coupe := String(source.name).begins_with("Wheel_Coupe_")
+			if is_coupe != (wheel.end == "A") or signf(to_local(source.global_position).x) != wheel.side:
+				continue
+			parts.append(source)
+			if "_Tire_" in String(source.name):
+				tire = source
+		if tire == null:
+			push_error("Deadbolt artwork is missing the tire hub for %s" % wheel.name)
+			continue
+		# Art hubs define the steering pivot, independently of physical hardpoints.
+		# This also handles source transforms and cars spawned away from the origin.
+		var center := to_local(tire.global_position)
 		wheel.remove_child(wheel._visual)
 		wheel._visual.free()
 		var assembly := Node3D.new()
@@ -61,13 +69,8 @@ func _install_authored_wheels() -> void:
 			float(DISPLAY_RADIUS[wheel.end]) - wheel.radius,
 			center.z - wheel.position.z
 		)
-		for source: MeshInstance3D in meshes:
-			var is_coupe := String(source.name).begins_with("Wheel_Coupe_")
-			if is_coupe != (wheel.end == "A"):
-				continue
+		for source: MeshInstance3D in parts:
 			var local_transform := global_transform.affine_inverse() * source.global_transform
-			if signf(local_transform.origin.x) != wheel.side:
-				continue
 			var copy := source.duplicate() as MeshInstance3D
 			copy.visible = true
 			local_transform.origin -= center

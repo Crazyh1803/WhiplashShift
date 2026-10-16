@@ -5,10 +5,11 @@ chassis, persistent callsign entry, and a randomized CPU roster. Reusable course
 progress tracking, and vehicle-specific handling feed the proving-ground race.
 Race countdowns, results, and the four-course arcade mode are the next phase.
 
-The consolidated project also loads the saved Deadbolt truck/coupe model through
+The project loads the blueprint-traced Deadbolt hard-surface truck/coupe model through
 the same garage, player and CPU factory as Blackjack. Deadbolt retains its authored
 glass, metal, tires and lights; the three paint channels remain customizable.
-Its authored wheel meshes follow the original four physics wheels. The other five
+Its authored wheel meshes follow the original four physics wheels, with steering
+pivots derived from the visible tire hubs. The other five
 chassis keep their greybox fallback until production models exist.
 
 ## Running it

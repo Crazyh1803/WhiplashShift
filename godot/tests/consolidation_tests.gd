@@ -49,7 +49,8 @@ func _ready() -> void:
 
 func _test_deadbolt_art(car: Vehicle) -> void:
 	var model := car.get_node_or_null("VisualRoot/ProductionModel")
-	_check("Deadbolt loads the saved production mesh", model != null)
+	_check("Deadbolt loads the rebuilt hard-surface mesh", model != null
+		and car._visual_config.get("scene", "") == "res://assets/vehicles/models/deadbolt/deadbolt_hardsurface.glb")
 	var coupe_is_forward := true
 	var original_wheels_hidden := true
 	for mesh: MeshInstance3D in model.find_children("Wheel_*", "MeshInstance3D", true, false):
@@ -67,6 +68,13 @@ func _test_deadbolt_art(car: Vehicle) -> void:
 		_check("%s art follows suspension and steering" % wheel.name,
 			is_equal_approx(assembly.rotation.y, 0.25)
 			and is_equal_approx(assembly.position.y, -0.8 + (0.40 if wheel.end == "A" else 0.43)))
+		var tires := assembly.find_children("Wheel_*_Tire_*", "MeshInstance3D", true, false)
+		var pivots_at_hub := tires.size() == 1
+		if pivots_at_hub:
+			var tire := tires[0] as MeshInstance3D
+			var center := tire.to_global(tire.mesh.get_aabb().get_center())
+			pivots_at_hub = center.distance_to(assembly.global_position) < 0.005
+		_check("%s steers about its tire hub without orbiting" % wheel.name, pivots_at_hub)
 	car._update_axle_visuals()
 	for end: String in ["A", "B"]:
 		var pair := car._wheel_pair(end)

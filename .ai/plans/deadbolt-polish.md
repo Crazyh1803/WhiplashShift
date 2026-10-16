@@ -27,8 +27,9 @@
 - Keep `Deadbolt_Paint`, `Deadbolt_Secondary` and `Deadbolt_Stripe` material channels
   and protect all other materials from recoloring. Use clearcoat/metallic studio
   lighting comparable to Blackjack for the final Godot comparison.
-- Preserve source wheel centers: coupe `(1.66, +/-0.91, 0.40)`, truck
-  `(-1.72, +/-0.91, 0.43)`. Preserve `Wheel_Coupe_*` / `Wheel_Truck_*` groups consumed
+- Preserve source longitudinal/vertical centers: coupe `(1.66, y, 0.40)`, truck
+  `(-1.72, y, 0.43)`. Fit lateral visual hubs to the blueprint/fenders; the draft
+  +/-0.91 visual track is superseded. Keep physical hardpoints unchanged. Preserve `Wheel_Coupe_*` / `Wheel_Truck_*` groups consumed
   by the existing visual adapter. Merge added tread/bolt details into their semantic
   tire/rim meshes where practical, instead of changing physics or adding colliders.
 - Keep the finished visible vehicle within the existing 20–40k triangle target;

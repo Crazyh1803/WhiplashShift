@@ -68,8 +68,9 @@ create them. Numeric PASS in the old validator is not evidence of acceptable art
 
 - Source frame is Blender X-long / Y-width / Z-up. Runtime rotates +90 degrees in
   Godot yaw. Coupe is source +X and must face game End A (-Z).
-- Source wheel centers: coupe `(1.66, +/-0.91, 0.40)`, truck
-  `(-1.72, +/-0.91, 0.43)`. Display tire radii are 0.40 / 0.43 m.
+- Source longitudinal/vertical wheel centers: coupe `(1.66, y, 0.40)`, truck
+  `(-1.72, y, 0.43)`. The draft lateral track of +/-0.91 is superseded: fit
+  visual hubs to the blueprint/fenders; keep physical hardpoints unchanged. Display tire radii are 0.40 / 0.43 m.
 - Preserve mesh name prefixes `Wheel_Coupe_*` and `Wheel_Truck_*`; all copied wheel
   part origins must remain at their wheel hubs on the proper side. The adapter
   groups by prefix and transformed side, then offsets the rendered assembly only.

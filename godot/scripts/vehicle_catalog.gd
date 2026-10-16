@@ -125,7 +125,7 @@ const VISUALS: Dictionary = {
 	},
 	"deadbolt": {
 		"rig": "deadbolt_blueprint",
-		"scene": "res://assets/vehicles/models/deadbolt/deadbolt_blueprint.glb",
+		"scene": "res://assets/vehicles/models/deadbolt/deadbolt_hardsurface.glb",
 		"rotation_degrees": Vector3(0.0, 90.0, 0.0),
 		"offset": Vector3(0.0, -0.62, 0.0),
 		"collision_boxes": [], # Keep the original tuning-owned chassis collider.

@@ -13,7 +13,7 @@ Open `godot/project.godot` in Godot 4.7.2 and press **F5** for the project.
 The garage offers seven named chassis buttons, including **DEADBOLT**;
 **VIEW 3D // PAINT & PARTS** opens the rotatable 3D preview. Left/right arrows also
 cycle the roster, and returning from a race keeps the selected chassis.
-Blackjack and Deadbolt use their saved authored models; the other five use greybox
+Blackjack and Deadbolt use authored models; the other five use greybox
 vehicles with their saved handling and blueprint images. Enter a callsign and choose
 **IGNITE** to drive against two CPU opponents. `Esc` returns to the garage.
 
@@ -28,13 +28,17 @@ godot --path godot --fixed-fps 120 res://tests/consolidation_visual_qa.tscn
 Captures go to `.ai/captures/`. Historical reports live separately under
 `.ai/history/whiplash-shift/`; they are not current verification results.
 
-Deadbolt's saved source and LODs are retained unchanged. Its rendered wheel meshes
-follow the existing suspension and steering; only its three paint materials are
-customized. The physics hardpoints, tire radii and original tuning-owned collider
+Deadbolt now uses `deadbolt_hardsurface.glb`, rebuilt from the Ford/Mustang
+blueprint with controlled body creases, recessed glazing, panel details and distinct
+truck/coupe wheels. Its native source, builder and LODs are documented in
+`tools/vehicle_pipeline/DEADBOLT_HARDSURFACE.md`. The earlier draft remains under
+its original filenames.
+
+Rendered wheel assemblies pivot around their authored hubs and follow the existing
+suspension and steering. Their visual offsets are independent of the physical wheel
+hardpoints. Only the three paint materials are customized; glass and hardware retain
+their authored surfaces. Handling, physical tire radii and the tuning-owned collider
 are preserved. The body artwork extends beyond the simplified collider near the noses.
-Visual review confirmed that Deadbolt's overly smooth body and detached side-window
-panels already exist in the saved Blender preview. They remain an art-quality
-limitation; this consolidation does not remodel that source asset.
 
 | | |
 |---|---|
