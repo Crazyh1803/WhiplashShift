@@ -45,10 +45,13 @@ def main():
     D.detail_cutters(builder, surf0)
     K.add_boolean(shell, cols["CUTTERS"])
     C.apply_all_modifiers(shell)
+    print('AK: stage boolean', len(shell.data.vertices), len(shell.data.polygons), flush=True)
     open_edges, volume = C.repair_manifold(shell)
+    print('AK: stage repair', len(shell.data.vertices), len(shell.data.polygons), flush=True)
     assert open_edges == 0, f"shell has {open_edges} open edges after repair"
-    dissolved_open = C.dissolve_flat(shell, 1.5)
+    dissolved_open = C.dissolve_flat(shell, 0.8)
     assert dissolved_open == 0, 'flat dissolve opened the shell'
+    print('AK: stage dissolve', len(shell.data.vertices), len(shell.data.polygons), flush=True)
     C.harden(shell, 32.0, keep_flat=True)
     surf = K.Surface(shell)
     glass = CAB.seat_glass(builder, surf, specs)
@@ -61,6 +64,7 @@ def main():
     D.build_sides(sd, surf)
     D.build_mirrors(sd, surf)
     D.build_wipers_and_roof(sd, surf)
+    D.build_extras(sd, surf)
     W.build_wheels(builder)
     X.finalize_scene(cols, shell, BLUEPRINT)
     bpy.ops.wm.save_as_mainfile(filepath=str(BLEND))

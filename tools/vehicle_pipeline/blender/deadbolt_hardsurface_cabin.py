@@ -4,9 +4,9 @@ from mathutils import Vector
 import deadbolt_hardsurface_cuts as K
 import deadbolt_hardsurface_trace as T
 
-RECESS_DEPTH = 0.010
+RECESS_DEPTH = 0.016
 GLASS_CLEARANCE = 0.0045
-GLASS_MARGIN = 0.013
+GLASS_MARGIN = 0.018
 
 
 def _xz(poly_px):

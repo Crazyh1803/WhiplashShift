@@ -226,12 +226,25 @@ def repair_manifold(obj, distances=(0.0005, 0.001, 0.002, 0.004)):
     return open_edges, volume
 
 
-def dissolve_flat(obj, angle_deg=1.5):
-    """Merge coplanar subdivision faces (keeps material borders) to cut triangle count."""
+def dissolve_flat(obj, angle_deg=0.8):
+    """Merge near-coplanar faces of equal material to cut triangle count, deterministically.
+
+    BMesh's priority-based dissolve_limit varies between runs, so select edges by a pure
+    function of the geometry and dissolve that fixed set (edge order = mesh order).
+    """
     bm = bmesh.new()
     bm.from_mesh(obj.data)
-    bmesh.ops.dissolve_limit(bm, angle_limit=math.radians(angle_deg), verts=list(bm.verts),
-                             edges=list(bm.edges), delimit={"MATERIAL"})
+    limit = math.radians(angle_deg)
+    flat = []
+    for e in bm.edges:
+        if len(e.link_faces) != 2:
+            continue
+        f0, f1 = e.link_faces
+        if f0.material_index != f1.material_index or f0.smooth != f1.smooth:
+            continue
+        if e.calc_face_angle(math.pi) < limit:
+            flat.append(e)
+    bmesh.ops.dissolve_edges(bm, edges=flat, use_verts=True, use_face_split=False)
     open_edges = sum(1 for e in bm.edges if not e.is_manifold)
     bm.to_mesh(obj.data)
     bm.free()

@@ -27,11 +27,11 @@ def ring(px, inset=0.0):
     half = [
         (0.0, zs),
         (w * 0.62, zs),
-        (w - 0.05, zs),
-        (w - 0.016, zs + 0.006),
-        (w - 0.003, zs + 0.024),
-        (w, zs + min(0.05, 0.4 * (zr - zs))),
-        (w, zr),
+        (w - 0.058, zs),
+        (w - 0.024, zs + 0.006),
+        (w - 0.011, zs + 0.024),
+        (w - 0.008, zs + min(0.05, 0.4 * (zr - zs))),
+        (w - 0.008, zr),
         (w, zr + stripe),
         (w, zb - 0.03),
         (w - 0.010, zb),
@@ -99,7 +99,7 @@ def build_shell(builder):
             if sa in (0, last_station):
                 crease.data[e.index].value = 1.0
         elif ia == ib:  # longitudinal edge along ring vertex ia
-            weight = {2: 0.8, 5: 0.45, 6: 0.7, 7: 0.7, 9: 0.9, 10: 0.2, 11: 0.9}.get(ia, 0.0)
+            weight = {2: 0.8, 5: 0.45, 6: 0.8, 7: 0.85, 9: 0.9, 10: 0.2, 11: 0.9}.get(ia, 0.0)
             crease.data[e.index].value = weight
     mod = obj.modifiers.new("CageMirror", "MIRROR")
     mod.use_axis = (False, True, False)

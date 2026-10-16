@@ -196,7 +196,13 @@ def arch_cutters(builder):
                 x, y, z = v.co
                 v.co = Vector((x + T.WHEEL_X[end], side * (0.62 + 0.4) + z * 1.0,
                                y + T.WHEEL_R[end]))
-        bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+            # the axis swap mirrors the cone; make the shell outward-facing explicitly
+            faces = list({f for v in geom["verts"] for f in v.link_faces})
+            volume = sum(f.verts[0].co.dot(f.verts[i].co.cross(f.verts[i + 1].co)) / 6
+                         for f in faces for i in range(1, len(f.verts) - 1))
+            if volume < 0:
+                for f in faces:
+                    f.normal_flip()
         mesh = bpy.data.meshes.new(f"Cutter_Arch_{end}_mesh")
         bm.to_mesh(mesh)
         bm.free()
@@ -212,7 +218,34 @@ def arch_cutters(builder):
     return objs
 
 
+def assert_cutters_outward(collection):
+    """Every cutter island must have positive signed volume (outward normals)."""
+    for obj in collection.objects:
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        islands, seen = [], set()
+        for face in bm.faces:
+            if face in seen:
+                continue
+            stack, comp = [face], []
+            while stack:
+                g = stack.pop()
+                if g in seen:
+                    continue
+                seen.add(g)
+                comp.append(g)
+                stack.extend(h for e in g.edges for h in e.link_faces if h not in seen)
+            islands.append(comp)
+        for comp in islands:
+            vol = sum(f.verts[0].co.dot(f.verts[i].co.cross(f.verts[i + 1].co)) / 6
+                      for f in comp for i in range(1, len(f.verts) - 1))
+            assert vol > 0, f"cutter {obj.name} has an inward-facing island ({vol:.5f})"
+            assert all(e.is_manifold for f in comp for e in f.edges), f"cutter {obj.name} not closed"
+        bm.free()
+
+
 def add_boolean(shell, collection):
+    assert_cutters_outward(collection)
     mod = shell.modifiers.new("GenuineCuts", "BOOLEAN")
     mod.operation = "DIFFERENCE"
     mod.operand_type = "COLLECTION"

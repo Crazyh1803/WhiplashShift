@@ -11,9 +11,9 @@ import deadbolt_hardsurface_trace as T
 
 STYLE = {
     "truck": {"R": 0.43, "W": 0.34, "rim": 0.215, "flange": 0.240, "segments": 60,
-              "spokes": 6, "tread_depth": 0.018, "lug_every": 4},
+              "spokes": 6, "tread_depth": 0.024, "lug_every": 3},
     "coupe": {"R": 0.40, "W": 0.29, "rim": 0.205, "flange": 0.232, "segments": 64,
-              "spokes": 10, "tread_depth": 0.0045, "lug_every": 1},
+              "spokes": 10, "tread_depth": 0.007, "lug_every": 1},
 }
 
 
@@ -23,8 +23,8 @@ def _tire_profile(st):
     sw = R - fl
     shoulder = hw * 0.76
     return [
-        (fl - 0.008, -hw * 0.82), (fl + 0.014, -hw * 1.02), (fl + 0.50 * sw, -hw * 1.03),
-        (R - 0.045, -hw * 0.92), (R - 0.018, -shoulder * 1.06),
+        (fl - 0.008, -hw * 0.82), (fl + 0.014, -hw * 0.99), (fl + 0.50 * sw, -hw * 1.0),
+        (R - 0.045, -hw * 0.90), (R - 0.018, -shoulder * 1.06),
     ], shoulder
 
 
