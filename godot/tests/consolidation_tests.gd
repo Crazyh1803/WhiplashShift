@@ -157,6 +157,9 @@ func _test_garage_and_race() -> void:
 	for id: String in ["blackjack", "deadbolt", "nightshift", "deadbolt"]:
 		garage._refresh_customization_preview(id, VehicleCatalog.default_customization(id))
 		_check("Garage preview switches to %s" % id, garage._preview_vehicle.vehicle_id == id)
+		var preview_environment: Environment = garage._preview_environment.environment
+		_check("%s uses the appropriate studio lighting" % id,
+			preview_environment.sky != null if id in ["blackjack", "deadbolt"] else preview_environment.sky == null)
 	garage.free()
 	GameSession.configure("CONSOLIDATION", "deadbolt", ["blackjack", "nightshift"])
 	garage = load("res://scenes/garage.tscn").instantiate()

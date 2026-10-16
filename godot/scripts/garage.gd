@@ -518,7 +518,10 @@ func _refresh_customization_preview(vehicle_id: String, data: Dictionary) -> voi
 	if _preview_vehicle == null:
 		return
 	if _preview_vehicle_id != vehicle_id:
-		_preview_environment.environment = preload("res://scripts/blackjack_studio_finish.gd").environment(Color("091117")) if vehicle_id=="blackjack" else _standard_preview_environment
+		_preview_environment.environment = (
+			preload("res://scripts/blackjack_studio_finish.gd").environment(Color("091117"))
+			if vehicle_id in ["blackjack", "deadbolt"] else _standard_preview_environment
+		)
 		var spec := VehicleCatalog.get_vehicle(vehicle_id)
 		spec["customization"] = data
 		_preview_vehicle.free()
