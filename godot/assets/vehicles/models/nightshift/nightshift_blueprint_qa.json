@@ -11,7 +11,7 @@
     "shell_positive_volume": {
       "ok": true,
       "detail": {
-        "volume_m3": 8.0074
+        "volume_m3": 8.0087
       }
     },
     "shell_mirror_symmetry_mm": {
@@ -20,15 +20,15 @@
         "max_surface_error_mm": 4.479,
         "p99_mm": 0.0,
         "vertices_over_2mm": 3,
-        "vertex_count": 4384,
+        "vertex_count": 4372,
         "median_mm": 0.0
       }
     },
     "silhouette_top_px": {
       "ok": true,
       "detail": {
-        "max": 2.24,
-        "mean": 0.92
+        "max": 2.22,
+        "mean": 0.94
       }
     },
     "silhouette_sill_px": {
@@ -265,13 +265,13 @@
     "lamp_seated_Coupe_Headlamp_IL": {
       "ok": true,
       "detail": {
-        "max_mm": 10.6
+        "max_mm": 10.7
       }
     },
     "lamp_seated_Coupe_Headlamp_IR": {
       "ok": true,
       "detail": {
-        "max_mm": 10.7
+        "max_mm": 10.6
       }
     },
     "lamp_seated_Coupe_Headlamp_OL": {
@@ -311,8 +311,8 @@
       }
     },
     "lamps_max_dist_mm": {
-      "Coupe_Headlamp_IL": 10.6,
-      "Coupe_Headlamp_IR": 10.7,
+      "Coupe_Headlamp_IL": 10.7,
+      "Coupe_Headlamp_IR": 10.6,
       "Coupe_Headlamp_OL": 18.1,
       "Coupe_Headlamp_OR": 20.6,
       "Truck_Headlamp_LL": 21.6,
@@ -323,15 +323,15 @@
     "glass_seated_Glass_CabRear": {
       "ok": true,
       "detail": {
-        "min_mm": 1.5,
-        "max_mm": 4.92,
+        "min_mm": 2.68,
+        "max_mm": 2.81,
         "shell_crossings": 0
       }
     },
     "glass_seated_Glass_CoupeSide_L": {
       "ok": true,
       "detail": {
-        "min_mm": 2.99,
+        "min_mm": 2.95,
         "max_mm": 4.39,
         "shell_crossings": 0
       }
@@ -339,7 +339,7 @@
     "glass_seated_Glass_CoupeSide_R": {
       "ok": true,
       "detail": {
-        "min_mm": 2.99,
+        "min_mm": 2.95,
         "max_mm": 4.31,
         "shell_crossings": 0
       }
@@ -347,7 +347,7 @@
     "glass_seated_Glass_CoupeWindshield": {
       "ok": true,
       "detail": {
-        "min_mm": 3.49,
+        "min_mm": 3.9,
         "max_mm": 4.22,
         "shell_crossings": 0
       }
@@ -378,22 +378,22 @@
     },
     "glass": {
       "Glass_CabRear": {
-        "min_mm": 1.5,
-        "max_mm": 4.92,
+        "min_mm": 2.68,
+        "max_mm": 2.81,
         "shell_crossings": 0
       },
       "Glass_CoupeSide_L": {
-        "min_mm": 2.99,
+        "min_mm": 2.95,
         "max_mm": 4.39,
         "shell_crossings": 0
       },
       "Glass_CoupeSide_R": {
-        "min_mm": 2.99,
+        "min_mm": 2.95,
         "max_mm": 4.31,
         "shell_crossings": 0
       },
       "Glass_CoupeWindshield": {
-        "min_mm": 3.49,
+        "min_mm": 3.9,
         "max_mm": 4.22,
         "shell_crossings": 0
       },
@@ -556,26 +556,26 @@
       }
     },
     "triangles": {
-      "gameplay": 35046,
-      "lod1": 26262,
-      "lod2": 18048
+      "gameplay": 35140,
+      "lod1": 26366,
+      "lod2": 18158
     },
     "budget_visible_vehicle_20k_40k": {
       "ok": true,
-      "detail": 35046
+      "detail": 35140
     },
     "lod_monotonic": {
       "ok": true,
       "detail": {
-        "gameplay": 35046,
-        "lod1": 26262,
-        "lod2": 18048
+        "gameplay": 35140,
+        "lod1": 26366,
+        "lod2": 18158
       }
     },
     "object_counts": {
       "Body_NightshiftShell": [
-        4384,
-        3146
+        4372,
+        3135
       ],
       "Cab_RearGlassTrim": [
         64,
@@ -585,11 +585,11 @@
         92,
         80
       ],
-      "Coupe_ChinLamp_+0.76": [
+      "Coupe_ChinLamp_+0.50": [
         24,
         26
       ],
-      "Coupe_ChinLamp_-0.76": [
+      "Coupe_ChinLamp_-0.50": [
         24,
         26
       ],
@@ -726,16 +726,16 @@
         146
       ],
       "Glass_CabRear": [
-        24,
-        26
+        120,
+        158
       ],
       "Glass_CoupeSide_L": [
-        97,
-        122
+        99,
+        124
       ],
       "Glass_CoupeSide_R": [
-        97,
-        122
+        99,
+        124
       ],
       "Glass_CoupeWindshield": [
         354,

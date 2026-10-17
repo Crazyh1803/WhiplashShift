@@ -165,7 +165,7 @@ def render_qa(cols, model_dir, stem, blueprint):
     studio = Q.build_studio(cols)
     for view in ("side", "top", "front_truck", "front_coupe", "three_quarter_truck",
                  "three_quarter_coupe", "far_side_three_quarter", "cabin", "truck_detail",
-                 "coupe_detail", "wheel_truck", "wheel_coupe", "coupe_nose", "truck_nose", "cab_step"):
+                 "coupe_detail", "wheel_truck", "wheel_coupe", "coupe_nose", "truck_nose", "cab_step", "coupe_window"):
         Q.configure(view, 1280, 720)
         Q.render(out_dir / f"{stem}_{view}.png")
     for view in ("side", "top", "front_truck", "front_coupe"):

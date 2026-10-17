@@ -118,7 +118,7 @@ STATIONS = sorted(set([
 
 # Side-window openings in side-elevation pixels (counter-clockwise in x/z).
 WINDOW_TRUCK_SIDE = [(420, 138), (432, 119), (441, 108), (449, 105), (512, 105), (514, 138)]
-WINDOW_COUPE_SIDE = [(534, 159), (534, 128), (562, 130), (590, 144), (614, 157), (618, 159)]
+WINDOW_COUPE_SIDE = [(534, 159), (534, 128), (562, 130), (590, 144), (616, 157), (622, 159)]
 # Windshield footprints: (start px, end px) along the slope.
 WINDSHIELD_TRUCK = (410.0, 444.0)
 WINDSHIELD_COUPE = (571.0, 633.0)

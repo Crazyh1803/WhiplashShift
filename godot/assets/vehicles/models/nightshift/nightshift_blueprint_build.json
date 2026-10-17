@@ -1,21 +1,21 @@
 {
-  "shell_volume_m3": 8.056,
+  "shell_volume_m3": 8.0574,
   "blend": "tools/vehicle_pipeline/blender/nightshift_blueprint.blend",
   "exports": {
     "lod0": {
-      "triangles": 35046,
+      "triangles": 35140,
       "objects": 61,
-      "bytes": 1550212
+      "bytes": 1549620
     },
     "lod1": {
-      "triangles": 26262,
+      "triangles": 26366,
       "objects": 61,
-      "bytes": 1253624
+      "bytes": 1254380
     },
     "lod2": {
-      "triangles": 18048,
+      "triangles": 18158,
       "objects": 61,
-      "bytes": 896900
+      "bytes": 897980
     }
   },
   "handoff": {
