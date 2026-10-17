@@ -8,7 +8,6 @@ Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
   [pass] Paint channel applies to Body_FenderSpeedster_-_001
   [pass] Paint channel applies to Body_FenderTruck_+_001
   [pass] Paint channel applies to Body_FenderSpeedster_+_001
-  [pass] Paint channel applies to Body_ProwSpeedster_001
   [pass] Paint channel applies to Detail_Stripe
   [pass] Paint channel applies to Body_SideTank_-1_001
   [pass] Paint channel applies to Body_SideTank_+1_001
@@ -69,7 +68,7 @@ Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
   [pass] Repeated customization does not duplicate wheel parts
   [pass] Boilerfang constructs as player and CPU
   [pass] Boilerfang player has production artwork
-BOILERFANG: 69 passed, 0 failed
+BOILERFANG: 68 passed, 0 failed
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 
   [pass] blackjack reference survives consolidation

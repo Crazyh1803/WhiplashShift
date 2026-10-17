@@ -67,9 +67,12 @@ func _ready() -> void:
 		_check("%s has one tire" % wheel.name, tires.size() == 1)
 		if tires.size() == 1:
 			var tire := tires[0] as MeshInstance3D
-			var center := tire.to_global(tire.mesh.get_aabb().get_center())
+			var center := assembly.to_local(tire.to_global(tire.mesh.get_aabb().get_center()))
+			# Outboard sidewall studs shift the axial bounds, not the spin axis.
+			center.x = 0.0
 			_check("%s pivots at its hub after rotated spawn" % wheel.name,
-				center.distance_to(assembly.global_position) < 0.005)
+				tire.global_position.distance_to(assembly.global_position) < 0.005
+				and center.length() < 0.005)
 		_check("%s occupies its correct end" % wheel.name,
 			(car.to_local(assembly.global_position).z < 0.0) == (wheel.end == "A"))
 		if vehicle_id == "boilerfang":
