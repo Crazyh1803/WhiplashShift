@@ -9,7 +9,7 @@ var _momentum_preserved := true
 func _ready() -> void:
 	_test_progress()
 	# Exercise the authored-rig CPU paths with a reproducible roster.
-	GameSession.configure("CPU TEST", "blackjack", ["deadbolt", "nightshift"])
+	GameSession.configure("CPU TEST", "blackjack", ["ramjet", "nightshift"])
 	var packed: PackedScene = load("res://scenes/proving_ground.tscn")
 	var scene: Node3D = packed.instantiate()
 	add_child(scene)

@@ -1,0 +1,98 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Nightshift loads its dedicated adapter
+  [pass] Nightshift loads authored production model
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Detail_Secondary
+  [pass] Paint channel applies to Wheel_Truck_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Truck_Hub_+1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Nightshift constructs as player and CPU
+  [pass] Nightshift player has production artwork
+NIGHTSHIFT: 46 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] partial seam crossing does not award a lap
+  [pass] complete ordered circuit awards one lap
+  [pass] checkpoint recovery cannot add lap or distance
+  [pass] backwards driving detects wrong-way without awarding a lap
+  [pass] off-course projection cannot advance the recovery anchor
+  [pass] two CPU drivers use the player's tuning
+t=30 CPU_1_RAMJET_K-6 lap=0 idx=159 speed=8.3 swaps=1 recoveries=0 off=3.0
+t=30 CPU_2_NIGHTSHIFT_84 lap=0 idx=164 speed=9.1 swaps=1 recoveries=0 off=4.6
+t=60 CPU_1_RAMJET_K-6 lap=0 idx=303 speed=19.0 swaps=1 recoveries=0 off=2.3
+t=60 CPU_2_NIGHTSHIFT_84 lap=0 idx=332 speed=26.3 swaps=1 recoveries=0 off=4.0
+t=90 CPU_1_RAMJET_K-6 lap=0 idx=438 speed=10.2 swaps=1 recoveries=0 off=8.6
+t=90 CPU_2_NIGHTSHIFT_84 lap=0 idx=468 speed=14.4 swaps=1 recoveries=0 off=3.2
+t=120 CPU_1_RAMJET_K-6 lap=0 idx=580 speed=21.9 swaps=1 recoveries=0 off=4.2
+t=120 CPU_2_NIGHTSHIFT_84 lap=0 idx=634 speed=11.2 swaps=2 recoveries=0 off=5.7
+t=150 CPU_1_RAMJET_K-6 lap=1 idx=15 speed=33.8 swaps=2 recoveries=0 off=3.7
+t=150 CPU_2_NIGHTSHIFT_84 lap=1 idx=146 speed=12.4 swaps=3 recoveries=0 off=4.3
+t=180 CPU_1_RAMJET_K-6 lap=1 idx=177 speed=13.5 swaps=3 recoveries=0 off=3.9
+t=180 CPU_2_NIGHTSHIFT_84 lap=1 idx=269 speed=22.1 swaps=3 recoveries=0 off=4.7
+t=210 CPU_1_RAMJET_K-6 lap=1 idx=338 speed=19.7 swaps=3 recoveries=0 off=4.0
+t=210 CPU_2_NIGHTSHIFT_84 lap=1 idx=436 speed=8.0 swaps=3 recoveries=0 off=8.6
+t=240 CPU_1_RAMJET_K-6 lap=1 idx=457 speed=12.8 swaps=3 recoveries=0 off=3.2
+t=240 CPU_2_NIGHTSHIFT_84 lap=1 idx=583 speed=26.9 swaps=3 recoveries=0 off=3.8
+t=270 CPU_1_RAMJET_K-6 lap=1 idx=614 speed=18.8 swaps=3 recoveries=0 off=4.0
+t=270 CPU_2_NIGHTSHIFT_84 lap=2 idx=85 speed=48.1 swaps=4 recoveries=0 off=4.0
+t=300 CPU_1_RAMJET_K-6 lap=2 idx=83 speed=42.4 swaps=4 recoveries=0 off=4.0
+t=300 CPU_2_NIGHTSHIFT_84 lap=2 idx=210 speed=19.0 swaps=5 recoveries=0 off=4.0
+t=330 CPU_1_RAMJET_K-6 lap=2 idx=202 speed=17.9 swaps=5 recoveries=0 off=4.3
+t=330 CPU_2_NIGHTSHIFT_84 lap=2 idx=401 speed=15.1 swaps=5 recoveries=0 off=4.0
+t=360 CPU_1_RAMJET_K-6 lap=2 idx=369 speed=18.3 swaps=5 recoveries=0 off=4.0
+t=360 CPU_2_NIGHTSHIFT_84 lap=2 idx=525 speed=20.6 swaps=5 recoveries=0 off=1.0
+t=390 CPU_1_RAMJET_K-6 lap=2 idx=481 speed=17.0 swaps=5 recoveries=0 off=4.1
+t=390 CPU_2_NIGHTSHIFT_84 lap=2 idx=723 speed=30.2 swaps=6 recoveries=0 off=6.9
+t=420 CPU_1_RAMJET_K-6 lap=2 idx=633 speed=9.5 swaps=6 recoveries=0 off=2.6
+t=420 CPU_2_NIGHTSHIFT_84 lap=3 idx=169 speed=10.6 swaps=7 recoveries=0 off=4.3
+  [pass] CPU simulation remains finite
+  [pass] every CPU swap preserves body momentum and basis
+  [pass] CPU_1_RAMJET_K-6 completes two laps
+  [pass] CPU_1_RAMJET_K-6 performs surface swaps
+  [pass] CPU_1_RAMJET_K-6 drives with limited recoveries 0 recoveries
+  [pass] CPU_2_NIGHTSHIFT_84 completes two laps
+  [pass] CPU_2_NIGHTSHIFT_84 performs surface swaps
+  [pass] CPU_2_NIGHTSHIFT_84 drives with limited recoveries 0 recoveries
+  [pass] off-course CPU returns to a checkpoint
+  [pass] physical recovery awards no race progress
+  [pass] CPU brakes for a stopped vehicle ahead
+
+CPU: 17 passed, 0 failed

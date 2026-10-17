@@ -16,3 +16,10 @@
    code-review rounds and tiebreak for disagreements. Review Blender renders after
    corrections; do not mistake the ComfyUI round cap for a Blender modeling cap.
    Commit coherent changes; finish with actual Ramjet preview open and reports.
+
+## Integration checkpoint
+
+Ramjet paint adapter, factory/catalog/studio wiring and shared authored-art test
+scene are implemented. Initial Ramjet scene compiles and correctly fails for the
+pending production GLB. Existing Nightshift checks and deterministic Ramjet CPU
+scenario are being verified while the asset lead builds.

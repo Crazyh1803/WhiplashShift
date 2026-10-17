@@ -9,6 +9,8 @@ static func create(spec: Dictionary) -> Vehicle:
 		vehicle = load("res://scripts/deadbolt_blueprint_vehicle.gd").new()
 	elif spec.get("visual", {}).get("rig", "") == "nightshift_blueprint":
 		vehicle = load("res://scripts/nightshift_blueprint_vehicle.gd").new()
+	elif spec.get("visual", {}).get("rig", "") == "ramjet_blueprint":
+		vehicle = load("res://scripts/ramjet_blueprint_vehicle.gd").new()
 	else:
 		vehicle=Vehicle.new()
 	vehicle.apply_vehicle_spec(spec)

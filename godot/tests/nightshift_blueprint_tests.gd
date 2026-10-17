@@ -1,4 +1,4 @@
-## Authored art must preserve hubs, paint isolation and the factory contract.
+## Shared authored-art checks; the scene metadata selects Nightshift or Ramjet.
 extends Node3D
 
 const FACTORY := preload("res://scripts/vehicle_factory.gd")
@@ -7,27 +7,29 @@ var _pass := 0
 
 
 func _ready() -> void:
-	var spec := VehicleCatalog.get_vehicle("nightshift")
+	var vehicle_id := String(get_meta("vehicle_id", "nightshift"))
+	var label := vehicle_id.capitalize()
+	var spec := VehicleCatalog.get_vehicle(vehicle_id)
 	var car := FACTORY.create(spec)
 	car.tuning = TuningProfile.new()
 	car.freeze = true
 	car.position = Vector3(8.0, 0.62, -13.0)
 	car.rotation.y = 0.73
 	add_child(car)
-	_check("Nightshift loads its dedicated adapter", car.get_script() == load("res://scripts/nightshift_blueprint_vehicle.gd"))
+	_check("%s loads its dedicated adapter" % label, car.get_script() == load("res://scripts/%s_blueprint_vehicle.gd" % vehicle_id))
 	var model := car.get_node_or_null("VisualRoot/ProductionModel") as Node3D
-	_check("Nightshift loads authored production model", model != null)
+	_check("%s loads authored production model" % label, model != null)
 	if model == null:
 		get_tree().quit(1)
 		return
-	var custom := VehicleCatalog.default_customization("nightshift")
+	var custom := VehicleCatalog.default_customization(vehicle_id)
 	custom["primary_color"] = "cc2244"
 	custom["secondary_color"] = "225588"
 	custom["accent_color"] = "ddb344"
 	car.apply_customization(custom)
 	model = car.get_node("VisualRoot/ProductionModel")
-	var expected := {"Nightshift_Paint": Color("cc2244"),
-		"Nightshift_Secondary": Color("225588"), "Nightshift_Stripe": Color("ddb344")}
+	var expected := {"%s_Paint" % label: Color("cc2244"),
+		"%s_Secondary" % label: Color("225588"), "%s_Stripe" % label: Color("ddb344")}
 	var found := {}
 	var protected_ok := true
 	for mesh: MeshInstance3D in car._visual_root.find_children("*", "MeshInstance3D", true, false):
@@ -89,16 +91,16 @@ func _ready() -> void:
 	for i in car.wheels.size():
 		_check("Repeated customization does not duplicate wheel parts", car.wheels[i]._visual.get_child_count() == counts[i])
 	car.free()
-	GameSession.configure("NIGHTSHIFT", "nightshift", ["nightshift", "deadbolt"])
+	GameSession.configure(label.to_upper(), vehicle_id, [vehicle_id, "deadbolt"])
 	var race: Variant = load("res://scenes/proving_ground.tscn").instantiate()
 	add_child(race)
 	await get_tree().physics_frame
-	_check("Nightshift constructs as player and CPU", race.car.vehicle_id == "nightshift"
-		and race.cpu_drivers.size() == 2 and race.cpu_drivers[0].target.vehicle_id == "nightshift")
-	_check("Nightshift player has production artwork", race.car.get_node_or_null("VisualRoot/ProductionModel") != null)
+	_check("%s constructs as player and CPU" % label, race.car.vehicle_id == vehicle_id
+		and race.cpu_drivers.size() == 2 and race.cpu_drivers[0].target.vehicle_id == vehicle_id)
+	_check("%s player has production artwork" % label, race.car.get_node_or_null("VisualRoot/ProductionModel") != null)
 	race.queue_free()
 	await get_tree().process_frame
-	print("NIGHTSHIFT: %d passed, %d failed" % [_pass, _fail])
+	print("%s: %d passed, %d failed" % [label.to_upper(), _pass, _fail])
 	get_tree().quit(1 if _fail else 0)
 
 

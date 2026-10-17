@@ -114,9 +114,11 @@ const VISUALS: Dictionary = {
 		"wheel_scene_b": "res://assets/vehicles/models/helix/wheel_b.glb",
 	},
 	"ramjet": {
-		"scene": "res://assets/vehicles/models/ramjet/ramjet.glb",
-		"wheel_scene_a": "res://assets/vehicles/models/ramjet/wheel_a.glb",
-		"wheel_scene_b": "res://assets/vehicles/models/ramjet/wheel_b.glb",
+		"rig": "ramjet_blueprint",
+		"scene": "res://assets/vehicles/models/ramjet/ramjet_blueprint.glb",
+		"rotation_degrees": Vector3(0.0, 90.0, 0.0),
+		"offset": Vector3(0.0, -0.62, 0.0),
+		"collision_boxes": [], # Preserve the tuning-owned collider and hardpoints.
 	},
 	"knifeedge": {
 		"scene": "res://assets/vehicles/models/knifeedge/knifeedge.glb",

@@ -7,8 +7,8 @@ var _output := ProjectSettings.globalize_path("res://").path_join("../.ai/captur
 
 func _ready() -> void:
 	for argument: String in OS.get_cmdline_user_args():
-		if argument == "--nightshift":
-			_vehicle_id = "nightshift"
+		if argument in ["--nightshift", "--ramjet"]:
+			_vehicle_id = argument.trim_prefix("--")
 	DirAccess.make_dir_recursive_absolute(_output)
 	var garage: Variant = load("res://scenes/garage.tscn").instantiate()
 	add_child(garage)
@@ -19,7 +19,7 @@ func _ready() -> void:
 	garage._open_customization()
 	await _capture("blackjack_garage")
 	garage._customization_popup.hide()
-	garage._select(6 if _vehicle_id == "nightshift" else 5)
+	_select_preview_vehicle(garage)
 	await _capture(_vehicle_id + "_roster")
 	garage._open_customization()
 	await _capture(_vehicle_id + "_garage")
@@ -66,10 +66,17 @@ func _ready() -> void:
 	if driving_ok and swap_ok and "--keep-open" in OS.get_cmdline_user_args():
 		garage = load("res://scenes/garage.tscn").instantiate()
 		add_child(garage)
-		garage._select(6 if _vehicle_id == "nightshift" else 5)
+		_select_preview_vehicle(garage)
 		garage._open_customization()
 		return
 	get_tree().quit(0 if driving_ok and swap_ok else 1)
+
+
+func _select_preview_vehicle(garage: Variant) -> void:
+	for i in VehicleCatalog.VEHICLES.size():
+		if VehicleCatalog.VEHICLES[i]["id"] == _vehicle_id:
+			garage._select(i)
+			return
 
 
 func _key(code: Key, pressed: bool) -> void:
