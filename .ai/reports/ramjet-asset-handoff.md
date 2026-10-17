@@ -1,6 +1,6 @@
 # Ramjet K-6 asset handoff
 
-Branch `asset/ramjet-graphics`. Commits: `8d2fcce` (unmodified renamed fork of the Nightshift builder, **template baseline only, not a delivery**) and the following `asset(ramjet)` commit, which holds all Ramjet geometry, GLBs, builder, validator, QA and docs. Main checkout and Godot scripts/tests untouched.
+Branch `asset/ramjet-graphics`. Commits: `8d2fcce` (unmodified renamed fork of the Nightshift builder, **template baseline only, not a delivery**) and `863fa32` (`asset(ramjet)`), which holds all Ramjet geometry, GLBs, builder, validator, QA and docs. Main checkout and Godot scripts/tests untouched.
 
 ## Paths
 - GLB: `godot/assets/vehicles/models/ramjet/ramjet_blueprint.glb` (`res://assets/vehicles/models/ramjet/ramjet_blueprint.glb`); LODs `.../ramjet/lod/ramjet_blueprint_LOD{1,2}.glb`; `ramjet_blueprint_qa.json`, `ramjet_blueprint_build.json`.
