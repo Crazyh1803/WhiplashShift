@@ -32,7 +32,7 @@ ak-blender tools/vehicle_pipeline/blender/render_boilerfang_lods.py
 
 ## Contract
 - Axes: speedster **End A +X**, truck **End B -X**, +/-Y width, +Z up, ground z=0; runtime yaw +90 deg, offset y -0.62.
-  Body X -2.571..2.377, width 1.57 over the truck tyre studs, height 1.53 (stack). Uniform scale 0.0071008 m/px from the
+  Body X -2.571..2.377, width 1.61 over the truck tyre studs, height 1.53 (stack). Uniform scale 0.0071008 m/px from the
   side-elevation wheel centres (px 348 / 824 = 3.38 m wheelbase).
 - Wheels (the four physical wheels stay authoritative; these are visual): `Wheel_Truck_*` (End B) and
   `Wheel_Coupe_*` (End A, the speedster; the prefix is the shared vehicle-pipeline name for End A). One `_Tire_` object per
@@ -58,7 +58,7 @@ ak-blender tools/vehicle_pipeline/blender/render_boilerfang_lods.py
   cylinders at the flanks. The front elevations were used only for feature placement (lamps, domes, track).
 - Windows: flush glass slabs seated 2 mm off flat flank/slope panels inside brass frames (no Boolean cuts).
 
-## Numeric gates (`validate_boilerfang.py`, 42 checks)
+## Numeric gates (`validate_boilerfang.py`, 44 checks)
 Main masses closed and positive-volume; whole-assembly mirror symmetry; silhouette top/sill/half-width vs the traced tables
 (px); overall length/height; four wheels, one `_Tire_` each, origins at hubs, tyre radius = display radius, ground contact,
 fender clearance >= 30 mm, hull clearance, rims inside tyres; mid-drive pieces present, paired, never `Wheel_*`, matching the
