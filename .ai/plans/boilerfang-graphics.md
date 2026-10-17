@@ -26,4 +26,5 @@ Added a default-preserving display-radius getter and Boilerfang paint/catalog/
 factory/studio wiring. Shared tests now check actual wheel geometry against the
 configured display radius, static ground contact, retained physical hardpoints,
 and visible body-mounted central mechanism. Nightshift46 + Ramjet47 + CPU17 pass.
-Blueprint display-radius values will be populated from the delivered model metadata.
+First native-build metadata supplies display radii A0.256/B0.348 and visual half-tracks
+A0.50/B0.66; the catalog radii are set, awaiting GLB verification against geometry.

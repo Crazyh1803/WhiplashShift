@@ -105,6 +105,7 @@ const VISUALS: Dictionary = {
 	},
 	"boilerfang": {
 		"rig": "boilerfang_blueprint",
+		"display_radius": {"A": 0.256, "B": 0.348},
 		"scene": "res://assets/vehicles/models/boilerfang/boilerfang_blueprint.glb",
 		"rotation_degrees": Vector3(0.0, 90.0, 0.0),
 		"offset": Vector3(0.0, -0.62, 0.0),
