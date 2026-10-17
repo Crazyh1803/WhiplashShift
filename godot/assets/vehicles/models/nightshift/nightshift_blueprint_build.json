@@ -1,0 +1,46 @@
+{
+  "shell_volume_m3": 8.056,
+  "blend": "tools/vehicle_pipeline/blender/nightshift_blueprint.blend",
+  "exports": {
+    "lod0": {
+      "triangles": 35046,
+      "objects": 61,
+      "bytes": 1550212
+    },
+    "lod1": {
+      "triangles": 26262,
+      "objects": 61,
+      "bytes": 1253624
+    },
+    "lod2": {
+      "triangles": 18048,
+      "objects": 61,
+      "bytes": 896900
+    }
+  },
+  "handoff": {
+    "vehicle_id": "nightshift",
+    "candidate_scene": "res://assets/vehicles/models/nightshift/nightshift_blueprint.glb",
+    "source_axes": "X long (coupe +X), Y width, Z up; runtime yaw +90 deg unchanged",
+    "visual_half_track_m": 0.82,
+    "wheel_centres": {
+      "coupe": [
+        1.66,
+        0.82,
+        0.4
+      ],
+      "truck": [
+        -1.72,
+        0.82,
+        0.43
+      ]
+    },
+    "semantic_materials": [
+      "Nightshift_Paint",
+      "Nightshift_Secondary",
+      "Nightshift_Stripe"
+    ],
+    "blueprint_scale_m_per_px": 0.010304878048780488,
+    "wheelbase_m": 3.38
+  }
+}
