@@ -160,8 +160,8 @@ def build_skylights(builder):
     out = {"glass": [], "frames": []}
     for k, px in enumerate(SKYLIGHT_PX):
         x = T.X(px)
-        zr = B.roof_z(px)
-        crown = T.lerp_table(B.CROWN, px)
+        zr = B.top_surface_z(px, 0.0)
+        crown = 0.0
         lx, ly = 0.20, 0.42
         wall, h = 0.022, 0.15
         zc = zr + crown + 0.5 * h - 0.075

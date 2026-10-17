@@ -78,6 +78,9 @@ def _join(objs, name, col):
     return joined
 
 
+LOD1_DROP = ("Fine_Rivets_Fenders", "Fine_Rivets_Hood", "Fine_Rivets_Plow", "Fine_Rivets_Door", "Fine_DoorHinge",
+             "Fine_PipeBracket", "Fine_ExhaustClamp", "Fine_GrilleBoss", "Fine_SmokeboxHandle", "Fine_LeafSpring")
+LOD2_KEEP = ("Fine_TruckLamp", "Fine_SpeedsterLamp", "Fine_RoofLamp")
 KEEP_PREFIXES = ("Body_", "Glass_", "Wheel_Truck_", "Wheel_Coupe_", "Prop_MidDrive_", "Gear_")
 
 
@@ -94,23 +97,23 @@ def build_export_set(cols, level):
         name = src.name
         if name.startswith("Body_"):
             if level:
-                _decimate(obj, (0.80, 0.55)[level - 1])
+                _decimate(obj, (0.70, 0.45)[level - 1])
         elif name.startswith("Glass_"):
             pass
         elif _is_wheel(obj):
             if level and ("_Tire_" in name or "_Rim_" in name):
-                _decimate(obj, (0.55, 0.30)[level - 1])
+                _decimate(obj, (0.50, 0.28)[level - 1])
             if level == 2 and ("_Spoke_" in name or "_Wire_" in name):
                 _decimate(obj, 0.6)
         elif name.startswith(("Prop_MidDrive_", "Gear_")):
             if level == 2:
                 _decimate(obj, 0.6)
         else:
-            if name.startswith("Fine_") and level == 2:
+            if name.startswith("Fine_") and not name.startswith(LOD2_KEEP) and (level == 2 or (level == 1 and name.startswith(LOD1_DROP))):
                 bpy.data.objects.remove(obj, do_unlink=True)
                 continue
             if name.startswith("Trim_") and level:
-                _decimate(obj, (0.8, 0.6)[level - 1])
+                _decimate(obj, (0.6, 0.45)[level - 1])
             key = obj.data.materials[0].name
             groups.setdefault(key, []).append(obj)
     for key, objs in sorted(groups.items()):

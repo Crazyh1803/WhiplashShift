@@ -1,0 +1,52 @@
+{
+  "blend": "tools/vehicle_pipeline/blender/boilerfang_blueprint.blend",
+  "exports": {
+    "lod0": {
+      "triangles": 45572,
+      "objects": 75,
+      "bytes": 1996256
+    },
+    "lod1": {
+      "triangles": 33312,
+      "objects": 75,
+      "bytes": 1536300
+    },
+    "lod2": {
+      "triangles": 17040,
+      "objects": 73,
+      "bytes": 910016
+    }
+  },
+  "handoff": {
+    "vehicle_id": "boilerfang",
+    "candidate_scene": "res://assets/vehicles/models/boilerfang/boilerfang_blueprint.glb",
+    "source_axes": "X long (speedster End A +X, truck End B -X), Y width, Z up; runtime yaw +90 deg, offset y -0.62",
+    "display_radii": {
+      "A": 0.256,
+      "B": 0.348
+    },
+    "display_half_track": {
+      "A": 0.5,
+      "B": 0.66
+    },
+    "wheel_centres": {
+      "A": [
+        1.66,
+        0.5,
+        0.256
+      ],
+      "B": [
+        -1.72,
+        0.66,
+        0.348
+      ]
+    },
+    "semantic_materials": [
+      "Boilerfang_Paint",
+      "Boilerfang_Secondary",
+      "Boilerfang_Stripe"
+    ],
+    "blueprint_scale_m_per_px": 0.007100840336134453,
+    "wheelbase_m": 3.38
+  }
+}

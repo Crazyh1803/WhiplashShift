@@ -90,7 +90,7 @@ def build_dome_and_stack(builder):
         (0.0, 0.98), (0.118, 0.98), (0.118, 1.090), (0.098, 1.112), (0.080, 1.170), (0.074, 1.250),
         (0.073, 1.380), (0.082, 1.450), (0.096, 1.482), (0.108, 1.500), (0.108, 1.512),
         (0.082, 1.512), (0.074, 1.496), (0.0, 1.470)], ["iron", "brass"], axis=2,
-        center=(sx, 0, 0), segments=32, face_mats=[1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
+        center=(sx, 0, 0), segments=24, face_mats=[1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
     ring = bmesh.new()
     F.torus(ring, 0.082, 0.009, (sx, 0, 1.30), axis=2, seg=28, rseg=6)
     bmesh.ops.recalc_face_normals(ring, faces=list(ring.faces))
@@ -108,10 +108,10 @@ def lamp_barrel(builder, name, center, r, depth, front=-1):
     d = depth * front
     out = F.revolve(builder, name, [
         (0.0, 0.0), (r * 0.85, 0.0), (r, -d * 0.1), (r, -d * 0.9), (r * 0.96, -d), (r * 0.80, -d),
-        (r * 0.80, -d * 0.98), (0.0, -d * 0.96)], ["brass"], axis=0, center=center, segments=24)
+        (r * 0.80, -d * 0.97), (0.0, -d * 0.955)], ["brass"], axis=0, center=center, segments=18)
     lens = F.revolve(builder, name + "_Lens", [
-        (0.0, -d * 0.955), (r * 0.78, -d * 0.955), (r * 0.78, -d * 1.0), (0.0, -d * 1.02)], ["lamp"],
-        axis=0, center=center, segments=24)
+        (0.0, -d * 0.96), (r * 0.78, -d * 0.972), (r * 0.78, -d * 0.985), (0.0, -d * 0.985)], ["lamp"],
+        axis=0, center=center, segments=18)
     return [out, lens]
 
 
@@ -200,10 +200,10 @@ def build_speedster_hardware(builder):
     # twin mushroom vents on the cockpit roof (front elevation A: two domes either side of centre)
     px = 668
     for side in SIDES:
-        z0 = B.roof_z(px)
         y = side * 0.16
+        z0 = B.top_surface_z(px, 0.16)
         out.append(F.revolve(builder, f"Fine_RoofVent_{tag(side)}", [
-            (0.0, z0 - 0.02), (0.028, z0 - 0.02), (0.028, z0 + 0.05), (0.075, z0 + 0.058),
+            (0.0, z0 - 0.012), (0.028, z0 - 0.012), (0.028, z0 + 0.05), (0.075, z0 + 0.058),
             (0.082, z0 + 0.074), (0.062, z0 + 0.096), (0.0, z0 + 0.104)], ["brass"], axis=2,
             center=(T.X(px), y, 0), segments=20))
     return out
@@ -212,13 +212,13 @@ def build_speedster_hardware(builder):
 def build_cab_hardware(builder):
     out = []
     # twin roof lamps and a whistle on the cab roof
-    z = B.roof_z(464) + 0.045
+    z = B.top_surface_z(468, 0.30) + 0.012
     for side in SIDES:
-        out += lamp_barrel(builder, f"Fine_RoofLamp_{tag(side)}", (T.X(464), side * 0.30, z + 0.06), 0.045, 0.07,
+        out += lamp_barrel(builder, f"Fine_RoofLamp_{tag(side)}", (T.X(468) + 0.035, side * 0.30, z + 0.06), 0.045, 0.07,
                            front=-1)
-        out.append(rod(builder, f"Fine_RoofLampStem_{tag(side)}", (T.X(468), side * 0.30, z - 0.02),
+        out.append(rod(builder, f"Fine_RoofLampStem_{tag(side)}", (T.X(468), side * 0.30, z - 0.016),
                        (T.X(468), side * 0.30, z + 0.06), 0.014, "iron", 6))
-    zw = B.roof_z(574) + 0.04
+    zw = B.top_surface_z(574, 0.0) + 0.06
     out.append(F.revolve(builder, "Fine_Whistle", [
         (0.0, zw - 0.06), (0.020, zw - 0.06), (0.020, zw + 0.02), (0.034, zw + 0.05), (0.034, zw + 0.16),
         (0.0, zw + 0.165)], ["brass"], axis=2, center=(T.X(574), 0.0, 0), segments=14))
@@ -238,7 +238,7 @@ def tank_and_cylinder(builder):
             (0.10, x1 - 0.032), (0.06, x1 - 0.012), (0.0, x1)], ["paint2"], axis=0, center=c, segments=28))
         bands = bmesh.new()
         for px in (440, 472, 505):
-            F.torus(bands, r + 0.004, 0.0075, (T.X(px), side * yc, zc), axis=0, seg=28, rseg=6)
+            F.torus(bands, r + 0.004, 0.0075, (T.X(px), side * yc, zc), axis=0, seg=24, rseg=4)
         bmesh.ops.recalc_face_normals(bands, faces=list(bands.faces))
         out.append(P.finish(builder, f"Trim_TankBands_{tag(side)}", bands, "brass", smooth_angle=60))
         # steam cylinder aft of the tank, with copper heads, steam chest and piston rod to the pulley
@@ -282,8 +282,8 @@ def build_mid_drive(builder):
             a_, b_ = rings[s_], rings[(s_ + 1) % 40]
             bm2.faces.new((a_[m - 1], a_[0], b_[0], b_[m - 1]))
         # hub boss and brass cap
-        piece(0, lambda: P.lathe(bm, [(0.0, -0.050), (0.046, -0.050), (0.052, -0.030), (0.052, 0.040),
-                                     (0.0, 0.040)], 22))
+        piece(0, lambda: P.lathe(bm, [(0.0, -0.050 * side), (0.046, -0.050 * side), (0.052, -0.030 * side),
+                                     (0.052, 0.040 * side), (0.0, 0.040 * side)], 22))
         piece(1, lambda: P.lathe(bm, [(0.0, 0.070 * side), (0.020, 0.066 * side), (0.034, 0.048 * side),
                                       (0.036, 0.040 * side), (0.0, 0.040 * side)], 20))
         # six spokes: tapered bars bolted into rim and boss
@@ -316,8 +316,9 @@ def build_mid_drive(builder):
                             smooth_angle=45))
         # belt-driven pulley with flange and a toothed pinion on the same shaft
         pbm = bmesh.new()
-        prof = [(pr - 0.012, -0.040), (pr + 0.012, -0.034), (pr + 0.012, -0.012), (pr - 0.002, -0.006),
-                (pr - 0.002, 0.020), (pr + 0.014, 0.024), (pr + 0.014, 0.040), (pr - 0.012, 0.040)]
+        prof = [(r_, h_ * side) for r_, h_ in
+                ((pr - 0.012, -0.040), (pr + 0.012, -0.034), (pr + 0.012, -0.012), (pr - 0.002, -0.006),
+                 (pr - 0.002, 0.020), (pr + 0.014, 0.024), (pr + 0.014, 0.040), (pr - 0.012, 0.040))]
         rings = P.lathe(pbm, prof, 28)
         m = len(prof)
         for s_ in range(28):
@@ -402,7 +403,27 @@ def belt_and_guard(builder, side, fly, pul):
     return out
 
 
+def build_markers(builder, surf):
+    """Amber side markers: brass-bezelled domes seated on the flat flanks."""
+    out = []
+    for side in SIDES:
+        for k, (px, z) in enumerate(((441, 0.80), (626, 0.70), (815, 0.44))):
+            hit = surf.side(T.X(px), z, side)
+            if not hit:
+                continue
+            loc = hit[0]
+            prof = [(0.0, -0.003), (0.023, -0.003), (0.023, 0.006), (0.017, 0.009), (0.015, 0.011), (0.0, 0.015)]
+            out.append(F.revolve(builder, f"Fine_Marker_{tag(side)}_{k}", [(r, h * side) for r, h in prof],
+                                 ["brass"], axis=1, center=(loc.x, loc.y, loc.z), segments=14))
+            lens = F.revolve(builder, f"Fine_Marker_{tag(side)}_{k}_Lens", [
+                (0.0, 0.0095 * side), (0.013, 0.0085 * side), (0.013, 0.0105 * side), (0.0, 0.0155 * side)],
+                ["amber"], axis=1, center=(loc.x, loc.y, loc.z), segments=14)
+            out.append(lens)
+    return out
+
+
 def build(builder, hull):
+    surf = F.Surface([hull])
     out = []
     out += build_smokebox(builder)
     out += build_dome_and_stack(builder)
@@ -413,4 +434,5 @@ def build(builder, hull):
     out += build_cab_hardware(builder)
     out += tank_and_cylinder(builder)
     out += build_mid_drive(builder)
+    out += build_markers(builder, surf)
     return out

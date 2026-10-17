@@ -39,9 +39,9 @@ def build_rivets(builder, surf):
         out.append(F.rivet_set(builder, f"Fine_Rivets_Flank_{s}", spots, 0.0065, "brass"))
         # door perimeter (inset inside the outline)
         door = []
-        for z in (0.635, 1.205):
-            door += side_rivets(surf, side, [(467, 512, z)], 0.07, 0.006)
-        for px in (467, 512):
+        for z in (0.635, 1.245):
+            door += side_rivets(surf, side, [(465, 514, z)], 0.07, 0.006)
+        for px in (464.5, 514.5):
             x = T.X(px)
             for k in range(7):
                 hit = surf.side(x, 0.68 + k * 0.085, side)
@@ -70,15 +70,15 @@ def build_rivets(builder, surf):
         hub = (T.WHEEL_X["truck"], T.WHEEL_R["truck"])
         r = hub[1] + 0.045 + 0.0075 + 0.008
         for yy in (0.32, 0.64):
-            for k in range(2, 33, 2):
-                a = math.radians(215 + (-35 - 215) * k / 34)
+            for k in range(2, B.ARCH_STEPS["truck"], 2):
+                a = math.radians(215 + (-35 - 215) * k / B.ARCH_STEPS["truck"])
                 fend.append(((hub[0] + r * math.cos(a), side * yy, hub[1] + r * math.sin(a)),
                              (math.cos(a), 0.0, math.sin(a))))
         hub = (T.WHEEL_X["coupe"], T.WHEEL_R["coupe"])
         r = hub[1] + 0.045 + 0.0075 + 0.008
         for yy in (0.38, 0.62):
-            for k in range(0, 27, 2):
-                a = math.radians(152 + (-28 - 152) * k / 26)
+            for k in range(0, B.ARCH_STEPS["coupe"] + 1, 2):
+                a = math.radians(152 + (-28 - 152) * k / B.ARCH_STEPS["coupe"])
                 fend.append(((hub[0] + r * math.cos(a), side * yy, hub[1] + r * math.sin(a)),
                              (math.cos(a), 0.0, math.sin(a))))
     out.append(F.rivet_set(builder, "Fine_Rivets_Fenders", fend, 0.007, "brass"))
@@ -99,14 +99,13 @@ def wheel_valve(builder, name, pos, mat="brass"):
     out = [F.revolve(builder, name + "_Stem", [(0.0, -0.03), (0.012, -0.03), (0.016, 0.0), (0.012, 0.05),
                                                (0.0, 0.055)], [mat], axis=2, center=(x, y, z), segments=10)]
     ring = bmesh.new()
-    F.torus(ring, 0.034, 0.005, (x, y, z + 0.058), axis=2, seg=16, rseg=5)
-    for k in range(4):
-        a = k * math.pi / 2
-        v0 = ring.verts.new((x, y, z + 0.058))
-        v1 = ring.verts.new((x + 0.034 * math.cos(a), y + 0.034 * math.sin(a), z + 0.058))
-        v2 = ring.verts.new((x + 0.034 * math.cos(a), y + 0.034 * math.sin(a), z + 0.052))
-        v3 = ring.verts.new((x, y, z + 0.052))
-        ring.faces.new((v0, v1, v2, v3))
+    F.torus(ring, 0.034, 0.005, (x, y, z + 0.058), axis=2, seg=16, rseg=6)
+    for k in range(2):
+        bar = bmesh.ops.create_cube(ring, size=1.0)
+        for v in bar["verts"]:
+            ca, sa = math.cos(k * math.pi / 2), math.sin(k * math.pi / 2)
+            lx, ly, lz = v.co.x * 0.068, v.co.y * 0.008, v.co.z * 0.008
+            v.co = Vector((x + lx * ca - ly * sa, y + lx * sa + ly * ca, z + 0.058 + lz))
     bmesh.ops.recalc_face_normals(ring, faces=list(ring.faces))
     out.append(P.finish(builder, name + "_Wheel", ring, mat, smooth_angle=60))
     return out
@@ -136,14 +135,14 @@ def build_pipes(builder, surf):
 
 def build_gauges(builder):
     out = []
-    z = B.roof_z(459) + 0.02
-    out.append(P.sweep(builder, "Fine_RoofGaugeStem", [(T.X(459), 0.0, z - 0.01), (T.X(459), 0.0, z + 0.13)],
+    z = B.top_surface_z(459, 0.0)
+    out.append(P.sweep(builder, "Fine_RoofGaugeStem", [(T.X(459), 0.0, z - 0.01), (T.X(459), 0.0, z + 0.06)],
                        "brass", radius=0.012, sides=8))
-    out.append(M.gauge_pair(builder, "Fine_RoofGauge", (T.X(459), 0.0, z + 0.17), 0.05))
+    out.append(M.gauge_pair(builder, "Fine_RoofGauge", (T.X(459), 0.0, z + 0.095), 0.045))
     # dash gauges on the speedster cowl
     for side in SIDES:
-        zc = B.roof_z(748) + 0.020
-        out.append(P.sweep(builder, f"Fine_CowlGaugeStem_{tag(side)}", [(T.X(748), side * 0.19, zc - 0.02),
+        zc = B.top_surface_z(748, 0.19)
+        out.append(P.sweep(builder, f"Fine_CowlGaugeStem_{tag(side)}", [(T.X(748), side * 0.19, zc - 0.01),
                                                                        (T.X(748), side * 0.19, zc + 0.03)],
                            "brass", radius=0.010, sides=6))
         out.append(M.gauge_pair(builder, f"Fine_CowlGauge_{tag(side)}", (T.X(748), side * 0.19, zc + 0.065), 0.036))
@@ -155,10 +154,10 @@ def build_running_gear(builder):
     for side in SIDES:
         s = tag(side)
         out.append(P.sweep(builder, f"Fine_AxleTruck_{s}", [(T.WHEEL_X["truck"], side * 0.30, T.WHEEL_R["truck"]),
-                                                          (T.WHEEL_X["truck"], side * 0.57, T.WHEEL_R["truck"])],
+                                                          (T.WHEEL_X["truck"], side * 0.70, T.WHEEL_R["truck"])],
                            "iron", radius=0.036, sides=12))
         out.append(P.sweep(builder, f"Fine_AxleSpeedster_{s}", [(T.WHEEL_X["coupe"], side * 0.20, T.WHEEL_R["coupe"]),
-                                                              (T.WHEEL_X["coupe"], side * 0.44, T.WHEEL_R["coupe"])],
+                                                              (T.WHEEL_X["coupe"], side * 0.47, T.WHEEL_R["coupe"])],
                            "iron", radius=0.026, sides=10))
         # leaf springs under the fenders, three leaves each
         for end, (hx, hz, yy, half) in (("T", (T.WHEEL_X["truck"], T.WHEEL_R["truck"], 0.46, 0.34)),

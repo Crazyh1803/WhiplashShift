@@ -15,7 +15,7 @@ from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 from mathutils.kdtree import KDTree
 
-TOL_VERTEX_MM = 1.0   # vertex placement: exact-Boolean retriangulation moves vertices along the surface
+TOL_VERTEX_MM = 0.01  # no Booleans in this build: expect float-level agreement
 TOL_SURFACE_MM = 0.01  # shape: distance of every vertex to the other build's surface
 argv = sys.argv[sys.argv.index("--") + 1:]
 other_path = argv[0]
@@ -36,7 +36,7 @@ def info(obj):
 
 
 # Rename this file's datablocks first so the linked file keeps its exact names (Blender would
-# otherwise rewrite colliding names such as "Lamp_+0.58" unpredictably).
+# otherwise rewrite colliding names such as "Fine_Marker_+1_0" unpredictably).
 PREFIX = "A::"
 for datablock in list(bpy.data.objects) + list(bpy.data.materials):
     datablock.name = PREFIX + datablock.name

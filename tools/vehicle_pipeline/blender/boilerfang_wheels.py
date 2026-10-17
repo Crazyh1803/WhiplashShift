@@ -90,7 +90,7 @@ def build_tire(builder, style, side, location):
         for v in cone["verts"]:
             lx, ly, lz = v.co
             rad = R - 0.022 + lz
-            v.co = Vector((rad * ca - lx * sa, (col * side + ly), rad * sa + lx * ca))
+            v.co = Vector((rad * ca - lx * sa, (col + ly) * side, rad * sa + lx * ca))
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
     return P.finish(builder, f"Wheel_{style.title()}_Tire_{side:+d}", bm, "rubber",
                     location=location, smooth_angle=48)

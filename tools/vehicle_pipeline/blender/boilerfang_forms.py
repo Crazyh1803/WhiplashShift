@@ -182,14 +182,9 @@ def rivet_set(builder, name, spots, radius, mat, sink=0.0008):
         base = Vector(pos) - n * sink
         ring = [bm.verts.new(base + (u * math.cos(k * math.tau / 6) + v * math.sin(k * math.tau / 6)) * radius)
                 for k in range(6)]
-        mid = [bm.verts.new(base + n * radius * 0.55 +
-                            (u * math.cos(k * math.tau / 6) + v * math.sin(k * math.tau / 6)) * radius * 0.62)
-               for k in range(6)]
-        apex = bm.verts.new(base + n * radius * 0.8)
+        apex = bm.verts.new(base + n * radius * 0.75)
         for k in range(6):
-            j = (k + 1) % 6
-            bm.faces.new((ring[k], ring[j], mid[j], mid[k]))
-            bm.faces.new((mid[k], mid[j], apex))
+            bm.faces.new((ring[k], ring[(k + 1) % 6], apex))
         bm.faces.new(list(reversed(ring)))
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
     return P.finish(builder, name, bm, mat, smooth_angle=60)

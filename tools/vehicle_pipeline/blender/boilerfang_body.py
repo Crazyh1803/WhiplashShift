@@ -18,13 +18,15 @@ HULL_PX = [296, 304, 320, 340, 360, 380, 400, 420, 431.5, 433, 440, 446, 452, 46
            760, 780, 800, 820, 840, 852, 862]
 CROWN = [(296, 0.03), (431, 0.03), (433, 0.0), (460, 0.0), (470, 0.05), (560, 0.05), (600, 0.03),
          (640, 0.02), (695, 0.02), (702, 0.0), (725, 0.0), (735, 0.03), (862, 0.03)]
+ARCH_STEPS = {"truck": 22, "coupe": 18}
 BARREL_Z = (0.60, 1.06)
 DECK_Z = 0.62
 CAB_PX = 432.2
 
 
 def hull_top(px):
-    return DECK_Z if px < CAB_PX else T.top_z(px)
+    """Flat-part top of the hull; the crown lifts the centreline to the traced silhouette."""
+    return DECK_Z if px < CAB_PX else T.top_z(px) - T.lerp_table(CROWN, px)
 
 
 def hull_ring(px):
@@ -85,7 +87,7 @@ def build_fenders(builder):
         sgn = "+" if side > 0 else "-"
         hub = (T.WHEEL_X["truck"], T.WHEEL_R["truck"])
         r = hub[1] + 0.045 + 0.0075
-        path = arch_path(hub, r, 215, -35, 34)
+        path = arch_path(hub, r, 215, -35, ARCH_STEPS["truck"])
         o = F.sweep_band(builder, f"Body_FenderTruck_{sgn}", path, 0.30 if side > 0 else -0.66,
                          0.66 if side > 0 else -0.30, 0.022, "paint")
         out.append(o)
@@ -95,7 +97,7 @@ def build_fenders(builder):
         # speedster pontoon: running board, rise over the arch, nose drop
         hub = (T.WHEEL_X["coupe"], T.WHEEL_R["coupe"])
         r = hub[1] + 0.045 + 0.0075
-        arc = arch_path(hub, r, 152, -28, 26)
+        arc = arch_path(hub, r, 152, -28, ARCH_STEPS["coupe"])
         rear = [(T.X(696), 0.115), (1.12, 0.115), (1.30, 0.22)]
         path = rear + arc
         o = F.sweep_band(builder, f"Body_FenderSpeedster_{sgn}", path, 0.36 if side > 0 else -0.64,
@@ -156,3 +158,23 @@ def side_y(px):
 def roof_z(px):
     """Hull top height (flat part, before crown) at an arbitrary px."""
     return T.lerp_table([(p, hull_top(p)) for p in HULL_PX], px)
+
+
+def top_surface_z(px, y):
+    """Exact hull top height at (px, |y|), interpolated on the lofted rings (flat or crowned)."""
+    i = max(1, min(len(HULL_PX) - 1, next((k for k, p in enumerate(HULL_PX) if p >= px), len(HULL_PX) - 1)))
+    p0, p1 = HULL_PX[i - 1], HULL_PX[i]
+    t = (px - p0) / (p1 - p0)
+    zs = []
+    for p in (p0, p1):
+        ring, _ = hull_ring(p)
+        half = [(yy, zz) for yy, zz in ring if yy >= -1e-9 and zz > ring[0][1] + 0.1]
+        half.sort()
+        a = abs(y)
+        z = half[-1][1]
+        for (ya, za), (yb, zb) in zip(half, half[1:]):
+            if ya <= a <= yb and yb > ya:
+                z = za + (zb - za) * (a - ya) / (yb - ya)
+                break
+        zs.append(z)
+    return zs[0] + (zs[1] - zs[0]) * t
