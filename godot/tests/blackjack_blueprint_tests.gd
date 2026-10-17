@@ -166,10 +166,10 @@ func _garage_paths() -> void:
 			_check("other vehicles have no blueprint overrides",preview.get_script()==Vehicle)
 		preview.free()
 	# Exercise the real garage hook, including replacing the disabled preview
-	# when switching away from Blackjack and back; never write profile data.
+	# when switching between authored vehicles; never write profile data.
 	var garage: Variant = load("res://scenes/garage.tscn").instantiate()
 	add_child(garage)
-	for id: String in ["blackjack","boilerfang","blackjack"]:
+	for id: String in ["blackjack","boilerfang","helix","blackjack"]:
 		for index in range(VehicleCatalog.VEHICLES.size()):
 			if VehicleCatalog.VEHICLES[index]["id"]==id:
 				garage._index=index
@@ -177,10 +177,10 @@ func _garage_paths() -> void:
 		_check("real garage gates preset controls by vehicle",garage._primary_picker.preset.visible==(id=="blackjack") and garage._primary_picker.unrestricted.visible==(id!="blackjack"))
 		garage._refresh_customization_preview(id,VehicleCatalog.default_customization(id))
 		var environment: Environment=garage._preview_environment.environment
-		_check("studio reflections are Blackjack-only",environment.sky!=null if id=="blackjack" else environment.sky==null and environment.ambient_light_source==Environment.AMBIENT_SOURCE_COLOR and is_equal_approx(environment.ambient_light_energy,.72))
+		_check("studio reflections follow authored artwork",environment.sky!=null if id!="helix" else environment.sky==null and environment.ambient_light_source==Environment.AMBIENT_SOURCE_COLOR and is_equal_approx(environment.ambient_light_energy,.72))
 		var preview: Vehicle = garage._preview_vehicle
 		_check("real garage retains frozen preview",preview.freeze and preview.process_mode==Node.PROCESS_MODE_DISABLED)
-		_check("real garage selects production art rig",preview.get_script()==load("res://scripts/blackjack_blueprint_vehicle.gd") if id=="blackjack" else preview.get_script()==Vehicle)
+		_check("real garage selects production art rig",preview.get_script()==load("res://scripts/%s_blueprint_vehicle.gd" % id) if id!="helix" else preview.get_script()==Vehicle)
 		if id=="blackjack":
 			for wheel: Wheel in preview.visual_wheels:
 				var assembly := wheel.get_node("ModularWheelVisual") as Node3D
