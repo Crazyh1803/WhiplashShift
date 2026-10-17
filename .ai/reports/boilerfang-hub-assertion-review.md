@@ -1,0 +1,14 @@
+**Verdict:** Correct under translated/yaw-rotated spawn; catches radial (YZ) hub/origin errors and transform-space bugs, with one narrow axial-origin blind spot noted below. No concrete bugs in the assertion math or coordinate frames.
+
+### Coordinate & Spawn Validation
+* `godot/tests/nightshift_blueprint_tests.gd:17-19` — Spawns `car` translated (`Vector3(8.0, 0.62, -13.0)`) and yaw-rotated (`rotation.y = 0.73`).
+* `godot/scripts/vehicle_catalog.gd:110,134,141` & `godot/scripts/vehicle.gd:116-119` — `ProductionModel` has `rotation_degrees = Vector3(0.0, 90.0, 0.0)`, so `tire.mesh.get_aabb().get_center()` in mesh-local space has its axle on mesh Z, not X.
+* `godot/scripts/deadbolt_blueprint_vehicle.gd:69-88` — `_install_authored_wheels()` computes `local_transform := global_transform.affine_inverse() * source.global_transform` and subtracts `center := to_local(tire.global_position)` in vehicle-local space (`copy.transform = local_transform` under `assembly`).
+* `godot/tests/nightshift_blueprint_tests.gd:70-75` — `assembly.to_local(tire.to_global(tire.mesh.get_aabb().get_center()))` cancels `car`'s world translation/yaw and applies `tire.transform` (including `ProductionModel`'s 90° Y basis) before `center.x = 0.0` is zeroed. At lines 70–75 (prior to `wheel.steer_angle = 0.3` at `godot/tests/nightshift_blueprint_tests.gd:95`), `assembly` basis matches vehicle local space:
+  * `+X`: axle axis (`godot/scripts/deadbolt_blueprint_vehicle.gd:59`, `godot/scripts/wheel.gd:101-102`).
+  * `YZ`: radial spin plane (`godot/tests/nightshift_blueprint_tests.gd:77,85`).
+* `tools/vehicle_pipeline/blender/boilerfang_wheels.py:95-105,258-259` — Truck tires add 14 evenly-spaced outboard conical studs at `side * (hw * 0.93 + 0.012 + lz)` along the axle (Blender Y $\rightarrow$ `assembly` X) while keeping radial symmetry around the hub origin `loc`, so projecting `center` to `assembly` YZ (`center.x = 0.0`) stays `< 0.005` m.
+
+### Off-Center Hub Coverage & Caveat
+* **Radial (YZ) off-center hubs / unapplied origins:** Caught by `center.length() < 0.005` (`godot/tests/nightshift_blueprint_tests.gd:75`), since any radial offset between `tire` origin and tire geometry shifts `center.y`/`center.z`.
+* **Purely axial (X) hub origin shift (caveat, not a false failure):** Because `godot/scripts/deadbolt_blueprint_vehicle.gd:69,83,86` defines `center` from `tire.global_position` and subtracts it from `tire`'s own `local_transform.origin`, `tire.position` in `assembly` is always `Vector3.ZERO` (`tire.global_position.distance_to(assembly.global_position)` is tautologically `~0`), and `center.x = 0.0` discards axial AABB offset. Checking `rim.position.length() < 0.005` (or comparing `tire` vs `rim` origin) would be needed if you also want to catch a tire origin shifted purely along X relative to other wheel parts (`tools/vehicle_pipeline/blender/boilerfang_wheels.py:259-266`).
