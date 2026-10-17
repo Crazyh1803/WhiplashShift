@@ -1,0 +1,1350 @@
+{
+  "status": "PASS",
+  "failures": [],
+  "results": {
+    "shell_closed_manifold": {
+      "ok": true,
+      "detail": {
+        "open_edges": 0
+      }
+    },
+    "shell_positive_volume": {
+      "ok": true,
+      "detail": {
+        "volume_m3": 8.0074
+      }
+    },
+    "shell_mirror_symmetry_mm": {
+      "ok": true,
+      "detail": {
+        "max_surface_error_mm": 4.479,
+        "p99_mm": 0.0,
+        "vertices_over_2mm": 3,
+        "vertex_count": 4384,
+        "median_mm": 0.0
+      }
+    },
+    "silhouette_top_px": {
+      "ok": true,
+      "detail": {
+        "max": 2.24,
+        "mean": 0.92
+      }
+    },
+    "silhouette_sill_px": {
+      "ok": true,
+      "detail": {
+        "max": 0.41
+      }
+    },
+    "silhouette_halfwidth_px": {
+      "ok": true,
+      "detail": {
+        "max": 0.22,
+        "at_px": 732
+      }
+    },
+    "wheel_parts_Truck_-1": {
+      "ok": true,
+      "detail": {
+        "parts": 9,
+        "expected": 9
+      }
+    },
+    "wheel_origin_Truck_-1": {
+      "ok": true,
+      "detail": {
+        "mm": 0.0
+      }
+    },
+    "wheel_radius_Truck_-1": {
+      "ok": true,
+      "detail": {
+        "dims": [
+          0.86,
+          0.34,
+          0.86
+        ]
+      }
+    },
+    "wheel_axis_Y_Truck_-1": {
+      "ok": true,
+      "detail": {
+        "width": 0.34
+      }
+    },
+    "tyre_under_fender_Truck_-1": {
+      "ok": true,
+      "detail": {
+        "tyre_outer": 0.99,
+        "fender": 1.0
+      }
+    },
+    "arch_clearance_Truck_-1": {
+      "ok": true,
+      "detail": {
+        "mm": 50.0
+      }
+    },
+    "wheel_parts_Truck_+1": {
+      "ok": true,
+      "detail": {
+        "parts": 9,
+        "expected": 9
+      }
+    },
+    "wheel_origin_Truck_+1": {
+      "ok": true,
+      "detail": {
+        "mm": 0.0
+      }
+    },
+    "wheel_radius_Truck_+1": {
+      "ok": true,
+      "detail": {
+        "dims": [
+          0.86,
+          0.34,
+          0.86
+        ]
+      }
+    },
+    "wheel_axis_Y_Truck_+1": {
+      "ok": true,
+      "detail": {
+        "width": 0.34
+      }
+    },
+    "tyre_under_fender_Truck_+1": {
+      "ok": true,
+      "detail": {
+        "tyre_outer": 0.99,
+        "fender": 1.0
+      }
+    },
+    "arch_clearance_Truck_+1": {
+      "ok": true,
+      "detail": {
+        "mm": 50.0
+      }
+    },
+    "wheel_parts_Coupe_-1": {
+      "ok": true,
+      "detail": {
+        "parts": 13,
+        "expected": 13
+      }
+    },
+    "wheel_origin_Coupe_-1": {
+      "ok": true,
+      "detail": {
+        "mm": 0.0
+      }
+    },
+    "wheel_radius_Coupe_-1": {
+      "ok": true,
+      "detail": {
+        "dims": [
+          0.8,
+          0.29,
+          0.8
+        ]
+      }
+    },
+    "wheel_axis_Y_Coupe_-1": {
+      "ok": true,
+      "detail": {
+        "width": 0.29
+      }
+    },
+    "tyre_under_fender_Coupe_-1": {
+      "ok": true,
+      "detail": {
+        "tyre_outer": 0.965,
+        "fender": 1.0
+      }
+    },
+    "arch_clearance_Coupe_-1": {
+      "ok": true,
+      "detail": {
+        "mm": 44.9
+      }
+    },
+    "wheel_parts_Coupe_+1": {
+      "ok": true,
+      "detail": {
+        "parts": 13,
+        "expected": 13
+      }
+    },
+    "wheel_origin_Coupe_+1": {
+      "ok": true,
+      "detail": {
+        "mm": 0.0
+      }
+    },
+    "wheel_radius_Coupe_+1": {
+      "ok": true,
+      "detail": {
+        "dims": [
+          0.8,
+          0.29,
+          0.8
+        ]
+      }
+    },
+    "wheel_axis_Y_Coupe_+1": {
+      "ok": true,
+      "detail": {
+        "width": 0.29
+      }
+    },
+    "tyre_under_fender_Coupe_+1": {
+      "ok": true,
+      "detail": {
+        "tyre_outer": 0.965,
+        "fender": 1.0
+      }
+    },
+    "arch_clearance_Coupe_+1": {
+      "ok": true,
+      "detail": {
+        "mm": 44.9
+      }
+    },
+    "wheels": {
+      "Truck_-1": {
+        "parts": 9,
+        "origin_err_mm": 0.0,
+        "dims": [
+          0.86,
+          0.34,
+          0.86
+        ],
+        "tyre_outer_face_m": 0.99,
+        "fender_half_width_m": 1.0,
+        "arch_clearance_mm": 50.0
+      },
+      "Truck_+1": {
+        "parts": 9,
+        "origin_err_mm": 0.0,
+        "dims": [
+          0.86,
+          0.34,
+          0.86
+        ],
+        "tyre_outer_face_m": 0.99,
+        "fender_half_width_m": 1.0,
+        "arch_clearance_mm": 50.0
+      },
+      "Coupe_-1": {
+        "parts": 13,
+        "origin_err_mm": 0.0,
+        "dims": [
+          0.8,
+          0.29,
+          0.8
+        ],
+        "tyre_outer_face_m": 0.965,
+        "fender_half_width_m": 1.0,
+        "arch_clearance_mm": 44.9
+      },
+      "Coupe_+1": {
+        "parts": 13,
+        "origin_err_mm": 0.0,
+        "dims": [
+          0.8,
+          0.29,
+          0.8
+        ],
+        "tyre_outer_face_m": 0.965,
+        "fender_half_width_m": 1.0,
+        "arch_clearance_mm": 44.9
+      }
+    },
+    "lamp_seated_Coupe_Headlamp_IL": {
+      "ok": true,
+      "detail": {
+        "max_mm": 10.6
+      }
+    },
+    "lamp_seated_Coupe_Headlamp_IR": {
+      "ok": true,
+      "detail": {
+        "max_mm": 10.7
+      }
+    },
+    "lamp_seated_Coupe_Headlamp_OL": {
+      "ok": true,
+      "detail": {
+        "max_mm": 18.1
+      }
+    },
+    "lamp_seated_Coupe_Headlamp_OR": {
+      "ok": true,
+      "detail": {
+        "max_mm": 20.6
+      }
+    },
+    "lamp_seated_Truck_Headlamp_LL": {
+      "ok": true,
+      "detail": {
+        "max_mm": 21.6
+      }
+    },
+    "lamp_seated_Truck_Headlamp_LR": {
+      "ok": true,
+      "detail": {
+        "max_mm": 21.6
+      }
+    },
+    "lamp_seated_Truck_Headlamp_UL": {
+      "ok": true,
+      "detail": {
+        "max_mm": 21.6
+      }
+    },
+    "lamp_seated_Truck_Headlamp_UR": {
+      "ok": true,
+      "detail": {
+        "max_mm": 21.6
+      }
+    },
+    "lamps_max_dist_mm": {
+      "Coupe_Headlamp_IL": 10.6,
+      "Coupe_Headlamp_IR": 10.7,
+      "Coupe_Headlamp_OL": 18.1,
+      "Coupe_Headlamp_OR": 20.6,
+      "Truck_Headlamp_LL": 21.6,
+      "Truck_Headlamp_LR": 21.6,
+      "Truck_Headlamp_UL": 21.6,
+      "Truck_Headlamp_UR": 21.6
+    },
+    "glass_seated_Glass_CoupeSide_L": {
+      "ok": true,
+      "detail": {
+        "min_mm": 2.99,
+        "max_mm": 4.39,
+        "shell_crossings": 0
+      }
+    },
+    "glass_seated_Glass_CoupeSide_R": {
+      "ok": true,
+      "detail": {
+        "min_mm": 2.99,
+        "max_mm": 4.31,
+        "shell_crossings": 0
+      }
+    },
+    "glass_seated_Glass_CoupeWindshield": {
+      "ok": true,
+      "detail": {
+        "min_mm": 3.49,
+        "max_mm": 4.22,
+        "shell_crossings": 0
+      }
+    },
+    "glass_seated_Glass_TruckSide_L": {
+      "ok": true,
+      "detail": {
+        "min_mm": 3.56,
+        "max_mm": 4.25,
+        "shell_crossings": 0
+      }
+    },
+    "glass_seated_Glass_TruckSide_R": {
+      "ok": true,
+      "detail": {
+        "min_mm": 3.56,
+        "max_mm": 4.25,
+        "shell_crossings": 0
+      }
+    },
+    "glass_seated_Glass_TruckWindshield": {
+      "ok": true,
+      "detail": {
+        "min_mm": 2.9,
+        "max_mm": 3.2,
+        "shell_crossings": 0
+      }
+    },
+    "glass": {
+      "Glass_CoupeSide_L": {
+        "min_mm": 2.99,
+        "max_mm": 4.39,
+        "shell_crossings": 0
+      },
+      "Glass_CoupeSide_R": {
+        "min_mm": 2.99,
+        "max_mm": 4.31,
+        "shell_crossings": 0
+      },
+      "Glass_CoupeWindshield": {
+        "min_mm": 3.49,
+        "max_mm": 4.22,
+        "shell_crossings": 0
+      },
+      "Glass_TruckSide_L": {
+        "min_mm": 3.56,
+        "max_mm": 4.25,
+        "shell_crossings": 0
+      },
+      "Glass_TruckSide_R": {
+        "min_mm": 3.56,
+        "max_mm": 4.25,
+        "shell_crossings": 0
+      },
+      "Glass_TruckWindshield": {
+        "min_mm": 2.9,
+        "max_mm": 3.2,
+        "shell_crossings": 0
+      }
+    },
+    "uv_complete": {
+      "ok": true,
+      "detail": {
+        "missing": []
+      }
+    },
+    "material_slots_valid": {
+      "ok": true,
+      "detail": {
+        "bad": []
+      }
+    },
+    "materials_exact": {
+      "ok": true,
+      "detail": {
+        "extra": [],
+        "missing": []
+      }
+    },
+    "semantic_paint_channels": {
+      "ok": true,
+      "detail": null
+    },
+    "packed_reference": {
+      "ok": true,
+      "detail": null
+    },
+    "bounds": {
+      "min": [
+        -2.5435,
+        -1.117,
+        0.0
+      ],
+      "max": [
+        2.8296,
+        1.117,
+        1.6386
+      ],
+      "size": [
+        5.3731,
+        2.234,
+        1.6386
+      ]
+    },
+    "bounds_expected": {
+      "length": [
+        5.092,
+        5.512
+      ],
+      "width": [
+        2.0,
+        2.28
+      ],
+      "height": [
+        1.585,
+        1.665
+      ]
+    },
+    "bounds_length": {
+      "ok": true,
+      "detail": {
+        "x": 5.373,
+        "range": [
+          5.092,
+          5.512
+        ]
+      }
+    },
+    "bounds_width": {
+      "ok": true,
+      "detail": {
+        "y": 2.234,
+        "range": [
+          2.0,
+          2.28
+        ]
+      }
+    },
+    "bounds_height": {
+      "ok": true,
+      "detail": {
+        "z": 1.639,
+        "range": [
+          1.585,
+          1.665
+        ]
+      }
+    },
+    "ground_contact": {
+      "ok": true,
+      "detail": {
+        "min_z": 0.0
+      }
+    },
+    "export_exists_gameplay": {
+      "ok": true,
+      "detail": {
+        "path": "godot/assets/vehicles/models/nightshift/nightshift_blueprint.glb"
+      }
+    },
+    "export_wheel_counts": {
+      "ok": true,
+      "detail": {
+        "Coupe+": 13,
+        "Coupe-": 13,
+        "Truck+": 9,
+        "Truck-": 9
+      }
+    },
+    "export_materials": {
+      "ok": true,
+      "detail": [
+        "Nightshift_Amber",
+        "Nightshift_BrushedMetal",
+        "Nightshift_Glass",
+        "Nightshift_Grille",
+        "Nightshift_Gunmetal",
+        "Nightshift_Headlight",
+        "Nightshift_Marker",
+        "Nightshift_Paint",
+        "Nightshift_Rubber",
+        "Nightshift_Secondary",
+        "Nightshift_Stripe"
+      ]
+    },
+    "export_has_uvs": {
+      "ok": true,
+      "detail": null
+    },
+    "export_objects": 60,
+    "export_exists_lod1": {
+      "ok": true,
+      "detail": {
+        "path": "godot/assets/vehicles/models/nightshift/lod/nightshift_blueprint_LOD1.glb"
+      }
+    },
+    "export_exists_lod2": {
+      "ok": true,
+      "detail": {
+        "path": "godot/assets/vehicles/models/nightshift/lod/nightshift_blueprint_LOD2.glb"
+      }
+    },
+    "triangles": {
+      "gameplay": 35046,
+      "lod1": 26262,
+      "lod2": 18048
+    },
+    "budget_visible_vehicle_20k_40k": {
+      "ok": true,
+      "detail": 35046
+    },
+    "lod_monotonic": {
+      "ok": true,
+      "detail": {
+        "gameplay": 35046,
+        "lod1": 26262,
+        "lod2": 18048
+      }
+    },
+    "object_counts": {
+      "Body_NightshiftShell": [
+        4384,
+        3146
+      ],
+      "Cab_RearGlass": [
+        24,
+        26
+      ],
+      "Cab_RearGlassTrim": [
+        64,
+        64
+      ],
+      "Coupe_Badge": [
+        92,
+        80
+      ],
+      "Coupe_ChinLamp_+0.76": [
+        24,
+        26
+      ],
+      "Coupe_ChinLamp_-0.76": [
+        24,
+        26
+      ],
+      "Coupe_CowlSlat_0": [
+        24,
+        26
+      ],
+      "Coupe_CowlSlat_1": [
+        24,
+        26
+      ],
+      "Coupe_CowlSlat_2": [
+        24,
+        26
+      ],
+      "Coupe_CowlSlat_3": [
+        24,
+        26
+      ],
+      "Coupe_CowlSlat_4": [
+        24,
+        26
+      ],
+      "Coupe_GrilleSlat_0": [
+        24,
+        26
+      ],
+      "Coupe_GrilleSlat_1": [
+        24,
+        26
+      ],
+      "Coupe_GrilleSlat_2": [
+        24,
+        26
+      ],
+      "Coupe_Headlamp_IL": [
+        72,
+        74
+      ],
+      "Coupe_Headlamp_IR": [
+        72,
+        74
+      ],
+      "Coupe_Headlamp_OL": [
+        72,
+        74
+      ],
+      "Coupe_Headlamp_OR": [
+        72,
+        74
+      ],
+      "Coupe_HoodSlat_+1_0": [
+        24,
+        26
+      ],
+      "Coupe_HoodSlat_+1_1": [
+        24,
+        26
+      ],
+      "Coupe_HoodSlat_+1_2": [
+        24,
+        26
+      ],
+      "Coupe_HoodSlat_+1_3": [
+        24,
+        26
+      ],
+      "Coupe_HoodSlat_+1_4": [
+        24,
+        26
+      ],
+      "Coupe_HoodSlat_+1_5": [
+        24,
+        26
+      ],
+      "Coupe_HoodSlat_-1_0": [
+        24,
+        26
+      ],
+      "Coupe_HoodSlat_-1_1": [
+        24,
+        26
+      ],
+      "Coupe_HoodSlat_-1_2": [
+        24,
+        26
+      ],
+      "Coupe_HoodSlat_-1_3": [
+        24,
+        26
+      ],
+      "Coupe_HoodSlat_-1_4": [
+        24,
+        26
+      ],
+      "Coupe_HoodSlat_-1_5": [
+        24,
+        26
+      ],
+      "Coupe_IntakeSlat_0": [
+        24,
+        26
+      ],
+      "Coupe_IntakeSlat_1": [
+        24,
+        26
+      ],
+      "Coupe_IntakeSlat_2": [
+        24,
+        26
+      ],
+      "Coupe_Splitter": [
+        176,
+        162
+      ],
+      "Coupe_SplitterLip": [
+        24,
+        26
+      ],
+      "FenderLip_Coupe_L": [
+        150,
+        146
+      ],
+      "FenderLip_Coupe_R": [
+        150,
+        146
+      ],
+      "FenderLip_Truck_L": [
+        150,
+        146
+      ],
+      "FenderLip_Truck_R": [
+        150,
+        146
+      ],
+      "Glass_CoupeSide_L": [
+        97,
+        122
+      ],
+      "Glass_CoupeSide_R": [
+        97,
+        122
+      ],
+      "Glass_CoupeWindshield": [
+        354,
+        555
+      ],
+      "Glass_TruckSide_L": [
+        127,
+        174
+      ],
+      "Glass_TruckSide_R": [
+        127,
+        174
+      ],
+      "Glass_TruckWindshield": [
+        214,
+        299
+      ],
+      "Handle_Coupe_L": [
+        24,
+        26
+      ],
+      "Handle_Coupe_R": [
+        24,
+        26
+      ],
+      "Handle_Truck_L": [
+        24,
+        26
+      ],
+      "Handle_Truck_R": [
+        24,
+        26
+      ],
+      "Marker_Coupe_L": [
+        24,
+        26
+      ],
+      "Marker_Coupe_R": [
+        24,
+        26
+      ],
+      "Marker_Truck_L": [
+        24,
+        26
+      ],
+      "Marker_Truck_R": [
+        24,
+        26
+      ],
+      "Mirror_Coupe_Body_L": [
+        24,
+        26
+      ],
+      "Mirror_Coupe_Body_R": [
+        24,
+        26
+      ],
+      "Mirror_Coupe_Glass_L": [
+        24,
+        26
+      ],
+      "Mirror_Coupe_Glass_R": [
+        24,
+        26
+      ],
+      "Mirror_Coupe_Plate_L": [
+        24,
+        26
+      ],
+      "Mirror_Coupe_Plate_R": [
+        24,
+        26
+      ],
+      "Mirror_Coupe_Stem_L": [
+        16,
+        10
+      ],
+      "Mirror_Coupe_Stem_R": [
+        16,
+        10
+      ],
+      "Mirror_Truck_Arm_L_0": [
+        16,
+        10
+      ],
+      "Mirror_Truck_Arm_L_1": [
+        16,
+        10
+      ],
+      "Mirror_Truck_Arm_R_0": [
+        16,
+        10
+      ],
+      "Mirror_Truck_Arm_R_1": [
+        16,
+        10
+      ],
+      "Mirror_Truck_Body_L": [
+        24,
+        26
+      ],
+      "Mirror_Truck_Body_R": [
+        24,
+        26
+      ],
+      "Mirror_Truck_Glass_L": [
+        24,
+        26
+      ],
+      "Mirror_Truck_Glass_R": [
+        24,
+        26
+      ],
+      "Mirror_Truck_Plate_L_0": [
+        24,
+        26
+      ],
+      "Mirror_Truck_Plate_L_1": [
+        24,
+        26
+      ],
+      "Mirror_Truck_Plate_R_0": [
+        24,
+        26
+      ],
+      "Mirror_Truck_Plate_R_1": [
+        24,
+        26
+      ],
+      "Molding_Belt_Coupe_L": [
+        44,
+        42
+      ],
+      "Molding_Belt_Coupe_R": [
+        44,
+        42
+      ],
+      "Molding_Belt_Truck_L": [
+        44,
+        42
+      ],
+      "Molding_Belt_Truck_R": [
+        44,
+        42
+      ],
+      "Molding_FlankChrome_L": [
+        52,
+        50
+      ],
+      "Molding_FlankChrome_R": [
+        52,
+        50
+      ],
+      "Molding_Flank_L": [
+        52,
+        50
+      ],
+      "Molding_Flank_R": [
+        52,
+        50
+      ],
+      "Molding_RockerChrome_L": [
+        24,
+        26
+      ],
+      "Molding_RockerChrome_R": [
+        24,
+        26
+      ],
+      "Molding_Rocker_L": [
+        24,
+        26
+      ],
+      "Molding_Rocker_R": [
+        24,
+        26
+      ],
+      "Rail_Roof_L": [
+        64,
+        62
+      ],
+      "Rail_Roof_R": [
+        64,
+        62
+      ],
+      "Reflector_A_L": [
+        24,
+        26
+      ],
+      "Reflector_A_R": [
+        24,
+        26
+      ],
+      "Reflector_B_L": [
+        24,
+        26
+      ],
+      "Reflector_B_R": [
+        24,
+        26
+      ],
+      "Roof_MarkerBase_0": [
+        24,
+        26
+      ],
+      "Roof_MarkerBase_1": [
+        24,
+        26
+      ],
+      "Roof_MarkerBase_2": [
+        24,
+        26
+      ],
+      "Roof_Marker_0": [
+        24,
+        26
+      ],
+      "Roof_Marker_1": [
+        24,
+        26
+      ],
+      "Roof_Marker_2": [
+        24,
+        26
+      ],
+      "Truck_Badge": [
+        40,
+        38
+      ],
+      "Truck_BezelMid_L": [
+        8,
+        6
+      ],
+      "Truck_BezelMid_R": [
+        8,
+        6
+      ],
+      "Truck_Bezel_L": [
+        64,
+        64
+      ],
+      "Truck_Bezel_R": [
+        64,
+        64
+      ],
+      "Truck_BumperBolt_0": [
+        24,
+        26
+      ],
+      "Truck_BumperBolt_1": [
+        24,
+        26
+      ],
+      "Truck_BumperBolt_2": [
+        24,
+        26
+      ],
+      "Truck_BumperBolt_3": [
+        24,
+        26
+      ],
+      "Truck_BumperBracket_+0.62": [
+        24,
+        26
+      ],
+      "Truck_BumperBracket_-0.62": [
+        24,
+        26
+      ],
+      "Truck_BumperEnd_L": [
+        24,
+        26
+      ],
+      "Truck_BumperEnd_R": [
+        24,
+        26
+      ],
+      "Truck_Bumper_Chrome": [
+        128,
+        114
+      ],
+      "Truck_CowlSlat_0": [
+        24,
+        26
+      ],
+      "Truck_CowlSlat_1": [
+        24,
+        26
+      ],
+      "Truck_CowlSlat_2": [
+        24,
+        26
+      ],
+      "Truck_CowlSlat_3": [
+        24,
+        26
+      ],
+      "Truck_CowlSlat_4": [
+        24,
+        26
+      ],
+      "Truck_GrilleBarH_1": [
+        24,
+        26
+      ],
+      "Truck_GrilleBarH_2": [
+        24,
+        26
+      ],
+      "Truck_GrilleBarH_3": [
+        24,
+        26
+      ],
+      "Truck_GrilleBarV_1": [
+        24,
+        26
+      ],
+      "Truck_GrilleBarV_2": [
+        24,
+        26
+      ],
+      "Truck_GrilleBarV_3": [
+        24,
+        26
+      ],
+      "Truck_GrilleBarV_4": [
+        24,
+        26
+      ],
+      "Truck_GrilleBarV_5": [
+        24,
+        26
+      ],
+      "Truck_GrilleBarV_6": [
+        24,
+        26
+      ],
+      "Truck_GrilleBarV_7": [
+        24,
+        26
+      ],
+      "Truck_GrilleBarV_8": [
+        24,
+        26
+      ],
+      "Truck_GrilleSurround": [
+        64,
+        64
+      ],
+      "Truck_Headlamp_LL": [
+        72,
+        74
+      ],
+      "Truck_Headlamp_LR": [
+        72,
+        74
+      ],
+      "Truck_Headlamp_UL": [
+        72,
+        74
+      ],
+      "Truck_Headlamp_UR": [
+        72,
+        74
+      ],
+      "Truck_HoodEdgeTrim": [
+        164,
+        162
+      ],
+      "Truck_HoodOrnament": [
+        24,
+        26
+      ],
+      "Truck_Plate": [
+        24,
+        26
+      ],
+      "Truck_PlateFrame": [
+        24,
+        26
+      ],
+      "Truck_PushGuardBase_+1": [
+        24,
+        26
+      ],
+      "Truck_PushGuardBase_-1": [
+        24,
+        26
+      ],
+      "Truck_PushGuardPad_+1": [
+        24,
+        26
+      ],
+      "Truck_PushGuardPad_-1": [
+        24,
+        26
+      ],
+      "Truck_PushGuard_+1": [
+        24,
+        26
+      ],
+      "Truck_PushGuard_-1": [
+        24,
+        26
+      ],
+      "Truck_Signal_L": [
+        72,
+        74
+      ],
+      "Truck_Signal_R": [
+        72,
+        74
+      ],
+      "Wheel_Coupe_Hub_+1": [
+        319,
+        342
+      ],
+      "Wheel_Coupe_Hub_-1": [
+        319,
+        342
+      ],
+      "Wheel_Coupe_Rim_+1": [
+        336,
+        336
+      ],
+      "Wheel_Coupe_Rim_-1": [
+        336,
+        336
+      ],
+      "Wheel_Coupe_Spoke_+1_0": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_+1_1": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_+1_2": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_+1_3": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_+1_4": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_+1_5": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_+1_6": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_+1_7": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_+1_8": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_+1_9": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_-1_0": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_-1_1": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_-1_2": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_-1_3": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_-1_4": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_-1_5": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_-1_6": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_-1_7": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_-1_8": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Spoke_-1_9": [
+        24,
+        14
+      ],
+      "Wheel_Coupe_Tire_+1": [
+        1088,
+        1088
+      ],
+      "Wheel_Coupe_Tire_-1": [
+        1088,
+        1088
+      ],
+      "Wheel_Truck_Hub_+1": [
+        331,
+        350
+      ],
+      "Wheel_Truck_Hub_-1": [
+        331,
+        350
+      ],
+      "Wheel_Truck_Rim_+1": [
+        336,
+        336
+      ],
+      "Wheel_Truck_Rim_-1": [
+        336,
+        336
+      ],
+      "Wheel_Truck_Spoke_+1_0": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Spoke_+1_1": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Spoke_+1_2": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Spoke_+1_3": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Spoke_+1_4": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Spoke_+1_5": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Spoke_-1_0": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Spoke_-1_1": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Spoke_-1_2": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Spoke_-1_3": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Spoke_-1_4": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Spoke_-1_5": [
+        20,
+        12
+      ],
+      "Wheel_Truck_Tire_+1": [
+        1020,
+        1020
+      ],
+      "Wheel_Truck_Tire_-1": [
+        1020,
+        1020
+      ],
+      "Wiper_Coupe_Arm_0": [
+        12,
+        8
+      ],
+      "Wiper_Coupe_Arm_1": [
+        12,
+        8
+      ],
+      "Wiper_Coupe_Blade_0": [
+        24,
+        26
+      ],
+      "Wiper_Coupe_Blade_1": [
+        24,
+        26
+      ],
+      "Wiper_Truck_Arm_0": [
+        12,
+        8
+      ],
+      "Wiper_Truck_Arm_1": [
+        12,
+        8
+      ],
+      "Wiper_Truck_Blade_0": [
+        24,
+        26
+      ],
+      "Wiper_Truck_Blade_1": [
+        24,
+        26
+      ]
+    },
+    "visual_half_track_m": 0.82
+  }
+}
