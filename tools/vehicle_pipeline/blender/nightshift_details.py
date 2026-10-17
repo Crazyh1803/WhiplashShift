@@ -282,7 +282,6 @@ def build_coupe_end(sd, surf):
     hw = lambda px: T.half_width(px) - 0.02
     pts = [(T.X(px), -hw(px), zs) for px in (752, 762, 770, 777)] + [(nose + 0.020, -0.46, zs), (nose + 0.022, 0.0, zs), (nose + 0.020, 0.46, zs)] \
         + [(T.X(px), hw(px), zs) for px in (777, 770, 762, 752)]
-    pts[3] = (T.X(777), -hw(777), zs)
     prof = P.rounded_rect(0.070, 0.130, 0.016, 3)
     objs.append(P.sweep(b, "Coupe_Splitter", pts, "dark", profile=prof, up=(0, 0, 1)))
     objs.append(P.rbox(b, "Coupe_SplitterLip", (0.012, 0.92, 0.030), "rubber", 0.004,
@@ -298,7 +297,7 @@ def build_coupe_end(sd, surf):
     # cab back window and trim on the vertical wall of the roof step (faces the Camaro end)
     zc = T.Z(106.5)
     p, n = sd.front_pt(0.0, zc, COUPE_NOSE)
-    objs.append(sd.box("Cab_RearGlass", "glass", (1.04, 0.105, 0.006), p, n, 0.002, lift=-0.002))
+    objs.append(sd.box("Glass_CabRear", "glass", (1.04, 0.105, 0.003), p, n, 0.001, lift=0.0015))
     objs.append(frame_ribbon(sd, "Cab_RearGlassTrim", -0.52, 0.52, zc - 0.0575, zc + 0.0575, 0.012,
                              "chrome", COUPE_NOSE, 0.014, 0.004, radius=0.012))
     return objs
@@ -447,7 +446,7 @@ def build_extras(sd, surf):
                            up=(0, 1, 0), lift=-0.002))
     for sign, tag in ((1, "L"), (-1, "R")):
         # mirror mounting plates
-        for k, (px, py) in enumerate(((420, 152), (420, 128))):
+        for k, (px, py) in enumerate(((420, 150), (420, 132))):
             p, n = sd.side_pt(px, py, sign)
             objs.append(sd.box(f"Mirror_Truck_Plate_{tag}_{k}", "chrome", (0.050, 0.010, 0.050), p, n,
                                0.003, lift=-0.002))

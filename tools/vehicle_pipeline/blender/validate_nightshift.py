@@ -1,7 +1,7 @@
 """Numeric validation of the Nightshift hard-surface candidate (native source + exports).
 
 Run: ak-blender tools/vehicle_pipeline/blender/validate_nightshift.py \
-         tools/vehicle_pipeline/blender/nightshift.blend
+         tools/vehicle_pipeline/blender/nightshift_blueprint.blend
 Numbers prove geometry contracts only; visual quality is judged from renders (ak-look).
 """
 import json

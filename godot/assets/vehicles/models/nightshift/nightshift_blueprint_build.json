@@ -4,18 +4,18 @@
   "exports": {
     "lod0": {
       "triangles": 35046,
-      "objects": 60,
-      "bytes": 1549308
+      "objects": 61,
+      "bytes": 1550212
     },
     "lod1": {
       "triangles": 26262,
-      "objects": 60,
-      "bytes": 1252720
+      "objects": 61,
+      "bytes": 1253624
     },
     "lod2": {
       "triangles": 18048,
-      "objects": 60,
-      "bytes": 896396
+      "objects": 61,
+      "bytes": 896900
     }
   },
   "handoff": {

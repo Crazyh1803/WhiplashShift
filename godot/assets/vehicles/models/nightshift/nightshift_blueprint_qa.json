@@ -320,6 +320,14 @@
       "Truck_Headlamp_UL": 21.6,
       "Truck_Headlamp_UR": 21.6
     },
+    "glass_seated_Glass_CabRear": {
+      "ok": true,
+      "detail": {
+        "min_mm": 1.5,
+        "max_mm": 4.92,
+        "shell_crossings": 0
+      }
+    },
     "glass_seated_Glass_CoupeSide_L": {
       "ok": true,
       "detail": {
@@ -369,6 +377,11 @@
       }
     },
     "glass": {
+      "Glass_CabRear": {
+        "min_mm": 1.5,
+        "max_mm": 4.92,
+        "shell_crossings": 0
+      },
       "Glass_CoupeSide_L": {
         "min_mm": 2.99,
         "max_mm": 4.39,
@@ -529,7 +542,7 @@
       "ok": true,
       "detail": null
     },
-    "export_objects": 60,
+    "export_objects": 61,
     "export_exists_lod1": {
       "ok": true,
       "detail": {
@@ -563,10 +576,6 @@
       "Body_NightshiftShell": [
         4384,
         3146
-      ],
-      "Cab_RearGlass": [
-        24,
-        26
       ],
       "Cab_RearGlassTrim": [
         64,
@@ -715,6 +724,10 @@
       "FenderLip_Truck_R": [
         150,
         146
+      ],
+      "Glass_CabRear": [
+        24,
+        26
       ],
       "Glass_CoupeSide_L": [
         97,

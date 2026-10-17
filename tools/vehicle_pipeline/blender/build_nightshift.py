@@ -1,8 +1,8 @@
 """Build the Nightshift blueprint (reversible 80s Chevy square-body truck / Camaro).
 
 Run headlessly: ak-blender tools/vehicle_pipeline/blender/build_nightshift.py
-Optional args after `--`: --no-renders, --no-export.  Existing nightshift_blueprint*
-draft files are never touched. Deterministic: rebuilding gives identical geometry.
+Optional args after `--`: --no-renders, --no-export.  Deadbolt/Blackjack files are never
+touched. Deterministic: rebuilding gives identical geometry.
 """
 import json
 import sys
