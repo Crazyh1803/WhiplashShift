@@ -39,7 +39,8 @@ def main():
     surf0 = K.Surface(shell)
     K.arch_cutters(builder)
     specs = CAB.glaze(builder, surf0)
-    D.detail_cutters(builder, surf0)
+    if "--shell-only" not in argv:
+        D.detail_cutters(builder, surf0)
     K.add_boolean(shell, cols["CUTTERS"])
     C.apply_all_modifiers(shell)
     print('AK: stage boolean', len(shell.data.vertices), len(shell.data.polygons), flush=True)
@@ -55,7 +56,12 @@ def main():
     for g in glass:
         C.apply_all_modifiers(g)
         C.harden(g, 40.0)
-    sd = D.Seat(builder, surf)
+    sd = D.Seat(builder, surf, surf0)
+    if "--shell-only" in argv:
+        W.build_wheels(builder)
+        X.finalize_scene(cols, shell, BLUEPRINT)
+        X.render_qa(cols, MODEL_DIR, STEM, BLUEPRINT)
+        return
     D.build_truck_end(sd, surf)
     D.build_coupe_end(sd, surf)
     D.build_sides(sd, surf)

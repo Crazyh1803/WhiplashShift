@@ -46,9 +46,9 @@ def make_material(name, color, metallic=0.0, roughness=0.5, coat=0.0, coat_rough
 def build_materials():
     """Three semantic paint channels plus protected hardware, glass, rubber, lamps."""
     return {
-        "paint": make_material("Ramjet_Paint", (0.035, 0.050, 0.150), 0.62, 0.28, 0.7, 0.04),
-        "paint2": make_material("Ramjet_Secondary", (0.20, 0.21, 0.23), 0.6, 0.32, 0.5, 0.06),
-        "accent": make_material("Ramjet_Stripe", (0.86, 0.10, 0.28), 0.5, 0.30, 0.5, 0.05),
+        "paint": make_material("Ramjet_Paint", (0.46, 0.025, 0.020), 0.62, 0.28, 0.7, 0.04),
+        "paint2": make_material("Ramjet_Secondary", (0.50, 0.51, 0.53), 0.7, 0.30, 0.5, 0.06),
+        "accent": make_material("Ramjet_Stripe", (0.92, 0.50, 0.06), 0.5, 0.30, 0.5, 0.05),
         "glass": make_material("Ramjet_Glass", (0.006, 0.016, 0.022), 0.15, 0.04, 1.0, 0.0),
         "rubber": make_material("Ramjet_Rubber", (0.016, 0.017, 0.018), 0.0, 0.84),
         "chrome": make_material("Ramjet_BrushedMetal", (0.55, 0.58, 0.60), 1.0, 0.16),

@@ -93,7 +93,7 @@ def build_export_set(cols, level):
         name = src.name
         if name.startswith("Body_"):
             if level:
-                _decimate(obj, (0.62, 0.34)[level - 1])
+                _decimate(obj, (0.78, 0.52)[level - 1])
             out.append(obj)
         elif name.startswith("Glass_"):
             out.append(obj)
@@ -104,15 +104,17 @@ def build_export_set(cols, level):
                 _decimate(obj, 0.6)
             out.append(obj)
         else:
-            small = name.startswith(("Seam_", "Handle_", "Roof_Marker", "Marker_", "Rail_", "Wiper_",
-                                     "Molding_Belt", "Coupe_HoodSlat", "Coupe_IntakeSlat",
-                                     "Truck_GrilleBar", "Coupe_GrilleSlat", "Truck_HeadlampRing",
-                                     "Truck_BumperBracket", "Truck_TowHook", "Coupe_SplitterPlate",
-                                     "Truck_PushGuardPad", "Molding_Flank", "Coupe_ChinLamp", "Truck_BezelMid"))
+            small = name.startswith(("Seam_", "Handle_", "Marker_", "Reflector_", "Rail_", "Wiper_",
+                                     "Molding_Belt", "Coupe_IntakeSlat", "Truck_GrilleBar",
+                                     "Coupe_GrilleSlat", "Truck_BumperBracket", "Truck_PushGuardBase",
+                                     "Truck_BezelMid", "Truck_StepBracket",
+                                     "Coupe_PopupHinge", "Coupe_SideDuct", "Truck_ValanceSlot",
+                                     "Truck_BumperCrease", "Coupe_BumperRub", "Mirror_Truck_Plate",
+                                     "Mirror_Coupe_Plate"))
             if small and level == 2:
                 bpy.data.objects.remove(obj, do_unlink=True)
                 continue
-            if small and level == 1 and name.startswith(("Seam_", "Roof_Marker", "Handle_")):
+            if small and level == 1 and name.startswith(("Seam_", "Handle_", "Reflector_")):
                 bpy.data.objects.remove(obj, do_unlink=True)
                 continue
             key = obj.data.materials[0].name
@@ -165,7 +167,8 @@ def render_qa(cols, model_dir, stem, blueprint):
     studio = Q.build_studio(cols)
     for view in ("side", "top", "front_truck", "front_coupe", "three_quarter_truck",
                  "three_quarter_coupe", "far_side_three_quarter", "cabin", "truck_detail",
-                 "coupe_detail", "wheel_truck", "wheel_coupe", "coupe_nose", "truck_nose", "cab_step", "coupe_window"):
+                 "coupe_detail", "wheel_truck", "wheel_coupe", "coupe_nose", "truck_nose", "cab_step", "coupe_window", "mirror_coupe",
+                 "mirror_truck"):
         Q.configure(view, 1280, 720)
         Q.render(out_dir / f"{stem}_{view}.png")
     for view in ("side", "top", "front_truck", "front_coupe"):

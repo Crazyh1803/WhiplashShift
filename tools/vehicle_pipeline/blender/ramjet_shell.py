@@ -88,7 +88,7 @@ def build_shell(builder):
             poly.use_smooth = False
     crease = mesh.attributes.new("crease_edge", "FLOAT", "EDGE")
     last_station = len(rings) - 1
-    step_rings = {T.STATIONS.index(519.5), T.STATIONS.index(533)}
+    step_rings = {T.STATIONS.index(T.STEP_PX[0]), T.STATIONS.index(T.STEP_PX[1])}
     for e in mesh.edges:
         a, b = e.vertices
         if a >= len(rings) * n or b >= len(rings) * n:

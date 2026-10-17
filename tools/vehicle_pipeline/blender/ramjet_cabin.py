@@ -5,7 +5,7 @@ import ramjet_cuts as K
 import ramjet_trace as T
 
 RECESS_DEPTH = 0.016
-GLASS_CLEARANCE = 0.0045
+GLASS_CLEARANCE = 0.0055
 GLASS_MARGIN = 0.018
 
 
@@ -14,11 +14,12 @@ def _xz(poly_px):
 
 
 def windshield_outline(span, margin, samples=10):
+    """`margin` is a (start, end) pair of glass setbacks from the top half-width."""
     x0, x1 = span
     left, right = [], []
     for i in range(samples + 1):
         px = x0 + (x1 - x0) * i / samples
-        hw = T.top_half(px) - margin
+        hw = T.top_half(px) - (margin[0] + (margin[1] - margin[0]) * i / samples)
         left.append((T.X(px), hw))
         right.append((T.X(px), -hw))
     # counter-clockwise in x/y: along -y edge forward, then back along +y
@@ -37,9 +38,9 @@ def glaze(builder, surface):
                                  sign, RECESS_DEPTH)
             specs.append({"name": f"Glass_{name}_{tag}", "kind": "side", "sign": sign,
                           "outline": inset_xz(outline, GLASS_MARGIN)})
-    for name, span in (("TruckWindshield", T.WINDSHIELD_TRUCK),
-                       ("CoupeWindshield", T.WINDSHIELD_COUPE)):
-        outline = windshield_outline(span, 0.105)
+    for name, span, margin in (("TruckWindshield", T.WINDSHIELD_TRUCK, (0.105, 0.040)),
+                               ("CoupeWindshield", T.WINDSHIELD_COUPE, (0.150, 0.150))):
+        outline = windshield_outline(span, margin)
         flat = [Vector((x, y, 0.0)) for x, y in outline]
         K.make_recess_cutter(builder, f"Cutter_Glass_{name}", flat, "top", surface, 1,
                              RECESS_DEPTH)

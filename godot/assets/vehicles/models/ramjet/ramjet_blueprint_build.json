@@ -1,0 +1,46 @@
+{
+  "shell_volume_m3": 9.7817,
+  "blend": "tools/vehicle_pipeline/blender/ramjet_blueprint.blend",
+  "exports": {
+    "lod0": {
+      "triangles": 33932,
+      "objects": 66,
+      "bytes": 1484372
+    },
+    "lod1": {
+      "triangles": 27034,
+      "objects": 65,
+      "bytes": 1260052
+    },
+    "lod2": {
+      "triangles": 20568,
+      "objects": 65,
+      "bytes": 996920
+    }
+  },
+  "handoff": {
+    "vehicle_id": "ramjet",
+    "candidate_scene": "res://assets/vehicles/models/ramjet/ramjet_blueprint.glb",
+    "source_axes": "X long (coupe +X), Y width, Z up; runtime yaw +90 deg unchanged",
+    "visual_half_track_m": 0.86,
+    "wheel_centres": {
+      "coupe": [
+        1.66,
+        0.86,
+        0.4
+      ],
+      "truck": [
+        -1.72,
+        0.86,
+        0.43
+      ]
+    },
+    "semantic_materials": [
+      "Ramjet_Paint",
+      "Ramjet_Secondary",
+      "Ramjet_Stripe"
+    ],
+    "blueprint_scale_m_per_px": 0.01138047138047138,
+    "wheelbase_m": 3.38
+  }
+}

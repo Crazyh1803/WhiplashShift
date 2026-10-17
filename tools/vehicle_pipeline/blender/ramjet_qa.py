@@ -8,8 +8,8 @@ from mathutils import Vector
 import ramjet_trace as T
 
 REF_W, REF_H = 1024, 572
-TOP_CENTER_PY = 424.0
-FRONT_CENTER_PX = {"truck": 141.5, "coupe": 899.5}
+TOP_CENTER_PY = 413.5
+FRONT_CENTER_PX = {"truck": 137.5, "coupe": 892.5}
 
 
 def build_studio(cols):
@@ -84,15 +84,17 @@ def configure(view, width=1280, height=720):
         "three_quarter_truck": ((-7.0, -6.0, 2.1), (-0.1, 0, 0.75)),
         "three_quarter_coupe": ((7.2, -5.8, 2.0), (0.1, 0, 0.7)),
         "far_side_three_quarter": ((6.4, 6.3, 2.5), (0.2, 0, 0.7)),
-        "wheel_truck": ((-0.9, -3.3, 0.85), (-1.72, -0.9, 0.43)),
-        "wheel_coupe": ((2.55, -3.1, 0.8), (1.66, -0.9, 0.40)),
-        "truck_detail": ((-5.0, -2.8, 1.1), (-2.3, 0, 0.8)),
-        "coupe_detail": ((5.3, -2.7, 0.95), (2.6, 0, 0.55)),
-        "cabin": ((0.5, -4.2, 1.9), (0, 0, 1.2)),
-        "coupe_nose": ((4.6, -1.7, 0.85), (2.75, 0.1, 0.45)),
-        "truck_nose": ((-4.4, -1.8, 1.15), (-2.45, 0.1, 0.7)),
-        "coupe_window": ((2.3, -2.5, 1.05), (1.0, -0.9, 0.85)),
-        "cab_step": ((1.6, -2.2, 2.0), (0.3, 0.0, 1.3)),
+        "wheel_truck": ((-0.9, -3.3, 0.85), (-1.72, -0.86, 0.43)),
+        "wheel_coupe": ((2.45, -3.1, 0.8), (1.66, -0.86, 0.40)),
+        "truck_detail": ((-5.0, -3.0, 1.6), (-2.2, 0, 1.0)),
+        "coupe_detail": ((5.4, -3.0, 1.5), (2.5, 0, 0.75)),
+        "cabin": ((0.4, -4.8, 2.3), (0, 0, 1.2)),
+        "coupe_nose": ((4.7, -2.3, 1.55), (2.45, 0.05, 0.85)),
+        "truck_nose": ((-4.5, -2.2, 1.45), (-2.5, 0.05, 0.95)),
+        "coupe_window": ((2.4, -2.6, 1.75), (0.75, -0.9, 1.35)),
+        "mirror_coupe": ((1.9, -1.9, 1.55), (0.82, -0.98, 1.25)),
+        "mirror_truck": ((0.5, -2.1, 1.8), (-0.55, -1.09, 1.4)),
+        "cab_step": ((2.0, -2.5, 2.4), (0.45, 0.0, 1.65)),
     }
     loc, tgt = presets[view]
     _aim(cam_obj, loc, tgt)

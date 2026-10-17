@@ -9,7 +9,7 @@ import ramjet_core as C
 import ramjet_trace as T
 
 LINER_SLOT = 4  # shell material slot used for cutter faces (matte black)
-ARCH_MARGIN = {"truck": 0.07, "coupe": 0.045}
+ARCH_MARGIN = {"truck": 0.0753, "coupe": 0.0647}
 
 
 class Surface:

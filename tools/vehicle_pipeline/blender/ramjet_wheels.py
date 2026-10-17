@@ -8,10 +8,10 @@ import ramjet_prims as P
 import ramjet_trace as T
 
 STYLE = {
-    "truck": {"R": 0.43, "W": 0.34, "flange": 0.240, "segments": 60,
-              "spokes": 6, "tread_depth": 0.024, "lug_every": 3},
-    "coupe": {"R": 0.40, "W": 0.29, "flange": 0.262, "segments": 64,
-              "spokes": 10, "tread_depth": 0.007, "lug_every": 1},
+    "truck": {"R": 0.43, "W": 0.33, "flange": 0.240, "segments": 56,
+              "spokes": 8, "tread_depth": 0.024, "lug_every": 3},
+    "coupe": {"R": 0.40, "W": 0.35, "flange": 0.262, "segments": 64,
+              "spokes": 5, "tread_depth": 0.007, "lug_every": 1},
 }
 
 
@@ -47,9 +47,9 @@ def build_tire(builder, style, side, location):
         for r, h in head:
             add(r, h)
         for k, h in enumerate(tread_h):
-            depth = st["tread_depth"] if (groove or k == cols // 2) else 0.0
+            depth = st["tread_depth"] if groove else (st["tread_depth"] * 0.25 if k == cols // 2 else 0.0)
             if st["lug_every"] == 1:
-                depth = st["tread_depth"] if k in (1, 3) else 0.0
+                depth = st["tread_depth"] * 0.6 if k in (1, 3) else 0.0
             if k in (0, cols - 1):
                 depth = st["tread_depth"] * 0.6 if groove else 0.0
             add(R - depth - (0.006 if k in (0, cols - 1) else 0.0), h)
@@ -84,7 +84,7 @@ def build_tire(builder, style, side, location):
 
 def web_height(st):
     """Axial (outboard-positive) height of the spoke/web mid-plane."""
-    return st["W"] / 2 * (0.62 if st["spokes"] == 6 else 0.78)
+    return st["W"] / 2 * (0.62 if st["spokes"] == 8 else 0.74)
 
 
 def barrel_radius(st):
@@ -115,7 +115,7 @@ def build_rim(builder, style, side, location):
         c = f.calc_center_median()
         if math.hypot(c.x, c.z) < br - 0.004:
             f.material_index = 1
-    mat = ["chrome" if style == "coupe" else "dark", "dark"]
+    mat = ["chrome", "dark"]
     return P.finish(builder, f"Wheel_{style.title()}_Rim_{side:+d}", bm, mat, location=location,
                     smooth_angle=40)
 
@@ -127,14 +127,15 @@ def build_spoke(builder, style, side, index, location):
     pitch = math.tau / count
     bm = bmesh.new()
     if style == "truck":
-        # steel disc web segment between two ventilation openings, dished inboard
+        # stamped steel disc: one web sector per vent, vents are radial slots outboard of r_v
         r0, r1 = 0.070, barrel_radius(st) + 0.002
-        a0, a1 = 0.20 * pitch, 0.80 * pitch
+        r_v = 0.118
+        a0, a1 = 0.16 * pitch, 0.84 * pitch
         steps = 4
+        inner = [(r0, pitch * k / (steps + 2)) for k in range(steps + 3)]
+        outer = [(r1, a1 - (a1 - a0) * k / steps) for k in range(steps + 1)]
+        poly = inner + [(r_v, pitch), (r_v, a1)] + outer + [(r_v, a0), (r_v, 0.0)]
         thick = 0.034
-        outer = [(r1, a0 + (a1 - a0) * k / steps) for k in range(steps + 1)]
-        inner = [(r0, a1 - (a1 - a0) * k / steps) for k in range(steps + 1)]
-        poly = outer + inner
         base = side * web_height(st)
         top = []
         bot = []
@@ -150,28 +151,26 @@ def build_spoke(builder, style, side, index, location):
         bm.faces.new(top if side > 0 else list(reversed(top)))
         mat = "chrome"  # brushed steel web against the gunmetal rim and rotor
     else:
-        # five-point star, each spoke drawn as a twin-line pair of tapered blades
-        pair, sub = divmod(index, 2)
+        # five wide split spokes: each fans out from the pentagonal hub to the stepped lip
         pitch5 = math.tau / 5
-        r0, r1 = 0.082, barrel_radius(st) + 0.002
+        r0, r1 = 0.075, barrel_radius(st) + 0.002
         steps = 5
-        poly = []
         lo, hi = [], []
         for k in range(steps + 1):
             t = k / steps
             r = r0 + (r1 - r0) * t
-            c = (-1 if sub == 0 else 1) * (0.082 + 0.030 * t) * pitch5
-            h = (0.050 + 0.016 * t) * pitch5
-            lo.append((r, c - h))
-            hi.append((r, c + h))
-        poly = lo + list(reversed(hi))
-        thick = 0.022
+            half = (0.16 + 0.15 * t) * pitch5
+            lo.append((r, -half))
+            hi.append((r, half))
+        tip = [(r1, -half + 2 * half * j / 6) for j in range(1, 6)]  # round the fan tip on the lip
+        poly = lo + tip + list(reversed(hi))
+        thick = 0.026
         base = side * web_height(st)
         top, bot = [], []
         for r, a in poly:
             x, z = r * math.cos(a), r * math.sin(a)
             tilt = (r - r0) / (r1 - r0)
-            top.append(bm.verts.new((x, base + side * (thick * 0.5 + 0.012 * tilt), z)))
+            top.append(bm.verts.new((x, base + side * (thick * 0.5 + 0.014 * tilt), z)))
             bot.append(bm.verts.new((x, base - side * thick * 0.5 + side * 0.006 * tilt, z)))
         n = len(poly)
         for i in range(n):
@@ -181,12 +180,43 @@ def build_spoke(builder, style, side, index, location):
         bm.faces.new(top if side > 0 else list(reversed(top)))
         mat = "chrome"
     # place the spoke at its pitch angle about the axle (Y)
-    rot = Matrix.Rotation((index // 2 * math.tau / 5) if style == "coupe" else index * pitch, 4, "Y")
+    rot = Matrix.Rotation(index * pitch, 4, "Y")
     for v in bm.verts:
         v.co = rot @ v.co
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
     return P.finish(builder, f"Wheel_{style.title()}_Spoke_{side:+d}_{index}", bm, mat,
                     location=location, smooth_angle=40)
+
+
+def build_slot(builder, side, index, location):
+    """Dark radial slot inlaid in a Conquest spoke face (the split in the split-spoke design)."""
+    st = STYLE["coupe"]
+    pitch = math.tau / st["spokes"]
+    r0, r1 = 0.108, barrel_radius(st) - 0.030
+    steps = 4
+    lo, hi = [], []
+    for k in range(steps + 1):
+        t = k / steps
+        r = r0 + (r1 - r0) * t
+        half = (0.030 + 0.050 * t) * pitch
+        lo.append((r, -half))
+        hi.append((r, half))
+    poly = lo + list(reversed(hi))
+    bm = bmesh.new()
+    r_a, r_b = 0.075, barrel_radius(st) + 0.002
+    base = side * web_height(st)
+    thick = 0.026
+    top = []
+    for r, a in poly:
+        tilt = (r - r_a) / (r_b - r_a)
+        top.append(bm.verts.new((r * math.cos(a), base + side * (thick * 0.5 + 0.014 * tilt + 0.0025), r * math.sin(a))))
+    bm.faces.new(top if side > 0 else list(reversed(top)))
+    rot = Matrix.Rotation(index * pitch, 4, "Y")
+    for v in bm.verts:
+        v.co = rot @ v.co
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    return P.finish(builder, f"Wheel_Coupe_Slot_{side:+d}_{index}", bm, "dark", location=location,
+                    smooth_angle=40)
 
 
 def build_hub(builder, style, side, location):
@@ -209,14 +239,15 @@ def build_hub(builder, style, side, location):
     cap_r = 0.040 if coupe else 0.036
     # hub plate that every spoke / web segment bolts to (dark, continuous disc)
     piece(1, lambda: P.lathe(bm, [(0.0, side * (web + 0.012)), (plate_r, side * (web + 0.012)),
-                                  (plate_r, side * (web - 0.012)), (0.0, side * (web - 0.012))], 28))
+                                  (plate_r, side * (web - 0.012)), (0.0, side * (web - 0.012))],
+                             5 if coupe else 28))
     # centre cap dome (chrome)
     piece(0, lambda: P.lathe(bm, [(0.0, side * (web + 0.034)), (cap_r * 0.6, side * (web + 0.031)),
                                   (cap_r, side * (web + 0.014)), (cap_r, side * (web + 0.012)),
                                   (0.0, side * (web + 0.012))], 20))
 
     def lugs():
-        count = 5 if coupe else 6
+        count = 5 if coupe else 8
         lug_r = 0.066 if coupe else 0.056
         for k in range(count):
             ang = math.tau * (k + 0.5) / count
@@ -227,6 +258,11 @@ def build_hub(builder, style, side, location):
                 x, y, z = v.co
                 v.co = Vector((cx + x, side * (web + 0.012 + z + 0.011), cz + y))
     piece(0, lugs)
+    if not coupe:  # raised hubcap ring and chrome beauty ring on the steel disc
+        piece(0, lambda: P.lathe(bm, [(0.060, side * (web + 0.016)), (0.074, side * (web + 0.040)),
+                                      (0.088, side * (web + 0.016)), (0.060, side * (web + 0.016))], 24))
+        piece(0, lambda: P.lathe(bm, [(0.160, side * (web + 0.014)), (0.172, side * (web + 0.026)),
+                                      (0.184, side * (web + 0.014)), (0.160, side * (web + 0.014))], 40))
     # brake rotor behind the web and a caliper clamping its rim
     rotor_r = barrel_radius(st) - 0.030
     h_rotor = web - 0.070
@@ -260,4 +296,6 @@ def build_wheels(builder):
             objs.append(build_hub(builder, style, side, loc))
             for k in range(st["spokes"]):
                 objs.append(build_spoke(builder, style, side, k, loc))
+                if style == "coupe":
+                    objs.append(build_slot(builder, side, k, loc))
     return objs
