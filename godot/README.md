@@ -11,7 +11,9 @@ glass, metal, tires and lights; the three paint channels remain customizable.
 Its authored wheel meshes follow the original four physics wheels, with steering
 pivots derived from the visible tire hubs. Nightshift also uses its dedicated Chevy/Camaro production model and three
 semantic paint channels through the same authored-hub adapter. Ramjet adds the
-Dodge Ram / Conquest TSi blueprint model through that contract. The other three
+Dodge Ram / Conquest TSi blueprint model through that contract. Boilerfang adds
+the steampunk plow truck / speedster and visible central drive machinery while
+retaining four physical wheels. The other two
 chassis keep their greybox fallback until production models exist.
 
 ## Running it

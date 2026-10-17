@@ -1,0 +1,148 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Nightshift loads its dedicated adapter
+  [pass] Nightshift loads authored production model
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Detail_Secondary
+  [pass] Paint channel applies to Wheel_Truck_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Truck_Hub_+1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Nightshift constructs as player and CPU
+  [pass] Nightshift player has production artwork
+NIGHTSHIFT: 46 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Ramjet loads its dedicated adapter
+  [pass] Ramjet loads authored production model
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Detail_Paint
+  [pass] Paint channel applies to Detail_Secondary
+  [pass] Paint channel applies to Wheel_Truck_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Truck_Hub_+1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Ramjet constructs as player and CPU
+  [pass] Ramjet player has production artwork
+RAMJET: 47 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] partial seam crossing does not award a lap
+  [pass] complete ordered circuit awards one lap
+  [pass] checkpoint recovery cannot add lap or distance
+  [pass] backwards driving detects wrong-way without awarding a lap
+  [pass] off-course projection cannot advance the recovery anchor
+  [pass] two CPU drivers use the player's tuning
+t=30 CPU_1_BOILERFANG_88 lap=0 idx=157 speed=7.3 swaps=1 recoveries=0 off=2.3
+t=30 CPU_2_RAMJET_K-6 lap=0 idx=163 speed=8.6 swaps=1 recoveries=0 off=4.6
+t=60 CPU_1_BOILERFANG_88 lap=0 idx=296 speed=18.8 swaps=1 recoveries=0 off=2.3
+t=60 CPU_2_RAMJET_K-6 lap=0 idx=320 speed=23.2 swaps=1 recoveries=0 off=4.3
+t=90 CPU_1_BOILERFANG_88 lap=0 idx=433 speed=12.5 swaps=1 recoveries=0 off=6.6
+t=90 CPU_2_RAMJET_K-6 lap=0 idx=453 speed=12.7 swaps=1 recoveries=0 off=4.1
+t=120 CPU_1_BOILERFANG_88 lap=0 idx=573 speed=20.1 swaps=1 recoveries=0 off=4.7
+t=120 CPU_2_RAMJET_K-6 lap=0 idx=611 speed=20.9 swaps=1 recoveries=0 off=4.0
+t=150 CPU_1_BOILERFANG_88 lap=0 idx=737 speed=27.0 swaps=2 recoveries=0 off=0.7
+t=150 CPU_2_RAMJET_K-6 lap=1 idx=115 speed=32.5 swaps=2 recoveries=0 off=4.0
+t=180 CPU_1_BOILERFANG_88 lap=1 idx=165 speed=10.6 swaps=3 recoveries=0 off=3.5
+t=180 CPU_2_RAMJET_K-6 lap=1 idx=223 speed=19.8 swaps=3 recoveries=0 off=4.0
+t=210 CPU_1_BOILERFANG_88 lap=1 idx=313 speed=18.8 swaps=3 recoveries=0 off=2.7
+t=210 CPU_2_RAMJET_K-6 lap=1 idx=402 speed=14.4 swaps=3 recoveries=0 off=4.0
+t=240 CPU_1_BOILERFANG_88 lap=1 idx=443 speed=11.8 swaps=3 recoveries=0 off=10.4
+t=240 CPU_2_RAMJET_K-6 lap=1 idx=517 speed=19.8 swaps=3 recoveries=0 off=1.9
+t=270 CPU_1_BOILERFANG_88 lap=1 idx=592 speed=20.7 swaps=3 recoveries=0 off=4.0
+t=270 CPU_2_RAMJET_K-6 lap=1 idx=692 speed=28.8 swaps=4 recoveries=0 off=6.8
+t=300 CPU_1_BOILERFANG_88 lap=2 idx=22 speed=35.2 swaps=4 recoveries=0 off=3.9
+t=300 CPU_2_RAMJET_K-6 lap=2 idx=159 speed=7.0 swaps=5 recoveries=0 off=4.7
+t=330 CPU_1_BOILERFANG_88 lap=2 idx=176 speed=13.7 swaps=5 recoveries=0 off=3.5
+t=330 CPU_2_RAMJET_K-6 lap=2 idx=309 speed=20.2 swaps=5 recoveries=0 off=5.1
+t=360 CPU_1_BOILERFANG_88 lap=2 idx=332 speed=20.6 swaps=5 recoveries=0 off=4.0
+t=360 CPU_2_RAMJET_K-6 lap=2 idx=447 speed=11.3 swaps=5 recoveries=0 off=4.3
+t=390 CPU_1_BOILERFANG_88 lap=2 idx=453 speed=12.5 swaps=5 recoveries=0 off=6.0
+t=390 CPU_2_RAMJET_K-6 lap=2 idx=601 speed=20.9 swaps=5 recoveries=0 off=4.0
+t=420 CPU_1_BOILERFANG_88 lap=2 idx=609 speed=17.2 swaps=5 recoveries=0 off=4.0
+t=420 CPU_2_RAMJET_K-6 lap=3 idx=95 speed=45.8 swaps=6 recoveries=0 off=4.0
+  [pass] CPU simulation remains finite
+  [pass] every CPU swap preserves body momentum and basis
+  [pass] CPU_1_BOILERFANG_88 completes two laps
+  [pass] CPU_1_BOILERFANG_88 performs surface swaps
+  [pass] CPU_1_BOILERFANG_88 drives with limited recoveries 0 recoveries
+  [pass] CPU_2_RAMJET_K-6 completes two laps
+  [pass] CPU_2_RAMJET_K-6 performs surface swaps
+  [pass] CPU_2_RAMJET_K-6 drives with limited recoveries 0 recoveries
+  [pass] off-course CPU returns to a checkpoint
+  [pass] physical recovery awards no race progress
+  [pass] CPU brakes for a stopped vehicle ahead
+
+CPU: 17 passed, 0 failed

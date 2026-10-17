@@ -44,6 +44,7 @@ func _ready() -> void:
 	await _test_authored_physics("deadbolt")
 	await _test_authored_physics("nightshift")
 	await _test_authored_physics("ramjet")
+	await _test_authored_physics("boilerfang")
 	await _test_garage_and_race()
 	print("CONSOLIDATION: %d passed, %d failed" % [_pass, _fail])
 	get_tree().quit(1 if _fail else 0)
@@ -166,12 +167,12 @@ func _test_garage_and_race() -> void:
 	garage._open_customization()
 	_check("Customize opens the selected Deadbolt model", garage._preview_vehicle.vehicle_id == "deadbolt")
 	garage._customization_popup.hide()
-	for id: String in ["blackjack", "deadbolt", "nightshift", "ramjet", "deadbolt"]:
+	for id: String in ["blackjack", "deadbolt", "nightshift", "ramjet", "boilerfang", "deadbolt"]:
 		garage._refresh_customization_preview(id, VehicleCatalog.default_customization(id))
 		_check("Garage preview switches to %s" % id, garage._preview_vehicle.vehicle_id == id)
 		var preview_environment: Environment = garage._preview_environment.environment
 		_check("%s uses the appropriate studio lighting" % id,
-			preview_environment.sky != null if id in ["blackjack", "deadbolt", "nightshift", "ramjet"] else preview_environment.sky == null)
+			preview_environment.sky != null if id in ["blackjack", "deadbolt", "nightshift", "ramjet", "boilerfang"] else preview_environment.sky == null)
 	garage.free()
 	GameSession.configure("CONSOLIDATION", "deadbolt", ["blackjack", "nightshift"])
 	garage = load("res://scenes/garage.tscn").instantiate()

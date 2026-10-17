@@ -160,6 +160,8 @@ func _garage_paths() -> void:
 			_check("Nightshift uses its own saved-art adapter", preview.get_script() == preload("res://scripts/nightshift_blueprint_vehicle.gd"))
 		elif id == "ramjet":
 			_check("Ramjet uses its own saved-art adapter", preview.get_script() == preload("res://scripts/ramjet_blueprint_vehicle.gd"))
+		elif id == "boilerfang":
+			_check("Boilerfang uses its own saved-art adapter", preview.get_script() == preload("res://scripts/boilerfang_blueprint_vehicle.gd"))
 		else:
 			_check("other vehicles have no blueprint overrides",preview.get_script()==Vehicle)
 		preview.free()

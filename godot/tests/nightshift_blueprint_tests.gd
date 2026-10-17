@@ -1,4 +1,4 @@
-## Shared authored-art checks; the scene metadata selects Nightshift or Ramjet.
+## Shared authored-art checks; scene metadata selects the vehicle.
 extends Node3D
 
 const FACTORY := preload("res://scripts/vehicle_factory.gd")
@@ -10,6 +10,7 @@ func _ready() -> void:
 	var vehicle_id := String(get_meta("vehicle_id", "nightshift"))
 	var label := vehicle_id.capitalize()
 	var spec := VehicleCatalog.get_vehicle(vehicle_id)
+	var display_radii: Dictionary = spec["visual"].get("display_radius", {"A": 0.40, "B": 0.43})
 	var car := FACTORY.create(spec)
 	car.tuning = TuningProfile.new()
 	car.freeze = true
@@ -71,11 +72,28 @@ func _ready() -> void:
 				center.distance_to(assembly.global_position) < 0.005)
 		_check("%s occupies its correct end" % wheel.name,
 			(car.to_local(assembly.global_position).z < 0.0) == (wheel.end == "A"))
+		if vehicle_id == "boilerfang":
+			var low := INF
+			var high := -INF
+			for mesh: MeshInstance3D in assembly.find_children("*", "MeshInstance3D", true, false):
+				for surface in mesh.mesh.get_surface_count():
+					var vertices: PackedVector3Array = mesh.mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX]
+					for vertex: Vector3 in vertices:
+						var y := (mesh.transform * vertex).y
+						low = minf(low, y)
+						high = maxf(high, y)
+			_check("%s display radius matches the entire visible wheel" % wheel.name,
+				absf((high - low) * 0.5 - float(display_radii[wheel.end])) < 0.005)
+			_check("%s frozen wheel meets the ground" % wheel.name,
+				absf(assembly.global_position.y + low) < 0.005)
+			_check("%s keeps its physical radius and hardpoint" % wheel.name,
+				is_equal_approx(wheel.radius, car.tuning.wheel_radius(wheel.end))
+				and wheel.position.is_equal_approx(car._wheel_mount(wheel.end, wheel.side)))
 		wheel.steer_angle = 0.3
 		wheel._place_visual(0.8)
 		_check("%s follows steering and suspension" % wheel.name,
 			is_equal_approx(assembly.rotation.y, 0.3)
-			and is_equal_approx(assembly.position.y, -0.8 + (0.40 if wheel.end == "A" else 0.43)))
+			and is_equal_approx(assembly.position.y, -0.8 + float(display_radii[wheel.end])))
 	car._update_axle_visuals()
 	for end: String in ["A", "B"]:
 		var pair := car._wheel_pair(end)
@@ -84,6 +102,12 @@ func _ready() -> void:
 		var axle: Node3D = car._axle_visuals[end]
 		_check("%s axle follows the authored hubs" % end,
 			axle.global_position.distance_to((left.global_position + right.global_position) * 0.5) < 0.00001)
+	if vehicle_id == "boilerfang":
+		var props := model.find_children("Prop_MidDrive*", "MeshInstance3D", true, false)
+		_check("Central drive mechanism remains visible body artwork", props.size() >= 1)
+		for prop: MeshInstance3D in props:
+			_check("Central drive meshes are visible and stay out of wheel assemblies", prop.visible
+				and prop.find_parent("ModularWheelVisual") == null)
 	var counts: Array[int] = []
 	for wheel: Wheel in car.wheels:
 		counts.append(wheel._visual.get_child_count())

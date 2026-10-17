@@ -104,9 +104,11 @@ const VISUALS: Dictionary = {
 		},
 	},
 	"boilerfang": {
-		"scene": "res://assets/vehicles/models/boilerfang/boilerfang.glb",
-		"wheel_scene_a": "res://assets/vehicles/models/boilerfang/wheel_a.glb",
-		"wheel_scene_b": "res://assets/vehicles/models/boilerfang/wheel_b.glb",
+		"rig": "boilerfang_blueprint",
+		"scene": "res://assets/vehicles/models/boilerfang/boilerfang_blueprint.glb",
+		"rotation_degrees": Vector3(0.0, 90.0, 0.0),
+		"offset": Vector3(0.0, -0.62, 0.0),
+		"collision_boxes": [], # Keep the tuning-owned physics independent of the art.
 	},
 	"helix": {
 		"scene": "res://assets/vehicles/models/helix/helix.glb",

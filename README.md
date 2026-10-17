@@ -13,11 +13,11 @@ Open `godot/project.godot` in Godot 4.7.2 and press **F5** for the project.
 The garage offers seven named chassis buttons, including **DEADBOLT**;
 **VIEW 3D // PAINT & PARTS** opens the rotatable 3D preview. Left/right arrows also
 cycle the roster, and returning from a race keeps the selected chassis.
-Blackjack, Deadbolt, Nightshift and Ramjet use authored models; the other three use greybox
+Blackjack, Deadbolt, Nightshift, Ramjet and Boilerfang use authored models; the other two use greybox
 vehicles with their saved handling and blueprint images. Enter a callsign and choose
 **IGNITE** to drive against two CPU opponents. `Esc` returns to the garage.
 
-Run `ak-test` for the core handling, CPU, Blackjack, consolidation, Nightshift and Ramjet suites. Set
+Run `ak-test` for the core handling, CPU, Blackjack, consolidation, Nightshift, Ramjet and Boilerfang suites. Set
 `GODOT_BIN` to use another installed executable. For rendered garage and driving
 captures, run:
 
@@ -26,7 +26,8 @@ godot --path godot --fixed-fps 120 res://tests/consolidation_visual_qa.tscn
 ```
 
 Append `-- --nightshift` to capture Nightshift, including both ends, custom paint, driving and swapping.
-Use `-- --ramjet` for Ramjet. Add `--keep-open` after either vehicle flag to leave
+Use `-- --ramjet` for Ramjet or `-- --boilerfang` for Boilerfang.
+Add `--keep-open` after the vehicle flag to leave
 its garage preview open after successful captures.
 Captures go to `.ai/captures/`. Historical reports live separately under
 `.ai/history/whiplash-shift/`; they are not current verification results.
@@ -44,6 +45,11 @@ Its three paint channels use the same authored-hub adapter as Deadbolt.
 Ramjet uses `ramjet_blueprint.glb`, traced from `dodge.jpg`: a Dodge Ram D150
 truck end joined to the low Conquest TSi coupe, with pop-up lamps and a wedge nose.
 Its paint, glass and wheel integration follows the same authored-hub contract.
+
+Boilerfang uses `boilerfang_blueprint.glb`, based on `steam-punk.jpg`: a plow truck
+and ornate speedster with boilers, brass machinery and a central flywheel drive.
+The middle mechanism is visible body artwork; four physical wheels retain the saved
+handling. Display tire radii are independent of the tuning-owned physics radii.
 
 Rendered wheel assemblies pivot around their authored hubs and follow the existing
 suspension and steering. Their visual offsets are independent of the physical wheel

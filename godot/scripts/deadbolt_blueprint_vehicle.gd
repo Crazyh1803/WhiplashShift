@@ -30,6 +30,11 @@ func _authored_paint_colors() -> Dictionary:
 	}
 
 
+func _display_radius(end: String) -> float:
+	var radii: Dictionary = _visual_config.get("display_radius", DISPLAY_RADIUS)
+	return float(radii.get(end, DISPLAY_RADIUS[end]))
+
+
 func _build_wheels() -> void:
 	super._build_wheels()
 	_install_authored_wheels()
@@ -71,7 +76,7 @@ func _install_authored_wheels() -> void:
 		wheel._visual_base_rotation = Vector3.ZERO
 		wheel._visual_offset = Vector3(
 			center.x - wheel.position.x,
-			float(DISPLAY_RADIUS[wheel.end]) - wheel.radius,
+			_display_radius(wheel.end) - wheel.radius,
 			center.z - wheel.position.z
 		)
 		for source: MeshInstance3D in parts:
