@@ -1,7 +1,7 @@
 """Build the Boilerfang 88 steam-punk speedster / off-road truck blueprint model.
 
 Run headlessly: ak-blender tools/vehicle_pipeline/blender/build_boilerfang.py
-Optional args after `--`: --no-renders, --no-export, --stage=<name> (stop early for iteration).
+Optional args after `--`: --no-renders, --no-export, --views=<a,b,...> (render only those QA views).
 Other vehicles' files are never touched. Deterministic: rebuilding gives identical geometry.
 """
 import json
@@ -25,7 +25,6 @@ MODEL_DIR = ROOT / "godot/assets/vehicles/models/boilerfang"
 BLEND = HERE / "boilerfang_blueprint.blend"
 STEM = "boilerfang_blueprint"
 VIEWS = next((a.split("=", 1)[1].split(",") for a in argv if a.startswith("--views=")), None)
-STAGE = next((a.split("=", 1)[1] for a in argv if a.startswith("--stage=")), "all")
 
 
 def modules():
@@ -48,7 +47,6 @@ def main():
     B.build_fenders(builder)
     B.build_plows(builder)
     bpy.context.view_layer.update()
-    surf = None
     for name in ("cab", "machinery", "details", "wheels"):
         mod = mods.get(name)
         if mod is not None:

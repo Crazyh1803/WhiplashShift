@@ -1,0 +1,421 @@
+diff --git a/tools/vehicle_pipeline/blender/boilerfang_core.py b/tools/vehicle_pipeline/blender/boilerfang_core.py
+index b302103..da79af0 100644
+--- a/tools/vehicle_pipeline/blender/boilerfang_core.py
++++ b/tools/vehicle_pipeline/blender/boilerfang_core.py
+@@ -44,22 +44,21 @@ def make_material(name, color, metallic=0.0, roughness=0.5, coat=0.0, coat_rough
+ 
+ 
+ def build_materials():
+-    """Three semantic paint channels plus protected hardware, glass, rubber, lamps."""
++    """Three semantic paint channels plus protected brass/copper/iron, glass, rubber, lamps."""
+     return {
+-        "paint": make_material("Boilerfang_Paint", (0.46, 0.025, 0.020), 0.62, 0.28, 0.7, 0.04),
+-        "paint2": make_material("Boilerfang_Secondary", (0.50, 0.51, 0.53), 0.7, 0.30, 0.5, 0.06),
+-        "accent": make_material("Boilerfang_Stripe", (0.92, 0.50, 0.06), 0.5, 0.30, 0.5, 0.05),
+-        "glass": make_material("Boilerfang_Glass", (0.006, 0.016, 0.022), 0.15, 0.04, 1.0, 0.0),
+-        "rubber": make_material("Boilerfang_Rubber", (0.016, 0.017, 0.018), 0.0, 0.84),
+-        "chrome": make_material("Boilerfang_BrushedMetal", (0.55, 0.58, 0.60), 1.0, 0.16),
+-        "dark": make_material("Boilerfang_Gunmetal", (0.026, 0.032, 0.038), 0.85, 0.36),
+-        "grille": make_material("Boilerfang_Grille", (0.010, 0.013, 0.015), 0.4, 0.62),
+-        "lamp": make_material("Boilerfang_Headlight", (0.62, 0.78, 0.92), 0.05, 0.10,
+-                              emission=(0.38, 0.68, 1.0), emission_strength=2.5),
+-        "marker": make_material("Boilerfang_Marker", (0.62, 0.025, 0.008), 0.1, 0.20,
+-                                emission=(0.8, 0.02, 0.005), emission_strength=2.5),
+-        "amber": make_material("Boilerfang_Amber", (0.80, 0.34, 0.03), 0.05, 0.18,
+-                               emission=(1.0, 0.45, 0.04), emission_strength=1.6),
++        "paint": make_material("Boilerfang_Paint", (0.025, 0.150, 0.085), 0.55, 0.32, 0.6, 0.06),
++        "paint2": make_material("Boilerfang_Secondary", (0.62, 0.53, 0.34), 0.35, 0.42, 0.4, 0.08),
++        "accent": make_material("Boilerfang_Stripe", (0.46, 0.045, 0.030), 0.45, 0.34, 0.5, 0.06),
++        "glass": make_material("Boilerfang_Glass", (0.010, 0.026, 0.030), 0.15, 0.04, 1.0, 0.0),
++        "rubber": make_material("Boilerfang_Rubber", (0.018, 0.017, 0.016), 0.0, 0.86),
++        "brass": make_material("Boilerfang_Brass", (0.70, 0.46, 0.13), 1.0, 0.24),
++        "copper": make_material("Boilerfang_Copper", (0.62, 0.24, 0.10), 1.0, 0.30),
++        "iron": make_material("Boilerfang_Iron", (0.030, 0.032, 0.035), 0.9, 0.42),
++        "dial": make_material("Boilerfang_Dial", (0.80, 0.76, 0.62), 0.0, 0.50),
++        "lamp": make_material("Boilerfang_Lamp", (0.85, 0.66, 0.34), 0.05, 0.10,
++                              emission=(1.0, 0.62, 0.22), emission_strength=3.0),
++        "amber": make_material("Boilerfang_Amber", (0.80, 0.30, 0.03), 0.05, 0.18,
++                               emission=(1.0, 0.35, 0.04), emission_strength=1.8),
+     }
+ 
+ 
+diff --git a/tools/vehicle_pipeline/blender/boilerfang_forms.py b/tools/vehicle_pipeline/blender/boilerfang_forms.py
+new file mode 100644
+index 0000000..7a516eb
+--- /dev/null
++++ b/tools/vehicle_pipeline/blender/boilerfang_forms.py
+@@ -0,0 +1,197 @@
++"""Station lofts, revolved parts, arch sweeps and rivets for the Boilerfang steam-punk build."""
++import math
++
++import bmesh
++import bpy
++from mathutils import Matrix, Vector
++from mathutils.bvhtree import BVHTree
++
++import boilerfang_core as C
++import boilerfang_prims as P
++
++
++def section_half(w, zb, zt, rb, rt, crown, steps=3, crown_steps=3, split=None):
++    """Right half (y >= 0) of a flat-sided section, bottom centre to top centre.
++
++    Returns (points, roles); role 3 = underside, 1 = lower side band, 0 = upper body."""
++    h = zt - zb
++    rb = max(1e-4, min(rb, w * 0.9, h * 0.4))
++    rt = max(1e-4, min(rt, w * 0.9, h * 0.4))
++    lo, hi = zb + rb, zt - rt
++    zs = lo + 0.5 * (hi - lo) if split is None else min(max(split, lo + 1e-4), hi - 1e-4)
++    pts = [(0.0, zb), (w - rb, zb)]
++    for k in range(1, steps + 1):
++        a = math.pi / 2 * k / steps
++        pts.append((w - rb + rb * math.sin(a), zb + rb - rb * math.cos(a)))
++    pts.append((w, zs))
++    pts.append((w, hi))
++    for k in range(1, steps + 1):
++        a = math.pi / 2 * k / steps
++        pts.append((w - rt + rt * math.cos(a), hi + rt * math.sin(a)))
++    flat = w - rt
++    for k in range(1, crown_steps + 1):
++        t = k / crown_steps
++        pts.append((flat * (1 - t), zt + crown * (1 - (1 - t) ** 2)))
++    roles = [3] * (1 + steps) + [1] + [0] * (1 + steps + crown_steps)
++    return pts, roles
++
++
++def full_ring(half, roles=None):
++    """Close a right half into a symmetric loop: bottom centre -> right -> top -> left."""
++    left = [(-y, z) for y, z in reversed(half[1:-1])]
++    ring = half + left
++    return (ring, roles + list(reversed(roles))) if roles is not None else ring
++
++
++def loft(builder, name, stations, mats, row_mats=None, cap=True, smooth_angle=38, location=(0, 0, 0)):
++    """Closed lofted solid. stations = [(x, ring)], every ring the same length of (y, z)."""
++    n = len(stations[0][1])
++    bm = bmesh.new()
++    rings = []
++    for x, ring in stations:
++        assert len(ring) == n, (name, len(ring), n)
++        rings.append([bm.verts.new((x, y, z)) for y, z in ring])
++    for s in range(len(rings) - 1):
++        for i in range(n):
++            j = (i + 1) % n
++            f = bm.faces.new((rings[s][i], rings[s][j], rings[s + 1][j], rings[s + 1][i]))
++            if row_mats:
++                f.material_index = row_mats[i]
++    if cap:
++        bm.faces.new(list(reversed(rings[0])))
++        bm.faces.new(rings[-1])
++    bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=1e-6)
++    bmesh.ops.dissolve_degenerate(bm, edges=list(bm.edges), dist=1e-6)
++    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
++    return P.finish(builder, name, bm, mats, location=location, smooth_angle=smooth_angle)
++
++
++def revolve(builder, name, profile, mats, axis=0, center=(0, 0, 0), segments=24, smooth_angle=45,
++            face_mats=None):
++    """Revolve (radius, axial) points about X (axis 0), Y (1) or Z (2) through `center`.
++
++    `profile` runs from one axis point (r=0) to another so the solid is closed. `face_mats` is an
++    optional per-profile-segment material index list."""
++    bm = bmesh.new()
++    P.lathe(bm, profile, segments, axis=axis, center=center)
++    if face_mats:
++        ring_n = len(profile)
++        # faces were created ring by ring, segment by segment, skipping axis-only quads
++        faces = list(bm.faces)
++        idx = 0
++        for f in faces:
++            ys = f.calc_center_median()
++            c = Vector(center)
++            axial = [ys.x - c.x, ys.y - c.y, ys.z - c.z][axis]
++            best = min(range(len(profile) - 1), key=lambda i: abs((profile[i][1] + profile[i + 1][1]) / 2 - axial))
++            f.material_index = face_mats[best]
++    bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=1e-6)
++    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
++    return P.finish(builder, name, bm, mats, smooth_angle=smooth_angle)
++
++
++def torus(bm, major, minor, center, axis=1, seg=28, rseg=6):
++    rings = []
++    cx, cy, cz = center
++    for i in range(seg):
++        a = math.tau * i / seg
++        ring = []
++        for j in range(rseg):
++            b = math.tau * j / rseg
++            r = major + minor * math.cos(b)
++            h = minor * math.sin(b)
++            ca, sa = math.cos(a), math.sin(a)
++            if axis == 1:
++                co = (cx + r * ca, cy + h, cz + r * sa)
++            elif axis == 0:
++                co = (cx + h, cy + r * ca, cz + r * sa)
++            else:
++                co = (cx + r * ca, cy + r * sa, cz + h)
++            ring.append(bm.verts.new(co))
++        rings.append(ring)
++    for i in range(seg):
++        a, b = rings[i], rings[(i + 1) % seg]
++        for j in range(rseg):
++            k = (j + 1) % rseg
++            bm.faces.new((a[j], a[k], b[k], b[j]))
++    return rings
++
++
++def arc_points(center, radius, a0, a1, steps, plane="xz"):
++    pts = []
++    for k in range(steps + 1):
++        a = math.radians(a0 + (a1 - a0) * k / steps)
++        u, v = center[0] + radius * math.cos(a), center[1] + radius * math.sin(a)
++        pts.append((u, v))
++    return pts
++
++
++def band_profile(width, thick, r=0.0015):
++    """Rectangular profile (u inward, v across) centred on the path, for arch sweeps."""
++    hw, ht = width / 2, thick / 2
++    return [(-ht, -hw), (ht, -hw), (ht, hw), (-ht, hw)]
++
++
++def sweep_band(builder, name, path_xz, y0, y1, thick, mat):
++    """Thin curved plate following an X/Z path, spanning y0..y1 (a fender or guard)."""
++    yc = (y0 + y1) / 2
++    path = [(x, yc, z) for x, z in path_xz]
++    prof = band_profile(abs(y1 - y0), thick)
++    # sweep() takes (a, b) = (-z-ish normal, +y) for a path along X with up=(0,1,0)
++    prof = [(u, v) for u, v in prof]
++    return P.sweep(builder, name, path, mat, profile=prof, up=(0, 1, 0))
++
++
++class Surface:
++    """Ray-cast access to the union of the main body meshes (world space)."""
++
++    def __init__(self, objs):
++        verts, faces, off = [], [], 0
++        deps = bpy.context.evaluated_depsgraph_get()
++        for o in objs:
++            me = bpy.data.meshes.new_from_object(o.evaluated_get(deps), depsgraph=deps)
++            me.transform(o.matrix_world)
++            verts += [v.co.copy() for v in me.vertices]
++            faces += [tuple(i + off for i in p.vertices) for p in me.polygons]
++            off += len(me.vertices)
++            bpy.data.meshes.remove(me)
++        self.tree = BVHTree.FromPolygons(verts, faces)
++
++    def hit(self, origin, direction):
++        loc, nor, idx, dist = self.tree.ray_cast(Vector(origin), Vector(direction).normalized())
++        if loc is None:
++            return None
++        return loc, nor
++
++    def side(self, x, z, sign=1, far=3.0):
++        """Outer surface hit at (x, z) looking toward the centre from +/-Y."""
++        return self.hit((x, sign * far, z), (0, -sign, 0))
++
++    def top(self, x, y, far=4.0):
++        return self.hit((x, y, far), (0, 0, -1))
++
++
++def rivet_set(builder, name, spots, radius, mat, sink=0.0008):
++    """One object of low hemispherical rivet heads; spots = [(position, outward normal)]."""
++    bm = bmesh.new()
++    for pos, nor in spots:
++        n = Vector(nor).normalized()
++        t = Vector((0, 0, 1)) if abs(n.z) < 0.9 else Vector((1, 0, 0))
++        u = n.cross(t).normalized()
++        v = n.cross(u).normalized()
++        base = Vector(pos) - n * sink
++        ring = [bm.verts.new(base + (u * math.cos(k * math.tau / 6) + v * math.sin(k * math.tau / 6)) * radius)
++                for k in range(6)]
++        apex = bm.verts.new(base + n * radius * 0.75)
++        for k in range(6):
++            bm.faces.new((ring[k], ring[(k + 1) % 6], apex))
++        bm.faces.new(list(reversed(ring)))
++    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
++    return P.finish(builder, name, bm, mat, smooth_angle=60)
++
++
++def box(builder, name, size, mat, location, bevel=0.004, rot=None):
++    m = Matrix.Translation(location)
++    if rot:
++        m = m @ rot
++    return P.rbox(builder, name, size, mat, bevel=bevel, matrix=m)
+diff --git a/tools/vehicle_pipeline/blender/boilerfang_trace.py b/tools/vehicle_pipeline/blender/boilerfang_trace.py
+index 7cbcd4d..c8958d9 100644
+--- a/tools/vehicle_pipeline/blender/boilerfang_trace.py
++++ b/tools/vehicle_pipeline/blender/boilerfang_trace.py
+@@ -1,32 +1,33 @@
+-"""Landmarks traced from dodge.jpg for the Boilerfang hard-surface blueprint build.
+-
+-Source frame: X long (coupe +X), Y width, Z up, ground at Z=0.  All *_PX tables
+-are pixels of the 1024x572 sheet (x right, y down).  The sheet is never
+-stretched: one uniform scale comes from the two wheel centres, which are the
+-physical wheelbase (3.38 m).  Silhouettes were measured by column edge scans of
+-the side elevation (x 277..745, ground y 237) and the top-down view; the front
+-elevations (Ram B at x 48..216, Conquest A at x 790..956) set widths and heights.
++"""Landmarks traced from steam-punk.jpg (1024x572 sheet) for the Boilerfang build.
++
++Frame: X long (speedster End A +X, truck End B -X), Y width, Z up, ground Z=0.
++One uniform scale comes from the two side-elevation wheel centres (px 348 and 824) which are the
++3.38 m wheelbase (hubs x -1.72 / +1.66).  Side elevation ground line y=285; top-down centre
++line y=431.  Side and top views are proportion authority; the two front elevations are drawn at
++inconsistent scales and are used only for feature placement (lamps, domes, track).  Tables were
++measured from labelled grid crops (tools/vehicle_pipeline/qa/boilerfang_ref/*.png) and
++corrected against overlay renders.
+ """
+ from bisect import bisect_right
+ 
+-GROUND_PX = 237.0
+-WHEEL_PX = {"truck": (363.0, 203.0, 34.0), "coupe": (660.0, 203.0, 33.0)}
++GROUND_PX = 285.0
++TOP_CENTER_PY = 431.0
++WHEEL_PX = {"truck": (348.0, 236.0, 49.0), "coupe": (824.0, 249.0, 36.0)}
+ WHEEL_X = {"truck": -1.72, "coupe": 1.66}
+-WHEEL_R = {"truck": 0.43, "coupe": 0.40}
+-WHEEL_W = {"truck": 0.33, "coupe": 0.35}
+-# Visible half-track: both front elevations put the tyre centres 75.5 px off the centre line
+-# (Ram x 48..76 / 199..227 about 137.5; Conquest x 801..833 / 952..984 about 892.5) = 0.86 m.
+-# Physical hardpoints (0.91) are untouched; the runtime derives the visible pivot.
+-TRACK_Y = 0.86
+ WHEELBASE = WHEEL_X["coupe"] - WHEEL_X["truck"]
+ SCALE = WHEELBASE / (WHEEL_PX["coupe"][0] - WHEEL_PX["truck"][0])  # m per px
+ CENTER_PX = WHEEL_PX["truck"][0] - WHEEL_X["truck"] / SCALE
+-LIFT = WHEEL_R["truck"] - (GROUND_PX - WHEEL_PX["truck"][1]) * SCALE
++# Display (visual-only) tyre radii from the sheet: 49 px and 36 px.
++WHEEL_R = {"truck": round(WHEEL_PX["truck"][2] * SCALE, 3), "coupe": round(WHEEL_PX["coupe"][2] * SCALE, 3)}
++WHEEL_W = {"truck": 0.24, "coupe": 0.13}
++# Visual half-tracks (hub y): top view puts the spiked truck tyres at 0.57..0.80 m and the speedster
++# wheels inside 0.63 m pontoon fenders.
++TRACK_Y = {"truck": 0.66, "coupe": 0.50}
+ 
+-NOSE_TRUCK_PX = 294.0
+-NOSE_COUPE_PX = 758.0
+-# Cab-back wall (roof step): the Ram roof ends and the Conquest roof starts lower.
+-STEP_PX = (535.0, 547.0)
++# Central flywheel / belt drive (side view): flywheel (639,244) r25, pulley (583,241) r10.
++FLY_PX = (639.0, 244.0, 25.0)
++PULLEY_PX = (583.0, 241.0, 10.0)
++FLY_Y = 0.55  # half-distance of the body-mounted pair
+ 
+ 
+ def X(px):
+@@ -34,7 +35,12 @@ def X(px):
+ 
+ 
+ def Z(py):
+-    return (GROUND_PX - py) * SCALE + LIFT
++    return (GROUND_PX - py) * SCALE
++
++
++def Y(py):
++    """Top-view image row -> world Y (upper image edge is +Y)."""
++    return (TOP_CENTER_PY - py) * SCALE
+ 
+ 
+ def PX(x):
+@@ -42,7 +48,7 @@ def PX(x):
+ 
+ 
+ def PY(z):
+-    return GROUND_PX - (z - LIFT) / SCALE
++    return GROUND_PX - z / SCALE
+ 
+ 
+ def lerp_table(table, px):
+@@ -53,44 +59,26 @@ def lerp_table(table, px):
+         return table[-1][1]
+     i = bisect_right(keys, px) - 1
+     (a, va), (b, vb) = table[i], table[i + 1]
+-    t = (px - a) / (b - a)
+-    return va + (vb - va) * t
++    return va + (vb - va) * (px - a) / (b - a)
+ 
+ 
+-# Top line of hood / cowl / windshield / roof / deck (py).  Ram cab roof 69, Conquest roof 100.
++# Side-elevation top line of the main mass (py), excluding stack/gauge/push-bar protrusions.
+ TOP = [
+-    (294, 134), (297, 129), (301, 126), (306, 124), (318, 123),
+-    (340, 122), (360, 121.5), (380, 121), (400, 121), (412, 121), (418, 119), (424, 111),
+-    (430, 102), (438, 94), (444, 85), (450, 80), (456, 74), (462, 70), (468, 69), (522, 68.5),
+-    (530, 69), (535, 70), (538, 73), (541, 80), (544, 88), (547, 93), (554, 96), (562, 98),
+-    (568, 102), (574, 108), (584, 116), (594, 124), (604, 134), (612, 136.5), (630, 135.5),
+-    (650, 136.5), (668, 138), (684, 140), (698, 142), (710, 145), (720, 151), (730, 155),
+-    (738, 161), (743, 166), (747, 171), (751, 174), (755, 178), (757.4, 181), (758, 183),
+-]
+-# Belt / fender shoulder line (py).
+-BELT = [
+-    (294, 150), (300, 134), (306, 128), (320, 125), (412, 125), (418, 123), (535, 123),
+-    (547, 138), (600, 141), (640, 141), (684, 144), (710, 150), (730, 160), (743, 169),
+-    (751, 178), (758, 188),
++    (296, 150), (308, 130), (320, 134), (396, 136), (432, 136), (436, 130), (446, 112),
++    (452, 96), (460, 89), (475, 88), (525, 90), (550, 95), (575, 104), (600, 118),
++    (625, 138), (650, 158), (675, 162), (700, 166), (712, 174), (725, 184), (750, 187),
++    (800, 192), (850, 197), (870, 200), (878, 210),
+ ]
+-# Lowest body edge (py): truck valance, flat rocker, coupe skirt rising into the bumper cover.
++# Hull underside (py).
+ SILL = [
+-    (294, 197), (300, 199), (330, 200), (404, 200), (470, 201), (486, 207), (510, 210),
+-    (540, 210), (600, 211), (690, 214), (703, 212), (710, 205), (730, 202), (758, 199),
++    (296, 226), (330, 232), (400, 246), (450, 254), (500, 262), (550, 268), (700, 270),
++    (790, 270), (850, 262), (878, 255),
+ ]
+-# Body half-width (metres) from the top-down and front views; flared at the wheel arches.
+-HALF = [
+-    (294, 1.000), (299, 1.015), (304, 1.030), (330, 1.050), (363, 1.060), (396, 1.040),
+-    (420, 1.010), (520, 1.000), (535, 0.995), (560, 0.990), (610, 1.000), (640, 1.030),
+-    (660, 1.060), (690, 1.040), (715, 1.000), (730, 0.985), (743, 0.960), (751, 0.930),
+-    (758, 0.860),
+-]
+-# Hood / roof top half-width (metres): fender-top plus a narrower greenhouse; the Ram roof is
+-# 0.655 m half-wide and widens ~0.5 px/px down the A-pillar (front elevation rows 70..102).
+-TOP_HALF = [
+-    (294, 0.96), (300, 0.97), (392, 0.97), (412, 0.96), (424, 0.91), (436, 0.81), (450, 0.74),
+-    (468, 0.66), (522, 0.655), (535, 0.66), (547, 0.64), (560, 0.66), (574, 0.74),
+-    (590, 0.86), (604, 0.93), (640, 0.95), (700, 0.94), (730, 0.90), (758, 0.80),
++# Body half-width in the top view (px, rows from the centre line).
++HALF_PX = [
++    (296, 41), (325, 43), (350, 47), (375, 50), (400, 53), (425, 66), (450, 72), (475, 75),
++    (525, 75), (550, 73), (575, 69), (600, 65), (625, 60), (650, 57), (675, 56), (700, 55),
++    (725, 50), (775, 47), (800, 38), (825, 33), (850, 29), (878, 25),
+ ]
+ 
+ 
+@@ -98,33 +86,9 @@ def top_z(px):
+     return Z(lerp_table(TOP, px))
+ 
+ 
+-def belt_z(px):
+-    return Z(lerp_table(BELT, px))
+-
+-
+ def sill_z(px):
+     return Z(lerp_table(SILL, px))
+ 
+ 
+-def half_width(px):
+-    return lerp_table(HALF, px)
+-
+-
+-def top_half(px):
+-    return lerp_table(TOP_HALF, px)
+-
+-
+-# Pixel stations of the cage. Denser at both noses, the cowl, the roof step and the arches.
+-STATIONS = sorted(set([
+-    294, 295.5, 298, 301, 304, 314, 324, 336, 350, 363, 376, 390, 402, 412, 418, 424, 430, 437,
+-    444, 451, 458, 466, 478, 492, 506, 520, 528, 532, 535, 537.5, 540, 543, 547, 551, 558, 566,
+-    574, 584, 594, 604, 614, 626, 638, 650, 660, 672, 684, 696, 708, 718, 726, 733, 738, 743, 748,
+-    753, 756.3, 758,
+-]))
+-
+-# Side-window openings in side-elevation pixels (counter-clockwise in x/z).
+-WINDOW_TRUCK_SIDE = [(452, 121), (466, 90), (472, 84), (524, 84), (528, 121)]
+-WINDOW_COUPE_SIDE = [(549, 138), (549, 102), (556, 100), (566, 103), (598, 133), (596, 138)]
+-# Windshield footprints: (start px, end px) along the slope.
+-WINDSHIELD_TRUCK = (421.0, 462.0)
+-WINDSHIELD_COUPE = (568.0, 606.0)
++def half_w(px):
++    return lerp_table(HALF_PX, px) * SCALE

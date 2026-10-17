@@ -1,13 +1,17 @@
 {
   "pass": true,
   "failed": [],
-  "checks": 43,
+  "checks": 44,
   "triangles": [
     48116,
     35492,
-    17554
+    17842
   ],
   "results": {
+    "every_mesh_in_a_validated_group": {
+      "ok": true,
+      "detail": []
+    },
     "main_masses_closed_manifold": {
       "ok": true,
       "detail": {}
@@ -298,7 +302,7 @@
       "detail": [
         48116,
         35492,
-        17554
+        17842
       ]
     },
     "handoff_display_radii_match_measured": {
