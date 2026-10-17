@@ -177,10 +177,10 @@ def build_speedster_front(builder):
         center=(x0 + 0.014, 0.0, 0.625), segments=20))
     # twin slotted headlamps on each pontoon nose
     for side in SIDES:
-        out += lamp_barrel(builder, f"Fine_SpeedsterLamp_{tag(side)}", (T.X(848), side * 0.33, 0.44), 0.082,
+        out += lamp_barrel(builder, f"Fine_SpeedsterLamp_{tag(side)}", (T.X(848), side * 0.27, 0.44), 0.082,
                            0.11, front=1)
-        out.append(rod(builder, f"Fine_SpeedsterLampStem_{tag(side)}", (T.X(850), side * 0.33, 0.44),
-                       (T.X(850), side * 0.33, 0.34), 0.016, "iron", 6))
+        out.append(rod(builder, f"Fine_SpeedsterLampStem_{tag(side)}", (T.X(850), side * 0.27, 0.44),
+                       (T.X(850), side * 0.27, 0.34), 0.016, "iron", 6))
     return out
 
 
@@ -241,6 +241,13 @@ def tank_and_cylinder(builder):
             F.torus(bands, r + 0.004, 0.0075, (T.X(px), side * yc, zc), axis=0, seg=24, rseg=4)
         bmesh.ops.recalc_face_normals(bands, faces=list(bands.faces))
         out.append(P.finish(builder, f"Trim_TankBands_{tag(side)}", bands, "brass", smooth_angle=60))
+        spots = []
+        for px in (448, 480, 512):
+            for k in range(11):
+                a = math.radians(-30 + 240 * k / 10)
+                spots.append(((T.X(px), side * yc + r * math.cos(a) * 1.0, zc + r * math.sin(a)),
+                              (0.0, math.cos(a), math.sin(a))))
+        out.append(F.rivet_set(builder, f"Fine_Rivets_Tank_{tag(side)}", spots, 0.0065, "brass"))
         # steam cylinder aft of the tank, with copper heads, steam chest and piston rod to the pulley
         xa, xb = T.X(527), T.X(572)
         rc = 0.088

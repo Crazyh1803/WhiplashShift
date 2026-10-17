@@ -91,6 +91,15 @@ def build_tire(builder, style, side, location):
             lx, ly, lz = v.co
             rad = R - 0.022 + lz
             v.co = Vector((rad * ca - lx * sa, (col + ly) * side, rad * sa + lx * ca))
+    # outboard sidewall studs (conical, pointing along the axle) as drawn on the front elevation
+    for k in range(14 if style == "truck" else 0):
+        ang = math.tau * (k + 0.5) / 14
+        cone = bmesh.ops.create_cone(bm, cap_ends=True, segments=6, radius1=0.016, radius2=0.004, depth=0.046)
+        ca, sa = math.cos(ang), math.sin(ang)
+        for v in cone["verts"]:
+            lx, ly, lz = v.co
+            rr = (st["flange"] + 0.052) + lx
+            v.co = Vector((rr * ca - ly * sa, side * (hw * 0.93 + 0.012 + lz), rr * sa + ly * ca))
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
     return P.finish(builder, f"Wheel_{style.title()}_Tire_{side:+d}", bm, "rubber",
                     location=location, smooth_angle=48)

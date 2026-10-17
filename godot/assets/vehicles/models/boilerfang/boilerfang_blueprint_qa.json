@@ -1,11 +1,11 @@
 {
   "pass": true,
   "failed": [],
-  "checks": 41,
+  "checks": 42,
   "triangles": [
-    45572,
-    33312,
-    17040
+    46996,
+    34372,
+    17286
   ],
   "results": {
     "main_masses_closed_manifold": {
@@ -25,7 +25,7 @@
       "detail": {
         "max_mm": 1.28,
         "p99_mm": 0.0,
-        "vertices": 24316,
+        "vertices": 25222,
         "intentional_asymmetric": []
       }
     },
@@ -99,7 +99,7 @@
           "radius_mm": 348.02,
           "expected_radius_mm": 348.0,
           "lowest_z_mm": 3.0,
-          "width_mm": 240.0,
+          "width_mm": 266.6,
           "fender_clearance_mm": 39.52,
           "hull_clearance_mm": 132.21
         },
@@ -108,7 +108,7 @@
           "radius_mm": 348.02,
           "expected_radius_mm": 348.0,
           "lowest_z_mm": 3.0,
-          "width_mm": 240.0,
+          "width_mm": 266.6,
           "fender_clearance_mm": 39.52,
           "hull_clearance_mm": 132.21
         }
@@ -255,6 +255,12 @@
         "lenses": 12
       }
     },
+    "smokestack_clears_cab_glass_100mm": {
+      "ok": true,
+      "detail": {
+        "gap_mm": 129.47
+      }
+    },
     "uv_complete": {
       "ok": true,
       "detail": []
@@ -270,9 +276,9 @@
     "triangle_budget_and_lod_monotonic": {
       "ok": true,
       "detail": [
-        45572,
-        33312,
-        17040
+        46996,
+        34372,
+        17286
       ]
     },
     "handoff_display_radii_match_measured": {
@@ -342,22 +348,22 @@
         "0": [
           -2.571,
           2.377,
-          -0.786,
-          0.786,
+          -0.807,
+          0.807,
           1.526
         ],
         "1": [
           -2.571,
           2.377,
-          -0.786,
-          0.786,
+          -0.807,
+          0.807,
           1.526
         ],
         "2": [
           -2.57,
           2.377,
-          -0.786,
-          0.786,
+          -0.808,
+          0.808,
           1.512
         ]
       }
@@ -418,8 +424,8 @@
       "bbox": [
         -2.571,
         2.377,
-        -0.786,
-        0.786,
+        -0.807,
+        0.807,
         1.526
       ],
       "tire_radius_min_mm": 256.0
@@ -445,8 +451,8 @@
       "bbox": [
         -2.571,
         2.377,
-        -0.786,
-        0.786,
+        -0.807,
+        0.807,
         1.526
       ],
       "tire_radius_min_mm": 256.0
@@ -470,8 +476,8 @@
       "bbox": [
         -2.57,
         2.377,
-        -0.786,
-        0.786,
+        -0.808,
+        0.808,
         1.512
       ],
       "tire_radius_min_mm": 257.45
@@ -501,7 +507,7 @@
       "radius_mm": 348.02,
       "expected_radius_mm": 348.0,
       "lowest_z_mm": 3.0,
-      "width_mm": 240.0,
+      "width_mm": 266.6,
       "fender_clearance_mm": 39.52,
       "hull_clearance_mm": 132.21
     },
@@ -510,7 +516,7 @@
       "radius_mm": 348.02,
       "expected_radius_mm": 348.0,
       "lowest_z_mm": 3.0,
-      "width_mm": 240.0,
+      "width_mm": 266.6,
       "fender_clearance_mm": 39.52,
       "hull_clearance_mm": 132.21
     }

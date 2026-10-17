@@ -88,10 +88,10 @@ def build_fenders(builder):
         hub = (T.WHEEL_X["truck"], T.WHEEL_R["truck"])
         r = hub[1] + 0.045 + 0.0075
         path = arch_path(hub, r, 215, -35, ARCH_STEPS["truck"])
-        o = F.sweep_band(builder, f"Body_FenderTruck_{sgn}", path, 0.30 if side > 0 else -0.66,
-                         0.66 if side > 0 else -0.30, 0.022, "paint")
+        o = F.sweep_band(builder, f"Body_FenderTruck_{sgn}", path, 0.32 if side > 0 else -0.62,
+                         0.62 if side > 0 else -0.32, 0.022, "paint")
         out.append(o)
-        for k, yy in enumerate((0.30, 0.66)):
+        for k, yy in enumerate((0.32, 0.62)):
             out.append(P.sweep(builder, f"Trim_FenderBeadTruck_{sgn}_{k}", [(x, side * yy, z) for x, z in path],
                                "brass", radius=0.0085, sides=6))
         # speedster pontoon: running board, rise over the arch, nose drop
@@ -145,8 +145,12 @@ def build_plows(builder):
                       (908, 0.06, 0.18), (918, 0.025, 0.13), (925, 0.004, 0.10)):
         half, roles = F.section_half(w, 0.085, zt, 0.015, 0.03, 0.01, steps=2, crown_steps=2)
         stations.append((T.X(px), F.full_ring(half, roles)[0]))
-    out.append(F.loft(builder, "Body_ProwSpeedster", stations, ["paint2"],
-                      row_mats=[0] * len(stations[0][1])))
+    prow = F.loft(builder, "Body_ProwSpeedster", stations, ["iron"], row_mats=[0] * len(stations[0][1]))
+    out.append(prow)
+    for k, yy in enumerate((-0.07, 0.0, 0.07)):
+        pts = [(T.X(px), yy * (1 - (px - 866) / 70.0), zt + 0.006) for px, zt in
+               ((868, 0.595), (876, 0.52), (884, 0.438), (896, 0.30), (908, 0.185), (918, 0.14))]
+        out.append(P.sweep(builder, f"Trim_ProwRib_{k}", pts, "brass", radius=0.0075, sides=6))
     return out
 
 

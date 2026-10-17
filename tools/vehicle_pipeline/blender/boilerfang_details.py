@@ -69,7 +69,7 @@ def build_rivets(builder, surf):
     for side in SIDES:
         hub = (T.WHEEL_X["truck"], T.WHEEL_R["truck"])
         r = hub[1] + 0.045 + 0.0075 + 0.008
-        for yy in (0.32, 0.64):
+        for yy in (0.34, 0.60):
             for k in range(2, B.ARCH_STEPS["truck"], 2):
                 a = math.radians(215 + (-35 - 215) * k / B.ARCH_STEPS["truck"])
                 fend.append(((hub[0] + r * math.cos(a), side * yy, hub[1] + r * math.sin(a)),

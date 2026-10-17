@@ -391,6 +391,13 @@ for n, o in objs.items():
             lens_bad[n] = mm(d)
 check("lamp_lens_vertices_seated_in_housing_6mm", not lens_bad, lens_bad or {"lenses": sum(1 for n in objs if n.endswith("_Lens"))})
 
+# --- fittings keep clear of the cab glass --------------------------------------------------------------
+stack = objs["Body_Smokestack"]
+sm = world_mesh(stack)
+stack_gap = min(glass_tree.find_nearest(v.co)[3] for v in sm.vertices)
+bpy.data.meshes.remove(sm)
+check("smokestack_clears_cab_glass_100mm", stack_gap >= 0.100, {"gap_mm": mm(stack_gap)})
+
 # --- UV / materials ---------------------------------------------------------------------------------------
 no_uv = [n for n, o in objs.items() if not o.data.uv_layers]
 mat_names = {m.name for o in objs.values() for m in o.data.materials}
