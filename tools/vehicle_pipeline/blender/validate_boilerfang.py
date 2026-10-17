@@ -84,6 +84,9 @@ def all_vertices(group):
     return pts
 
 
+covered = {o.name for o in bodies + wheels + glass + frames + hardware + mids}
+check("every_mesh_in_a_validated_group", set(objs) == covered, sorted(set(objs) - covered))
+
 # --- closed, positive-volume main masses ---------------------------------------------------------
 bad = {}
 vol_bad = {}
@@ -409,11 +412,13 @@ check("roof_fittings_sunk_into_roof", all(d < -3.0 for d in sunk.values()), sunk
 
 # --- UV / materials ---------------------------------------------------------------------------------------
 no_uv = [n for n, o in objs.items() if not o.data.uv_layers]
-mat_names = {m.name for o in objs.values() for m in o.data.materials}
+mat_names = {m.name for o in objs.values() for m in o.data.materials if m is not None}
+empty_slots = [n for n, o in objs.items() if any(m is None for m in o.data.materials)]
 bad_idx = [n for n, o in objs.items() if any(p.material_index >= len(o.data.materials) for p in o.data.polygons)]
-used = {m.name for o in objs.values() for p in o.data.polygons for m in [o.data.materials[p.material_index]]}
+used = {o.data.materials[p.material_index].name for o in objs.values() for p in o.data.polygons
+        if p.material_index < len(o.data.materials) and o.data.materials[p.material_index] is not None}
 check("uv_complete", not no_uv, no_uv[:10])
-check("materials_exact_set", mat_names == EXPECTED_MATERIALS and not bad_idx and SEMANTIC <= used,
+check("materials_exact_set", mat_names == EXPECTED_MATERIALS and not bad_idx and not empty_slots and SEMANTIC <= used,
       {"extra": sorted(mat_names - EXPECTED_MATERIALS), "missing": sorted(EXPECTED_MATERIALS - mat_names),
        "unused_semantic": sorted(SEMANTIC - used)})
 
@@ -463,7 +468,8 @@ check("lod_envelope_matches_gameplay", all(max(abs(a - b) for a, b in zip(glb_re
 check("lod_tire_radius_preserved", all(glb_report[l]["tire_radius_min_mm"] > 0.95 * mm(T.WHEEL_R["coupe"]) for l in glb_report),
       {l: glb_report[l]["tire_radius_min_mm"] for l in glb_report})
 check("glb_wheel_hubs_at_authored_positions", all(
-    abs(abs(h[0]) - (abs(T.WHEEL_X["truck"]) if "Truck" in n else abs(T.WHEEL_X["coupe"]))) < 0.002
+    abs(h[0] - (T.WHEEL_X["truck"] if "Truck" in n else T.WHEEL_X["coupe"])) < 0.002
+    and abs(h[2] - (T.WHEEL_R["truck"] if "Truck" in n else T.WHEEL_R["coupe"])) < 0.002
     and abs(abs(h[1]) - (T.TRACK_Y["truck"] if "Truck" in n else T.TRACK_Y["coupe"])) < 0.002
     for l in glb_report for n, h in glb_report[l]["hubs"].items()), base["hubs"])
 

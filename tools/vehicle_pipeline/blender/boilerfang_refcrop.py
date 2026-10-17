@@ -6,6 +6,7 @@ Coordinates are pixels of the 1024x572 sheet (x right, y down). Grid lines every
 coordinate.
 """
 import sys
+from pathlib import Path
 
 import bpy
 import numpy as np
@@ -34,7 +35,7 @@ def main():
     x0, y0, x1, y1, sc = (int(v) for v in a[:5])
     out = a[5]
     step = int(a[6]) if len(a) > 6 else 25
-    src = bpy.data.images.load("tools/vehicle_pipeline/references/steam-punk.jpg")
+    src = bpy.data.images.load(str(Path(__file__).resolve().parents[1] / "references/steam-punk.jpg"))
     w, h = src.size
     px = np.array(src.pixels[:], dtype=np.float32).reshape(h, w, 4)[::-1]  # top-down rows
     crop = px[y0:y1, x0:x1]

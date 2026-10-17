@@ -81,7 +81,6 @@ def _join(objs, name, col):
 LOD1_DROP = ("Fine_Rivets_Fenders", "Fine_Rivets_Hood", "Fine_Rivets_Plow", "Fine_Rivets_Door", "Fine_DoorHinge",
              "Fine_PipeBracket", "Fine_ExhaustClamp", "Fine_GrilleBoss", "Fine_SmokeboxHandle", "Fine_LeafSpring")
 LOD2_KEEP = ("Fine_TruckLamp", "Fine_SpeedsterLamp", "Fine_RoofLamp")
-KEEP_PREFIXES = ("Body_", "Glass_", "Wheel_Truck_", "Wheel_Coupe_", "Prop_MidDrive_", "Gear_")
 
 
 def build_export_set(cols, level):
@@ -91,10 +90,13 @@ def build_export_set(cols, level):
         bpy.data.objects.remove(o, do_unlink=True)
     groups = {}
     for src in source_meshes(cols):
+        name = src.name
+        if (name.startswith("Fine_") and not name.startswith(LOD2_KEEP)
+                and (level == 2 or (level == 1 and name.startswith(LOD1_DROP)))):
+            continue  # dropped before copying so no orphan mesh datablock is created
         obj = _copy(src, col)
         for m in list(obj.modifiers):
             obj.modifiers.remove(m)
-        name = src.name
         if name.startswith("Body_"):
             if level:
                 _decimate(obj, (0.70, 0.45)[level - 1])
@@ -103,15 +105,11 @@ def build_export_set(cols, level):
         elif _is_wheel(obj):
             if level and ("_Tire_" in name or "_Rim_" in name):
                 _decimate(obj, (0.50, 0.28)[level - 1])
-            if level == 2 and ("_Spoke_" in name or "_Wire_" in name):
-                _decimate(obj, 0.6)
+            # spokes and wire bundles are never decimated: collapsing them drops a wheel part (LOD2 lost one)
         elif name.startswith(("Prop_MidDrive_", "Gear_")):
             if level == 2:
                 _decimate(obj, 0.6)
         else:
-            if name.startswith("Fine_") and not name.startswith(LOD2_KEEP) and (level == 2 or (level == 1 and name.startswith(LOD1_DROP))):
-                bpy.data.objects.remove(obj, do_unlink=True)
-                continue
             if name.startswith("Trim_") and level:
                 _decimate(obj, (0.6, 0.45)[level - 1])
             key = obj.data.materials[0].name
