@@ -1,0 +1,189 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Ramjet loads its dedicated adapter
+  [pass] Ramjet loads authored production model
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Detail_Paint
+  [pass] Paint channel applies to Detail_Secondary
+  [pass] Paint channel applies to Wheel_Truck_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Truck_Hub_+1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Ramjet constructs as player and CPU
+  [pass] Ramjet player has production artwork
+RAMJET: 47 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Nightshift loads its dedicated adapter
+  [pass] Nightshift loads authored production model
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Detail_Secondary
+  [pass] Paint channel applies to Wheel_Truck_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Truck_Hub_+1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Nightshift constructs as player and CPU
+  [pass] Nightshift player has production artwork
+NIGHTSHIFT: 46 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] blackjack reference survives consolidation
+  [pass] blackjack constructs four physical wheels
+  [pass] boilerfang reference survives consolidation
+  [pass] boilerfang constructs four physical wheels
+  [pass] helix reference survives consolidation
+  [pass] helix constructs four physical wheels
+  [pass] ramjet reference survives consolidation
+  [pass] ramjet constructs four physical wheels
+  [pass] knifeedge reference survives consolidation
+  [pass] knifeedge constructs four physical wheels
+  [pass] deadbolt reference survives consolidation
+  [pass] deadbolt constructs four physical wheels
+  [pass] Deadbolt loads the rebuilt hard-surface mesh
+  [pass] Deadbolt coupe faces End A
+  [pass] Deadbolt embedded wheel copies are hidden
+  [pass] Wheel_A_L has exactly one complete authored wheel
+  [pass] Wheel_A_L art follows suspension and steering
+  [pass] Wheel_A_L steers about its tire hub without orbiting
+  [pass] Wheel_A_R has exactly one complete authored wheel
+  [pass] Wheel_A_R art follows suspension and steering
+  [pass] Wheel_A_R steers about its tire hub without orbiting
+  [pass] Wheel_B_L has exactly one complete authored wheel
+  [pass] Wheel_B_L art follows suspension and steering
+  [pass] Wheel_B_L steers about its tire hub without orbiting
+  [pass] Wheel_B_R has exactly one complete authored wheel
+  [pass] Wheel_B_R art follows suspension and steering
+  [pass] Wheel_B_R steers about its tire hub without orbiting
+  [pass] A axle follows the authored wheel hubs
+  [pass] B axle follows the authored wheel hubs
+  [pass] Deadbolt loads the rebuilt hard-surface mesh
+  [pass] Deadbolt coupe faces End A
+  [pass] Deadbolt embedded wheel copies are hidden
+  [pass] Wheel_A_L has exactly one complete authored wheel
+  [pass] Wheel_A_L art follows suspension and steering
+  [pass] Wheel_A_L steers about its tire hub without orbiting
+  [pass] Wheel_A_R has exactly one complete authored wheel
+  [pass] Wheel_A_R art follows suspension and steering
+  [pass] Wheel_A_R steers about its tire hub without orbiting
+  [pass] Wheel_B_L has exactly one complete authored wheel
+  [pass] Wheel_B_L art follows suspension and steering
+  [pass] Wheel_B_L steers about its tire hub without orbiting
+  [pass] Wheel_B_R has exactly one complete authored wheel
+  [pass] Wheel_B_R art follows suspension and steering
+  [pass] Wheel_B_R steers about its tire hub without orbiting
+  [pass] A axle follows the authored wheel hubs
+  [pass] B axle follows the authored wheel hubs
+  [pass] Deadbolt_Paint paint changes
+  [pass] Deadbolt_Secondary paint changes
+  [pass] Deadbolt_Stripe paint changes
+  [pass] Deadbolt glass and hardware retain authored materials
+  [pass] nightshift reference survives consolidation
+  [pass] nightshift constructs four physical wheels
+  [pass] deadbolt physics comparison uses the intended visual variant
+  [pass] deadbolt physics comparison uses the intended visual variant
+  [pass] deadbolt swap preserves momentum and orientation
+  [pass] deadbolt swap preserves momentum and orientation
+  [pass] deadbolt artwork preserves driving/braking/swap physics
+  [pass] deadbolt accelerates with the saved handling
+  [pass] nightshift physics comparison uses the intended visual variant
+  [pass] nightshift physics comparison uses the intended visual variant
+  [pass] nightshift swap preserves momentum and orientation
+  [pass] nightshift swap preserves momentum and orientation
+  [pass] nightshift artwork preserves driving/braking/swap physics
+  [pass] nightshift accelerates with the saved handling
+  [pass] ramjet physics comparison uses the intended visual variant
+  [pass] ramjet physics comparison uses the intended visual variant
+  [pass] ramjet swap preserves momentum and orientation
+  [pass] ramjet swap preserves momentum and orientation
+  [pass] ramjet artwork preserves driving/braking/swap physics
+  [pass] ramjet accelerates with the saved handling
+  [pass] All named vehicle and ignition buttons fit the garage
+  [pass] Garage exposes seven named vehicle buttons
+  [pass] Deadbolt button selects the chassis directly
+  [pass] Customize opens the selected Deadbolt model
+  [pass] Garage preview switches to blackjack
+  [pass] blackjack uses the appropriate studio lighting
+  [pass] Garage preview switches to deadbolt
+  [pass] deadbolt uses the appropriate studio lighting
+  [pass] Garage preview switches to nightshift
+  [pass] nightshift uses the appropriate studio lighting
+  [pass] Garage preview switches to ramjet
+  [pass] ramjet uses the appropriate studio lighting
+  [pass] Garage preview switches to deadbolt
+  [pass] deadbolt uses the appropriate studio lighting
+  [pass] Returning from a Deadbolt race keeps Deadbolt selected
+  [pass] Race builds Deadbolt player and two CPU drivers
+  [pass] Race player uses Deadbolt production art
+CONSOLIDATION: 87 passed, 0 failed
