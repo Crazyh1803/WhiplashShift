@@ -8,8 +8,7 @@ from mathutils import Vector
 import boilerfang_trace as T
 
 REF_W, REF_H = 1024, 572
-TOP_CENTER_PY = 413.5
-FRONT_CENTER_PX = {"truck": 137.5, "coupe": 892.5}
+TOP_CENTER_PY = T.TOP_CENTER_PY
 
 
 def build_studio(cols):
@@ -79,22 +78,22 @@ def configure(view, width=1280, height=720):
     cam.lens = 55
     cam.clip_start, cam.clip_end = 0.1, 80
     presets = {
-        "front_truck": ((-9.5, 0.0, 1.0), (-2.4, 0, 0.8)),
-        "front_coupe": ((9.8, 0.0, 0.9), (2.7, 0, 0.6)),
-        "three_quarter_truck": ((-7.0, -6.0, 2.1), (-0.1, 0, 0.75)),
-        "three_quarter_coupe": ((7.2, -5.8, 2.0), (0.1, 0, 0.7)),
-        "far_side_three_quarter": ((6.4, 6.3, 2.5), (0.2, 0, 0.7)),
-        "wheel_truck": ((-0.9, -3.3, 0.85), (-1.72, -0.86, 0.43)),
-        "wheel_coupe": ((2.45, -3.1, 0.8), (1.66, -0.86, 0.40)),
-        "truck_detail": ((-5.0, -3.0, 1.6), (-2.2, 0, 1.0)),
-        "coupe_detail": ((5.4, -3.0, 1.5), (2.5, 0, 0.75)),
-        "cabin": ((0.4, -4.8, 2.3), (0, 0, 1.2)),
-        "coupe_nose": ((4.7, -2.3, 1.55), (2.45, 0.05, 0.85)),
-        "truck_nose": ((-4.5, -2.2, 1.45), (-2.5, 0.05, 0.95)),
-        "coupe_window": ((2.4, -2.6, 1.75), (0.75, -0.9, 1.35)),
-        "mirror_coupe": ((1.9, -1.9, 1.55), (0.82, -0.98, 1.25)),
-        "mirror_truck": ((0.5, -2.1, 1.8), (-0.55, -1.09, 1.4)),
-        "cab_step": ((2.0, -2.5, 2.4), (0.45, 0.0, 1.65)),
+        "front_truck": ((-9.0, 0.0, 1.1), (-2.4, 0, 0.7)),
+        "front_coupe": ((9.0, 0.0, 0.9), (2.3, 0, 0.5)),
+        "three_quarter_truck": ((-6.2, -5.2, 2.3), (-0.2, 0, 0.7)),
+        "three_quarter_coupe": ((6.4, -5.0, 2.1), (0.2, 0, 0.6)),
+        "far_side_three_quarter": ((5.4, 5.6, 2.6), (0.0, 0, 0.7)),
+        "wheel_truck": ((-0.9, -3.2, 1.0), (-1.72, -0.66, 0.35)),
+        "wheel_coupe": ((2.6, -3.0, 0.8), (1.66, -0.50, 0.26)),
+        "truck_detail": ((-4.6, -2.8, 1.7), (-2.0, 0, 0.8)),
+        "coupe_detail": ((4.6, -2.8, 1.4), (2.0, 0, 0.45)),
+        "cab": ((-0.3, -4.2, 2.3), (-0.5, 0, 1.0)),
+        "middrive": ((1.2, -2.6, 1.0), (0.1, -0.5, 0.3)),
+        "flywheel": ((0.9, -1.9, 0.6), (0.35, -0.55, 0.3)),
+        "boiler_top": ((-2.4, -2.0, 3.0), (-1.7, 0, 0.9)),
+        "cockpit": ((1.8, -2.3, 1.7), (0.9, 0, 0.6)),
+        "roof": ((-1.8, -2.2, 3.3), (-0.5, 0, 1.3)),
+        "underside": ((0.0, -2.8, 0.05), (0.0, 0, 0.3)),
     }
     loc, tgt = presets[view]
     _aim(cam_obj, loc, tgt)
@@ -138,16 +137,7 @@ def overlay(view, ref_path, out_path):
         cam_obj.location = (x, y, 12)
         cam_obj.rotation_euler = (0, 0, 0)
     else:
-        end = view.split("_")[1]
-        z = T.Z(cy_px)
-        if end == "truck":  # camera in front of the truck nose, looking +X
-            y = -(cx_px - FRONT_CENTER_PX["truck"]) * T.SCALE
-            cam_obj.location = (-12, y, z)
-            cam_obj.rotation_euler = (math.pi / 2, 0, -math.pi / 2)
-        else:  # camera in front of the coupe nose, looking -X
-            y = (cx_px - FRONT_CENTER_PX["coupe"]) * T.SCALE
-            cam_obj.location = (12, y, z)
-            cam_obj.rotation_euler = (math.pi / 2, 0, math.pi / 2)
+        raise ValueError("overlays are only calibrated for side and top")
     tmp = Path(str(out_path) + ".render.png")
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"

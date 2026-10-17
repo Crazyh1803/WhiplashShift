@@ -14,29 +14,28 @@ def source_meshes(cols):
     return [o for o in cols["BOILERFANG_SOURCE"].objects if o.type == "MESH"]
 
 
-def finalize_scene(cols, shell, blueprint):
+def finalize_scene(cols, hull, blueprint):
     for obj in source_meshes(cols):
         if not obj.data.uv_layers:
             C.smart_uv(obj)
     image = bpy.data.images.load(str(blueprint), check_existing=True)
     image.pack()
-    ref = bpy.data.objects.new("Reference_Dodge_Blueprint", None)
+    ref = bpy.data.objects.new("Reference_SteamPunk_Blueprint", None)
     ref.empty_display_type = "IMAGE"
     ref.data = image
     ref.empty_display_size = 5.0
     ref.hide_render = True
     ref.hide_viewport = True
     cols["REFERENCE"].objects.link(ref)
-    shell["vehicle_id"] = "boilerfang"
-    shell["design"] = "reversible 80s Dodge Ram D150 truck / Conquest TSi coupe"
-    shell["blueprint"] = "dodge.jpg"
-    shell["wheelbase"] = T.WHEELBASE
-    shell["scale_m_per_px"] = T.SCALE
+    hull["vehicle_id"] = "boilerfang"
+    hull["design"] = "Boilerfang 88: Victorian steam speedster (End A +X) / boiler off-road truck (End B -X)"
+    hull["blueprint"] = "steam-punk.jpg"
+    hull["wheelbase"] = T.WHEELBASE
+    hull["scale_m_per_px"] = T.SCALE
     for name in ("CUTTERS", "REFERENCE"):
         cols[name].hide_render = True
         cols[name].hide_viewport = True
-    scene = bpy.context.scene
-    scene.unit_settings.system = "METRIC"
+    bpy.context.scene.unit_settings.system = "METRIC"
 
 
 def _is_wheel(obj):
@@ -79,13 +78,15 @@ def _join(objs, name, col):
     return joined
 
 
+KEEP_PREFIXES = ("Body_", "Glass_", "Wheel_Truck_", "Wheel_Coupe_", "Prop_MidDrive_", "Gear_")
+
+
 def build_export_set(cols, level):
     """Copy source meshes into EXPORT_* with merged small details. level: 0, 1, 2."""
     col = cols[["EXPORT_GAMEPLAY", "EXPORT_LOD1", "EXPORT_LOD2"][level]]
     for o in list(col.objects):
         bpy.data.objects.remove(o, do_unlink=True)
     groups = {}
-    out = []
     for src in source_meshes(cols):
         obj = _copy(src, col)
         for m in list(obj.modifiers):
@@ -93,36 +94,27 @@ def build_export_set(cols, level):
         name = src.name
         if name.startswith("Body_"):
             if level:
-                _decimate(obj, (0.78, 0.52)[level - 1])
-            out.append(obj)
+                _decimate(obj, (0.80, 0.55)[level - 1])
         elif name.startswith("Glass_"):
-            out.append(obj)
+            pass
         elif _is_wheel(obj):
             if level and ("_Tire_" in name or "_Rim_" in name):
                 _decimate(obj, (0.55, 0.30)[level - 1])
-            if level == 2 and "_Spoke_" in name:
+            if level == 2 and ("_Spoke_" in name or "_Wire_" in name):
                 _decimate(obj, 0.6)
-            out.append(obj)
+        elif name.startswith(("Prop_MidDrive_", "Gear_")):
+            if level == 2:
+                _decimate(obj, 0.6)
         else:
-            small = name.startswith(("Seam_", "Handle_", "Marker_", "Reflector_", "Rail_", "Wiper_",
-                                     "Molding_Belt", "Coupe_IntakeSlat", "Truck_GrilleBar",
-                                     "Coupe_GrilleSlat", "Truck_BumperBracket", "Truck_PushGuardBase",
-                                     "Truck_BezelMid", "Truck_StepBracket",
-                                     "Coupe_PopupHinge", "Coupe_SideDuct", "Truck_ValanceSlot",
-                                     "Truck_BumperCrease", "Coupe_BumperRub", "Mirror_Truck_Plate",
-                                     "Mirror_Coupe_Plate"))
-            if small and level == 2:
+            if name.startswith("Fine_") and level == 2:
                 bpy.data.objects.remove(obj, do_unlink=True)
                 continue
-            if small and level == 1 and name.startswith(("Seam_", "Handle_", "Reflector_")):
-                bpy.data.objects.remove(obj, do_unlink=True)
-                continue
+            if name.startswith("Trim_") and level:
+                _decimate(obj, (0.8, 0.6)[level - 1])
             key = obj.data.materials[0].name
             groups.setdefault(key, []).append(obj)
     for key, objs in sorted(groups.items()):
-        joined = _join(objs, "Detail_" + key.replace("Boilerfang_", ""), col)
-        if joined:
-            out.append(joined)
+        _join(objs, "Detail_" + key.replace("Boilerfang_", ""), col)
     return col
 
 
@@ -161,16 +153,20 @@ def export_all(cols, model_dir, stem):
     return result
 
 
-def render_qa(cols, model_dir, stem, blueprint):
+def render_qa(cols, model_dir, stem, blueprint, views=None):
     out_dir = model_dir.parents[4] / "tools/vehicle_pipeline" / QA_DIR_NAME
     out_dir.mkdir(parents=True, exist_ok=True)
-    studio = Q.build_studio(cols)
+    Q.build_studio(cols)
     for view in ("side", "top", "front_truck", "front_coupe", "three_quarter_truck",
-                 "three_quarter_coupe", "far_side_three_quarter", "cabin", "truck_detail",
-                 "coupe_detail", "wheel_truck", "wheel_coupe", "coupe_nose", "truck_nose", "cab_step", "coupe_window", "mirror_coupe",
-                 "mirror_truck"):
+                 "three_quarter_coupe", "far_side_three_quarter", "cab", "truck_detail",
+                 "coupe_detail", "wheel_truck", "wheel_coupe", "middrive", "flywheel",
+                 "boiler_top", "cockpit", "roof", "underside"):
+        if views and view not in views:
+            continue
         Q.configure(view, 1280, 720)
         Q.render(out_dir / f"{stem}_{view}.png")
-    for view in ("side", "top", "front_truck", "front_coupe"):
+    for view in ("side", "top"):
+        if views and view + "_overlay" not in views:
+            continue
         Q.overlay(view, blueprint, out_dir / f"{stem}_{view}_overlay.png")
     print("AK: rendered " + str(out_dir))

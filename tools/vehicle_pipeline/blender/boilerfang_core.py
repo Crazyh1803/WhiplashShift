@@ -44,22 +44,21 @@ def make_material(name, color, metallic=0.0, roughness=0.5, coat=0.0, coat_rough
 
 
 def build_materials():
-    """Three semantic paint channels plus protected hardware, glass, rubber, lamps."""
+    """Three semantic paint channels plus protected brass/copper/iron, glass, rubber, lamps."""
     return {
-        "paint": make_material("Boilerfang_Paint", (0.46, 0.025, 0.020), 0.62, 0.28, 0.7, 0.04),
-        "paint2": make_material("Boilerfang_Secondary", (0.50, 0.51, 0.53), 0.7, 0.30, 0.5, 0.06),
-        "accent": make_material("Boilerfang_Stripe", (0.92, 0.50, 0.06), 0.5, 0.30, 0.5, 0.05),
-        "glass": make_material("Boilerfang_Glass", (0.006, 0.016, 0.022), 0.15, 0.04, 1.0, 0.0),
-        "rubber": make_material("Boilerfang_Rubber", (0.016, 0.017, 0.018), 0.0, 0.84),
-        "chrome": make_material("Boilerfang_BrushedMetal", (0.55, 0.58, 0.60), 1.0, 0.16),
-        "dark": make_material("Boilerfang_Gunmetal", (0.026, 0.032, 0.038), 0.85, 0.36),
-        "grille": make_material("Boilerfang_Grille", (0.010, 0.013, 0.015), 0.4, 0.62),
-        "lamp": make_material("Boilerfang_Headlight", (0.62, 0.78, 0.92), 0.05, 0.10,
-                              emission=(0.38, 0.68, 1.0), emission_strength=2.5),
-        "marker": make_material("Boilerfang_Marker", (0.62, 0.025, 0.008), 0.1, 0.20,
-                                emission=(0.8, 0.02, 0.005), emission_strength=2.5),
-        "amber": make_material("Boilerfang_Amber", (0.80, 0.34, 0.03), 0.05, 0.18,
-                               emission=(1.0, 0.45, 0.04), emission_strength=1.6),
+        "paint": make_material("Boilerfang_Paint", (0.025, 0.150, 0.085), 0.55, 0.32, 0.6, 0.06),
+        "paint2": make_material("Boilerfang_Secondary", (0.62, 0.53, 0.34), 0.35, 0.42, 0.4, 0.08),
+        "accent": make_material("Boilerfang_Stripe", (0.46, 0.045, 0.030), 0.45, 0.34, 0.5, 0.06),
+        "glass": make_material("Boilerfang_Glass", (0.010, 0.026, 0.030), 0.15, 0.04, 1.0, 0.0),
+        "rubber": make_material("Boilerfang_Rubber", (0.018, 0.017, 0.016), 0.0, 0.86),
+        "brass": make_material("Boilerfang_Brass", (0.70, 0.46, 0.13), 1.0, 0.24),
+        "copper": make_material("Boilerfang_Copper", (0.62, 0.24, 0.10), 1.0, 0.30),
+        "iron": make_material("Boilerfang_Iron", (0.030, 0.032, 0.035), 0.9, 0.42),
+        "dial": make_material("Boilerfang_Dial", (0.80, 0.76, 0.62), 0.0, 0.50),
+        "lamp": make_material("Boilerfang_Lamp", (0.85, 0.66, 0.34), 0.05, 0.10,
+                              emission=(1.0, 0.62, 0.22), emission_strength=3.0),
+        "amber": make_material("Boilerfang_Amber", (0.80, 0.30, 0.03), 0.05, 0.18,
+                               emission=(1.0, 0.35, 0.04), emission_strength=1.8),
     }
 
 
