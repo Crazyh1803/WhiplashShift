@@ -86,8 +86,8 @@ def frame_bars(builder, name, side, corners, bar=0.016, depth=0.012):
     for k, (p, zb, zt) in enumerate(((pa, zba, zta), (pb, zbb, ztb))):
         xo = -bar / 2 if k == 0 else bar / 2
         y = side * (B.side_y(p) + off)
-        out.append(P.sweep(builder, f"{name}_End{k}", [(T.X(p) + xo, y, zb - bar / 2),
-                                                         (T.X(p) + xo, y, zt + bar / 2)], "brass",
+        out.append(P.sweep(builder, f"{name}_End{k}", [(T.X(p) + xo, y, zb - bar),
+                                                         (T.X(p) + xo, y, zt + bar)], "brass",
                            profile=[(-depth / 2, -bar / 2), (depth / 2, -bar / 2), (depth / 2, bar / 2),
                                     (-depth / 2, bar / 2)], up=(1, 0, 0)))
     return out

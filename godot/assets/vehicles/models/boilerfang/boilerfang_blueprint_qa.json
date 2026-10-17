@@ -1,11 +1,11 @@
 {
   "pass": true,
   "failed": [],
-  "checks": 42,
+  "checks": 43,
   "triangles": [
-    46996,
-    34372,
-    17286
+    48116,
+    35492,
+    17554
   ],
   "results": {
     "main_masses_closed_manifold": {
@@ -25,7 +25,7 @@
       "detail": {
         "max_mm": 1.28,
         "p99_mm": 0.0,
-        "vertices": 25222,
+        "vertices": 25782,
         "intentional_asymmetric": []
       }
     },
@@ -261,6 +261,26 @@
         "gap_mm": 129.47
       }
     },
+    "roof_fittings_sunk_into_roof": {
+      "ok": true,
+      "detail": {
+        "Fine_RoofVent_+1": -16.8,
+        "Fine_RoofVent_-1": -16.8,
+        "Fine_Whistle": -18.53,
+        "Frame_Skylight_0_B": -63.14,
+        "Frame_Skylight_0_F": -66.39,
+        "Frame_Skylight_0_L": -65.37,
+        "Frame_Skylight_0_R": -65.37,
+        "Frame_Skylight_1_B": -58.56,
+        "Frame_Skylight_1_F": -70.83,
+        "Frame_Skylight_1_L": -69.81,
+        "Frame_Skylight_1_R": -69.81,
+        "Frame_Skylight_2_B": -36.81,
+        "Frame_Skylight_2_F": -84.06,
+        "Frame_Skylight_2_L": -83.03,
+        "Frame_Skylight_2_R": -83.03
+      }
+    },
     "uv_complete": {
       "ok": true,
       "detail": []
@@ -276,9 +296,9 @@
     "triangle_budget_and_lod_monotonic": {
       "ok": true,
       "detail": [
-        46996,
-        34372,
-        17286
+        48116,
+        35492,
+        17554
       ]
     },
     "handoff_display_radii_match_measured": {

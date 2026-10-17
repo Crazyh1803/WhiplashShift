@@ -122,8 +122,8 @@ def build_pipes(builder, surf):
         path = [(T.X(424), y0 - side * 0.015, 0.70), (xp, side * 0.665, 0.70), (xp, side * 0.665, 0.150),
                 (T.X(556) - 0.02, side * 0.665, 0.150), (T.X(556) - 0.02, side * 0.58, 0.262)]
         out.append(M.pipe(builder, f"Fine_SteamPipe_{s}", path, 0.021, "brass", 0.06, 10))
-        path = [(T.X(424), y0 - side * 0.015, 0.62), (xp - 0.04, side * 0.69, 0.62), (xp - 0.04, side * 0.69, 0.115),
-                (T.X(530), side * 0.69, 0.115), (T.X(530), side * 0.62, 0.22)]
+        path = [(T.X(424), y0 - side * 0.015, 0.62), (xp - 0.06, side * 0.735, 0.62), (xp - 0.06, side * 0.735, 0.115),
+                (T.X(530), side * 0.735, 0.115), (T.X(530), side * 0.64, 0.255)]
         out.append(M.pipe(builder, f"Fine_ReturnPipe_{s}", path, 0.014, "copper", 0.05, 8))
         for k, (px, z) in enumerate(((470, 0.15), (505, 0.15), (545, 0.15))):
             out.append(P.rbox(builder, f"Fine_PipeBracket_{s}_{k}", (0.028, 0.050, 0.030), "iron", bevel=0.004,
