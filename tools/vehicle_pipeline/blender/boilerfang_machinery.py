@@ -25,7 +25,7 @@ def rod(builder, name, p0, p1, r, mat, sides=8):
 
 
 def pipe(builder, name, pts, r, mat, bend=0.05, sides=8):
-    return P.sweep(builder, name, P.rounded_path(pts, bend, 4), mat, radius=r, sides=sides)
+    return P.sweep(builder, name, P.rounded_path(pts, bend, 6), mat, radius=r, sides=sides)
 
 
 def gauge_pair(builder, name, pos, r=0.05):
@@ -218,7 +218,7 @@ def build_cab_hardware(builder):
                            front=-1)
         out.append(rod(builder, f"Fine_RoofLampStem_{tag(side)}", (T.X(468), side * 0.30, z - 0.016),
                        (T.X(468), side * 0.30, z + 0.06), 0.014, "iron", 6))
-    zw = B.top_surface_z(574, 0.0) + 0.06
+    zw = B.top_surface_z(574, 0.0) + 0.05
     out.append(F.revolve(builder, "Fine_Whistle", [
         (0.0, zw - 0.06), (0.020, zw - 0.06), (0.020, zw + 0.02), (0.034, zw + 0.05), (0.034, zw + 0.16),
         (0.0, zw + 0.165)], ["brass"], axis=2, center=(T.X(574), 0.0, 0), segments=14))
@@ -332,6 +332,7 @@ def build_mid_drive(builder):
             a_, b_ = rings[s_], rings[(s_ + 1) % 28]
             pbm.faces.new((a_[m - 1], a_[0], b_[0], b_[m - 1]))
         P.lathe(pbm, [(0.0, -0.060), (0.020, -0.060), (0.020, 0.060), (0.0, 0.060)], 14)
+        P.lathe(pbm, [(0.020, -0.007), (pr - 0.004, -0.007), (pr - 0.004, 0.007), (0.020, 0.007), (0.020, -0.007)], 28)
         bmesh.ops.remove_doubles(pbm, verts=list(pbm.verts), dist=1e-5)
         bmesh.ops.recalc_face_normals(pbm, faces=list(pbm.faces))
         out.append(P.finish(builder, f"Gear_MidDrive_Pulley_{tag(side)}", pbm, "iron", location=(px_, y, pz),

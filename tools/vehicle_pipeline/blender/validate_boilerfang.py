@@ -398,6 +398,15 @@ stack_gap = min(glass_tree.find_nearest(v.co)[3] for v in sm.vertices)
 bpy.data.meshes.remove(sm)
 check("smokestack_clears_cab_glass_100mm", stack_gap >= 0.100, {"gap_mm": mm(stack_gap)})
 
+sunk = {}
+for n, o in objs.items():
+    if n.startswith(("Frame_Skylight", "Fine_Whistle", "Fine_RoofVent")):
+        me = world_mesh(o)
+        depth = min(v_.co.z - B.top_surface_z(T.PX(v_.co.x), abs(v_.co.y)) for v_ in me.vertices)
+        bpy.data.meshes.remove(me)
+        sunk[n] = mm(depth)
+check("roof_fittings_sunk_into_roof", all(d < -3.0 for d in sunk.values()), sunk)
+
 # --- UV / materials ---------------------------------------------------------------------------------------
 no_uv = [n for n, o in objs.items() if not o.data.uv_layers]
 mat_names = {m.name for o in objs.values() for m in o.data.materials}

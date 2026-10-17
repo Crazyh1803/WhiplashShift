@@ -2,19 +2,19 @@
   "blend": "tools/vehicle_pipeline/blender/boilerfang_blueprint.blend",
   "exports": {
     "lod0": {
-      "triangles": 46996,
+      "triangles": 48116,
       "objects": 75,
-      "bytes": 2078784
+      "bytes": 2116100
     },
     "lod1": {
-      "triangles": 34372,
+      "triangles": 35492,
       "objects": 75,
-      "bytes": 1604492
+      "bytes": 1641816
     },
     "lod2": {
-      "triangles": 17286,
+      "triangles": 17554,
       "objects": 73,
-      "bytes": 929192
+      "bytes": 940656
     }
   },
   "handoff": {
