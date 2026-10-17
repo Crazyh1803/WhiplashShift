@@ -1,6 +1,6 @@
 # Nightshift asset handoff
 
-Branch `asset/nightshift-graphics` (worktree `.codex/worktrees/deadbolt-graphics/Whiplash`). Commits: see `git log` — first `035c127`, then the review-fix commit that follows it (hash in final report). Main checkout and Godot scripts/tests untouched.
+Branch `asset/nightshift-graphics` (worktree `.codex/worktrees/deadbolt-graphics/Whiplash`). Commits: `035c127` (asset), `7578afc` (review fixes + this report). Main checkout and Godot scripts/tests untouched.
 
 ## Paths
 - GLB: `godot/assets/vehicles/models/nightshift/nightshift_blueprint.glb`; LODs `.../nightshift/lod/nightshift_blueprint_LOD{1,2}.glb`; `nightshift_blueprint_qa.json`, `_build.json`.
