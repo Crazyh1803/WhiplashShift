@@ -447,13 +447,16 @@ for level, rel in ((0, f"{STEM}.glb"), (1, f"lod/{STEM}_LOD1.glb"), (2, f"lod/{S
     tr = [o for o in wn if "_Tire_" in o.name]
     mid = [o for o in new if o.name.startswith(("Prop_MidDrive_Flywheel", "Gear_MidDrive_Pulley"))]
     pts = [o.matrix_world @ v.co for o in new for v in o.data.vertices]
-    bb = (min(p.x for p in pts), max(p.x for p in pts), min(p.y for p in pts), max(p.y for p in pts), max(p.z for p in pts))
+    bb = (min(p.x for p in pts), max(p.x for p in pts), min(p.y for p in pts), max(p.y for p in pts),
+          min(p.z for p in pts), max(p.z for p in pts))
     tire_r = {o.name: max(math.hypot((o.matrix_world @ v.co).x - o.matrix_world.translation.x, (o.matrix_world @ v.co).z - o.matrix_world.translation.z)
                            for v in o.data.vertices) for o in tr}
     hubs = {o.name: tuple(round(c, 4) for c in o.matrix_world.translation) for o in tr}
     glb_report[level] = {"meshes": len(new), "materials": sorted(mats), "wheel_objects": len(wn), "tires": len(tr),
                          "mid_drive_objects": len(mid), "bbox": [round(v, 3) for v in bb],
-                         "tire_radius_min_mm": mm(min(tire_r.values())), "hubs": hubs}
+                         "tire_radius_min_mm": mm(min(tire_r.values())),
+                         "tire_radius_deficit_mm": max(mm((T.WHEEL_R["truck"] if "Truck" in n else T.WHEEL_R["coupe"]) - r) for n, r in tire_r.items()),
+                         "hubs": hubs}
     for o in new:
         bpy.data.objects.remove(o, do_unlink=True)
 base = glb_report[0]
@@ -465,8 +468,8 @@ check("glb_wheel_part_counts_stable", len({glb_report[l]["wheel_objects"] for l 
 check("glb_mid_drive_preserved_in_all_lods", all(glb_report[l]["mid_drive_objects"] == 4 for l in glb_report), {l: glb_report[l]["mid_drive_objects"] for l in glb_report})
 check("lod_envelope_matches_gameplay", all(max(abs(a - b) for a, b in zip(glb_report[l]["bbox"], base["bbox"])) < 0.05 for l in (1, 2)),
       {l: glb_report[l]["bbox"] for l in glb_report})
-check("lod_tire_radius_preserved", all(glb_report[l]["tire_radius_min_mm"] > 0.95 * mm(T.WHEEL_R["coupe"]) for l in glb_report),
-      {l: glb_report[l]["tire_radius_min_mm"] for l in glb_report})
+check("lod_tire_radius_preserved_per_wheel_3mm", all(glb_report[l]["tire_radius_deficit_mm"] < 3.0 for l in glb_report),
+      {l: glb_report[l]["tire_radius_deficit_mm"] for l in glb_report})
 check("glb_wheel_hubs_at_authored_positions", all(
     abs(h[0] - (T.WHEEL_X["truck"] if "Truck" in n else T.WHEEL_X["coupe"])) < 0.002
     and abs(h[2] - (T.WHEEL_R["truck"] if "Truck" in n else T.WHEEL_R["coupe"])) < 0.002

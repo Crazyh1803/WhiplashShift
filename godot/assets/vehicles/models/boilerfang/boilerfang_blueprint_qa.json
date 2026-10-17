@@ -374,6 +374,7 @@
           2.377,
           -0.807,
           0.807,
+          0.0,
           1.526
         ],
         "1": [
@@ -381,6 +382,7 @@
           2.377,
           -0.807,
           0.807,
+          0.0,
           1.526
         ],
         "2": [
@@ -388,16 +390,17 @@
           2.377,
           -0.808,
           0.808,
+          -0.001,
           1.512
         ]
       }
     },
-    "lod_tire_radius_preserved": {
+    "lod_tire_radius_preserved_per_wheel_3mm": {
       "ok": true,
       "detail": {
-        "0": 256.0,
-        "1": 256.0,
-        "2": 257.45
+        "0": -0.0,
+        "1": -0.0,
+        "2": -1.05
       }
     },
     "glb_wheel_hubs_at_authored_positions": {
@@ -450,9 +453,11 @@
         2.377,
         -0.807,
         0.807,
+        0.0,
         1.526
       ],
-      "tire_radius_min_mm": 256.0
+      "tire_radius_min_mm": 256.0,
+      "tire_radius_deficit_mm": -0.0
     },
     "1": {
       "meshes": 75,
@@ -477,9 +482,11 @@
         2.377,
         -0.807,
         0.807,
+        0.0,
         1.526
       ],
-      "tire_radius_min_mm": 256.0
+      "tire_radius_min_mm": 256.0,
+      "tire_radius_deficit_mm": -0.0
     },
     "2": {
       "meshes": 73,
@@ -502,9 +509,11 @@
         2.377,
         -0.808,
         0.808,
+        -0.001,
         1.512
       ],
-      "tire_radius_min_mm": 257.45
+      "tire_radius_min_mm": 257.45,
+      "tire_radius_deficit_mm": -1.05
     }
   },
   "wheels": {
