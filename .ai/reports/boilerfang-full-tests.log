@@ -1,0 +1,406 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+
+the thesis: a swap must not touch the body state
+  [pass] linear velocity preserved exactly  12.151818 -> 12.151818 m/s
+  [pass] angular velocity preserved exactly  y -0.453150 rad/s
+  [pass] basis untouched (the body does not rotate on a swap)
+  [pass] active end actually changed  A -> B
+  [pass] transmission drops out and has to spool back up
+
+sign checks (where an axis change bites)
+  [pass] steer right goes right, steer left goes left  right x=12.4  left x=-12.4
+  [pass] steering stays correct with End B driving  x=7.0
+  [pass] End A drives along its own forward axis  z=-10.1
+  [pass] fwd_speed reads positive when driving forward  10.5 m/s
+  [pass] End B drives along ITS forward axis, not End A's  z=-3.6
+
+suspension (the one system with no web equivalent)
+  [pass] all four wheels find the ground
+  [pass] car settles instead of sinking or launching  y=0.72 m
+  [pass] suspension carries roughly the car's weight  13721 N vs 13734 N static
+  [pass] End B rides visibly higher than End A  A 0.58 m, B 0.87 m
+  [pass] ride height is steady, not oscillating  drift 0.000 m over 1 s
+
+faithfulness to the web prototype (km/h, +/-15%)
+  [pass] A_tarmac     183 (web 192)
+  [pass] B_tarmac      71 (web 71)
+  [pass] A_mud          4 (web 4)
+  [pass] B_mud         86 (web 91)
+  [pass] A_gravel      80 (web 84)
+  [pass] B_gravel     105 (web 104)
+  [pass] A_ice         89 (web 96)
+  [pass] B_ice         81 (web 86)
+
+asymmetry invariants
+  [pass] End A out-tops End B on tarmac by >35%%  178 vs 71 km/h
+  [pass] End A loses >=60%% of its acceleration in mud  10.5 -> 0.8 m/s after 2 s
+  [pass] End B out-accelerates End A in mud by >2x  3.0 vs 0.8 m/s
+
+stability
+  [pass] no NaN in position or velocity after 20 s
+  [pass] car stays on its wheels through full lock at speed  up.y = 1.00
+
+the real scene (authoring -> mesh -> collision -> metadata -> raycast)
+  [pass] proving ground scene loads
+  [pass] scene exposes a reusable course definition
+  [pass] course owns the authored centreline  744 points
+  [pass] course derives its closed-loop length  2608 m
+  [pass] course derives recovery checkpoints  24 checkpoints
+  [pass] course definition validates
+  [pass] circuit built as surface runs  12 runs
+  [pass] proving ground built beside it  7 strips
+  [pass] course has one continuous guard-rail body
+  [pass] guard rails identify themselves for impact audio
+  [pass] guard rails have visible and collision geometry
+  [pass] race HUD exposes a main-menu button
+  [pass] procedural vehicle audio is attached
+  [pass] rail contacts are enabled for impact audio
+  [pass] car settles on the grid with all four wheels down
+  [pass] and the surface under it reads TARMAC  tarmac
+  [pass] driving the start straight stays on tarmac  tarmac at 77 km/h
+  [pass] keeps driving without falling through the ribbon  y=0.71 surface=tarmac
+
+Blackjack production customization
+  [pass] axles begin centered on their wheel mounts
+  [pass] production GLB is instanced
+  [pass] all three semantic paint channels are customizable
+  [pass] protected Blackjack materials reject garage paint
+  [pass] dual-front collision uses three tuned volumes
+  [pass] all six modular part sockets exist
+  [pass] Blackjack loads its default modular supercharger
+  [pass] four modular wheel assemblies are mounted
+  [pass] wheels use tread rubber and visible brake hardware
+  [pass] both suspension pairs have visible axle hardware
+  [pass] six-wheel silhouette uses a visual-only middle bogie
+  [pass] factory package uses suspension-mounted wheels
+  [pass] save schema normalizes paint values
+  [pass] save schema preserves valid wheel and socket selections
+  [pass] save schema drops unknown sockets
+
+61 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] partial seam crossing does not award a lap
+  [pass] complete ordered circuit awards one lap
+  [pass] checkpoint recovery cannot add lap or distance
+  [pass] backwards driving detects wrong-way without awarding a lap
+  [pass] off-course projection cannot advance the recovery anchor
+  [pass] two CPU drivers use the player's tuning
+t=30 CPU_1_BOILERFANG_88 lap=0 idx=157 speed=7.3 swaps=1 recoveries=0 off=2.3
+t=30 CPU_2_RAMJET_K-6 lap=0 idx=163 speed=8.6 swaps=1 recoveries=0 off=4.6
+t=60 CPU_1_BOILERFANG_88 lap=0 idx=296 speed=18.8 swaps=1 recoveries=0 off=2.3
+t=60 CPU_2_RAMJET_K-6 lap=0 idx=320 speed=23.2 swaps=1 recoveries=0 off=4.3
+t=90 CPU_1_BOILERFANG_88 lap=0 idx=433 speed=12.5 swaps=1 recoveries=0 off=6.6
+t=90 CPU_2_RAMJET_K-6 lap=0 idx=453 speed=12.7 swaps=1 recoveries=0 off=4.1
+t=120 CPU_1_BOILERFANG_88 lap=0 idx=573 speed=20.1 swaps=1 recoveries=0 off=4.7
+t=120 CPU_2_RAMJET_K-6 lap=0 idx=611 speed=20.9 swaps=1 recoveries=0 off=4.0
+t=150 CPU_1_BOILERFANG_88 lap=0 idx=737 speed=27.0 swaps=2 recoveries=0 off=0.7
+t=150 CPU_2_RAMJET_K-6 lap=1 idx=115 speed=32.5 swaps=2 recoveries=0 off=4.0
+t=180 CPU_1_BOILERFANG_88 lap=1 idx=165 speed=10.6 swaps=3 recoveries=0 off=3.5
+t=180 CPU_2_RAMJET_K-6 lap=1 idx=223 speed=19.8 swaps=3 recoveries=0 off=4.0
+t=210 CPU_1_BOILERFANG_88 lap=1 idx=313 speed=18.8 swaps=3 recoveries=0 off=2.7
+t=210 CPU_2_RAMJET_K-6 lap=1 idx=402 speed=14.4 swaps=3 recoveries=0 off=4.0
+t=240 CPU_1_BOILERFANG_88 lap=1 idx=443 speed=11.8 swaps=3 recoveries=0 off=10.4
+t=240 CPU_2_RAMJET_K-6 lap=1 idx=517 speed=19.8 swaps=3 recoveries=0 off=1.9
+t=270 CPU_1_BOILERFANG_88 lap=1 idx=592 speed=20.7 swaps=3 recoveries=0 off=4.0
+t=270 CPU_2_RAMJET_K-6 lap=1 idx=692 speed=28.8 swaps=4 recoveries=0 off=6.8
+t=300 CPU_1_BOILERFANG_88 lap=2 idx=22 speed=35.2 swaps=4 recoveries=0 off=3.9
+t=300 CPU_2_RAMJET_K-6 lap=2 idx=159 speed=7.0 swaps=5 recoveries=0 off=4.7
+t=330 CPU_1_BOILERFANG_88 lap=2 idx=176 speed=13.7 swaps=5 recoveries=0 off=3.5
+t=330 CPU_2_RAMJET_K-6 lap=2 idx=309 speed=20.2 swaps=5 recoveries=0 off=5.1
+t=360 CPU_1_BOILERFANG_88 lap=2 idx=332 speed=20.6 swaps=5 recoveries=0 off=4.0
+t=360 CPU_2_RAMJET_K-6 lap=2 idx=447 speed=11.3 swaps=5 recoveries=0 off=4.3
+t=390 CPU_1_BOILERFANG_88 lap=2 idx=453 speed=12.5 swaps=5 recoveries=0 off=6.0
+t=390 CPU_2_RAMJET_K-6 lap=2 idx=601 speed=20.9 swaps=5 recoveries=0 off=4.0
+t=420 CPU_1_BOILERFANG_88 lap=2 idx=609 speed=17.2 swaps=5 recoveries=0 off=4.0
+t=420 CPU_2_RAMJET_K-6 lap=3 idx=95 speed=45.8 swaps=6 recoveries=0 off=4.0
+  [pass] CPU simulation remains finite
+  [pass] every CPU swap preserves body momentum and basis
+  [pass] CPU_1_BOILERFANG_88 completes two laps
+  [pass] CPU_1_BOILERFANG_88 performs surface swaps
+  [pass] CPU_1_BOILERFANG_88 drives with limited recoveries 0 recoveries
+  [pass] CPU_2_RAMJET_K-6 completes two laps
+  [pass] CPU_2_RAMJET_K-6 performs surface swaps
+  [pass] CPU_2_RAMJET_K-6 drives with limited recoveries 0 recoveries
+  [pass] off-course CPU returns to a checkpoint
+  [pass] physical recovery awards no race progress
+  [pass] CPU brakes for a stopped vehicle ahead
+
+CPU: 17 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BLACKJACK_REFINED_TESTS 670 passed, 0 failed; gameplay 35684; LOD 17158
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BLUEPRINT_OPTIONAL_ENGINE full triangles=39881 base=0.11212596297264
+BLACKJACK_BLUEPRINT_TESTS 3559 passed, 0 failed; body 17081; full 37537
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] blackjack reference survives consolidation
+  [pass] blackjack constructs four physical wheels
+  [pass] boilerfang reference survives consolidation
+  [pass] boilerfang constructs four physical wheels
+  [pass] helix reference survives consolidation
+  [pass] helix constructs four physical wheels
+  [pass] ramjet reference survives consolidation
+  [pass] ramjet constructs four physical wheels
+  [pass] knifeedge reference survives consolidation
+  [pass] knifeedge constructs four physical wheels
+  [pass] deadbolt reference survives consolidation
+  [pass] deadbolt constructs four physical wheels
+  [pass] Deadbolt loads the rebuilt hard-surface mesh
+  [pass] Deadbolt coupe faces End A
+  [pass] Deadbolt embedded wheel copies are hidden
+  [pass] Wheel_A_L has exactly one complete authored wheel
+  [pass] Wheel_A_L art follows suspension and steering
+  [pass] Wheel_A_L steers about its tire hub without orbiting
+  [pass] Wheel_A_R has exactly one complete authored wheel
+  [pass] Wheel_A_R art follows suspension and steering
+  [pass] Wheel_A_R steers about its tire hub without orbiting
+  [pass] Wheel_B_L has exactly one complete authored wheel
+  [pass] Wheel_B_L art follows suspension and steering
+  [pass] Wheel_B_L steers about its tire hub without orbiting
+  [pass] Wheel_B_R has exactly one complete authored wheel
+  [pass] Wheel_B_R art follows suspension and steering
+  [pass] Wheel_B_R steers about its tire hub without orbiting
+  [pass] A axle follows the authored wheel hubs
+  [pass] B axle follows the authored wheel hubs
+  [pass] Deadbolt loads the rebuilt hard-surface mesh
+  [pass] Deadbolt coupe faces End A
+  [pass] Deadbolt embedded wheel copies are hidden
+  [pass] Wheel_A_L has exactly one complete authored wheel
+  [pass] Wheel_A_L art follows suspension and steering
+  [pass] Wheel_A_L steers about its tire hub without orbiting
+  [pass] Wheel_A_R has exactly one complete authored wheel
+  [pass] Wheel_A_R art follows suspension and steering
+  [pass] Wheel_A_R steers about its tire hub without orbiting
+  [pass] Wheel_B_L has exactly one complete authored wheel
+  [pass] Wheel_B_L art follows suspension and steering
+  [pass] Wheel_B_L steers about its tire hub without orbiting
+  [pass] Wheel_B_R has exactly one complete authored wheel
+  [pass] Wheel_B_R art follows suspension and steering
+  [pass] Wheel_B_R steers about its tire hub without orbiting
+  [pass] A axle follows the authored wheel hubs
+  [pass] B axle follows the authored wheel hubs
+  [pass] Deadbolt_Paint paint changes
+  [pass] Deadbolt_Secondary paint changes
+  [pass] Deadbolt_Stripe paint changes
+  [pass] Deadbolt glass and hardware retain authored materials
+  [pass] nightshift reference survives consolidation
+  [pass] nightshift constructs four physical wheels
+  [pass] deadbolt physics comparison uses the intended visual variant
+  [pass] deadbolt physics comparison uses the intended visual variant
+  [pass] deadbolt swap preserves momentum and orientation
+  [pass] deadbolt swap preserves momentum and orientation
+  [pass] deadbolt artwork preserves driving/braking/swap physics
+  [pass] deadbolt accelerates with the saved handling
+  [pass] nightshift physics comparison uses the intended visual variant
+  [pass] nightshift physics comparison uses the intended visual variant
+  [pass] nightshift swap preserves momentum and orientation
+  [pass] nightshift swap preserves momentum and orientation
+  [pass] nightshift artwork preserves driving/braking/swap physics
+  [pass] nightshift accelerates with the saved handling
+  [pass] ramjet physics comparison uses the intended visual variant
+  [pass] ramjet physics comparison uses the intended visual variant
+  [pass] ramjet swap preserves momentum and orientation
+  [pass] ramjet swap preserves momentum and orientation
+  [pass] ramjet artwork preserves driving/braking/swap physics
+  [pass] ramjet accelerates with the saved handling
+  [pass] boilerfang physics comparison uses the intended visual variant
+  [pass] boilerfang physics comparison uses the intended visual variant
+  [pass] boilerfang swap preserves momentum and orientation
+  [pass] boilerfang swap preserves momentum and orientation
+  [pass] boilerfang artwork preserves driving/braking/swap physics
+  [pass] boilerfang accelerates with the saved handling
+  [pass] All named vehicle and ignition buttons fit the garage
+  [pass] Garage exposes seven named vehicle buttons
+  [pass] Deadbolt button selects the chassis directly
+  [pass] Customize opens the selected Deadbolt model
+  [pass] Garage preview switches to blackjack
+  [pass] blackjack uses the appropriate studio lighting
+  [pass] Garage preview switches to deadbolt
+  [pass] deadbolt uses the appropriate studio lighting
+  [pass] Garage preview switches to nightshift
+  [pass] nightshift uses the appropriate studio lighting
+  [pass] Garage preview switches to ramjet
+  [pass] ramjet uses the appropriate studio lighting
+  [pass] Garage preview switches to boilerfang
+  [pass] boilerfang uses the appropriate studio lighting
+  [pass] Garage preview switches to deadbolt
+  [pass] deadbolt uses the appropriate studio lighting
+  [pass] Returning from a Deadbolt race keeps Deadbolt selected
+  [pass] Race builds Deadbolt player and two CPU drivers
+  [pass] Race player uses Deadbolt production art
+CONSOLIDATION: 95 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Nightshift loads its dedicated adapter
+  [pass] Nightshift loads authored production model
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Detail_Secondary
+  [pass] Paint channel applies to Wheel_Truck_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Truck_Hub_+1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Nightshift constructs as player and CPU
+  [pass] Nightshift player has production artwork
+NIGHTSHIFT: 46 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Ramjet loads its dedicated adapter
+  [pass] Ramjet loads authored production model
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Detail_Paint
+  [pass] Paint channel applies to Detail_Secondary
+  [pass] Paint channel applies to Wheel_Truck_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Truck_Hub_+1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Ramjet constructs as player and CPU
+  [pass] Ramjet player has production artwork
+RAMJET: 47 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Boilerfang loads its dedicated adapter
+  [pass] Boilerfang loads authored production model
+  [pass] Paint channel applies to Body_Hull_001
+  [pass] Paint channel applies to Body_Hull_001
+  [pass] Paint channel applies to Body_FenderTruck_-_001
+  [pass] Paint channel applies to Body_FenderSpeedster_-_001
+  [pass] Paint channel applies to Body_FenderTruck_+_001
+  [pass] Paint channel applies to Body_FenderSpeedster_+_001
+  [pass] Paint channel applies to Body_ProwSpeedster_001
+  [pass] Paint channel applies to Detail_Stripe
+  [pass] Paint channel applies to Body_SideTank_-1_001
+  [pass] Paint channel applies to Body_SideTank_+1_001
+  [pass] Paint channel applies to Prop_MidDrive_Guard_-1_001
+  [pass] Paint channel applies to Prop_MidDrive_Guard_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L display radius matches the entire visible wheel
+  [pass] Wheel_A_L frozen wheel meets the ground
+  [pass] Wheel_A_L keeps its physical radius and hardpoint
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R display radius matches the entire visible wheel
+  [pass] Wheel_A_R frozen wheel meets the ground
+  [pass] Wheel_A_R keeps its physical radius and hardpoint
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L display radius matches the entire visible wheel
+  [pass] Wheel_B_L frozen wheel meets the ground
+  [pass] Wheel_B_L keeps its physical radius and hardpoint
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R display radius matches the entire visible wheel
+  [pass] Wheel_B_R frozen wheel meets the ground
+  [pass] Wheel_B_R keeps its physical radius and hardpoint
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Central drive mechanism remains visible body artwork
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Boilerfang constructs as player and CPU
+  [pass] Boilerfang player has production artwork
+BOILERFANG: 69 passed, 0 failed
