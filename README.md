@@ -26,6 +26,7 @@ godot --path godot --fixed-fps 120 res://tests/consolidation_visual_qa.tscn
 ```
 
 Append `-- --nightshift` to capture Nightshift, including both ends, custom paint, driving and swapping.
+Add `--keep-open` after `--nightshift` to leave its garage preview open after successful captures.
 Captures go to `.ai/captures/`. Historical reports live separately under
 `.ai/history/whiplash-shift/`; they are not current verification results.
 

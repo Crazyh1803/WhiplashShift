@@ -156,6 +156,8 @@ func _garage_paths() -> void:
 			_check("paint refresh retains decal",preview.get_node("VisualRoot").find_children("ProtectedLiveryDecal*","Decal",false,false).size()==1)
 		elif id == "deadbolt":
 			_check("Deadbolt uses its own saved-art adapter", preview.get_script() == preload("res://scripts/deadbolt_blueprint_vehicle.gd"))
+		elif id == "nightshift":
+			_check("Nightshift uses its own saved-art adapter", preview.get_script() == preload("res://scripts/nightshift_blueprint_vehicle.gd"))
 		else:
 			_check("other vehicles have no blueprint overrides",preview.get_script()==Vehicle)
 		preview.free()

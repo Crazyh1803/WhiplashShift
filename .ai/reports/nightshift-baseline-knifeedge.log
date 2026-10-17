@@ -1,0 +1,49 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] partial seam crossing does not award a lap
+  [pass] complete ordered circuit awards one lap
+  [pass] checkpoint recovery cannot add lap or distance
+  [pass] backwards driving detects wrong-way without awarding a lap
+  [pass] off-course projection cannot advance the recovery anchor
+  [pass] two CPU drivers use the player's tuning
+t=30 CPU_1_BOILERFANG_88 lap=0 idx=154 speed=3.8 swaps=1 recoveries=0 off=3.2
+t=30 CPU_2_KNIFEEDGE_XR lap=0 idx=127 speed=6.4 swaps=1 recoveries=1 off=4.0
+t=60 CPU_1_BOILERFANG_88 lap=0 idx=280 speed=18.8 swaps=1 recoveries=0 off=2.4
+t=60 CPU_2_KNIFEEDGE_XR lap=0 idx=126 speed=2.8 swaps=3 recoveries=3 off=4.0
+t=90 CPU_1_BOILERFANG_88 lap=0 idx=423 speed=12.5 swaps=1 recoveries=0 off=3.4
+t=90 CPU_2_KNIFEEDGE_XR lap=0 idx=126 speed=2.3 swaps=5 recoveries=5 off=0.0
+t=120 CPU_1_BOILERFANG_88 lap=0 idx=555 speed=18.5 swaps=1 recoveries=0 off=5.9
+t=120 CPU_2_KNIFEEDGE_XR lap=0 idx=152 speed=4.8 swaps=7 recoveries=6 off=1.7
+t=150 CPU_1_BOILERFANG_88 lap=0 idx=714 speed=27.0 swaps=2 recoveries=0 off=0.7
+t=150 CPU_2_KNIFEEDGE_XR lap=0 idx=152 speed=4.2 swaps=9 recoveries=8 off=1.5
+t=180 CPU_1_BOILERFANG_88 lap=1 idx=153 speed=2.8 swaps=3 recoveries=0 off=1.6
+t=180 CPU_2_KNIFEEDGE_XR lap=0 idx=153 speed=3.3 swaps=11 recoveries=10 off=3.3
+t=210 CPU_1_BOILERFANG_88 lap=1 idx=276 speed=18.8 swaps=3 recoveries=0 off=2.6
+t=210 CPU_2_KNIFEEDGE_XR lap=0 idx=153 speed=2.1 swaps=13 recoveries=12 off=3.7
+t=240 CPU_1_BOILERFANG_88 lap=1 idx=421 speed=12.6 swaps=3 recoveries=0 off=2.9
+t=240 CPU_2_KNIFEEDGE_XR lap=0 idx=154 speed=0.9 swaps=15 recoveries=14 off=3.4
+t=270 CPU_1_BOILERFANG_88 lap=1 idx=551 speed=18.5 swaps=3 recoveries=0 off=5.9
+t=270 CPU_2_KNIFEEDGE_XR lap=0 idx=153 speed=1.9 swaps=17 recoveries=16 off=2.6
+t=300 CPU_1_BOILERFANG_88 lap=1 idx=708 speed=27.0 swaps=4 recoveries=0 off=0.7
+t=300 CPU_2_KNIFEEDGE_XR lap=0 idx=153 speed=4.2 swaps=19 recoveries=18 off=2.2
+t=330 CPU_1_BOILERFANG_88 lap=2 idx=156 speed=6.8 swaps=5 recoveries=0 off=2.1
+t=330 CPU_2_KNIFEEDGE_XR lap=0 idx=152 speed=7.2 swaps=21 recoveries=20 off=2.4
+t=360 CPU_1_BOILERFANG_88 lap=2 idx=293 speed=18.8 swaps=5 recoveries=0 off=2.3
+t=360 CPU_2_KNIFEEDGE_XR lap=0 idx=150 speed=9.5 swaps=23 recoveries=22 off=3.2
+t=390 CPU_1_BOILERFANG_88 lap=2 idx=431 speed=12.5 swaps=5 recoveries=0 off=5.9
+t=390 CPU_2_KNIFEEDGE_XR lap=0 idx=147 speed=11.7 swaps=25 recoveries=24 off=4.1
+t=420 CPU_1_BOILERFANG_88 lap=2 idx=570 speed=19.9 swaps=5 recoveries=0 off=5.1
+t=420 CPU_2_KNIFEEDGE_XR lap=0 idx=144 speed=14.0 swaps=26 recoveries=26 off=4.4
+  [pass] CPU simulation remains finite
+  [pass] every CPU swap preserves body momentum and basis
+  [pass] CPU_1_BOILERFANG_88 completes two laps
+  [pass] CPU_1_BOILERFANG_88 performs surface swaps
+  [pass] CPU_1_BOILERFANG_88 drives with limited recoveries 0 recoveries
+  [FAIL] CPU_2_KNIFEEDGE_XR completes two laps
+  [pass] CPU_2_KNIFEEDGE_XR performs surface swaps
+  [FAIL] CPU_2_KNIFEEDGE_XR drives with limited recoveries 26 recoveries
+  [pass] off-course CPU returns to a checkpoint
+  [pass] physical recovery awards no race progress
+  [pass] CPU brakes for a stopped vehicle ahead
+
+CPU: 15 passed, 2 failed
