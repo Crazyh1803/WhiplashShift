@@ -41,7 +41,8 @@ func _ready() -> void:
 				_check("%s paint changes" % channel, paint_ok[channel])
 			_check("Deadbolt glass and hardware retain authored materials", protected_ok)
 		car.free()
-	await _test_deadbolt_physics()
+	await _test_authored_physics("deadbolt")
+	await _test_authored_physics("nightshift")
 	await _test_garage_and_race()
 	print("CONSOLIDATION: %d passed, %d failed" % [_pass, _fail])
 	get_tree().quit(1 if _fail else 0)
@@ -85,7 +86,7 @@ func _test_deadbolt_art(car: Vehicle) -> void:
 			axle.global_position.distance_to((left.global_position + right.global_position) * 0.5) < 0.00001)
 
 
-func _test_deadbolt_physics() -> void:
+func _test_authored_physics(vehicle_id: String) -> void:
 	# Independent identical worlds at identical coordinates avoid collision/precision differences.
 	var worlds: Array[SubViewport] = []
 	var cars: Array[Vehicle] = []
@@ -103,7 +104,7 @@ func _test_deadbolt_physics() -> void:
 		collision.position.y = -0.5
 		ground.add_child(collision)
 		viewport.add_child(ground)
-		var spec := VehicleCatalog.get_vehicle("deadbolt")
+		var spec := VehicleCatalog.get_vehicle(vehicle_id)
 		if not imported:
 			spec["visual"]["scene"] = ""
 			spec["visual"]["rig"] = ""
@@ -111,6 +112,8 @@ func _test_deadbolt_physics() -> void:
 		car.tuning = TuningProfile.new()
 		car.position = Vector3(5, 1.4, 10)
 		viewport.add_child(car)
+		_check("%s physics comparison uses the intended visual variant" % vehicle_id,
+			(car.get_node_or_null("VisualRoot/ProductionModel") != null) == imported)
 		cars.append(car)
 	var parity := true
 	for tick in 840:
@@ -122,13 +125,13 @@ func _test_deadbolt_physics() -> void:
 				var angular := car.angular_velocity
 				var basis_before := car.basis
 				car.swap_ends()
-				_check("Deadbolt swap preserves momentum and orientation",
+				_check("%s swap preserves momentum and orientation" % vehicle_id,
 					car.linear_velocity == velocity and car.angular_velocity == angular and car.basis == basis_before)
 		await get_tree().physics_frame
 		parity = parity and cars[0].position.distance_to(cars[1].position) < 0.00001
 		parity = parity and cars[0].linear_velocity.distance_to(cars[1].linear_velocity) < 0.00001
-	_check("Deadbolt artwork preserves driving/braking/swap physics", parity)
-	_check("Deadbolt accelerates with the saved handling", cars[0].speed > 1.0)
+	_check("%s artwork preserves driving/braking/swap physics" % vehicle_id, parity)
+	_check("%s accelerates with the saved handling" % vehicle_id, cars[0].speed > 1.0)
 	for viewport: SubViewport in worlds:
 		viewport.queue_free()
 	await get_tree().process_frame
@@ -167,7 +170,7 @@ func _test_garage_and_race() -> void:
 		_check("Garage preview switches to %s" % id, garage._preview_vehicle.vehicle_id == id)
 		var preview_environment: Environment = garage._preview_environment.environment
 		_check("%s uses the appropriate studio lighting" % id,
-			preview_environment.sky != null if id in ["blackjack", "deadbolt"] else preview_environment.sky == null)
+			preview_environment.sky != null if id in ["blackjack", "deadbolt", "nightshift"] else preview_environment.sky == null)
 	garage.free()
 	GameSession.configure("CONSOLIDATION", "deadbolt", ["blackjack", "nightshift"])
 	garage = load("res://scenes/garage.tscn").instantiate()

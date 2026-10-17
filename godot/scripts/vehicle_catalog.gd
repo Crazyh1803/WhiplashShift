@@ -131,9 +131,11 @@ const VISUALS: Dictionary = {
 		"collision_boxes": [], # Keep the original tuning-owned chassis collider.
 	},
 	"nightshift": {
-		"scene": "res://assets/vehicles/models/nightshift/nightshift.glb",
-		"wheel_scene_a": "res://assets/vehicles/models/nightshift/wheel_a.glb",
-		"wheel_scene_b": "res://assets/vehicles/models/nightshift/wheel_b.glb",
+		"rig": "nightshift_blueprint",
+		"scene": "res://assets/vehicles/models/nightshift/nightshift_blueprint.glb",
+		"rotation_degrees": Vector3(0.0, 90.0, 0.0),
+		"offset": Vector3(0.0, -0.62, 0.0),
+		"collision_boxes": [], # Preserve the tuning-owned collider and hardpoints.
 	},
 }
 

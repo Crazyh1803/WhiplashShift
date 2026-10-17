@@ -9,7 +9,8 @@ The project loads the blueprint-traced Deadbolt hard-surface truck/coupe model t
 the same garage, player and CPU factory as Blackjack. Deadbolt retains its authored
 glass, metal, tires and lights; the three paint channels remain customizable.
 Its authored wheel meshes follow the original four physics wheels, with steering
-pivots derived from the visible tire hubs. The other five
+pivots derived from the visible tire hubs. Nightshift also uses its dedicated Chevy/Camaro production model and three
+semantic paint channels through the same authored-hub adapter. The other four
 chassis keep their greybox fallback until production models exist.
 
 ## Running it

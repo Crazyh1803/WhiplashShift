@@ -1,4 +1,4 @@
-## Adapts the saved Deadbolt artwork to the existing four-wheel simulation.
+## Adapts authored coupe/truck hub artwork to the existing four-wheel simulation.
 extends Vehicle
 
 const DISPLAY_RADIUS := {"A": 0.40, "B": 0.43}
@@ -12,17 +12,22 @@ func _configure_imported_meshes(node: Node) -> void:
 			var source := mesh_instance.mesh.surface_get_material(surface) as StandardMaterial3D
 			if source == null:
 				continue
-			var color: Color
-			match source.resource_name:
-				"Deadbolt_Paint": color = vehicle_color
-				"Deadbolt_Secondary": color = vehicle_secondary_color
-				"Deadbolt_Stripe": color = vehicle_accent_color
-				_: continue
+			var colors := _authored_paint_colors()
+			if not colors.has(source.resource_name):
+				continue
 			var material := source.duplicate() as StandardMaterial3D
-			material.albedo_color = color
+			material.albedo_color = colors[source.resource_name]
 			mesh_instance.set_surface_override_material(surface, material)
 	for child: Node in node.get_children():
 		_configure_imported_meshes(child)
+
+
+func _authored_paint_colors() -> Dictionary:
+	return {
+		"Deadbolt_Paint": vehicle_color,
+		"Deadbolt_Secondary": vehicle_secondary_color,
+		"Deadbolt_Stripe": vehicle_accent_color,
+	}
 
 
 func _build_wheels() -> void:
@@ -52,7 +57,7 @@ func _install_authored_wheels() -> void:
 			if "_Tire_" in String(source.name):
 				tire = source
 		if tire == null:
-			push_error("Deadbolt artwork is missing the tire hub for %s" % wheel.name)
+			push_error("%s artwork is missing the tire hub for %s" % [vehicle_id, wheel.name])
 			continue
 		# Art hubs define the steering pivot, independently of physical hardpoints.
 		# This also handles source transforms and cars spawned away from the origin.
