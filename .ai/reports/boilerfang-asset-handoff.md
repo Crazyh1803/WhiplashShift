@@ -41,3 +41,4 @@ Documented in `BOILERFANG_BLUEPRINT.md`: the flywheel pair is mirrored (the top 
 - Materials are flat PBR colours with no textures; UVs are auto-projected for later livery work only.
 - ak-look is noisy on close-ups (it called valid touching parts "floating"); the numeric gates above are authoritative for seating/clearance.
 - Hub z equals each display radius, so the two ends sit at different hub heights (0.256 / 0.348): the rig must place wheels from the authored hub origins, not one shared height.
+Final asset commit: `50a004d` (QA json, validator, handoff). Handoff doc itself lives in this commit.
