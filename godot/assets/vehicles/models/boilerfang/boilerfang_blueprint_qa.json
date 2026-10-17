@@ -1,0 +1,524 @@
+{
+  "pass": true,
+  "failed": [],
+  "checks": 42,
+  "triangles": [
+    46996,
+    34372,
+    17286
+  ],
+  "results": {
+    "main_masses_closed_manifold": {
+      "ok": true,
+      "detail": {}
+    },
+    "main_masses_positive_volume": {
+      "ok": true,
+      "detail": {}
+    },
+    "glass_frames_hardware_closed": {
+      "ok": true,
+      "detail": {}
+    },
+    "assembly_mirror_symmetry": {
+      "ok": true,
+      "detail": {
+        "max_mm": 1.28,
+        "p99_mm": 0.0,
+        "vertices": 25222,
+        "intentional_asymmetric": []
+      }
+    },
+    "silhouette_top_vs_trace_px": {
+      "ok": true,
+      "detail": {
+        "max_px": 1.71,
+        "mean_px": 0.1
+      }
+    },
+    "silhouette_sill_vs_trace_px": {
+      "ok": true,
+      "detail": {
+        "max_px": 0.53
+      }
+    },
+    "silhouette_halfwidth_vs_trace_px": {
+      "ok": true,
+      "detail": {
+        "max_px": 1.05
+      }
+    },
+    "overall_length_vs_trace": {
+      "ok": true,
+      "detail": {
+        "min_x": -2.5706,
+        "max_x": 2.3772,
+        "trace_min": -2.5721,
+        "trace_max": 2.3772
+      }
+    },
+    "overall_height_vs_trace": {
+      "ok": true,
+      "detail": {
+        "max_z": 1.5256,
+        "trace_stack_top": 1.5054
+      }
+    },
+    "one_tire_per_wheel": {
+      "ok": true,
+      "detail": {
+        "Coupe/+1": 1,
+        "Coupe/-1": 1,
+        "Truck/+1": 1,
+        "Truck/-1": 1
+      }
+    },
+    "wheel_tire_origins_at_hubs": {
+      "ok": true,
+      "detail": {
+        "Wheel_Coupe_Tire_+1": {
+          "origin_error_mm": 0.0,
+          "radius_mm": 256.0,
+          "expected_radius_mm": 256.0,
+          "lowest_z_mm": 0.0,
+          "width_mm": 130.0,
+          "fender_clearance_mm": 40.34,
+          "hull_clearance_mm": 136.78
+        },
+        "Wheel_Coupe_Tire_-1": {
+          "origin_error_mm": 0.0,
+          "radius_mm": 256.0,
+          "expected_radius_mm": 256.0,
+          "lowest_z_mm": 0.0,
+          "width_mm": 130.0,
+          "fender_clearance_mm": 40.34,
+          "hull_clearance_mm": 136.78
+        },
+        "Wheel_Truck_Tire_+1": {
+          "origin_error_mm": 0.0,
+          "radius_mm": 348.02,
+          "expected_radius_mm": 348.0,
+          "lowest_z_mm": 3.0,
+          "width_mm": 266.6,
+          "fender_clearance_mm": 39.52,
+          "hull_clearance_mm": 132.21
+        },
+        "Wheel_Truck_Tire_-1": {
+          "origin_error_mm": 0.0,
+          "radius_mm": 348.02,
+          "expected_radius_mm": 348.0,
+          "lowest_z_mm": 3.0,
+          "width_mm": 266.6,
+          "fender_clearance_mm": 39.52,
+          "hull_clearance_mm": 132.21
+        }
+      }
+    },
+    "wheel_tire_radii_match_display": {
+      "ok": true,
+      "detail": null
+    },
+    "wheel_tires_touch_ground_plane_6mm": {
+      "ok": true,
+      "detail": {
+        "Wheel_Coupe_Tire_+1": 0.0,
+        "Wheel_Coupe_Tire_-1": 0.0,
+        "Wheel_Truck_Tire_+1": 3.0,
+        "Wheel_Truck_Tire_-1": 3.0
+      }
+    },
+    "wheel_fender_arch_clearance_30mm": {
+      "ok": true,
+      "detail": {
+        "Wheel_Coupe_Tire_+1": 40.34,
+        "Wheel_Coupe_Tire_-1": 40.34,
+        "Wheel_Truck_Tire_+1": 39.52,
+        "Wheel_Truck_Tire_-1": 39.52
+      }
+    },
+    "wheel_hull_clearance_20mm": {
+      "ok": true,
+      "detail": {
+        "Wheel_Coupe_Tire_+1": 136.78,
+        "Wheel_Coupe_Tire_-1": 136.78,
+        "Wheel_Truck_Tire_+1": 132.21,
+        "Wheel_Truck_Tire_-1": 132.21
+      }
+    },
+    "all_wheel_parts_share_hub_origin": {
+      "ok": true,
+      "detail": []
+    },
+    "wheel_part_counts": {
+      "ok": true,
+      "detail": {
+        "CoupeHub": 2,
+        "CoupeRim": 2,
+        "CoupeTire": 2,
+        "CoupeWires": 2,
+        "TruckHub": 2,
+        "TruckRim": 2,
+        "TruckSpoke": 16,
+        "TruckTire": 2
+      }
+    },
+    "rims_inside_tires": {
+      "ok": true,
+      "detail": null
+    },
+    "wheels_are_exactly_four": {
+      "ok": true,
+      "detail": null
+    },
+    "mid_drive_present_paired": {
+      "ok": true,
+      "detail": []
+    },
+    "mid_drive_not_wheel_named": {
+      "ok": true,
+      "detail": null
+    },
+    "mid_drive_flywheel_vs_trace": {
+      "ok": true,
+      "detail": [
+        {
+          "name": "Prop_MidDrive_Flywheel_+1",
+          "radius_mm": 177.52,
+          "centre": [
+            0.3463,
+            0.55,
+            0.2911
+          ],
+          "lowest_z_mm": 113.61
+        },
+        {
+          "name": "Prop_MidDrive_Flywheel_-1",
+          "radius_mm": 177.52,
+          "centre": [
+            0.3463,
+            -0.55,
+            0.2911
+          ],
+          "lowest_z_mm": 113.61
+        }
+      ]
+    },
+    "glass_seated_off_hull_0p5_to_7mm": {
+      "ok": true,
+      "detail": {
+        "Glass_SpeedsterSide_+1": 1.99,
+        "Glass_SpeedsterSide_-1": 1.99,
+        "Glass_SpeedsterWindshield_+1": 1.06,
+        "Glass_SpeedsterWindshield_-1": 1.03,
+        "Glass_TruckDoor_+1": 1.99,
+        "Glass_TruckDoor_-1": 1.99,
+        "Glass_TruckQuarter_+1": 1.97,
+        "Glass_TruckQuarter_-1": 1.97,
+        "Glass_TruckWindshield_+1": 0.7,
+        "Glass_TruckWindshield_-1": 0.7
+      }
+    },
+    "glass_never_crosses_shell": {
+      "ok": true,
+      "detail": {}
+    },
+    "skylight_glass_seated_in_frames": {
+      "ok": true,
+      "detail": {
+        "Glass_Skylight_0": 5.0,
+        "Glass_Skylight_1": 5.0,
+        "Glass_Skylight_2": 5.0
+      }
+    },
+    "glass_covers_whole_openings": {
+      "ok": true,
+      "detail": {
+        "samples": 385,
+        "holes": []
+      }
+    },
+    "hardware_never_pierces_glass": {
+      "ok": true,
+      "detail": {}
+    },
+    "nothing_but_axles_touches_wheels": {
+      "ok": true,
+      "detail": {}
+    },
+    "no_floating_hardware_within_12mm": {
+      "ok": true,
+      "detail": {}
+    },
+    "lamp_lens_vertices_seated_in_housing_6mm": {
+      "ok": true,
+      "detail": {
+        "lenses": 12
+      }
+    },
+    "smokestack_clears_cab_glass_100mm": {
+      "ok": true,
+      "detail": {
+        "gap_mm": 129.47
+      }
+    },
+    "uv_complete": {
+      "ok": true,
+      "detail": []
+    },
+    "materials_exact_set": {
+      "ok": true,
+      "detail": {
+        "extra": [],
+        "missing": [],
+        "unused_semantic": []
+      }
+    },
+    "triangle_budget_and_lod_monotonic": {
+      "ok": true,
+      "detail": [
+        46996,
+        34372,
+        17286
+      ]
+    },
+    "handoff_display_radii_match_measured": {
+      "ok": true,
+      "detail": [
+        {
+          "A": 0.256,
+          "B": 0.348
+        },
+        {
+          "A": 0.256,
+          "B": 0.34802
+        }
+      ]
+    },
+    "handoff_wheel_centres_match_hubs": {
+      "ok": true,
+      "detail": {
+        "A": [
+          1.66,
+          0.5,
+          0.256
+        ],
+        "B": [
+          -1.72,
+          0.66,
+          0.348
+        ]
+      }
+    },
+    "glb_reimport_counts_and_materials": {
+      "ok": true,
+      "detail": {
+        "0": [
+          75,
+          30
+        ],
+        "1": [
+          75,
+          30
+        ],
+        "2": [
+          73,
+          30
+        ]
+      }
+    },
+    "glb_wheel_part_counts_stable": {
+      "ok": true,
+      "detail": {
+        "0": 30,
+        "1": 30,
+        "2": 30
+      }
+    },
+    "glb_mid_drive_preserved_in_all_lods": {
+      "ok": true,
+      "detail": {
+        "0": 4,
+        "1": 4,
+        "2": 4
+      }
+    },
+    "lod_envelope_matches_gameplay": {
+      "ok": true,
+      "detail": {
+        "0": [
+          -2.571,
+          2.377,
+          -0.807,
+          0.807,
+          1.526
+        ],
+        "1": [
+          -2.571,
+          2.377,
+          -0.807,
+          0.807,
+          1.526
+        ],
+        "2": [
+          -2.57,
+          2.377,
+          -0.808,
+          0.808,
+          1.512
+        ]
+      }
+    },
+    "lod_tire_radius_preserved": {
+      "ok": true,
+      "detail": {
+        "0": 256.0,
+        "1": 256.0,
+        "2": 257.45
+      }
+    },
+    "glb_wheel_hubs_at_authored_positions": {
+      "ok": true,
+      "detail": {
+        "Wheel_Coupe_Tire_+1.001": [
+          1.66,
+          0.5,
+          0.256
+        ],
+        "Wheel_Coupe_Tire_-1.001": [
+          1.66,
+          -0.5,
+          0.256
+        ],
+        "Wheel_Truck_Tire_+1.001": [
+          -1.72,
+          0.66,
+          0.348
+        ],
+        "Wheel_Truck_Tire_-1.001": [
+          -1.72,
+          -0.66,
+          0.348
+        ]
+      }
+    }
+  },
+  "glb": {
+    "0": {
+      "meshes": 75,
+      "materials": [
+        "Boilerfang_Amber",
+        "Boilerfang_Brass",
+        "Boilerfang_Copper",
+        "Boilerfang_Dial",
+        "Boilerfang_Glass",
+        "Boilerfang_Iron",
+        "Boilerfang_Lamp",
+        "Boilerfang_Paint",
+        "Boilerfang_Rubber",
+        "Boilerfang_Secondary",
+        "Boilerfang_Stripe"
+      ],
+      "wheel_objects": 30,
+      "tires": 4,
+      "mid_drive_objects": 4,
+      "bbox": [
+        -2.571,
+        2.377,
+        -0.807,
+        0.807,
+        1.526
+      ],
+      "tire_radius_min_mm": 256.0
+    },
+    "1": {
+      "meshes": 75,
+      "materials": [
+        "Boilerfang_Amber",
+        "Boilerfang_Brass",
+        "Boilerfang_Copper",
+        "Boilerfang_Dial",
+        "Boilerfang_Glass",
+        "Boilerfang_Iron",
+        "Boilerfang_Lamp",
+        "Boilerfang_Paint",
+        "Boilerfang_Rubber",
+        "Boilerfang_Secondary",
+        "Boilerfang_Stripe"
+      ],
+      "wheel_objects": 30,
+      "tires": 4,
+      "mid_drive_objects": 4,
+      "bbox": [
+        -2.571,
+        2.377,
+        -0.807,
+        0.807,
+        1.526
+      ],
+      "tire_radius_min_mm": 256.0
+    },
+    "2": {
+      "meshes": 73,
+      "materials": [
+        "Boilerfang_Brass",
+        "Boilerfang_Copper",
+        "Boilerfang_Glass",
+        "Boilerfang_Iron",
+        "Boilerfang_Lamp",
+        "Boilerfang_Paint",
+        "Boilerfang_Rubber",
+        "Boilerfang_Secondary",
+        "Boilerfang_Stripe"
+      ],
+      "wheel_objects": 30,
+      "tires": 4,
+      "mid_drive_objects": 4,
+      "bbox": [
+        -2.57,
+        2.377,
+        -0.808,
+        0.808,
+        1.512
+      ],
+      "tire_radius_min_mm": 257.45
+    }
+  },
+  "wheels": {
+    "Wheel_Coupe_Tire_+1": {
+      "origin_error_mm": 0.0,
+      "radius_mm": 256.0,
+      "expected_radius_mm": 256.0,
+      "lowest_z_mm": 0.0,
+      "width_mm": 130.0,
+      "fender_clearance_mm": 40.34,
+      "hull_clearance_mm": 136.78
+    },
+    "Wheel_Coupe_Tire_-1": {
+      "origin_error_mm": 0.0,
+      "radius_mm": 256.0,
+      "expected_radius_mm": 256.0,
+      "lowest_z_mm": 0.0,
+      "width_mm": 130.0,
+      "fender_clearance_mm": 40.34,
+      "hull_clearance_mm": 136.78
+    },
+    "Wheel_Truck_Tire_+1": {
+      "origin_error_mm": 0.0,
+      "radius_mm": 348.02,
+      "expected_radius_mm": 348.0,
+      "lowest_z_mm": 3.0,
+      "width_mm": 266.6,
+      "fender_clearance_mm": 39.52,
+      "hull_clearance_mm": 132.21
+    },
+    "Wheel_Truck_Tire_-1": {
+      "origin_error_mm": 0.0,
+      "radius_mm": 348.02,
+      "expected_radius_mm": 348.0,
+      "lowest_z_mm": 3.0,
+      "width_mm": 266.6,
+      "fender_clearance_mm": 39.52,
+      "hull_clearance_mm": 132.21
+    }
+  }
+}
