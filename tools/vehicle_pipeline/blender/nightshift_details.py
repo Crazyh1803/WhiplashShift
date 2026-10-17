@@ -40,7 +40,7 @@ COUPE_POCKETS = [
     ("LampIL", 0.28, 0.50, 0.555, 0.690, 0.040),
     ("LampIR", -0.50, -0.28, 0.555, 0.690, 0.040),
     ("GrilleSlot", -0.23, 0.23, 0.585, 0.665, 0.050),
-    ("Intake", -0.60, 0.60, 0.350, 0.410, 0.060),
+    ("Intake", -0.40, 0.40, 0.350, 0.410, 0.060),
 ]
 HOOD_VENTS = [(-1, 0.14, 0.44), (1, 0.14, 0.44)]  # sign, y0, y1 magnitude
 
@@ -231,11 +231,11 @@ def build_truck_end(sd, surf):
                            matrix=Matrix.Translation((nose_x - 0.025, y, zb))))
     # twin vertical push guards with rubber caps and a tie bar
     for sgn in (-1, 1):
-        y = sgn * 0.40
-        objs.append(P.rbox(b, f"Truck_PushGuard_{sgn:+d}", (0.050, 0.060, 0.22), "chrome", 0.016,
-                           matrix=Matrix.Translation((xb - 0.050, y, zb + 0.09))))
-        objs.append(P.rbox(b, f"Truck_PushGuardPad_{sgn:+d}", (0.014, 0.040, 0.16), "rubber", 0.004,
-                           matrix=Matrix.Translation((xb - 0.082, y, zb + 0.09))))
+        y = sgn * 0.60
+        objs.append(P.rbox(b, f"Truck_PushGuard_{sgn:+d}", (0.050, 0.060, 0.15), "chrome", 0.016,
+                           matrix=Matrix.Translation((xb - 0.050, y, zb + 0.045))))
+        objs.append(P.rbox(b, f"Truck_PushGuardPad_{sgn:+d}", (0.014, 0.040, 0.10), "rubber", 0.004,
+                           matrix=Matrix.Translation((xb - 0.082, y, zb + 0.045))))
         objs.append(P.rbox(b, f"Truck_PushGuardBase_{sgn:+d}", (0.090, 0.090, 0.040), "dark", 0.008,
                            matrix=Matrix.Translation((xb - 0.010, y, zb - 0.005))))
     # chrome hood-edge trim and hood ornament
@@ -270,10 +270,10 @@ def build_coupe_end(sd, surf):
     for k in range(3):
         zz = 0.350 + 0.060 * (k + 0.5) / 3
         p, n = sd.front_pt(0.0, zz, COUPE_NOSE)
-        objs.append(sd.box(f"Coupe_IntakeSlat_{k}", "grille", (1.12, 0.008, 0.036), p, n, 0.002))
-    for y in (-0.76, 0.76):
+        objs.append(sd.box(f"Coupe_IntakeSlat_{k}", "grille", (0.76, 0.008, 0.036), p, n, 0.002))
+    for y in (-0.50, 0.50):
         p, n = sd.front_pt(y, 0.380, COUPE_NOSE)
-        objs.append(sd.box(f"Coupe_ChinLamp_{y:+.2f}", "amber", (0.11, 0.050, 0.016), p, n, 0.008,
+        objs.append(sd.box(f"Coupe_ChinLamp_{y:+.2f}", "amber", (0.09, 0.050, 0.016), p, n, 0.008,
                            lift=0.0))
     # bumper cover seam
     # chin spoiler: lip, end plates, rubber edge
@@ -296,8 +296,11 @@ def build_coupe_end(sd, surf):
                                hit - Vector((0, 0, 0.012)), (0, 0, 1), 0.002, up=(0, 1, 0)))
     # cab back window and trim on the vertical wall of the roof step (faces the Camaro end)
     zc = T.Z(106.5)
-    p, n = sd.front_pt(0.0, zc, COUPE_NOSE)
-    objs.append(sd.box("Glass_CabRear", "glass", (1.04, 0.105, 0.003), p, n, 0.001, lift=0.0015))
+    outline = [Vector((0.0, y, z)) for y, z in ((-0.525, zc - 0.0615), (0.525, zc - 0.0615),
+                                                (0.525, zc + 0.0615), (-0.525, zc + 0.0615))]
+    objs.append(K.glass_panel(sd.b, "Glass_CabRear", outline, sd.s,
+                              lambda q: ((4.0, q.y, q.z), (-1, 0, 0)),
+                              0.003, step=0.05, axes=(1, 2)))
     objs.append(frame_ribbon(sd, "Cab_RearGlassTrim", -0.52, 0.52, zc - 0.0575, zc + 0.0575, 0.012,
                              "chrome", COUPE_NOSE, 0.014, 0.004, radius=0.012))
     return objs
@@ -340,10 +343,10 @@ def build_sides(sd, surf):
             objs.append(sd.box(f"Reflector_{name}_{tag}", "marker", (0.075, 0.012, 0.024), p, n, 0.004,
                                lift=-0.003))
         # side marker lights near both noses
-        for name, px, py, mat in (("Truck", 301, 168, "amber"), ("Coupe", 748, 196, "amber")):
+        for name, px, py, mat in (("Truck", 301, 168, "amber"), ("Coupe", 730, 190, "amber")):
             p, n = sd.side_pt(px, py, sign)
-            objs.append(sd.box(f"Marker_{name}_{tag}", mat, (0.10, 0.014, 0.034), p, n, 0.005,
-                               lift=-0.002))
+            objs.append(sd.box(f"Marker_{name}_{tag}", mat, (0.05 if name == "Coupe" else 0.10, 0.014, 0.034), p, n,
+                               0.005, lift=-0.004 if name == "Coupe" else -0.002))
         # truck mid-flank body-side moulding (reference: runs the truck half, ends at the pillar)
         pts = [(T.X(396 + (520 - 396) * k / 12), T.Z(188)) for k in range(13)]
         objs.append(sd.ribbon(f"Molding_Flank_{tag}", pts, "dark", "side", width=0.034, height=0.007,
@@ -355,7 +358,7 @@ def build_sides(sd, surf):
         for name, a, c, py0, py1 in (("Truck", 414, 516, 138.5, 139), ("Coupe", 533, 626, 160, 160.5)):
             pts = [(T.X(a + (c - a) * k / 10), T.Z(py0 + (py1 - py0) * k / 10)) for k in range(11)]
             objs.append(sd.ribbon(f"Molding_Belt_{name}_{tag}", pts, "chrome", "side", width=0.012,
-                                  height=0.004, sign=sign, lift=0.0))
+                                  height=0.004, sign=sign, lift=0.0015))
     return objs
 
 
