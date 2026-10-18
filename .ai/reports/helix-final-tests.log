@@ -1,0 +1,139 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Helix uses its dedicated tracked/hover adapter
+  [pass] Helix loads authored production model
+  [pass] Four simulation wheels remain authoritative
+  [pass] No customization style exposes physics wheels
+  [pass] No invented road wheels enter the hover artwork
+  [pass] Source track bogies are present
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Each track contacts the frozen preview ground
+  [pass] Each track contacts the frozen preview ground
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] All three authored paint channels exist
+  [pass] Glass, track rubber, lenses and hardware retain authored materials
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics axle shafts stay hidden
+  [pass] No extra visual bogie is generated
+  [pass] Customization retains the complete track assemblies
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] All three authored paint channels exist
+  [pass] Glass, track rubber, lenses and hardware retain authored materials
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics axle shafts stay hidden
+  [pass] No extra visual bogie is generated
+  [pass] Customization retains the complete track assemblies
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Helix constructs as player and CPU
+  [pass] Helix player retains production artwork
+  [pass] Player physics wheels remain hidden
+  [pass] Player physics wheels remain hidden
+  [pass] Player physics wheels remain hidden
+  [pass] Player physics wheels remain hidden
+HELIX: 136 passed, 0 failed
