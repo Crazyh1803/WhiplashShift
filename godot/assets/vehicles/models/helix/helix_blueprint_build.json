@@ -1,0 +1,60 @@
+{
+  "blend": "tools/vehicle_pipeline/blender/helix_blueprint.blend",
+  "exports": {
+    "lod0": {
+      "triangles": 35800,
+      "objects": 60,
+      "bytes": 1412592
+    },
+    "lod1": {
+      "triangles": 24905,
+      "objects": 65,
+      "bytes": 1062244
+    },
+    "lod2": {
+      "triangles": 18707,
+      "objects": 65,
+      "bytes": 886384
+    }
+  },
+  "handoff": {
+    "vehicle_id": "helix",
+    "candidate_scene": "res://assets/vehicles/models/helix/helix_blueprint.glb",
+    "source_axes": "X long (hovering nose End A +X, biomech claw End B -X), Y width, Z up, ground z=0; runtime yaw +90 deg, offset y -0.62",
+    "overall_length_m": 5.0,
+    "blueprint_scale_m_per_px": 0.008012820512820512,
+    "wheels": "none authored: the sheet has tracks under End B and a wheel-less hovering nose; the four physical wheels' visuals/axles are hidden by the game adapter",
+    "track_contact": {
+      "z": 0.0,
+      "x_range": [
+        -1.658653846153846,
+        -0.5849358974358975
+      ],
+      "flat_x_range": [
+        -1.4903846153846152,
+        -0.7532051282051282
+      ],
+      "y_centres": [
+        0.625,
+        -0.625
+      ],
+      "width": 0.3,
+      "sprocket_axle": [
+        [
+          -1.4903846153846152,
+          0.16826923076923075
+        ],
+        [
+          -0.7532051282051282,
+          0.16826923076923075
+        ]
+      ],
+      "outer_radius": 0.16826923076923075
+    },
+    "semantic_materials": [
+      "Helix_Paint",
+      "Helix_Secondary",
+      "Helix_Stripe"
+    ]
+  }
+}

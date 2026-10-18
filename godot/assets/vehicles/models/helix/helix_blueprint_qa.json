@@ -1,0 +1,508 @@
+{
+  "pass": true,
+  "failed": [],
+  "checks": 39,
+  "triangles": [
+    35800,
+    24905,
+    18707
+  ],
+  "results": {
+    "no_wheel_objects_authored": {
+      "ok": true,
+      "detail": null
+    },
+    "all_objects_in_legal_groups": {
+      "ok": true,
+      "detail": []
+    },
+    "track_parts_complete_both_flanks": {
+      "ok": true,
+      "detail": []
+    },
+    "claws_hoses_plates_present": {
+      "ok": true,
+      "detail": null
+    },
+    "main_masses_closed_positive_volume": {
+      "ok": true,
+      "detail": {}
+    },
+    "mirror_symmetry_1p5mm": {
+      "ok": true,
+      "detail": 1.16
+    },
+    "overall_length_5m": {
+      "ok": true,
+      "detail": [
+        -2.479,
+        2.5
+      ]
+    },
+    "claw_tips_at_end_b_and_nose_at_end_a": {
+      "ok": true,
+      "detail": null
+    },
+    "width_between_track_sponsons": {
+      "ok": true,
+      "detail": 0.806
+    },
+    "height_matches_sheet": {
+      "ok": true,
+      "detail": 1.22
+    },
+    "nothing_below_ground": {
+      "ok": true,
+      "detail": -0.35
+    },
+    "side_silhouette_top_vs_trace": {
+      "ok": true,
+      "detail": {
+        "worst_px": 7.34,
+        "at_px": 482,
+        "mean_abs_px": 1.1
+      }
+    },
+    "top_view_hull_halfwidth_vs_trace": {
+      "ok": true,
+      "detail": 0.01
+    },
+    "side_silhouette_belly_vs_trace": {
+      "ok": true,
+      "detail": [
+        -0.44,
+        520
+      ]
+    },
+    "track_contact_at_ground_both_flanks": {
+      "ok": true,
+      "detail": {
+        "+1": {
+          "min_z_mm": -0.35,
+          "flat_x": [
+            -1.516,
+            -0.733
+          ],
+          "x_range": [
+            -1.659,
+            -0.584
+          ],
+          "y_range": [
+            0.485,
+            0.765
+          ],
+          "belt_inner_min_z_mm": 12.0
+        },
+        "-1": {
+          "min_z_mm": -0.35,
+          "flat_x": [
+            -1.516,
+            -0.733
+          ],
+          "x_range": [
+            -1.659,
+            -0.584
+          ],
+          "y_range": [
+            -0.765,
+            -0.485
+          ],
+          "belt_inner_min_z_mm": 12.0
+        }
+      }
+    },
+    "track_flat_contact_patch_spans_sprockets": {
+      "ok": true,
+      "detail": {
+        "+1": [
+          -1.516,
+          -0.733
+        ],
+        "-1": [
+          -1.516,
+          -0.733
+        ]
+      }
+    },
+    "track_extent_matches_sheet_px_334_467": {
+      "ok": true,
+      "detail": {
+        "+1": [
+          -1.659,
+          -0.584
+        ],
+        "-1": [
+          -1.659,
+          -0.584
+        ]
+      }
+    },
+    "track_width_and_centre": {
+      "ok": true,
+      "detail": [
+        0.485,
+        0.765
+      ]
+    },
+    "sprocket_teeth_inside_belt_5mm": {
+      "ok": true,
+      "detail": {
+        "SprocketRear_+1": 7.02,
+        "SprocketFront_+1": 7.02,
+        "SprocketRear_-1": 7.02,
+        "SprocketFront_-1": 7.02
+      }
+    },
+    "rollers_clear_of_belt_inner_surface_5mm": {
+      "ok": true,
+      "detail": {
+        "+1": 10.0,
+        "-1": 10.0
+      }
+    },
+    "track_covered_by_fender_and_clear_of_hull": {
+      "ok": true,
+      "detail": null
+    },
+    "hull_ground_clearance_ge_180mm": {
+      "ok": true,
+      "detail": 201.47
+    },
+    "glass_and_frames_seated_in_hull": {
+      "ok": true,
+      "detail": {
+        "Glass_CanopyAft": {
+          "no_plan_overhang": true,
+          "buried_mm": 30.25,
+          "rise_mm": 144.11
+        },
+        "Glass_CanopyFwd": {
+          "no_plan_overhang": true,
+          "buried_mm": 32.55,
+          "rise_mm": 111.32
+        },
+        "Glass_SensorBlister": {
+          "no_plan_overhang": true,
+          "buried_mm": 37.15,
+          "rise_mm": 50.75
+        },
+        "Frame_CanopyAft_0": {
+          "no_plan_overhang": true,
+          "buried_mm": 28.13,
+          "rise_mm": 109.1
+        },
+        "Frame_CanopyAft_1": {
+          "no_plan_overhang": true,
+          "buried_mm": 15.3,
+          "rise_mm": 152.62
+        },
+        "Frame_CanopyAft_2": {
+          "no_plan_overhang": true,
+          "buried_mm": 26.46,
+          "rise_mm": 106.79
+        },
+        "Frame_CanopyFwd_0": {
+          "no_plan_overhang": true,
+          "buried_mm": 33.69,
+          "rise_mm": 86.02
+        },
+        "Frame_CanopyFwd_1": {
+          "no_plan_overhang": true,
+          "buried_mm": 24.27,
+          "rise_mm": 120.27
+        },
+        "Frame_CanopyFwd_2": {
+          "no_plan_overhang": true,
+          "buried_mm": 33.11,
+          "rise_mm": 85.36
+        }
+      }
+    },
+    "canopy_rise_realistic": {
+      "ok": true,
+      "detail": {
+        "Glass_CanopyAft": 144.11,
+        "Glass_CanopyFwd": 111.32,
+        "Glass_SensorBlister": 50.75
+      }
+    },
+    "no_floating_parts_8mm": {
+      "ok": true,
+      "detail": {}
+    },
+    "claw_pincers_open_and_reach_sheet_tip": {
+      "ok": true,
+      "detail": {
+        "tips": {
+          "Up+1": [
+            -2.479,
+            0.356,
+            0.809
+          ],
+          "Up-1": [
+            -2.479,
+            -0.356,
+            0.809
+          ],
+          "Low+1": [
+            -2.436,
+            0.348,
+            0.289
+          ],
+          "Low-1": [
+            -2.436,
+            -0.348,
+            0.289
+          ]
+        },
+        "jaw_gap_m": 0.52
+      }
+    },
+    "hoses_four_per_flank_ribbed": {
+      "ok": true,
+      "detail": null
+    },
+    "weapon_pods_at_sheet_position": {
+      "ok": true,
+      "detail": null
+    },
+    "pod_barrels_reach_x814": {
+      "ok": true,
+      "detail": [
+        2.211,
+        2.211
+      ]
+    },
+    "lenses_present_nacelle_and_pod": {
+      "ok": true,
+      "detail": null
+    },
+    "all_meshes_have_uvs": {
+      "ok": true,
+      "detail": []
+    },
+    "exact_material_set": {
+      "ok": true,
+      "detail": []
+    },
+    "semantic_channels_have_area": {
+      "ok": true,
+      "detail": {
+        "Helix_Secondary": 22.832,
+        "Helix_Rubber": 4.443,
+        "Helix_Paint": 14.173,
+        "Helix_Stripe": 0.446,
+        "Helix_Hardware": 11.049,
+        "Helix_Light": 0.135,
+        "Helix_Glass": 2.176
+      }
+    },
+    "triangle_budget_and_lod_monotonic": {
+      "ok": true,
+      "detail": [
+        35800,
+        24905,
+        18707
+      ]
+    },
+    "handoff_track_contact_matches_measured": {
+      "ok": true,
+      "detail": {
+        "z": 0.0,
+        "x_range": [
+          -1.658653846153846,
+          -0.5849358974358975
+        ],
+        "flat_x_range": [
+          -1.4903846153846152,
+          -0.7532051282051282
+        ],
+        "y_centres": [
+          0.625,
+          -0.625
+        ],
+        "width": 0.3,
+        "sprocket_axle": [
+          [
+            -1.4903846153846152,
+            0.16826923076923075
+          ],
+          [
+            -0.7532051282051282,
+            0.16826923076923075
+          ]
+        ],
+        "outer_radius": 0.16826923076923075
+      }
+    },
+    "glb_reimport_materials_and_no_wheels": {
+      "ok": true,
+      "detail": {
+        "0": [
+          "Helix_Glass",
+          "Helix_Hardware",
+          "Helix_Light",
+          "Helix_Paint",
+          "Helix_Rubber",
+          "Helix_Secondary",
+          "Helix_Stripe"
+        ],
+        "1": [
+          "Helix_Glass",
+          "Helix_Hardware",
+          "Helix_Light",
+          "Helix_Paint",
+          "Helix_Rubber",
+          "Helix_Secondary",
+          "Helix_Stripe"
+        ],
+        "2": [
+          "Helix_Glass",
+          "Helix_Hardware",
+          "Helix_Light",
+          "Helix_Paint",
+          "Helix_Rubber",
+          "Helix_Secondary",
+          "Helix_Stripe"
+        ]
+      }
+    },
+    "glb_tracks_whole_in_every_lod": {
+      "ok": true,
+      "detail": {
+        "0": [
+          12,
+          6424,
+          -0.35
+        ],
+        "1": [
+          12,
+          6424,
+          -0.35
+        ],
+        "2": [
+          12,
+          6424,
+          -0.35
+        ]
+      }
+    },
+    "glb_claws_hoses_canopies_in_every_lod": {
+      "ok": true,
+      "detail": null
+    },
+    "lod_envelope_matches_gameplay": {
+      "ok": true,
+      "detail": {
+        "0": [
+          -2.479,
+          2.5,
+          -0.806,
+          0.806,
+          -0.0,
+          1.22
+        ],
+        "1": [
+          -2.479,
+          2.5,
+          -0.806,
+          0.806,
+          -0.0,
+          1.22
+        ],
+        "2": [
+          -2.479,
+          2.5,
+          -0.806,
+          0.806,
+          -0.0,
+          1.22
+        ]
+      }
+    }
+  },
+  "track_triangles": 6424,
+  "glb": {
+    "0": {
+      "meshes": 60,
+      "materials": [
+        "Helix_Glass",
+        "Helix_Hardware",
+        "Helix_Light",
+        "Helix_Paint",
+        "Helix_Rubber",
+        "Helix_Secondary",
+        "Helix_Stripe"
+      ],
+      "wheel_like": 0,
+      "track_objects": 12,
+      "track_tris": 6424,
+      "claws": 4,
+      "hoses": 8,
+      "canopies": 2,
+      "cleat_min_z_mm": -0.35,
+      "bbox": [
+        -2.479,
+        2.5,
+        -0.806,
+        0.806,
+        -0.0,
+        1.22
+      ]
+    },
+    "1": {
+      "meshes": 65,
+      "materials": [
+        "Helix_Glass",
+        "Helix_Hardware",
+        "Helix_Light",
+        "Helix_Paint",
+        "Helix_Rubber",
+        "Helix_Secondary",
+        "Helix_Stripe"
+      ],
+      "wheel_like": 0,
+      "track_objects": 12,
+      "track_tris": 6424,
+      "claws": 4,
+      "hoses": 8,
+      "canopies": 2,
+      "cleat_min_z_mm": -0.35,
+      "bbox": [
+        -2.479,
+        2.5,
+        -0.806,
+        0.806,
+        -0.0,
+        1.22
+      ]
+    },
+    "2": {
+      "meshes": 65,
+      "materials": [
+        "Helix_Glass",
+        "Helix_Hardware",
+        "Helix_Light",
+        "Helix_Paint",
+        "Helix_Rubber",
+        "Helix_Secondary",
+        "Helix_Stripe"
+      ],
+      "wheel_like": 0,
+      "track_objects": 12,
+      "track_tris": 6424,
+      "claws": 4,
+      "hoses": 8,
+      "canopies": 2,
+      "cleat_min_z_mm": -0.35,
+      "bbox": [
+        -2.479,
+        2.5,
+        -0.806,
+        0.806,
+        -0.0,
+        1.22
+      ]
+    }
+  }
+}
