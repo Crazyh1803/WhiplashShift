@@ -73,3 +73,4 @@ suggestions were not taken.
 - ak-look stays noisy on close-ups: it repeatedly calls touching/embedded parts (mirror stalk, truss feet, steering column) "floating"; the
   chain/embedding gates above are authoritative.
 - Legacy Knifeedge handling has unrelated recovery/stall behaviour; per instruction physics and CPU AI were not touched, report to Codex.
+Final asset commit: `ce154eb` (handoff text itself may be amended by a later docs-only commit).
