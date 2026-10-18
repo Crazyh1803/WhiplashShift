@@ -40,6 +40,7 @@ def main():
     stages = (("cage", lambda: K.build(builder)),
               ("engine", lambda: M.engine(builder)),
               ("suspension", lambda: M.suspension(builder)),
+              ("front_hubs", lambda: M.front_hubs(builder)),
               ("seats", lambda: M.seats(builder)),
               ("details", lambda: D.build(builder, shell)),
               ("wheels", lambda: W.build(builder)))

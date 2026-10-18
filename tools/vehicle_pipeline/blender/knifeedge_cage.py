@@ -39,15 +39,12 @@ def group(builder, name, fn, mat="accent"):
 
 def roof(bm):
     both(bm, lambda s: [pt(562, 66, s * Y_ROOF), pt(455, 66, s * Y_ROOF)], round_r=0.0)           # roof rails
-    both(bm, lambda s: [pt(562, 66, s * Y_ROOF), pt(615, BELT_PY - 3, s * Y_BASE)], round_r=0.0)  # A pillars
-    both(bm, lambda s: [pt(455, 66, s * Y_ROOF), pt(466, BELT_PY - 3, s * Y_BASE)], round_r=0.0)  # B pillars
+    both(bm, lambda s: [pt(562, 66, s * Y_ROOF), pt(615, T.BASE_PY, s * Y_BASE)], round_r=0.0)  # A pillars
+    both(bm, lambda s: [pt(455, 66, s * Y_ROOF), pt(466, T.BASE_PY, s * Y_BASE)], round_r=0.0)  # B pillars
     tube(bm, [pt(562, 66, -Y_ROOF), pt(562, 66, Y_ROOF)], round_r=0.0)                             # windshield header
     tube(bm, [pt(455, 66, -Y_ROOF), pt(455, 66, Y_ROOF)], round_r=0.0)                             # rear header
-    tube(bm, [pt(615, BELT_PY - 3, -Y_BASE), pt(615, BELT_PY - 3, Y_BASE)], round_r=0.0)           # cowl bar
+    tube(bm, [pt(615, T.BASE_PY, -Y_BASE), pt(615, T.BASE_PY, Y_BASE)], round_r=0.0)           # cowl bar
     tube(bm, [pt(455, 66, 0.0), pt(562, 66, 0.0)], r=R_SMALL, round_r=0.0)                         # roof spine rail
-
-
-BELT_PY = T.BELT_PY
 
 
 def rear(bm):
@@ -56,7 +53,7 @@ def rear(bm):
         both(bm, lambda s: [pt(px, T.slope_py(px) + 1.0, s * Y_ROOF), pt(px, 176, s * 0.56)], r=R_SMALL, round_r=0.0)
     both(bm, lambda s: [pt(362, 99, s * 0.40), pt(335, 175, s * 0.50)], round_r=0.0)               # shock tower legs
     both(bm, lambda s: [pt(362, 99, s * 0.40), pt(392, 176, s * 0.50)], round_r=0.0)
-    tube(bm, [pt(362, 99, -0.40), pt(362, 99, 0.40)], round_r=0.0)                                 # tower cross tube
+    tube(bm, [pt(362, 99, -0.47), pt(362, 99, 0.47)], round_r=0.0)                                 # tower cross tube
     tube(bm, [pt(305, 110, -Y_ROOF), pt(305, 110, Y_ROOF)], round_r=0.0)
     # triangulated side truss (end elevations / side view): diagonals between slope rail, floor rail and B pillar
     for a, b_ in (((455, 68), (400, 175)), ((400, 85), (345, 175)), ((345, 101), (318, 172))):

@@ -75,6 +75,7 @@ FLOOR_BOT = [(318, 175), (440, 177), (452, 184)]
 ROOF_PY = 66.0
 ROOF_HALF_PX = 48.5  # cage half width at the roof (top view roof panels reach +/-50 px)
 BELT_PY = 113.0
+BASE_PY = 114.0  # cage pillar / cowl-bar base: tube centres end 15 mm under the belt so they sink into the shell
 SLOPE_A = (305.0, 110.0)
 SLOPE_B = (455.0, 66.0)
 

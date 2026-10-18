@@ -1,11 +1,11 @@
 {
   "pass": true,
   "failed": [],
-  "checks": 47,
+  "checks": 49,
   "triangles": [
-    34494,
-    24376,
-    14490
+    34898,
+    24780,
+    14542
   ],
   "results": {
     "every_mesh_in_a_validated_group": {
@@ -29,7 +29,7 @@
       "detail": {
         "max_mm": 0.04,
         "p99_mm": 0.0,
-        "vertices": 16685,
+        "vertices": 16861,
         "intentional_asymmetric": [
           "Fine_SteeringWheel",
           "Fine_SteeringColumn",
@@ -95,6 +95,15 @@
         "zmin": 0.479
       }
     },
+    "cage_pillars_planted_in_shell": {
+      "ok": true,
+      "detail": {
+        "A-1": -35.16,
+        "A+1": -35.16,
+        "B-1": -18.45,
+        "B+1": -18.45
+      }
+    },
     "one_tire_per_wheel": {
       "ok": true,
       "detail": {
@@ -114,7 +123,7 @@
           "lowest_z_mm": 0.0,
           "width_mm": 300.0,
           "arch_clearance_mm": 69.02,
-          "suspension_clearance_mm": 2693.78
+          "suspension_clearance_mm": 146.16
         },
         "Wheel_Coupe_Tire_-1": {
           "origin_error_mm": 0.0,
@@ -123,7 +132,7 @@
           "lowest_z_mm": 0.0,
           "width_mm": 300.0,
           "arch_clearance_mm": 69.02,
-          "suspension_clearance_mm": 2693.78
+          "suspension_clearance_mm": 146.16
         },
         "Wheel_Truck_Tire_+1": {
           "origin_error_mm": 0.0,
@@ -180,8 +189,8 @@
     "suspension_clears_tires_5mm": {
       "ok": true,
       "detail": {
-        "Wheel_Coupe_Tire_+1": 2693.78,
-        "Wheel_Coupe_Tire_-1": 2693.78,
+        "Wheel_Coupe_Tire_+1": 146.16,
+        "Wheel_Coupe_Tire_-1": 146.16,
         "Wheel_Truck_Tire_+1": 94.85,
         "Wheel_Truck_Tire_-1": 94.85
       }
@@ -246,7 +255,7 @@
       "detail": {
         "Glass_Roof_+1": 2.05,
         "Glass_Roof_-1": 2.05,
-        "Glass_Windshield": 0.16
+        "Glass_Windshield": 0.25
       }
     },
     "glass_never_crosses_shell": {
@@ -258,7 +267,7 @@
       "detail": {
         "Glass_Roof_+1": 517.29,
         "Glass_Roof_-1": 517.29,
-        "Glass_Windshield": 43.93
+        "Glass_Windshield": 10.12
       }
     },
     "glass_set": {
@@ -279,14 +288,18 @@
     "hardware_never_pierces_glass_beyond_frame_tubes": {
       "ok": true,
       "detail": {
-        "Body_CageRoof": 24
+        "Body_CageRoof": 20
       }
     },
     "nothing_but_axles_touches_wheels": {
       "ok": true,
       "detail": {}
     },
-    "no_floating_parts_within_12mm": {
+    "every_part_chained_to_shell_within_12mm": {
+      "ok": true,
+      "detail": {}
+    },
+    "shocks_clear_of_cage_tubes": {
       "ok": true,
       "detail": {}
     },
@@ -309,9 +322,9 @@
     "triangle_budget_and_lod_monotonic": {
       "ok": true,
       "detail": [
-        34494,
-        24376,
-        14490
+        34898,
+        24780,
+        14542
       ]
     },
     "handoff_display_radii_match_measured": {
@@ -346,15 +359,15 @@
       "ok": true,
       "detail": {
         "0": [
-          81,
+          83,
           48
         ],
         "1": [
-          81,
+          83,
           48
         ],
         "2": [
-          77,
+          79,
           48
         ]
       }
@@ -370,9 +383,9 @@
     "glb_props_preserved_in_all_lods": {
       "ok": true,
       "detail": {
-        "0": 15,
-        "1": 15,
-        "2": 15
+        "0": 17,
+        "1": 17,
+        "2": 17
       }
     },
     "lod_envelope_matches_gameplay": {
@@ -660,7 +673,7 @@
   },
   "glb": {
     "0": {
-      "meshes": 81,
+      "meshes": 83,
       "materials": [
         "Knifeedge_Glass",
         "Knifeedge_Iron",
@@ -673,7 +686,7 @@
       ],
       "wheel_objects": 48,
       "tires": 4,
-      "prop_objects": 15,
+      "prop_objects": 17,
       "bbox": [
         -2.53,
         2.692,
@@ -685,7 +698,7 @@
       "tire_radius_deficit_mm": -0.0
     },
     "1": {
-      "meshes": 81,
+      "meshes": 83,
       "materials": [
         "Knifeedge_Glass",
         "Knifeedge_Iron",
@@ -698,7 +711,7 @@
       ],
       "wheel_objects": 48,
       "tires": 4,
-      "prop_objects": 15,
+      "prop_objects": 17,
       "bbox": [
         -2.53,
         2.692,
@@ -710,7 +723,7 @@
       "tire_radius_deficit_mm": -0.0
     },
     "2": {
-      "meshes": 77,
+      "meshes": 79,
       "materials": [
         "Knifeedge_Glass",
         "Knifeedge_Iron",
@@ -723,7 +736,7 @@
       ],
       "wheel_objects": 48,
       "tires": 4,
-      "prop_objects": 15,
+      "prop_objects": 17,
       "bbox": [
         -2.53,
         2.692,
@@ -743,7 +756,7 @@
       "lowest_z_mm": 0.0,
       "width_mm": 300.0,
       "arch_clearance_mm": 69.02,
-      "suspension_clearance_mm": 2693.78
+      "suspension_clearance_mm": 146.16
     },
     "Wheel_Coupe_Tire_-1": {
       "origin_error_mm": 0.0,
@@ -752,7 +765,7 @@
       "lowest_z_mm": 0.0,
       "width_mm": 300.0,
       "arch_clearance_mm": 69.02,
-      "suspension_clearance_mm": 2693.78
+      "suspension_clearance_mm": 146.16
     },
     "Wheel_Truck_Tire_+1": {
       "origin_error_mm": 0.0,

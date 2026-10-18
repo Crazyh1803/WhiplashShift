@@ -115,13 +115,23 @@ def suspension(builder):
             top_in = Vector((leg.x, s * leg.y, leg.z))
             arms[tag] = (top_in, outer_up)
             cyl(builder, f"Fine_ArmUp_{s:+d}{tag}", tuple(top_in), tuple(outer_up), 0.017, "steel", 10)
-        shock_top = Vector((T.X(TOWER_APEX[0]), s * TOWER_APEX[2], T.Z(TOWER_APEX[1]) - 0.02))
+        shock_top = Vector((T.X(TOWER_APEX[0]), s * 0.47, T.Z(TOWER_APEX[1]) - 0.02))  # on the cross tube, outboard of the legs
         shock_low = arms["R"][0].lerp(arms["R"][1], 0.45)
         cyl(builder, f"Fine_ShockBody_{s:+d}", tuple(shock_top.lerp(shock_low, 0.42)), tuple(shock_low), 0.020, "iron", 12)
         cyl(builder, f"Fine_ShockRod_{s:+d}", tuple(shock_top), tuple(shock_top.lerp(shock_low, 0.45)), 0.010, "steel", 10)
-        spring(builder, f"Fine_ShockSpring_{s:+d}", shock_top.lerp(shock_low, 0.08), shock_top.lerp(shock_low, 0.92), 0.040, 0.0055, 7)
+        spring(builder, f"Fine_ShockSpring_{s:+d}", shock_top.lerp(shock_low, 0.08), shock_top.lerp(shock_low, 0.92), 0.034, 0.0055, 7)
         # driveshaft from the transaxle output to the upright
         cyl(builder, f"Fine_Driveshaft_{s:+d}", (T.X(390.0), s * 0.27, T.FLOOR_TOP_Z + 0.10), (HUB_X, s * 0.62, HUB_Z), 0.019, "steel", 10)
+
+
+def front_hubs(builder):
+    """End A hub carriers: upright, stub axle and two lower arms from the arch wall (y 0.60) to each supercar wheel."""
+    hx, hy, hz = T.WHEEL_X["coupe"], T.TRACK_Y["coupe"], T.WHEEL_R["coupe"]
+    for s in (-1, 1):
+        P.rbox(builder, f"Prop_UprightA_{s:+d}", (0.08, 0.07, 0.30), "iron", bevel=0.008, location=(hx, s * 0.66, hz))
+        cyl(builder, f"Fine_AxleA_{s:+d}", (hx, s * 0.595, hz), (hx, s * (hy + 0.075), hz), 0.030, "steel", sides=12)
+        for dx, tag in ((0.28, "F"), (-0.28, "R")):
+            cyl(builder, f"Fine_ArmA_{s:+d}{tag}", (hx + dx, s * 0.595, hz - 0.08), (hx, s * 0.66, hz - 0.10), 0.017, "steel", 10)
 
 
 def seats(builder):
@@ -141,10 +151,13 @@ def seats(builder):
                location=(x - 0.17, y, floor + 0.80))
     # steering wheel on the -Y seat (end-B elevation shows it right of centre); the only asymmetric part
     sw = (T.X(556.0), -0.26, floor + 0.62)
-    col = [(sw[0] + 0.17, sw[1], sw[2] - 0.20), (sw[0] + 0.01, sw[1], sw[2])]
+    col = [(T.X(606.0) + 0.008, sw[1], 0.97), (sw[0] + 0.01, sw[1], sw[2])]  # column ends 8 mm inside the dash wall
     P.sweep(builder, "Fine_SteeringColumn", col, "iron", radius=0.016, sides=10)
     bm = bmesh.new()
     F.torus(bm, 0.095, 0.0135, (0, 0, 0), axis=0, seg=28, rseg=8)
+    for ang in (90, 210, 330):  # three spokes from the column boss to the rim
+        a = math.radians(ang)
+        P.sweep_into(bm, [(0, 0, 0), (0, 0.090 * math.cos(a), 0.090 * math.sin(a))], radius=0.011, sides=8)
     for v in bm.verts:
         v.co = Matrix.Rotation(math.radians(-25), 3, "Y") @ v.co + Vector(sw)
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
