@@ -145,8 +145,8 @@ def front_detail(builder, surf):
     mount(builder, "Fine_Badge", surf, (T.X(738.0), 0, 2.0), (0, 0, -1), (0.07, 0.07, 0.012), "steel", bevel=0.003)
     for s in (-1, 1):
         # angled LED headlamp slit on the nose, three short segments following the curved nose
-        for k, (y, ln) in enumerate(((0.36, 0.16), (0.50, 0.14), (0.63, 0.12))):
-            mount(builder, f"Fine_LedStrip_{s:+d}_{k}", surf, (4.0, s * y, T.Z(166.0 - 3.0 * k)), (-1, 0, 0), (0.04, ln, 0.012),
+        for k, (y, ln) in enumerate(((0.36, 0.18), (0.52, 0.16), (0.66, 0.12))):
+            mount(builder, f"Fine_LedStrip_{s:+d}_{k}", surf, (4.0, s * y, T.Z(166.0 - 3.0 * k)), (-1, 0, 0), (ln, 0.035, 0.012),
                   "lamp", bevel=0.002, sink=0.006, along=(0, s, 0))
         mount(builder, f"Fine_NoseIntake_{s:+d}", surf, (T.X(729.0), s * 3.0, T.Z(176.0)), (0, -s, 0), (0.34, 0.26, 0.014),
               "iron", bevel=0.003, sink=0.012,

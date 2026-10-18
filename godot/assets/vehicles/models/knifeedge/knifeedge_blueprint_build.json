@@ -4,17 +4,17 @@
     "lod0": {
       "triangles": 35186,
       "objects": 83,
-      "bytes": 1624724
+      "bytes": 1624788
     },
     "lod1": {
       "triangles": 25068,
       "objects": 83,
-      "bytes": 1242108
+      "bytes": 1242236
     },
     "lod2": {
       "triangles": 14542,
       "objects": 80,
-      "bytes": 758568
+      "bytes": 758572
     }
   },
   "handoff": {

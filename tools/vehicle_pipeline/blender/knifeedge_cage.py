@@ -47,6 +47,9 @@ def roof(bm):
     tube(bm, [pt(455, 66, 0.0), pt(562, 66, 0.0)], r=R_SMALL, round_r=0.0)                         # roof spine rail
 
 
+FOOT_PY = 172.0  # truss feet end inside the floor pan thickness
+
+
 def foot_y(px):
     """Lateral position of a lower truss end: on the floor-pan edge line, 20 mm inside the pan."""
     return T.W(T.lerp_table(T.FLOOR_HALF, px)) - 0.02
@@ -55,14 +58,15 @@ def foot_y(px):
 def rear(bm):
     both(bm, lambda s: [pt(455, 66, s * Y_ROOF), pt(305, 110, s * Y_ROOF)], round_r=0.0)           # slope rails
     for px in (345, 400):
-        both(bm, lambda s: [pt(px, T.slope_py(px) + 1.0, s * Y_ROOF), pt(px, 176, s * foot_y(px))], r=R_SMALL, round_r=0.0)
-    both(bm, lambda s: [pt(362, 99, s * 0.40), pt(335, 175, s * 0.50)], round_r=0.0)               # shock tower legs
-    both(bm, lambda s: [pt(362, 99, s * 0.40), pt(392, 176, s * 0.50)], round_r=0.0)
+        both(bm, lambda s: [pt(px, T.slope_py(px) + 1.0, s * Y_ROOF), pt(px, FOOT_PY, s * foot_y(px))], r=R_SMALL, round_r=0.0)
+    for tag in ("R", "F"):                                                                              # shock tower legs
+        both(bm, lambda s, tag=tag: [pt(*T.TOWER_APEX[:2], s * T.TOWER_APEX[2]), pt(*T.TOWER_FOOT[tag][:2], s * T.TOWER_FOOT[tag][2])],
+             round_r=0.0)
     tube(bm, [pt(362, 99, -0.47), pt(362, 99, 0.47)], round_r=0.0)                                 # tower cross tube
     tube(bm, [pt(305, 110, -Y_ROOF), pt(305, 110, Y_ROOF)], round_r=0.0)
     # triangulated side truss (end elevations / side view): diagonals between slope rail, floor rail and B pillar
     for a, b_ in (((455, 68), (400, 175)), ((400, 85), (345, 175)), ((345, 101), (318, 172))):
-        both(bm, lambda s, a=a, b_=b_: [pt(a[0], a[1], s * Y_ROOF), pt(b_[0], b_[1], s * foot_y(b_[0]))], r=R_SMALL, round_r=0.0)
+        both(bm, lambda s, a=a, b_=b_: [pt(a[0], a[1], s * Y_ROOF), pt(b_[0], FOOT_PY, s * foot_y(b_[0]))], r=R_SMALL, round_r=0.0)
 
 
 def bumper(bm):

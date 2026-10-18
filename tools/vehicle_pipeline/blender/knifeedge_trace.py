@@ -99,3 +99,8 @@ def shell_bot_z(px):
 
 def shell_half(px):
     return lerp_table(SHELL_HALF, px) * SCALE
+
+
+# Shock tower A-frame (px, px, y): apex on the slope rail, feet sunk into the floor pan.
+TOWER_APEX = (362.0, 99.0, 0.40)
+TOWER_FOOT = {"R": (335.0, 172.0, 0.46), "F": (392.0, 172.0, 0.46)}

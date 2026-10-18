@@ -427,13 +427,27 @@ for o in objs.values():
             spring_hits[o.name] = n
 check("shocks_clear_of_cage_tubes", not spring_hits, spring_hits)
 floor_tree = union_tree([objs["Body_Floor"]])
+
+
+def inside_floor(p):
+    origin, hits = Vector(p), 0
+    while hits < 8:
+        h = floor_tree.ray_cast(origin + Vector((0, 0, 1e-5)), Vector((0, 0, 1)))
+        if h[0] is None:
+            break
+        hits += 1
+        origin = h[0] + Vector((0, 0, 1e-4))
+    return hits % 2 == 1
+
+
 feet = {}
-for p in all_vertices([objs["Body_CageRear"]]):
-    if p.z < 0.36:
-        d_ = floor_tree.find_nearest(p)[3]
-        if d_ > 0.03:
-            feet[f"{p.x:.2f},{p.y:.2f},{p.z:.2f}"] = mm(d_)
-check("rear_truss_feet_land_on_floor_pan", not feet, dict(list(feet.items())[:8]))
+foot_list = [(px, K.foot_y(px)) for px in (345, 400, 318)] + [(T.TOWER_FOOT[t][0], T.TOWER_FOOT[t][2]) for t in "RF"]
+for px, y in foot_list:
+    for s in (-1, 1):
+        py = T.TOWER_FOOT["R"][1] if (px, y) in [(T.TOWER_FOOT[t][0], T.TOWER_FOOT[t][2]) for t in "RF"] else K.FOOT_PY
+        if not inside_floor((T.X(px), s * y, T.Z(py))):
+            feet[f"px{px:.0f}{s:+d}"] = "foot centre outside the floor pan"
+check("rear_truss_feet_land_on_floor_pan", not feet, feet)
 vent_gap = {}
 for n in objs:
     if n.startswith("Fine_HoodVent"):
