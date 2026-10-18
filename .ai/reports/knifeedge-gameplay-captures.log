@@ -1,0 +1,17 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: Failed to create wd.xic as the input method or its xim server may not have started yet.
+     at: _create_xic (platform/linuxbsd/x11/display_server_x11.cpp:6347)
+Vulkan 1.4.329 - Forward+ - Using Device #1: NVIDIA - NVIDIA GeForce RTX 3070 Laptop GPU
+
+QA_CAPTURE garage_roster error=0
+QA_LAYOUT viewport=[P: (0.0, 0.0), S: (1600.0, 900.0)] garage=(1600.0, 900.0) last_vehicle=[P: (550.0, 784.0), S: (242.0, 40.0)] next=[P: (567.0, 838.0), S: (130.0, 34.0)] ignite=[P: (1114.0, 760.0), S: (396.0, 60.0)]
+QA_CAPTURE blackjack_garage error=0
+QA_CAPTURE knifeedge_roster error=0
+QA_CAPTURE knifeedge_garage error=0
+QA_CAPTURE knifeedge_custom_paint error=0
+QA_CAPTURE knifeedge_garage_coupe error=0
+QA_CAPTURE knifeedge_grid error=0
+QA_DRIVE speed_kmh=64.6299041748047
+QA_CAPTURE knifeedge_driving error=0
+QA_SWAP active_end=B position_finite=true
+QA_CAPTURE knifeedge_swapped error=0
