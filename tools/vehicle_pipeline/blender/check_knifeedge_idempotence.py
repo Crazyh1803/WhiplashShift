@@ -15,7 +15,7 @@ from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 from mathutils.kdtree import KDTree
 
-TOL_VERTEX_MM = 0.01  # no Booleans in this build: expect float-level agreement
+TOL_VERTEX_MM = 0.01  # exact Booleans are deterministic here: expect float-level agreement
 TOL_SURFACE_MM = 0.01  # shape: distance of every vertex to the other build's surface
 argv = sys.argv[sys.argv.index("--") + 1:]
 other_path = argv[0]

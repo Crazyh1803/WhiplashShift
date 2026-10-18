@@ -44,21 +44,17 @@ def make_material(name, color, metallic=0.0, roughness=0.5, coat=0.0, coat_rough
 
 
 def build_materials():
-    """Three semantic paint channels plus protected brass/copper/iron, glass, rubber, lamps."""
+    """Three semantic paint channels plus fixed glass, rubber, steel, iron and light materials."""
     return {
-        "paint": make_material("Knifeedge_Paint", (0.025, 0.150, 0.085), 0.55, 0.32, 0.6, 0.06),
-        "paint2": make_material("Knifeedge_Secondary", (0.62, 0.53, 0.34), 0.35, 0.42, 0.4, 0.08),
-        "accent": make_material("Knifeedge_Stripe", (0.46, 0.045, 0.030), 0.45, 0.34, 0.5, 0.06),
-        "glass": make_material("Knifeedge_Glass", (0.010, 0.026, 0.030), 0.15, 0.04, 1.0, 0.0),
-        "rubber": make_material("Knifeedge_Rubber", (0.018, 0.017, 0.016), 0.0, 0.86),
-        "brass": make_material("Knifeedge_Brass", (0.70, 0.46, 0.13), 1.0, 0.24),
-        "copper": make_material("Knifeedge_Copper", (0.62, 0.24, 0.10), 1.0, 0.30),
-        "iron": make_material("Knifeedge_Iron", (0.030, 0.032, 0.035), 0.9, 0.42),
-        "dial": make_material("Knifeedge_Dial", (0.80, 0.76, 0.62), 0.0, 0.50),
-        "lamp": make_material("Knifeedge_Lamp", (0.85, 0.66, 0.34), 0.05, 0.10,
-                              emission=(1.0, 0.62, 0.22), emission_strength=3.0),
-        "amber": make_material("Knifeedge_Amber", (0.80, 0.30, 0.03), 0.05, 0.18,
-                               emission=(1.0, 0.35, 0.04), emission_strength=1.8),
+        "paint": make_material("Knifeedge_Paint", (0.060, 0.230, 0.420), 0.35, 0.28, 0.8, 0.04),
+        "paint2": make_material("Knifeedge_Secondary", (0.78, 0.84, 0.90), 0.30, 0.34, 0.6, 0.05),
+        "accent": make_material("Knifeedge_Stripe", (0.90, 0.30, 0.025), 0.25, 0.36, 0.5, 0.06),
+        "glass": make_material("Knifeedge_Glass", (0.020, 0.040, 0.055), 0.10, 0.03, 1.0, 0.0),
+        "rubber": make_material("Knifeedge_Rubber", (0.020, 0.020, 0.022), 0.0, 0.85),
+        "steel": make_material("Knifeedge_Steel", (0.62, 0.65, 0.68), 1.0, 0.22),
+        "iron": make_material("Knifeedge_Iron", (0.035, 0.038, 0.042), 0.85, 0.45),
+        "lamp": make_material("Knifeedge_Lamp", (0.90, 0.92, 0.85), 0.05, 0.10,
+                              emission=(1.0, 0.95, 0.80), emission_strength=3.0),
     }
 
 
@@ -238,3 +234,17 @@ def dissolve_flat(obj, angle_deg=0.8):
     bm.free()
     obj.data.update()
     return open_edges
+
+
+def boolean_difference(obj, cutter):
+    """Exact boolean obj - cutter, applied; the cutter object is removed afterwards."""
+    mod = obj.modifiers.new("cut", "BOOLEAN")
+    mod.operation = "DIFFERENCE"
+    mod.solver = "EXACT"
+    mod.object = cutter
+    apply_all_modifiers(obj)
+    mesh = cutter.data
+    bpy.data.objects.remove(cutter, do_unlink=True)
+    if mesh.users == 0:
+        bpy.data.meshes.remove(mesh)
+    return obj

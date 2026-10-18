@@ -87,14 +87,19 @@ def ellipse(w, h, segments=24):
 def sweep(builder, name, path, mat, radius=0.02, sides=8, cyclic=False, caps=True,
           profile=None, up=(0, 0, 1)):
     """Sweep a round (or custom closed `profile` of (a,b) pairs) section along a 3D path."""
+    bm = bmesh.new()
+    sweep_into(bm, path, radius, sides, cyclic, caps, profile, up)
+    return finish(builder, name, bm, mat, smooth_angle=50)
+
+
+def sweep_into(bm, path, radius=0.02, sides=8, cyclic=False, caps=True, profile=None, up=(0, 0, 1)):
+    """Add a swept solid (round or custom section) along a 3D path to `bm`."""
     pts = [Vector(p) for p in path]
     n = len(pts)
     prof = profile or [(radius * math.cos(math.tau * k / sides), radius * math.sin(math.tau * k / sides))
                        for k in range(sides)]
     m = len(prof)
-    bm = bmesh.new()
     rings = []
-    prev_normal = None
     for i, p in enumerate(pts):
         if cyclic:
             t = (pts[(i + 1) % n] - pts[(i - 1) % n]).normalized()
@@ -126,7 +131,6 @@ def sweep(builder, name, path, mat, radius=0.02, sides=8, cyclic=False, caps=Tru
         bm.faces.new(list(reversed(rings[0])))
         bm.faces.new(rings[-1])
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
-    return finish(builder, name, bm, mat, smooth_angle=50)
 
 
 def rounded_path(corners, radius, steps=4):

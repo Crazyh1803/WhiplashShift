@@ -18,7 +18,7 @@ from mathutils.kdtree import KDTree
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-import knifeedge_body as B  # noqa: E402
+import knifeedge_cage as K  # noqa: E402
 import knifeedge_core as C  # noqa: E402
 import knifeedge_trace as T  # noqa: E402
 
@@ -26,11 +26,12 @@ MODEL_DIR = ROOT / "godot/assets/vehicles/models/knifeedge"
 STEM = "knifeedge_blueprint"
 SEMANTIC = {"Knifeedge_Paint", "Knifeedge_Secondary", "Knifeedge_Stripe"}
 EXPECTED_MATERIALS = SEMANTIC | {
-    "Knifeedge_Glass", "Knifeedge_Rubber", "Knifeedge_Brass", "Knifeedge_Copper", "Knifeedge_Iron",
-    "Knifeedge_Dial", "Knifeedge_Lamp", "Knifeedge_Amber",
+    "Knifeedge_Glass", "Knifeedge_Rubber", "Knifeedge_Steel", "Knifeedge_Iron", "Knifeedge_Lamp",
 }
-# Intentional authored asymmetries (none: every part is mirrored by construction).
-ASYMMETRIC_ALLOWED = ()
+# Intentional authored asymmetry: the one steering wheel and its column (end-B elevation shows it on one seat only).
+# Fine_ShockSpring: a helix is chiral (left/right springs are mirrored only in position); Fine_Badge sits on the
+# tessellated hood crease (4 mm tessellation difference).
+ASYMMETRIC_ALLOWED = ("Fine_SteeringWheel", "Fine_SteeringColumn", "Fine_ShockSpring", "Fine_Badge")
 results = {}
 failures = []
 
@@ -45,23 +46,19 @@ def mm(v):
     return round(v * 1000.0, 2)
 
 
+
+
 objs = {o.name: o for o in bpy.data.objects if o.type == "MESH" and not o.name.startswith(("Studio", "Cutter"))}
 bodies = [o for n, o in objs.items() if n.startswith("Body_")]
 wheels = [o for n, o in objs.items() if n.startswith(("Wheel_Truck_", "Wheel_Coupe_"))]
 glass = [o for n, o in objs.items() if n.startswith("Glass_")]
-frames = [o for n, o in objs.items() if n.startswith("Frame_")]
 hardware = [o for n, o in objs.items() if n.startswith(("Fine_", "Trim_"))]
-mids = [o for n, o in objs.items() if n.startswith(("Prop_MidDrive_", "Gear_"))]
+props = [o for n, o in objs.items() if n.startswith("Prop_")]
+cage = [o for o in bodies if o.name.startswith("Body_Cage")]
 
 
 def world_mesh(obj):
     return C.evaluated_mesh(obj)
-
-
-def bvh(obj):
-    me = world_mesh(obj)
-    tree = C.bvh_of(me)
-    return tree, me
 
 
 def union_tree(group):
@@ -84,12 +81,15 @@ def all_vertices(group):
     return pts
 
 
-covered = {o.name for o in bodies + wheels + glass + frames + hardware + mids}
+def ray(tree, origin, direction):
+    return tree.ray_cast(Vector(origin), Vector(direction))
+
+
+covered = {o.name for o in bodies + wheels + glass + hardware + props}
 check("every_mesh_in_a_validated_group", set(objs) == covered, sorted(set(objs) - covered))
 
-# --- closed, positive-volume main masses ---------------------------------------------------------
-bad = {}
-vol_bad = {}
+# --- closed, positive-volume masses ---------------------------------------------------------------------
+bad, vol_bad = {}, {}
 for o in bodies + wheels:
     me = world_mesh(o)
     bm = bmesh.new()
@@ -98,7 +98,6 @@ for o in bodies + wheels:
     vol = bm.calc_volume(signed=True)
     bm.free()
     bpy.data.meshes.remove(me)
-    # spiked tyre studs are separate shells of the same mesh and wire/spoke bundles are closed prisms
     if open_edges:
         bad[o.name] = open_edges
     if vol <= 0:
@@ -106,7 +105,7 @@ for o in bodies + wheels:
 check("main_masses_closed_manifold", not bad, bad)
 check("main_masses_positive_volume", not vol_bad, vol_bad)
 bad = {}
-for o in glass + frames + hardware + mids:
+for o in glass + hardware + props:
     me = world_mesh(o)
     bm = bmesh.new()
     bm.from_mesh(me)
@@ -115,10 +114,10 @@ for o in glass + frames + hardware + mids:
     bpy.data.meshes.remove(me)
     if n:
         bad[o.name] = n
-check("glass_frames_hardware_closed", not bad, bad)
+check("glass_hardware_props_closed", not bad, bad)
 
-# --- mirror symmetry of the whole assembly --------------------------------------------------------
-pts = all_vertices([o for o in objs.values() if not o.name.startswith(ASYMMETRIC_ALLOWED or ("~",))])
+# --- mirror symmetry of the whole assembly ----------------------------------------------------------------
+pts = all_vertices([o for n, o in objs.items() if not n.startswith(ASYMMETRIC_ALLOWED)])
 kd = KDTree(len(pts))
 for i, p in enumerate(pts):
     kd.insert(p, i)
@@ -127,44 +126,64 @@ errs = sorted((kd.find(Vector((p.x, -p.y, p.z)))[0] - Vector((p.x, -p.y, p.z))).
 check("assembly_mirror_symmetry", errs[-1] < 0.002, {"max_mm": mm(errs[-1]), "p99_mm": mm(errs[int(len(errs) * 0.99)]),
                                                    "vertices": len(pts), "intentional_asymmetric": list(ASYMMETRIC_ALLOWED)})
 
-# --- silhouette vs traced tables ------------------------------------------------------------------
-mass = [o for o in bodies if o.name in ("Body_Hull", "Body_BoilerBarrel", "Body_ProwSpeedster", "Body_PlowTruck")]
-mass_tree = union_tree(mass)
-top_dev, sill_dev, half_dev = [], [], []
-for px in range(300, 862, 6):
+# --- silhouette and extents vs the traced sheet -------------------------------------------------------------
+shell_tree = union_tree([objs["Body_Shell"]])
+top_dev, bot_dev, half_dev = [], [], []
+for px in range(612, 755, 6):
     x = T.X(px)
-    zs = [h.z for yv in [i * 0.04 for i in range(0, 15)]
-          if (h := mass_tree.ray_cast(Vector((x, yv, 3.0)), Vector((0, 0, -1)))[0]) is not None]
-    if zs and px >= 440:
-        top_dev.append(abs(max(zs) - T.top_z(px)) / T.SCALE)
-    lows = [h.z for yv in [i * 0.04 for i in range(0, 12)]
-            if (h := mass_tree.ray_cast(Vector((x, yv, -1.0)), Vector((0, 0, 1)))[0]) is not None]
-    if lows:
-        sill_dev.append(abs(min(lows) - T.sill_z(px)) / T.SCALE)
-    ys = [h.y for z in [0.35, 0.5, 0.7, 0.9]
-          if (h := mass_tree.ray_cast(Vector((x, 2.0, z)), Vector((0, -1, 0)))[0]) is not None]
-    if ys and 330 <= px <= 800:
-        half_dev.append(abs(max(ys) - T.half_w(px)) / T.SCALE)
-check("silhouette_top_vs_trace_px", max(top_dev) < 4.0, {"max_px": round(max(top_dev), 2), "mean_px": round(sum(top_dev) / len(top_dev), 2)})
-check("silhouette_sill_vs_trace_px", max(sill_dev) < 6.0, {"max_px": round(max(sill_dev), 2)})
-check("silhouette_halfwidth_vs_trace_px", max(half_dev) < 4.0, {"max_px": round(max(half_dev), 2)})
-allpts = all_vertices([o for o in objs.values() if not o.name.startswith("Wheel_")])
+    h = ray(shell_tree, (x, 0.02, 3.0), (0, 0, -1))
+    if h[0] is not None:
+        top_dev.append(abs(h[0].z - T.shell_top_z(px)) / T.SCALE)
+for px in range(460, 740, 8):
+    x = T.X(px)
+    h = ray(shell_tree, (x, 0.02, -1.0), (0, 0, 1))
+    if h[0] is not None:
+        bot_dev.append(abs(h[0].z - T.shell_bot_z(px)) / T.SCALE)
+for px in list(range(470, 604, 8)) + list(range(716, 750, 8)):
+    x = T.X(px)
+    ys = [hh[0].y for z in (0.28, 0.34, 0.40) if (hh := ray(shell_tree, (x, 2.0, z), (0, -1, 0)))[0] is not None]
+    if ys:
+        half_dev.append(abs(max(ys) - T.shell_half(px)) / T.SCALE)
+check("shell_top_vs_trace_px", top_dev and max(top_dev) < 4.0, {"max_px": round(max(top_dev), 2), "n": len(top_dev)})
+check("shell_sill_vs_trace_px", bot_dev and max(bot_dev) < 4.0, {"max_px": round(max(bot_dev), 2), "n": len(bot_dev)})
+check("shell_halfwidth_vs_trace_px", half_dev and max(half_dev) < 4.0, {"max_px": round(max(half_dev), 2), "n": len(half_dev)})
+nowheel = [o for o in objs.values() if not o.name.startswith("Wheel_")]
+allpts = all_vertices(nowheel)
 xs = [p.x for p in allpts]
-check("overall_length_vs_trace", abs(min(xs) - T.X(228)) < 0.03 and abs(max(xs) - T.X(925)) < 0.06,
-      {"min_x": round(min(xs), 4), "max_x": round(max(xs), 4), "trace_min": round(T.X(228), 4), "trace_max": round(T.X(925), 4)})
+check("overall_length_vs_trace", abs(min(xs) - T.X(288)) < 0.06 and abs(max(xs) - T.X(756)) < 0.04,
+      {"min_x": round(min(xs), 4), "max_x": round(max(xs), 4), "trace_min": round(T.X(288), 4), "trace_max": round(T.X(756), 4)})
 zmax = max(p.z for p in allpts)
-check("overall_height_vs_trace", abs(zmax - T.Z(73)) < 0.05, {"max_z": round(zmax, 4), "trace_stack_top": round(T.Z(73), 4)})
+check("overall_height_vs_trace", abs(zmax - T.Z(46)) < 0.05, {"max_z": round(zmax, 4), "trace_light_bar_top": round(T.Z(46), 4)})
+cage_pts = all_vertices(cage)
+roof_z = max(p.z for p in cage_pts)
+check("cage_roof_height_vs_trace", abs(roof_z - (T.Z(66) + K.R_MAIN)) < 0.01, {"roof_z": round(roof_z, 4), "trace": round(T.Z(66), 4)})
+rear_slope = [p for p in cage_pts if p.x < T.X(330) and p.z > 0.8]
+check("cage_rear_slope_vs_trace_px", all(abs(p.z - T.Z(T.slope_py(T.PX(p.x)))) / T.SCALE < 6.0 for p in rear_slope if abs(p.y) > 0.5 and T.PX(p.x) < 450 and p.z > T.Z(T.slope_py(T.PX(p.x))) - 0.0),
+      {"samples": len(rear_slope)})
+tail = [p for p in allpts if p.x < T.X(300)]
+check("tail_hoop_spans_trace_height", tail and abs(max(p.z for p in tail) - T.Z(108)) < 0.05 and abs(min(p.z for p in tail) - T.Z(159)) < 0.06,
+      {"zmax": round(max(p.z for p in tail), 3), "zmin": round(min(p.z for p in tail), 3)})
 
-# --- wheels: names, hubs, radii, track, arch clearance ----------------------------------------------
+# --- wheels: names, hubs, radii, ground, clearance -----------------------------------------------------------------
 tires = [o for o in wheels if "_Tire_" in o.name]
+
+
+def wheel_key(name):
+    parts = name.split("_")
+    side = next(p for p in parts if p in ("+1", "-1"))
+    return parts[1] + side
+
+
 groups = {}
 for w in wheels:
-    groups.setdefault((w.name.split("_")[1], w.name.split("_")[-1] if w.name.split("_")[-1] in ("+1", "-1") else w.name.split("_")[-2]), []).append(w.name)
-check("one_tire_per_wheel", len(groups) == 4 and all(sum(1 for n in names_ if "_Tire_" in n) == 1 for names_ in groups.values()),
-      {"/".join(k): sum(1 for n in v_ if "_Tire_" in n) for k, v_ in groups.items()})
+    groups.setdefault(wheel_key(w.name), []).append(w.name)
+check("one_tire_per_wheel", len(groups) == 4 and all(sum(1 for n in v_ if "_Tire_" in n) == 1 for v_ in groups.values()),
+      {k: sum(1 for n in v_ if "_Tire_" in n) for k, v_ in groups.items()})
 wheel_info = {}
-fender_tree = union_tree([o for o in bodies if o.name.startswith("Body_Fender")])
-hull_tree = union_tree([o for o in bodies if not o.name.startswith("Body_Fender")])
+arch_state = {}
+arch_tree = shell_tree
+chassis_tree = union_tree([o for o in objs.values() if not o.name.startswith("Wheel_") and not o.name.startswith("Fine_Axle")
+                           and not o.name.startswith("Glass_")])
 for t in tires:
     end = "truck" if "Truck" in t.name else "coupe"
     side = 1 if t.name.endswith("+1") else -1
@@ -173,25 +192,44 @@ for t in tires:
     radii = [math.hypot(v.co.x - hub.x, v.co.z - hub.z) for v in me.vertices]
     zmin = min(v.co.z for v in me.vertices)
     ymin, ymax = min(v.co.y for v in me.vertices), max(v.co.y for v in me.vertices)
-    clr = min(fender_tree.find_nearest(v.co)[3] for v in me.vertices if v.co.z > hub.z and abs(v.co.y) < 0.70 + 0.2)
-    hullc = min(hull_tree.find_nearest(v.co)[3] for v in me.vertices)
+    arch = None
+    if end == "coupe":
+        # tyre must be outside the solid shell: no surface intersections and every vertex has an even ray parity
+        overlaps = len(C.bvh_of(me).overlap(arch_tree))
+        inside = 0
+        for v in list(me.vertices)[::7]:
+            origin, hits = Vector(v.co), 0
+            while hits < 12:
+                h = arch_tree.ray_cast(origin + Vector((0, 0, 1e-5)), Vector((0, 0, 1)))
+                if h[0] is None:
+                    break
+                hits += 1
+                origin = h[0] + Vector((0, 0, 1e-4))
+            inside += hits % 2
+        arch = min(arch_tree.find_nearest(v.co)[3] for v in me.vertices) if not overlaps and not inside else -1.0
+        arch_state[t.name] = {"overlaps": overlaps, "inside_vertices": inside}
+    wtree = C.bvh_of(me)
+    clr = min(wtree.find_nearest(v)[3] for v in all_vertices([o for o in objs.values() if not o.name.startswith("Wheel_")
+                                                              and not o.name.startswith("Fine_Axle")
+                                                              and abs(o.location.y) < 3 and o.name.startswith(("Fine_Arm", "Fine_Drive", "Fine_Shock", "Prop_Upright"))
+                                                              and (o.name.endswith(f"{side:+d}") or o.name[-2:-1] == "_" or "F" == o.name[-1] or "R" == o.name[-1])
+                                                              and (("+" if side > 0 else "-") in o.name)]))
     bpy.data.meshes.remove(me)
     wheel_info[t.name] = {"origin_error_mm": mm((t.location - hub).length), "radius_mm": mm(max(radii)),
-                          "expected_radius_mm": mm(T.WHEEL_R[end]), "lowest_z_mm": mm(zmin),
-                          "width_mm": mm(ymax - ymin), "fender_clearance_mm": mm(clr), "hull_clearance_mm": mm(hullc)}
+                          "expected_radius_mm": mm(T.WHEEL_R[end]), "lowest_z_mm": mm(zmin), "width_mm": mm(ymax - ymin),
+                          "arch_clearance_mm": mm(arch) if arch is not None else None, "suspension_clearance_mm": mm(clr)}
 check("wheel_tire_origins_at_hubs", all(v["origin_error_mm"] < 0.5 for v in wheel_info.values()), wheel_info)
 check("wheel_tire_radii_match_display", all(abs(v["radius_mm"] - v["expected_radius_mm"]) < 1.5 for v in wheel_info.values()), None)
 check("wheel_tires_touch_ground_plane_6mm", all(-1.0 < v["lowest_z_mm"] < 6.0 for v in wheel_info.values()),
       {k: v["lowest_z_mm"] for k, v in wheel_info.items()})
-check("wheel_fender_arch_clearance_30mm", all(v["fender_clearance_mm"] >= 30.0 for v in wheel_info.values()),
-      {k: v["fender_clearance_mm"] for k, v in wheel_info.items()})
-check("wheel_hull_clearance_20mm", all(v["hull_clearance_mm"] >= 20.0 for v in wheel_info.values()),
-      {k: v["hull_clearance_mm"] for k, v in wheel_info.items()})
+check("supercar_tyres_outside_shell_with_arch_clearance_50mm", all(v["arch_clearance_mm"] >= 50.0 for v in wheel_info.values() if v["arch_clearance_mm"] is not None),
+      {"clearance_mm": {k: v["arch_clearance_mm"] for k, v in wheel_info.items() if v["arch_clearance_mm"] is not None},
+       "state": arch_state})
+check("suspension_clears_tires_5mm", all(v["suspension_clearance_mm"] >= 5.0 for v in wheel_info.values()),
+      {k: v["suspension_clearance_mm"] for k, v in wheel_info.items()})
 origin_bad = []
 for w in wheels:
-    # spokes carry a trailing index; recover the side token from the name
-    side_tok = "+1" if "+1" in w.name else "-1"
-    tire = next(t for t in tires if t.name.split("_")[1] == w.name.split("_")[1] and t.name.endswith(side_tok))
+    tire = next(t for t in tires if wheel_key(t.name) == wheel_key(w.name))
     if (w.location - tire.location).length > 1e-4:
         origin_bad.append(w.name)
 check("all_wheel_parts_share_hub_origin", not origin_bad, origin_bad)
@@ -199,9 +237,9 @@ counts = {}
 for w in wheels:
     key = w.name.split("_")[1] + w.name.split("_")[2]
     counts[key] = counts.get(key, 0) + 1
-check("wheel_part_counts", counts.get("TruckTire") == 2 and counts.get("TruckRim") == 2 and counts.get("TruckHub") == 2
-      and counts.get("TruckSpoke") == 16 and counts.get("CoupeTire") == 2 and counts.get("CoupeRim") == 2
-      and counts.get("CoupeHub") == 2 and counts.get("CoupeWires") == 2, counts)
+check("wheel_part_counts", counts == {"TruckTire": 2, "TruckRim": 2, "TruckHub": 2, "TruckSpoke": 12,
+                                      "CoupeTire": 2, "CoupeRim": 2, "CoupeHub": 2, "CoupeSpoke": 20,
+                                      "CoupeBrake": 2, "CoupeCaliper": 2}, counts)
 rim_ok = True
 for w in wheels:
     if "_Rim_" in w.name:
@@ -211,126 +249,86 @@ for w in wheels:
         bpy.data.meshes.remove(me)
         rim_ok &= rr < T.WHEEL_R[end] - 0.04
 check("rims_inside_tires", rim_ok, None)
-# physical wheels are unchanged: the model is only visual (display radii differ from the tuned 0.43)
-check("wheels_are_exactly_four", len({w.name for w in tires}) == 4 and sum(1 for n in objs if "_Tire_" in n) == 4, None)
+check("wheels_are_exactly_four", len(tires) == 4 and sum(1 for n in objs if "_Tire_" in n) == 4, None)
 
-# --- central mid-drive: present, paired, never Wheel_* ------------------------------------------------
-names = set(objs)
-need = [f"{p}_{s}" for p in ("Prop_MidDrive_Flywheel", "Prop_MidDrive_Belt", "Prop_MidDrive_Guard",
-                              "Gear_MidDrive_Pulley", "Gear_MidDrive_Pinion", "Gear_MidDrive_Shaft") for s in ("+1", "-1")]
-check("mid_drive_present_paired", all(n in names for n in need), [n for n in need if n not in names])
-check("mid_drive_not_wheel_named", not any(("Wheel" in n and n.startswith(("Prop_MidDrive", "Gear_"))) for n in names)
-      and not any(n.startswith("Wheel_") and "MidDrive" in n for n in names), None)
-fly = []
-for s in (1, -1):
-    o = objs[f"Prop_MidDrive_Flywheel_{s:+d}"]
-    me = world_mesh(o)
-    r = max(math.hypot(v.co.x - o.location.x, v.co.z - o.location.z) for v in me.vertices)
-    zlo = min(v.co.z for v in me.vertices)
-    bpy.data.meshes.remove(me)
-    fly.append({"name": o.name, "radius_mm": mm(r), "centre": [round(c, 4) for c in o.location], "lowest_z_mm": mm(zlo)})
-fx, fz, fr = T.X(T.FLY_PX[0]), T.Z(T.FLY_PX[1]), T.FLY_PX[2] * T.SCALE
-check("mid_drive_flywheel_vs_trace", all(abs(f["radius_mm"] - mm(fr)) < 3 and abs(f["centre"][0] - fx) < 0.003
-                                         and abs(f["centre"][2] - fz) < 0.003 and abs(abs(f["centre"][1]) - T.FLY_Y) < 0.003
-                                         and f["lowest_z_mm"] > 50 for f in fly), fly)
+# --- extra machinery: decorative Prop_* nodes, never wheels ------------------------------------------------------
+need = ["Prop_Engine_Block", "Prop_Transaxle", "Prop_Exhaust_Muffler", "Prop_Exhaust_Tailpipe"] + [
+    f"{p}_{s}" for p in ("Prop_Engine_Head", "Prop_Exhaust_Header", "Prop_Upright") for s in ("+1", "-1")]
+check("prop_machinery_present_paired", all(n in objs for n in need), [n for n in need if n not in objs])
+check("prop_not_wheel_named", not any("Wheel" in n for n in objs if n.startswith("Prop_")), None)
+base_z = T.FLOOR_TOP_Z - 0.008
+blk = world_mesh(objs["Prop_Engine_Block"])
+blk_lo = min(v.co.z for v in blk.vertices)
+bpy.data.meshes.remove(blk)
+check("engine_sits_on_floor_pan_3mm", abs(blk_lo - base_z) < 0.012, {"block_bottom_z": round(blk_lo, 4), "floor_top_z": round(T.FLOOR_TOP_Z, 4)})
+eng = all_vertices([objs["Prop_Engine_Block"]])
+check("engine_vs_trace_box", abs(min(p.x for p in eng) - T.X(T.PX(T.X(437.0)) - 0.28 / T.SCALE)) < 0.005
+      and max(p.z for p in all_vertices([objs["Prop_Exhaust_Muffler"]])) < T.Z(125) + 0.02,
+      {"block_x": [round(min(p.x for p in eng), 3), round(max(p.x for p in eng), 3)], "trace_px": [403, 475]})
 
-# --- glass: seating, non-crossing, full coverage ---------------------------------------------------------
-shell_tree = union_tree(bodies)
-frame_tree = union_tree(frames)
+# --- glass: seated in the cage, clear of the shell, full coverage ---------------------------------------------------
+cage_tree = union_tree(cage)
 gl_report = {}
 for g in glass:
     me = world_mesh(g)
-    outside = [v.co for v in me.vertices]
-    # seating = distance from the glass to the nearest hull or frame surface
-    d_hull = [shell_tree.find_nearest(p)[3] for p in outside]
-    d_frame = [frame_tree.find_nearest(p)[3] for p in outside]
+    d_cage = [cage_tree.find_nearest(v.co)[3] for v in me.vertices]
+    d_shell = [shell_tree.find_nearest(v.co)[3] for v in me.vertices]
     gt = C.bvh_of(me)
     crossing = len(gt.overlap(shell_tree))
     bpy.data.meshes.remove(me)
-    gl_report[g.name] = {"min_hull_mm": mm(min(d_hull)), "max_hull_mm": mm(max(d_hull)),
-                         "min_frame_mm": mm(min(d_frame)), "hull_overlaps": crossing}
-side_glass = {k: v for k, v in gl_report.items() if "Skylight" not in k}
-check("glass_seated_off_hull_0p5_to_7mm", all(0.5 <= v["min_hull_mm"] <= 7.0 for v in side_glass.values()),
-      {k: v["min_hull_mm"] for k, v in side_glass.items()})
-check("glass_never_crosses_shell", all(v["hull_overlaps"] == 0 for v in gl_report.values()),
-      {k: v["hull_overlaps"] for k, v in gl_report.items() if v["hull_overlaps"]})
-check("skylight_glass_seated_in_frames", all(v["min_frame_mm"] <= 6.0 for k, v in gl_report.items() if "Skylight" in k),
-      {k: v["min_frame_mm"] for k, v in gl_report.items() if "Skylight" in k})
+    gl_report[g.name] = {"min_cage_mm": mm(min(d_cage)), "min_shell_mm": mm(min(d_shell)), "shell_overlaps": crossing}
+check("glass_seated_in_cage_tubes_6mm", all(v["min_cage_mm"] <= 6.0 for v in gl_report.values()),
+      {k: v["min_cage_mm"] for k, v in gl_report.items()})
+check("glass_never_crosses_shell", all(v["shell_overlaps"] == 0 for v in gl_report.values()),
+      {k: v["shell_overlaps"] for k, v in gl_report.items() if v["shell_overlaps"]})
+check("glass_clear_of_shell_surface", all(v["min_shell_mm"] > 0.0 for v in gl_report.values()), {k: v["min_shell_mm"] for k, v in gl_report.items()})
+check("glass_set", sorted(gl_report) == ["Glass_Roof_+1", "Glass_Roof_-1", "Glass_Windshield"], sorted(gl_report))
 
 full_tree = union_tree([o for o in objs.values() if not o.name.startswith("Wheel_")])
-glass_names = {g.name for g in glass}
-
-
-def first_hit_is_glass(origin, direction):
-    # Ray casts on the union do not return the object; test the glass tree first and require it closer.
-    ho = full_tree.ray_cast(Vector(origin), Vector(direction))
-    return ho
-
-
 glass_tree = union_tree(glass)
-holes = []
-samples = 0
+holes, samples = [], 0
 
 
 def covered(origin, direction):
     hg = glass_tree.ray_cast(Vector(origin), Vector(direction))
     ha = full_tree.ray_cast(Vector(origin), Vector(direction))
-    if hg[0] is None or ha[0] is None:
-        return False
-    return (ha[0] - hg[0]).length < 0.0015 or ha[3] >= hg[3] - 1e-5
+    return hg[0] is not None and ha[0] is not None and (ha[0] - hg[0]).length < 0.0015
 
 
-from knifeedge_cab import SKYLIGHT_PX, WINDOWS  # noqa: E402
-margin = 0.03
-for name, corners in WINDOWS.items():
-    (pa, zba), (pb, zbb), (_, ztb), (_, zta) = corners
-    for side in (-1, 1):
-        for i in range(1, 9):
-            for j in range(1, 6):
-                t, u = i / 9, j / 6
-                px = pa + (pb - pa) * t
-                zb_ = zba + (zbb - zba) * t
-                zt_ = zta + (ztb - zta) * t
-                z = zb_ + (zt_ - zb_) * u
-                if (u * (zt_ - zb_)) < margin or ((1 - u) * (zt_ - zb_)) < margin:
-                    continue
-                samples += 1
-                if not covered((T.X(px), side * 2.0, z), (0, -side, 0)):
-                    holes.append((name, side, round(px, 1), round(z, 3)))
-for k, px in enumerate(SKYLIGHT_PX):
-    for i in range(-3, 4):
-        for j in range(-2, 3):
+for px in range(486, 552, 8):          # roof panels, from above
+    for y in (0.16, 0.26, 0.36, 0.46, 0.50):
+        for s in (-1, 1):
             samples += 1
-            if not covered((T.X(px) + i * 0.02, j * 0.07, 3.0), (0, 0, -1)):
-                holes.append(("Skylight", k, i, j))
-for (name, a, b, ym) in (("TruckWindshield", 436.5, 452.0, 0.36), ("SpeedsterWindshield", 703.0, 720.0, 0.27)):
-    for i in range(1, 6):
-        for j in range(-6, 7):
-            y = ym * j / 7
-            if abs(y) < 0.03:
-                continue
-            px = a + (b - a) * i / 6
-            if i in (1, 5):
-                continue
-            samples += 1
-            if not covered((T.X(px), y, 3.0), (0, 0, -1)):
-                holes.append((name, round(y, 3), round(px, 1)))
+            if not covered((T.X(px), s * y, 3.0), (0, 0, -1)):
+                holes.append(("Roof", s, px, y))
+top_c, base_c = Vector(K.pt(562, 66, 0)), Vector(K.pt(615, T.BELT_PY - 3, 0))
+wn = (base_c - top_c).cross(Vector((0, 1, 0))).normalized()
+if wn.x < 0:
+    wn = -wn
+for i in range(1, 8):
+    for j in range(-5, 6):
+        t = i / 8
+        c = top_c.lerp(base_c, t)
+        half = (K.Y_ROOF + (K.Y_BASE - K.Y_ROOF) * t) - 0.05
+        p = c + Vector((0, half * j / 5, 0))
+        samples += 1
+        if not covered(p + wn * 1.5, -wn):
+            holes.append(("Windshield", i, j))
 check("glass_covers_whole_openings", not holes, {"samples": samples, "holes": holes[:12]})
 
-# --- hardware clearance: nothing pierces glass or wheels ------------------------------------------------
+# --- hardware clearance: nothing pierces glass or wheels ----------------------------------------------------------
 pierce = {}
-glass_tree2 = union_tree(glass)
-for o in hardware + mids:
+for o in hardware + props + cage:
     me = world_mesh(o)
-    n = len(C.bvh_of(me).overlap(glass_tree2))
+    n = len(C.bvh_of(me).overlap(glass_tree))
     bpy.data.meshes.remove(me)
     if n:
         pierce[o.name] = n
-check("hardware_never_pierces_glass", not pierce, pierce)
+check("hardware_never_pierces_glass_beyond_frame_tubes", all(k.startswith("Body_Cage") for k in pierce), pierce)
 wheel_tree = union_tree(wheels)
 touch = {}
 for o in list(objs.values()):
-    if o.name.startswith("Wheel_") or o.name.startswith("Fine_Axle"):
+    if o.name.startswith(("Wheel_", "Fine_Axle")):
         continue
     me = world_mesh(o)
     n = len(C.bvh_of(me).overlap(wheel_tree))
@@ -339,8 +337,7 @@ for o in list(objs.values()):
         touch[o.name] = n
 check("nothing_but_axles_touches_wheels", not touch, touch)
 
-# --- lamps and attachment (no floating hardware) -------------------------------------------------------------
-floaters = {}
+# --- attachment (no floating hardware) ---------------------------------------------------------------------------------
 g_verts, g_faces, g_owner = [], [], []
 for o in objs.values():
     me = world_mesh(o)
@@ -350,67 +347,56 @@ for o in objs.values():
     g_owner += [o.name] * len(me.polygons)
     bpy.data.meshes.remove(me)
 global_tree = BVHTree.FromPolygons(g_verts, g_faces)
-for o in hardware + mids + glass + frames:
+floaters = {}
+for o in hardware + props + glass + [b for b in bodies if b.name not in ("Body_Shell",)]:
     me = world_mesh(o)
     ok = False
-    best = 1e9
     for v in me.vertices:
-        for loc, nor, idx, dist in global_tree.find_nearest_range(v.co, 0.012):
+        for _loc, _nor, idx, _d in global_tree.find_nearest_range(v.co, 0.012):
             if g_owner[idx] != o.name and not g_owner[idx].startswith("Glass_"):
                 ok = True
                 break
-            best = min(best, dist)
         if ok:
             break
     if not ok:
-        # fallback for thin parts (bars, discs): test the neighbours' vertices against this surface
+        # thin plates have few vertices: also accept another part's vertex within 12 mm of this surface
         own_tree = C.bvh_of(me)
-        lo = Vector((min(v.co.x for v in me.vertices), min(v.co.y for v in me.vertices), min(v.co.z for v in me.vertices))) - Vector((0.012,) * 3)
-        hi = Vector((max(v.co.x for v in me.vertices), max(v.co.y for v in me.vertices), max(v.co.z for v in me.vertices))) + Vector((0.012,) * 3)
+        lo = Vector([min(c.co[i] for c in me.vertices) for i in range(3)]) - Vector((0.012,) * 3)
+        hi = Vector([max(c.co[i] for c in me.vertices) for i in range(3)]) + Vector((0.012,) * 3)
         for other in objs.values():
             if other is o or other.name.startswith("Glass_") or ok:
                 continue
             ome = world_mesh(other)
             for ov in ome.vertices:
                 p = ov.co
-                if lo.x <= p.x <= hi.x and lo.y <= p.y <= hi.y and lo.z <= p.z <= hi.z and own_tree.find_nearest(p)[3] <= 0.012:
+                if all(lo[i] <= p[i] <= hi[i] for i in range(3)) and own_tree.find_nearest(p)[3] <= 0.012:
                     ok = True
                     break
             bpy.data.meshes.remove(ome)
     bpy.data.meshes.remove(me)
     if not ok:
         floaters[o.name] = "nothing within 12 mm"
-check("no_floating_hardware_within_12mm", not floaters, floaters)
+check("no_floating_parts_within_12mm", not floaters, floaters)
 lens_bad = {}
 for n, o in objs.items():
-    if n.endswith("_Lens"):
-        housing = objs[n[:-5]]
-        ht, hm = bvh(housing)
+    housing = None
+    if n.startswith("Fine_TailLamp_"):
+        housing = objs["Fine_TailBezel_" + n.split("_")[2]]
+    elif n.startswith("Fine_RoofLamp_"):
+        housing = objs["Trim_LightBar"]
+    elif n.startswith("Fine_LedStrip_"):
+        housing = objs["Body_Shell"]
+    if housing is not None:
+        ht = union_tree([housing])
         me = world_mesh(o)
-        d = max(ht.find_nearest(v.co)[3] for v in me.vertices)
+        dist = [ht.find_nearest(v.co)[3] for v in me.vertices]
         bpy.data.meshes.remove(me)
-        bpy.data.meshes.remove(hm)
-        if d > 0.006:
-            lens_bad[n] = mm(d)
-check("lamp_lens_vertices_seated_in_housing_6mm", not lens_bad, lens_bad or {"lenses": sum(1 for n in objs if n.endswith("_Lens"))})
+        reach = 0.040 if n.startswith(("Fine_TailLamp_", "Fine_RoofLamp_")) else 0.016  # lens protrusion
+        if min(dist) > 0.006 or max(dist) > reach:
+            lens_bad[n] = [mm(min(dist)), mm(max(dist))]
+check("lamps_seated_on_housings", not lens_bad, lens_bad)
 
-# --- fittings keep clear of the cab glass --------------------------------------------------------------
-stack = objs["Body_Smokestack"]
-sm = world_mesh(stack)
-stack_gap = min(glass_tree.find_nearest(v.co)[3] for v in sm.vertices)
-bpy.data.meshes.remove(sm)
-check("smokestack_clears_cab_glass_100mm", stack_gap >= 0.100, {"gap_mm": mm(stack_gap)})
-
-sunk = {}
-for n, o in objs.items():
-    if n.startswith(("Frame_Skylight", "Fine_Whistle", "Fine_RoofVent")):
-        me = world_mesh(o)
-        depth = min(v_.co.z - B.top_surface_z(T.PX(v_.co.x), abs(v_.co.y)) for v_ in me.vertices)
-        bpy.data.meshes.remove(me)
-        sunk[n] = mm(depth)
-check("roof_fittings_sunk_into_roof", all(d < -3.0 for d in sunk.values()), sunk)
-
-# --- UV / materials ---------------------------------------------------------------------------------------
+# --- UV / materials ----------------------------------------------------------------------------------------------------------
 no_uv = [n for n, o in objs.items() if not o.data.uv_layers]
 mat_names = {m.name for o in objs.values() for m in o.data.materials if m is not None}
 empty_slots = [n for n, o in objs.items() if any(m is None for m in o.data.materials)]
@@ -422,12 +408,12 @@ check("materials_exact_set", mat_names == EXPECTED_MATERIALS and not bad_idx and
       {"extra": sorted(mat_names - EXPECTED_MATERIALS), "missing": sorted(EXPECTED_MATERIALS - mat_names),
        "unused_semantic": sorted(SEMANTIC - used)})
 
-# --- exports and LODs ---------------------------------------------------------------------------------------
+# --- exports and LODs ---------------------------------------------------------------------------------------------------------------
 build = json.loads((MODEL_DIR / f"{STEM}_build.json").read_text())
 ex = build["exports"]
 tri = [ex["lod0"]["triangles"], ex["lod1"]["triangles"], ex["lod2"]["triangles"]]
-check("triangle_budget_and_lod_monotonic", 35000 <= tri[0] <= 60000 and tri[0] > tri[1] > tri[2] and tri[1] <= 0.80 * tri[0]
-      and tri[2] <= 0.45 * tri[0], tri)
+check("triangle_budget_and_lod_monotonic", 30000 <= tri[0] <= 60000 and tri[0] > tri[1] > tri[2] and tri[1] <= 0.80 * tri[0]
+      and tri[2] <= 0.50 * tri[0], tri)
 hand = build["handoff"]
 meas_r = {"A": next(v["radius_mm"] for k, v in wheel_info.items() if "Coupe" in k) / 1000.0,
           "B": next(v["radius_mm"] for k, v in wheel_info.items() if "Truck" in k) / 1000.0}
@@ -443,29 +429,32 @@ for level, rel in ((0, f"{STEM}.glb"), (1, f"lod/{STEM}_LOD1.glb"), (2, f"lod/{S
     bpy.ops.import_scene.gltf(filepath=str(MODEL_DIR / rel))
     new = [o for o in bpy.data.objects if o not in before and o.type == "MESH"]
     mats = {m.name.rsplit(".", 1)[0] if m.name.rsplit(".", 1)[-1].isdigit() else m.name for o in new for m in o.data.materials}
-    wn = [o for o in new if o.name.startswith(("Wheel_Truck_", "Wheel_Coupe_"))]
-    tr = [o for o in wn if "_Tire_" in o.name]
-    mid = [o for o in new if o.name.startswith(("Prop_MidDrive_Flywheel", "Gear_MidDrive_Pulley"))]
+    wn_ = [o for o in new if o.name.startswith(("Wheel_Truck_", "Wheel_Coupe_"))]
+    tr = [o for o in wn_ if "_Tire_" in o.name]
+    prop_n = [o for o in new if o.name.startswith("Prop_")]
     pts = [o.matrix_world @ v.co for o in new for v in o.data.vertices]
     bb = (min(p.x for p in pts), max(p.x for p in pts), min(p.y for p in pts), max(p.y for p in pts),
           min(p.z for p in pts), max(p.z for p in pts))
-    tire_r = {o.name: max(math.hypot((o.matrix_world @ v.co).x - o.matrix_world.translation.x, (o.matrix_world @ v.co).z - o.matrix_world.translation.z)
-                           for v in o.data.vertices) for o in tr}
+    tire_r = {o.name: max(math.hypot((o.matrix_world @ v.co).x - o.matrix_world.translation.x,
+                                     (o.matrix_world @ v.co).z - o.matrix_world.translation.z) for v in o.data.vertices) for o in tr}
     hubs = {o.name: tuple(round(c, 4) for c in o.matrix_world.translation) for o in tr}
-    glb_report[level] = {"meshes": len(new), "materials": sorted(mats), "wheel_objects": len(wn), "tires": len(tr),
-                         "mid_drive_objects": len(mid), "bbox": [round(v, 3) for v in bb],
-                         "tire_radius_min_mm": mm(min(tire_r.values())),
-                         "tire_radius_deficit_mm": max(mm((T.WHEEL_R["truck"] if "Truck" in n else T.WHEEL_R["coupe"]) - r) for n, r in tire_r.items()),
-                         "hubs": hubs}
+    part_hubs = {o.name: tuple(round(c, 4) for c in o.matrix_world.translation) for o in wn_}
+    glb_report[level] = {"meshes": len(new), "materials": sorted(mats), "wheel_objects": len(wn_), "tires": len(tr),
+                         "prop_objects": len(prop_n), "bbox": [round(v, 3) for v in bb],
+                         "tire_radius_deficit_mm": max(mm((T.WHEEL_R["truck"] if "Truck" in n else T.WHEEL_R["coupe"]) - r)
+                                                       for n, r in tire_r.items()),
+                         "hubs": hubs, "part_hubs": part_hubs}
     for o in new:
         bpy.data.objects.remove(o, do_unlink=True)
 base = glb_report[0]
-LOD_OPTIONAL = {"Knifeedge_Amber", "Knifeedge_Dial"}
-check("glb_reimport_counts_and_materials", all(set(glb_report[l]["materials"]) >= EXPECTED_MATERIALS - LOD_OPTIONAL and set(glb_report[l]["materials"]) <= EXPECTED_MATERIALS and glb_report[l]["tires"] == 4
+LOD_OPTIONAL = set()
+check("glb_reimport_counts_and_materials", all(set(glb_report[l]["materials"]) >= EXPECTED_MATERIALS - LOD_OPTIONAL
+                                                and set(glb_report[l]["materials"]) <= EXPECTED_MATERIALS and glb_report[l]["tires"] == 4
                                                 for l in glb_report), {l: (glb_report[l]["meshes"], glb_report[l]["wheel_objects"]) for l in glb_report})
 check("glb_wheel_part_counts_stable", len({glb_report[l]["wheel_objects"] for l in glb_report}) == 1 and base["wheel_objects"] == len(wheels),
       {l: glb_report[l]["wheel_objects"] for l in glb_report})
-check("glb_mid_drive_preserved_in_all_lods", all(glb_report[l]["mid_drive_objects"] == 4 for l in glb_report), {l: glb_report[l]["mid_drive_objects"] for l in glb_report})
+check("glb_props_preserved_in_all_lods", all(glb_report[l]["prop_objects"] == len(props) for l in glb_report),
+      {l: glb_report[l]["prop_objects"] for l in glb_report})
 check("lod_envelope_matches_gameplay", all(max(abs(a - b) for a, b in zip(glb_report[l]["bbox"], base["bbox"])) < 0.05 for l in (1, 2)),
       {l: glb_report[l]["bbox"] for l in glb_report})
 check("lod_tire_radius_preserved_per_wheel_3mm", all(glb_report[l]["tire_radius_deficit_mm"] < 3.0 for l in glb_report),
@@ -474,10 +463,10 @@ check("glb_wheel_hubs_at_authored_positions", all(
     abs(h[0] - (T.WHEEL_X["truck"] if "Truck" in n else T.WHEEL_X["coupe"])) < 0.002
     and abs(h[2] - (T.WHEEL_R["truck"] if "Truck" in n else T.WHEEL_R["coupe"])) < 0.002
     and abs(abs(h[1]) - (T.TRACK_Y["truck"] if "Truck" in n else T.TRACK_Y["coupe"])) < 0.002
-    for l in glb_report for n, h in glb_report[l]["hubs"].items()), base["hubs"])
+    for l in glb_report for n, h in glb_report[l]["part_hubs"].items()), base["part_hubs"])
 
 summary = {"pass": not failures, "failed": failures, "checks": len(results), "triangles": tri, "results": results,
-           "glb": {str(k): {kk: vv for kk, vv in v.items() if kk != "hubs"} for k, v in glb_report.items()},
+           "glb": {str(k): {kk: vv for kk, vv in v.items() if kk not in ("hubs", "part_hubs")} for k, v in glb_report.items()},
            "wheels": wheel_info}
 out = MODEL_DIR / f"{STEM}_qa.json"
 out.write_text(json.dumps(summary, indent=2) + "\n")

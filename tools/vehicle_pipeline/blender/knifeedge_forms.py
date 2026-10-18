@@ -1,4 +1,4 @@
-"""Station lofts, revolved parts, arch sweeps and rivets for the Knifeedge hot-wheels build."""
+"""Station lofts, revolved parts, surface ray-casts and small solids for the Knifeedge build."""
 import math
 
 import bmesh
@@ -10,7 +10,7 @@ import knifeedge_core as C
 import knifeedge_prims as P
 
 
-def section_half(w, zb, zt, rb, rt, crown, steps=3, crown_steps=3, split=None):
+def section_half(w, zb, zt, rb, rt, crown, steps=3, crown_steps=3, split=None, vee=False):
     """Right half (y >= 0) of a flat-sided section, bottom centre to top centre.
 
     Returns (points, roles); role 3 = underside, 1 = lower side band, 0 = upper body."""
@@ -31,7 +31,7 @@ def section_half(w, zb, zt, rb, rt, crown, steps=3, crown_steps=3, split=None):
     flat = w - rt
     for k in range(1, crown_steps + 1):
         t = k / crown_steps
-        pts.append((flat * (1 - t), zt + crown * (1 - (1 - t) ** 2)))
+        pts.append((flat * (1 - t), zt + crown * (t if vee else 1 - (1 - t) ** 2)))
     roles = [3] * (1 + steps) + [1] + [0] * (1 + steps + crown_steps)
     return pts, roles
 
@@ -169,25 +169,6 @@ class Surface:
 
     def top(self, x, y, far=4.0):
         return self.hit((x, y, far), (0, 0, -1))
-
-
-def rivet_set(builder, name, spots, radius, mat, sink=0.0008):
-    """One object of low hemispherical rivet heads; spots = [(position, outward normal)]."""
-    bm = bmesh.new()
-    for pos, nor in spots:
-        n = Vector(nor).normalized()
-        t = Vector((0, 0, 1)) if abs(n.z) < 0.9 else Vector((1, 0, 0))
-        u = n.cross(t).normalized()
-        v = n.cross(u).normalized()
-        base = Vector(pos) - n * sink
-        ring = [bm.verts.new(base + (u * math.cos(k * math.tau / 6) + v * math.sin(k * math.tau / 6)) * radius)
-                for k in range(6)]
-        apex = bm.verts.new(base + n * radius * 0.75)
-        for k in range(6):
-            bm.faces.new((ring[k], ring[(k + 1) % 6], apex))
-        bm.faces.new(list(reversed(ring)))
-    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
-    return P.finish(builder, name, bm, mat, smooth_angle=60)
 
 
 def box(builder, name, size, mat, location, bevel=0.004, rot=None):

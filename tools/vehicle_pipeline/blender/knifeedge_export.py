@@ -20,7 +20,7 @@ def finalize_scene(cols, hull, blueprint):
             C.smart_uv(obj)
     image = bpy.data.images.load(str(blueprint), check_existing=True)
     image.pack()
-    ref = bpy.data.objects.new("Reference_SteamPunk_Blueprint", None)
+    ref = bpy.data.objects.new("Reference_HotWheels_Blueprint", None)
     ref.empty_display_type = "IMAGE"
     ref.data = image
     ref.empty_display_size = 5.0
@@ -28,7 +28,7 @@ def finalize_scene(cols, hull, blueprint):
     ref.hide_viewport = True
     cols["REFERENCE"].objects.link(ref)
     hull["vehicle_id"] = "knifeedge"
-    hull["design"] = "Knifeedge 88: Victorian steam speedster (End A +X) / boiler off-road truck (End B -X)"
+    hull["design"] = "Knifeedge XR: supercar nose (End A +X) / sand-rail spaceframe (End B -X)"
     hull["blueprint"] = "hot-wheels.jpg"
     hull["wheelbase"] = T.WHEELBASE
     hull["scale_m_per_px"] = T.SCALE
@@ -78,9 +78,9 @@ def _join(objs, name, col):
     return joined
 
 
-LOD1_DROP = ("Fine_Rivets_Fenders", "Fine_Rivets_Hood", "Fine_Rivets_Plow", "Fine_Rivets_Door", "Fine_DoorHinge",
-             "Fine_PipeBracket", "Fine_ExhaustClamp", "Fine_GrilleBoss", "Fine_SmokeboxHandle", "Fine_LeafSpring")
-LOD2_KEEP = ("Fine_TruckLamp", "Fine_SpeedsterLamp", "Fine_RoofLamp")
+LOD1_DROP = ("Fine_HeadFin", "Fine_HoodLouvre", "Fine_TailSlat", "Fine_DoorHandle", "Fine_Badge", "Fine_MufflerMount",
+             "Fine_ShockSpring", "Fine_WinchFlange")
+LOD2_KEEP = ("Fine_TailLamp", "Fine_LedStrip", "Fine_RoofLamp")
 
 
 def build_export_set(cols, level):
@@ -97,7 +97,10 @@ def build_export_set(cols, level):
         obj = _copy(src, col)
         for m in list(obj.modifiers):
             obj.modifiers.remove(m)
-        if name.startswith("Body_"):
+        if name.startswith("Body_Cage"):
+            if level == 2:
+                _decimate(obj, 0.5)
+        elif name.startswith("Body_"):
             if level:
                 _decimate(obj, (0.70, 0.45)[level - 1])
         elif name.startswith("Glass_"):
@@ -106,7 +109,7 @@ def build_export_set(cols, level):
             if level and ("_Tire_" in name or "_Rim_" in name):
                 _decimate(obj, (0.50, 0.28)[level - 1])
             # spokes and wire bundles are never decimated: collapsing them drops a wheel part (LOD2 lost one)
-        elif name.startswith(("Prop_MidDrive_", "Gear_")):
+        elif name.startswith("Prop_"):
             if level == 2:
                 _decimate(obj, 0.6)
         else:
@@ -158,10 +161,9 @@ def render_qa(cols, model_dir, stem, blueprint, views=None):
     out_dir = model_dir.parents[4] / "tools/vehicle_pipeline" / QA_DIR_NAME
     out_dir.mkdir(parents=True, exist_ok=True)
     Q.build_studio(cols)
-    for view in ("side", "top", "front_truck", "front_coupe", "three_quarter_truck",
-                 "three_quarter_coupe", "far_side_three_quarter", "cab", "truck_detail",
-                 "coupe_detail", "wheel_truck", "wheel_coupe", "middrive", "flywheel",
-                 "boiler_top", "cockpit", "roof", "underside"):
+    for view in ("side", "top", "front_truck", "front_coupe", "three_quarter_truck", "three_quarter_coupe",
+                 "far_side_three_quarter", "truck_detail", "coupe_detail", "wheel_truck", "wheel_coupe", "engine",
+                 "cockpit", "roof", "underside"):
         if views and view not in views:
             continue
         Q.configure(view, 1280, 720)

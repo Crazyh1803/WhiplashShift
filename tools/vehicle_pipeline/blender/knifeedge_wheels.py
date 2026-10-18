@@ -1,4 +1,4 @@
-"""Knobby spiked truck wheels (End B) and wire speedster wheels (End A). Axis is local Y.
+"""Knobby beadlock sand-rail wheels (End B, `Truck`) and 10-spoke alloy supercar wheels (End A, `Coupe`). Axis is local Y.
 
 Names: Wheel_Truck_* / Wheel_Coupe_* with one `_Tire_` object per wheel; every origin is the hub.
 """
@@ -11,10 +11,12 @@ import knifeedge_prims as P
 import knifeedge_trace as T
 
 STYLE = {
-    "truck": {"R": T.WHEEL_R["truck"], "W": T.WHEEL_W["truck"], "flange": 0.205, "segments": 44,
-              "tread_depth": 0.034, "lug_every": 2, "spikes": 22, "spokes": 8, "web": 0.55},
-    "coupe": {"R": T.WHEEL_R["coupe"], "W": T.WHEEL_W["coupe"], "flange": 0.188, "segments": 48,
-              "tread_depth": 0.006, "lug_every": 1, "spikes": 0, "spokes": 0, "web": 0.0},
+    "truck": {"R": T.WHEEL_R["truck"], "W": T.WHEEL_W["truck"], "flange": 0.262, "segments": 64,
+              "tread_depth": 0.052, "lug_every": 2, "sidewall_studs": 0, "spokes": 6, "web": 0.55,
+              "spoke_r0": 0.070, "spoke_t": 0.046, "hub_r": 0.092},
+    "coupe": {"R": T.WHEEL_R["coupe"], "W": T.WHEEL_W["coupe"], "flange": 0.322, "segments": 64,
+              "tread_depth": 0.006, "lug_every": 1, "sidewall_studs": 0, "spokes": 10, "web": 0.45,
+              "spoke_r0": 0.050, "spoke_t": 0.030, "hub_r": 0.062},
 }
 
 
@@ -80,26 +82,6 @@ def build_tire(builder, style, side, location):
         bm.faces.new((a[m - 1], li[1], lj[1], b[m - 1]))
     bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=1e-5)
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
-    # spikes: iron-free rubber studs on the shoulders (part of the tyre object)
-    for k in range(st["spikes"]):
-        ang = math.tau * (k + 0.25 * (k % 2)) / st["spikes"]
-        col = shoulder * (0.62 if k % 2 else -0.62)
-        cone = bmesh.ops.create_cone(bm, cap_ends=True, segments=5, radius1=0.016, radius2=0.004,
-                                     depth=0.044)
-        ca, sa = math.cos(ang), math.sin(ang)
-        for v in cone["verts"]:
-            lx, ly, lz = v.co
-            rad = R - 0.022 + lz
-            v.co = Vector((rad * ca - lx * sa, (col + ly) * side, rad * sa + lx * ca))
-    # outboard sidewall studs (conical, pointing along the axle) as drawn on the front elevation
-    for k in range(14 if style == "truck" else 0):
-        ang = math.tau * (k + 0.5) / 14
-        cone = bmesh.ops.create_cone(bm, cap_ends=True, segments=6, radius1=0.016, radius2=0.004, depth=0.046)
-        ca, sa = math.cos(ang), math.sin(ang)
-        for v in cone["verts"]:
-            lx, ly, lz = v.co
-            rr = (st["flange"] + 0.052) + lx
-            v.co = Vector((rr * ca - ly * sa, side * (hw * 0.93 + 0.012 + lz), rr * sa + ly * ca))
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
     return P.finish(builder, f"Wheel_{style.title()}_Tire_{side:+d}", bm, "rubber",
                     location=location, smooth_angle=48)
@@ -133,20 +115,20 @@ def build_rim(builder, style, side, location):
         bm.faces.new((a_[m - 1], a_[0], b_[0], b_[m - 1]))
     bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=1e-5)
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
-    return P.finish(builder, f"Wheel_{style.title()}_Rim_{side:+d}", bm, "iron" if style == "truck" else "brass",
+    return P.finish(builder, f"Wheel_{style.title()}_Rim_{side:+d}", bm, "steel",
                     location=location, smooth_angle=40)
 
 
-def build_spoke(builder, side, index, location):
-    """Truck: a tapered cast-iron bar from the hub boss to the rim barrel."""
-    st = STYLE["truck"]
+def build_spoke(builder, style, side, index, location):
+    """A tapered bar from the hub boss to the rim barrel (cast alloy / pressed steel)."""
+    st = STYLE[style]
     pitch = math.tau / st["spokes"]
-    r0, r1 = 0.060, barrel_radius(st) + 0.004
-    a_in, a_out = 0.20 * pitch, 0.13 * pitch
+    r0, r1 = st["spoke_r0"], barrel_radius(st) + 0.004
+    a_in, a_out = 0.22 * pitch, 0.13 * pitch
     poly = [(r0, -a_in), (r1, -a_out), (r1, a_out), (r0, a_in)]
     bm = bmesh.new()
     base = side * web_height(st)
-    thick = 0.040
+    thick = st["spoke_t"]
     top, bot = [], []
     for r, a in poly:
         x, z = r * math.cos(a), r * math.sin(a)
@@ -157,48 +139,32 @@ def build_spoke(builder, side, index, location):
         bm.faces.new((bot[i], bot[j], top[j], top[i]))
     bm.faces.new(list(reversed(bot)) if side > 0 else bot)
     bm.faces.new(top if side > 0 else list(reversed(top)))
-    rot = Matrix.Rotation(index * pitch, 4, "Y")
+    rot = Matrix.Rotation((index + 0.5) * pitch, 4, "Y")
     for v in bm.verts:
         v.co = rot @ v.co
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
     P.bevel_edges(bm, 0.004, 1)
-    return P.finish(builder, f"Wheel_Truck_Spoke_{side:+d}_{index}", bm, "iron", location=location,
-                    smooth_angle=40)
+    return P.finish(builder, f"Wheel_{style.title()}_Spoke_{side:+d}_{index}", bm,
+                    "iron" if style == "truck" else "steel", location=location, smooth_angle=40)
 
 
-def build_wires(builder, side, location):
-    """Eighteen crossed wire spokes per face as one object (tangentially laced)."""
-    st = STYLE["coupe"]
-    bm = bmesh.new()
-    br = barrel_radius(st)
-    count = 18
-    for face in (-1, 1):
-        for k in range(count):
-            ang = math.tau * k / count
-            lace = (1 if face > 0 else -1) * 0.55
-            p0 = Vector((0.046 * math.cos(ang), side * face * 0.020, 0.046 * math.sin(ang)))
-            a1 = ang + lace
-            p1 = Vector(((br - 0.004) * math.cos(a1), side * face * 0.004, (br - 0.004) * math.sin(a1)))
-            t = (p1 - p0).normalized()
-            n1 = t.cross(Vector((0, 1, 0))).normalized()
-            n2 = t.cross(n1).normalized()
-            r = 0.0028
-            ring0 = [bm.verts.new(p0 + (n1 * math.cos(q) + n2 * math.sin(q)) * r) for q in (0, math.pi / 2, math.pi, 1.5 * math.pi)]
-            ring1 = [bm.verts.new(p1 + (n1 * math.cos(q) + n2 * math.sin(q)) * r) for q in (0, math.pi / 2, math.pi, 1.5 * math.pi)]
-            for i in range(4):
-                j = (i + 1) % 4
-                bm.faces.new((ring0[i], ring0[j], ring1[j], ring1[i]))
-            bm.faces.new(list(reversed(ring0)))
-            bm.faces.new(ring1)
-    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
-    return P.finish(builder, f"Wheel_Coupe_Wires_{side:+d}", bm, "iron", location=location, smooth_angle=60)
+def _bolt_ring(bm, count, ring_r, y, side, radius, depth, phase=0.0):
+    for k in range(count):
+        ang = math.tau * (k + phase) / count
+        cx, cz = ring_r * math.cos(ang), ring_r * math.sin(ang)
+        geom = bmesh.ops.create_cone(bm, cap_ends=True, segments=6, radius1=radius, radius2=radius * 0.85,
+                                     depth=depth)
+        for v in geom["verts"]:
+            x, yy, z = v.co
+            v.co = Vector((cx + x, side * (y + z), cz + yy))
 
 
 def build_hub(builder, style, side, location):
+    """Boss + cap + bolts. Truck: pressed-steel boss, 16 beadlock bolts on the rim face. Coupe: alloy hub, 5 nuts."""
     st = STYLE[style]
     hw = st["W"] / 2
-    truck = style == "truck"
     web = web_height(st)
+    hr = st["hub_r"]
     bm = bmesh.new()
 
     def piece(index, fn):
@@ -208,46 +174,44 @@ def build_hub(builder, style, side, location):
             if f not in before:
                 f.material_index = index
 
-    if truck:
-        # cast boss the spokes bolt to, domed brass cap, hex bolt ring
-        piece(1, lambda: P.lathe(bm, [(0.0, side * (web - 0.022)), (0.082, side * (web - 0.022)),
-                                      (0.082, side * (web + 0.022)), (0.0, side * (web + 0.022))], 24))
-        piece(0, lambda: P.lathe(bm, [(0.0, side * (web + 0.060)), (0.030, side * (web + 0.054)),
-                                      (0.058, side * (web + 0.034)), (0.062, side * (web + 0.022)),
-                                      (0.0, side * (web + 0.022))], 24))
-
-        def bolts():
-            for k in range(8):
-                ang = math.tau * (k + 0.5) / 8
-                cx, cz = 0.071 * math.cos(ang), 0.071 * math.sin(ang)
-                geom = bmesh.ops.create_cone(bm, cap_ends=True, segments=6, radius1=0.011,
-                                             radius2=0.009, depth=0.016)
-                for v in geom["verts"]:
-                    x, y, z = v.co
-                    v.co = Vector((cx + x, side * (web + 0.022 + z + 0.008), cz + y))
-        piece(0, bolts)
-        # rim bolts: 12 hex heads around the barrel face
-        def rim_bolts():
-            for k in range(12):
-                ang = math.tau * k / 12
-                cx, cz = (barrel_radius(st) - 0.010) * math.cos(ang), (barrel_radius(st) - 0.010) * math.sin(ang)
-                geom = bmesh.ops.create_cone(bm, cap_ends=True, segments=6, radius1=0.010,
-                                             radius2=0.008, depth=0.014)
-                for v in geom["verts"]:
-                    x, y, z = v.co
-                    v.co = Vector((cx + x, side * (hw * 0.86 + 0.004 + z), cz + y))
-        piece(0, rim_bolts)
+    # boss the spokes bolt to and a domed cap
+    piece(1, lambda: P.lathe(bm, [(0.0, side * (web - 0.022)), (hr, side * (web - 0.022)),
+                                  (hr, side * (web + 0.022)), (0.0, side * (web + 0.022))], 24))
+    piece(0, lambda: P.lathe(bm, [(0.0, side * (web + 0.056)), (hr * 0.45, side * (web + 0.050)),
+                                  (hr * 0.80, side * (web + 0.032)), (hr * 0.84, side * (web + 0.022)),
+                                  (0.0, side * (web + 0.022))], 24))
+    if style == "truck":
+        piece(0, lambda: _bolt_ring(bm, 16, barrel_radius(st) - 0.010, hw * 0.86 + 0.004, side, 0.011, 0.016))
+        piece(0, lambda: _bolt_ring(bm, 6, hr * 0.62, web + 0.030, side, 0.011, 0.016, 0.5))
     else:
-        piece(0, lambda: P.lathe(bm, [(0.0, side * 0.040), (0.026, side * 0.038), (0.050, side * 0.022),
-                                      (0.052, side * 0.012), (0.0, side * 0.012)], 24))
-        piece(0, lambda: P.lathe(bm, [(0.0, -side * 0.034), (0.048, -side * 0.034), (0.052, -side * 0.012),
-                                      (0.0, -side * 0.012)], 24))
-        piece(0, lambda: P.lathe(bm, [(0.0, side * 0.012), (0.040, side * 0.012), (0.040, -side * 0.012),
-                                      (0.0, -side * 0.012)], 24))
+        piece(0, lambda: _bolt_ring(bm, 5, hr * 0.62, web + 0.030, side, 0.009, 0.014, 0.5))
     bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=1e-5)
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
-    return P.finish(builder, f"Wheel_{style.title()}_Hub_{side:+d}", bm, ["brass", "iron"], location=location,
+    return P.finish(builder, f"Wheel_{style.title()}_Hub_{side:+d}", bm, ["steel", "iron"], location=location,
                     smooth_angle=40)
+
+
+def build_brake(builder, side, location):
+    """Rotor with hat behind the spokes (End A only); origin at the hub."""
+    bm = bmesh.new()
+    P.lathe(bm, [(0.0, side * 0.040), (0.050, side * 0.040), (0.050, side * 0.011), (0.190, side * 0.011),
+                 (0.190, -side * 0.011), (0.0, -side * 0.011)], 48)
+    bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=1e-5)
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    return P.finish(builder, f"Wheel_Coupe_Brake_{side:+d}", bm, "steel", location=location, smooth_angle=40)
+
+
+def build_caliper(builder, side, location):
+    """Fixed caliper straddling the rotor at its rear edge; mesh is hub-relative with the origin at the hub."""
+    ang = math.radians(165)
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    rot = Matrix.Rotation(-ang + math.pi / 2, 4, "Y")
+    for v in bm.verts:
+        v.co = (Matrix.Translation((0.15 * math.cos(ang), 0, 0.15 * math.sin(ang))) @ rot
+                @ Vector((v.co.x * 0.115, v.co.y * 0.070, v.co.z * 0.075)))
+    P.bevel_edges(bm, 0.012, 2)
+    return P.finish(builder, f"Wheel_Coupe_Caliper_{side:+d}", bm, "accent", location=location, smooth_angle=40)
 
 
 def build(builder, hull=None):
@@ -259,9 +223,9 @@ def build(builder, hull=None):
             objs.append(build_tire(builder, style, side, loc))
             objs.append(build_rim(builder, style, side, loc))
             objs.append(build_hub(builder, style, side, loc))
-            if style == "truck":
-                for k in range(st["spokes"]):
-                    objs.append(build_spoke(builder, side, k, loc))
-            else:
-                objs.append(build_wires(builder, side, loc))
+            for k in range(st["spokes"]):
+                objs.append(build_spoke(builder, style, side, k, loc))
+            if style == "coupe":
+                objs.append(build_brake(builder, side, loc))
+                objs.append(build_caliper(builder, side, loc))
     return objs
