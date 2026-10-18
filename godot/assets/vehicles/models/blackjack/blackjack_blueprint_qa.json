@@ -488,17 +488,18 @@
         469,
         596
       ],
-      "roof_drop_pixels": 57.945101167103246,
+      "roof_drop_pixels": 58.06405816666833,
       "roof_monotone_violation": 0,
       "sill_monotone_violation": 0,
       "max_roof_slope_degrees": 34.05470853792805,
       "max_sill_slope_degrees": 34.45254572420591,
       "max_roof_slope_change_degrees": 7.177365556284267,
-      "min_belt_half_width_pixels": 75.82890157547386,
-      "belt_half_width_range_pixels": 1.1823558386377186,
+      "max_sill_slope_change_degrees": 6.734756045133526,
+      "min_belt_half_width_pixels": 75.81108866199962,
+      "belt_half_width_range_pixels": 1.2001687521119635,
       "end_belt_half_width_pixels": [
         77.01125741411158,
-        75.82890157547386
+        75.81108866199962
       ]
     },
     "samples": [
@@ -759,6 +760,12 @@
         "roof_y_pixels": -127.54639811339575,
         "sill_y_pixels": -215.8791625642975,
         "belt_half_width_pixels": 75.82890157547386
+      },
+      {
+        "pixel_x": 596,
+        "roof_y_pixels": -127.66535511296084,
+        "sill_y_pixels": -215.93737183928704,
+        "belt_half_width_pixels": 75.81108866199962
       }
     ]
   },

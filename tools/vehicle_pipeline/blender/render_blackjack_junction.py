@@ -29,4 +29,4 @@ for name, (loc, target, up, scale) in views.items():
     camera.data.ortho_scale = scale
     scene.render.filepath = str(out/f'{prefix}_{name}.png')
     bpy.ops.render.render(write_still=True)
-print('JUNCTION_RENDERS', prefix)
+print('AK: JUNCTION_RENDERS', prefix)
