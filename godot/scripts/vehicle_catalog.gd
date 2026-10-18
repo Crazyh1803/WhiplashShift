@@ -113,6 +113,7 @@ const VISUALS: Dictionary = {
 	},
 	"helix": {
 		"rig": "helix_blueprint",
+		"embedded_wheels": true,
 		"scene": "res://assets/vehicles/models/helix/helix_blueprint.glb",
 		"rotation_degrees": Vector3(0.0, 90.0, 0.0),
 		"offset": Vector3(0.0, -0.62, 0.0),

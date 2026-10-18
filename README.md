@@ -54,9 +54,10 @@ handling. Display tire radii are independent of the tuning-owned physics radii.
 
 Helix uses `helix_blueprint.glb`, based on `r-type.jpg`, for its biomechanical
 racer body. Knifeedge uses `knifeedge_blueprint.glb`, based on `hot-wheels.jpg`,
-for its sand rail/supercar body. Both use the same authored-hub adapter, measured
-visual tire radii and three paint channels. Their native sources, builders and
-LODs are documented under `tools/vehicle_pipeline/`.
+for its sand rail/supercar body. Helix retains the reference's tracked rear and
+wheel-less hover nose, with hidden physics wheels. Knifeedge uses authored hubs
+and measured visual tire radii. Both retain three paint channels. Their native
+sources, builders and LODs are documented under `tools/vehicle_pipeline/`.
 
 Rendered wheel assemblies pivot around their authored hubs and follow the existing
 suspension and steering. Their visual offsets are independent of the physical wheel

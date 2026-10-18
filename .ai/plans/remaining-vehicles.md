@@ -18,3 +18,11 @@ standard established by the five production vehicles.
 4. Merge both asset deliveries, import in Godot, run full ak-test plus exact final
    affected checks and actual GPU capture QA, review integration, commit concise
    evidence and completion report. Finish with the final vehicle garage available.
+
+Helix source inspection establishes a tracked rear and wheel-less hover nose.
+Use the existing embedded_wheels path and a no-op authored-wheel installation
+override to preserve four hidden simulation wheels/shafts. Visible Prop_Track_*
+is body-mounted art, scaled uniformly to about5m overall rather than a nonexistent
+visible four-wheel wheelbase. Dedicated tests cover track presence/ground/palette,
+hidden wheels through refresh, player/CPU and independent physics parity. Design
+escalation 20261018-092208 confirms this existing lifecycle path is sufficient.
