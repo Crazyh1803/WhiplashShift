@@ -458,8 +458,11 @@ func _test_scene_builds() -> void:
 
 	# drive up the start straight; it must still be on tarmac, not off in a field.
 	# the scene reads the keyboard every physics step, so stand that down first
+	while scene.get("race").state == RaceDirector.State.COUNTDOWN:
+		await get_tree().physics_frame
 	scene.set_physics_process(false)
 	scar.throttle = 1.0
+	scar.brake = 0.0
 	for i in 480:
 		await get_tree().physics_frame
 	_check("driving the start straight stays on tarmac",

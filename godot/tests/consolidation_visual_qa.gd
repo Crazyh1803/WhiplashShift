@@ -36,7 +36,7 @@ func _ready() -> void:
 	GameSession.configure("ROADGHOST", _vehicle_id, ["blackjack", "nightshift"])
 	var race: Variant = load("res://scenes/proving_ground.tscn").instantiate()
 	add_child(race)
-	for tick in 180:
+	for tick in 480:
 		await get_tree().physics_frame
 	await _capture(_vehicle_id + "_grid")
 	# Use the long tarmac proving strip for repeatable keyboard driving without

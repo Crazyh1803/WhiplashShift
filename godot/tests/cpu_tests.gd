@@ -14,6 +14,8 @@ func _ready() -> void:
 	var scene: Node3D = packed.instantiate()
 	add_child(scene)
 	await get_tree().physics_frame
+	while scene.get("race").state == RaceDirector.State.COUNTDOWN:
+		await get_tree().physics_frame
 	scene.set_physics_process(false)
 	var player: Vehicle = scene.get("car")
 	player.freeze = true

@@ -15,7 +15,10 @@ The garage offers seven named chassis buttons, including **DEADBOLT**;
 cycle the roster, and returning from a race keeps the selected chassis.
 All seven vehicles use authored models with their saved handling and blueprint
 images. Enter a callsign and choose
-**IGNITE** to drive against two CPU opponents. `Esc` returns to the garage.
+**IGNITE** to race two CPU opponents over three full laps after a countdown.
+The HUD shows lap, position and race time; finishing opens results with **RACE AGAIN**
+(`Enter`) or **BACK TO GARAGE**. Retry keeps the same vehicles. `R` recovers only
+the player to the last checkpoint; `Esc` returns to the garage.
 
 Run `ak-test` for core handling, CPU driving, all seven vehicles and consolidation checks. Set
 `GODOT_BIN` to use another installed executable. For rendered garage and driving

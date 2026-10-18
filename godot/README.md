@@ -3,7 +3,10 @@
 The original physics spike now opens through a native garage with seven selectable
 chassis, persistent callsign entry, and a randomized CPU roster. Reusable course,
 progress tracking, and vehicle-specific handling feed the proving-ground race.
-Race countdowns, results, and the four-course arcade mode are the next phase.
+The single-course race now has a three-second countdown, three full laps, live
+position and time, and results with same-roster retry or return to the garage.
+The race ends when the player finishes; rivals still on course are marked
+UNFINISHED. Combat and the four-course arcade mode remain future work.
 
 The project loads the blueprint-traced Deadbolt hard-surface truck/coupe model through
 the same garage, player and CPU factory as Blackjack. Deadbolt retains its authored
@@ -52,7 +55,8 @@ side-by-side comparison isn't confounded by different bindings.
 | `A` `D` | steer |
 | **`SPACE`** | **swap ends** |
 | `SHIFT` | handbrake |
-| `R` | respawn on the grid |
+| `R` | recover the player to the last checkpoint during a race |
+| `Enter` | race again from the results screen, keeping the same roster |
 | `C` | camera: 180° swing vs. instant snap |
 | `F1` | debug overlay — per-wheel load, slip, spin, and the force budget |
 | `F2` | pause/resume both CPU cars |
@@ -77,7 +81,12 @@ The current drivers keep End B over the short ice patch to avoid two consecutive
 turnarounds, while still slowing for its low grip.
 
 Off-course, stuck, or overturned CPUs recover to their last valid checkpoint.
-Recovery does not award distance or laps.
+Recovery does not award distance or laps. Standings move back with a checkpoint
+recovery, so driving the recovered stretch again cannot improve position for free.
+Every lap requires the ordered course checkpoints. All racers start behind the
+white start/finish stripe; the first crossing begins lap one. Finished CPU cars
+leave the collision field so they cannot block the line. Swapping and recovery
+are locked during countdown and results; suspension settles during the countdown.
 
 ## Tuning
 
@@ -122,6 +131,13 @@ complete at least two laps with bounded recoveries. The suite also checks swap
 momentum, real off-course recovery, braking for stopped peers, and progress
 accounting around the finish line and checkpoint resets.
 
+`ak-test` runs all suites, including the race rules and scene integration checks.
+The race suite covers input locks, ordered laps, recovery accounting, finish
+ordering, result buttons and retry. A test-only CPU also drives the player through
+an entire three-lap race, then drives the first minute of the retry, using the real
+vehicle physics and race scene. These checks run headlessly without the Nvidia GPU;
+rendered layout, audio and human handling assessment still require a playtest.
+
 ## Structure
 
 | file | role |
@@ -134,6 +150,7 @@ accounting around the finish line and checkpoint resets.
 | `scripts/tuning.gd` | every tunable number |
 | `scripts/course_definition.gd` | reusable course identity, laps, length, checkpoints and start transform |
 | `scripts/track_progress.gd` | centreline projection, measured travel, laps and recovery anchors |
+| `scripts/race_director.gd` | countdown, race clock, standings, finish order and results state |
 | `scripts/cpu_driver.gd` | pursuit steering, speed planning, swaps, traffic braking and recovery |
 | `scripts/track_data.gd` | the first circuit, ported from the web build's authoring |
 | `scripts/track_builder.gd` | extrudes it into a ribbon with surface metadata |
