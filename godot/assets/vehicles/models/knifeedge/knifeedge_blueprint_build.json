@@ -1,0 +1,52 @@
+{
+  "blend": "tools/vehicle_pipeline/blender/knifeedge_blueprint.blend",
+  "exports": {
+    "lod0": {
+      "triangles": 34494,
+      "objects": 81,
+      "bytes": 1595708
+    },
+    "lod1": {
+      "triangles": 24376,
+      "objects": 81,
+      "bytes": 1212476
+    },
+    "lod2": {
+      "triangles": 14490,
+      "objects": 78,
+      "bytes": 754052
+    }
+  },
+  "handoff": {
+    "vehicle_id": "knifeedge",
+    "candidate_scene": "res://assets/vehicles/models/knifeedge/knifeedge_blueprint.glb",
+    "source_axes": "X long (supercar End A +X, sand rail End B -X), Y width, Z up; runtime yaw +90 deg, offset y -0.62",
+    "display_radii": {
+      "A": 0.39,
+      "B": 0.446
+    },
+    "display_half_track": {
+      "A": 0.9,
+      "B": 0.93
+    },
+    "wheel_centres": {
+      "A": [
+        1.66,
+        0.9,
+        0.39
+      ],
+      "B": [
+        -1.72,
+        0.93,
+        0.446
+      ]
+    },
+    "semantic_materials": [
+      "Knifeedge_Paint",
+      "Knifeedge_Secondary",
+      "Knifeedge_Stripe"
+    ],
+    "blueprint_scale_m_per_px": 0.011155115511551154,
+    "wheelbase_m": 3.38
+  }
+}
