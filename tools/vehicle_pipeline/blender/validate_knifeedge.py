@@ -164,6 +164,16 @@ tail = [p for p in allpts if p.x < T.X(300)]
 check("tail_hoop_spans_trace_height", tail and abs(max(p.z for p in tail) - T.Z(108)) < 0.05 and abs(min(p.z for p in tail) - T.Z(159)) < 0.06,
       {"zmax": round(max(p.z for p in tail), 3), "zmin": round(min(p.z for p in tail), 3)})
 
+roof_pts = all_vertices([objs["Body_CageRoof"]])
+pillar_gap = {}
+for name, px in (("A", 615), ("B", 466)):
+    for s in (-1, 1):
+        low = [p for p in roof_pts if abs(p.x - T.X(px)) < 0.04 and s * p.y > 0.55 and p.z < 1.2]
+        foot = min(low, key=lambda p: p.z)
+        top = ray(shell_tree, (foot.x, foot.y, 3.0), (0, 0, -1))[0]
+        pillar_gap[f"{name}{s:+d}"] = mm(foot.z - top.z) if top is not None else None
+check("cage_pillars_planted_in_shell", all(g is not None and g <= 0.0 for g in pillar_gap.values()), pillar_gap)
+
 # --- wheels: names, hubs, radii, ground, clearance -----------------------------------------------------------------
 tires = [o for o in wheels if "_Tire_" in o.name]
 
@@ -301,7 +311,7 @@ for px in range(486, 552, 8):          # roof panels, from above
             samples += 1
             if not covered((T.X(px), s * y, 3.0), (0, 0, -1)):
                 holes.append(("Roof", s, px, y))
-top_c, base_c = Vector(K.pt(562, 66, 0)), Vector(K.pt(615, T.BELT_PY - 3, 0))
+top_c, base_c = Vector(K.pt(562, 66, 0)), Vector(K.pt(615, T.BASE_PY, 0))
 wn = (base_c - top_c).cross(Vector((0, 1, 0))).normalized()
 if wn.x < 0:
     wn = -wn
@@ -337,7 +347,7 @@ for o in list(objs.values()):
         touch[o.name] = n
 check("nothing_but_axles_touches_wheels", not touch, touch)
 
-# --- attachment (no floating hardware) ---------------------------------------------------------------------------------
+# --- attachment: every part must chain (parts within 12 mm of each other) back to Body_Shell ----------------------------
 g_verts, g_faces, g_owner = [], [], []
 for o in objs.values():
     me = world_mesh(o)
@@ -347,36 +357,75 @@ for o in objs.values():
     g_owner += [o.name] * len(me.polygons)
     bpy.data.meshes.remove(me)
 global_tree = BVHTree.FromPolygons(g_verts, g_faces)
-floaters = {}
-for o in hardware + props + glass + [b for b in bodies if b.name not in ("Body_Shell",)]:
+adj = {n: set() for n in objs}
+for o in objs.values():
     me = world_mesh(o)
-    ok = False
     for v in me.vertices:
         for _loc, _nor, idx, _d in global_tree.find_nearest_range(v.co, 0.012):
-            if g_owner[idx] != o.name and not g_owner[idx].startswith("Glass_"):
-                ok = True
-                break
-        if ok:
-            break
-    if not ok:
-        # thin plates have few vertices: also accept another part's vertex within 12 mm of this surface
-        own_tree = C.bvh_of(me)
-        lo = Vector([min(c.co[i] for c in me.vertices) for i in range(3)]) - Vector((0.012,) * 3)
-        hi = Vector([max(c.co[i] for c in me.vertices) for i in range(3)]) + Vector((0.012,) * 3)
-        for other in objs.values():
-            if other is o or other.name.startswith("Glass_") or ok:
-                continue
-            ome = world_mesh(other)
-            for ov in ome.vertices:
-                p = ov.co
-                if all(lo[i] <= p[i] <= hi[i] for i in range(3)) and own_tree.find_nearest(p)[3] <= 0.012:
-                    ok = True
-                    break
-            bpy.data.meshes.remove(ome)
+            other = g_owner[idx]
+            if other != o.name:
+                adj[o.name].add(other)
+                adj[other].add(o.name)
     bpy.data.meshes.remove(me)
-    if not ok:
-        floaters[o.name] = "nothing within 12 mm"
-check("no_floating_parts_within_12mm", not floaters, floaters)
+
+
+def reach():
+    seen, todo = {"Body_Shell"}, ["Body_Shell"]
+    while todo:
+        for nb in adj[todo.pop()]:
+            if nb not in seen:
+                seen.add(nb)
+                todo.append(nb)
+    return seen
+
+
+# parts that interpenetrate (a bolt sunk into a plate, an axle through a hub) are chained too
+trees = {}
+boxes = {}
+for n, o in objs.items():
+    me = world_mesh(o)
+    trees[n] = C.bvh_of(me)
+    boxes[n] = (Vector([min(c.co[i] for c in me.vertices) for i in range(3)]) - Vector((0.012,) * 3),
+                Vector([max(c.co[i] for c in me.vertices) for i in range(3)]) + Vector((0.012,) * 3))
+    bpy.data.meshes.remove(me)
+names_sorted = sorted(objs)
+for i, a in enumerate(names_sorted):
+    for b in names_sorted[i + 1:]:
+        (alo, ahi), (blo, bhi) = boxes[a], boxes[b]
+        if all(alo[k] <= bhi[k] and blo[k] <= ahi[k] for k in range(3)) and trees[a].overlap(trees[b]):
+            adj[a].add(b)
+            adj[b].add(a)
+seen = reach()
+for name in sorted(set(objs) - seen):
+    # thin plates have few vertices: also accept another part's vertex within 12 mm of this surface
+    me = world_mesh(objs[name])
+    own_tree = C.bvh_of(me)
+    lo = Vector([min(c.co[i] for c in me.vertices) for i in range(3)]) - Vector((0.012,) * 3)
+    hi = Vector([max(c.co[i] for c in me.vertices) for i in range(3)]) + Vector((0.012,) * 3)
+    for other in objs.values():
+        if other.name == name:
+            continue
+        ome = world_mesh(other)
+        for ov in ome.vertices:
+            p = ov.co
+            if all(lo[i] <= p[i] <= hi[i] for i in range(3)) and own_tree.find_nearest(p)[3] <= 0.012:
+                adj[name].add(other.name)
+                adj[other.name].add(name)
+                break
+        bpy.data.meshes.remove(ome)
+    bpy.data.meshes.remove(me)
+seen = reach()
+floaters = {n: "not chained to Body_Shell within 12 mm" for n in sorted(set(objs) - seen)}
+check("every_part_chained_to_shell_within_12mm", not floaters, floaters)
+spring_hits = {}
+for o in objs.values():
+    if o.name.startswith(("Fine_ShockSpring", "Fine_ShockBody")):
+        me = world_mesh(o)
+        n = len(C.bvh_of(me).overlap(cage_tree))
+        bpy.data.meshes.remove(me)
+        if n:
+            spring_hits[o.name] = n
+check("shocks_clear_of_cage_tubes", not spring_hits, spring_hits)
 lens_bad = {}
 for n, o in objs.items():
     housing = None

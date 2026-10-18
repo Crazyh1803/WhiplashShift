@@ -60,10 +60,10 @@ def quad_slab(builder, name, corners, thick, mat="glass"):
 def windshield(builder):
     inset = 0.020
     top_c = Vector(K.pt(562, 66, 0))
-    base_c = Vector(K.pt(615, T.BELT_PY - 3, 0))
+    base_c = Vector(K.pt(615, T.BASE_PY, 0))
     down = (base_c - top_c).normalized()
     top = top_c + down * inset
-    base = base_c - down * inset
+    base = base_c - down * 0.035
     dy_top = K.Y_ROOF - inset
     dy_base = K.Y_BASE - inset
     # tilt of the side tubes shortens the glass width a bit; use the bilinear corners
@@ -113,16 +113,16 @@ def front_detail(builder, surf):
               bevel=0.003, sink=0.006, poly=poly)
         for k in range(3):
             mount(builder, f"Fine_HoodLouvre_{s:+d}_{k}", surf, (T.X(670.0 + 9.0 * k), s * 0.43, 2.0), (0, 0, -1),
-                  (0.03, 0.16 - 0.04 * k, 0.012), "steel", bevel=0.002, sink=0.004)
+                  (0.03, 0.13 - 0.034 * k, 0.012), "steel", bevel=0.002, sink=0.004)
     mount(builder, "Fine_Badge", surf, (T.X(738.0), 0, 2.0), (0, 0, -1), (0.07, 0.07, 0.012), "steel", bevel=0.003)
     for s in (-1, 1):
         # angled LED headlamp slit on the nose, three short segments following the curved nose
         for k, (y, ln) in enumerate(((0.36, 0.16), (0.50, 0.14), (0.63, 0.12))):
             mount(builder, f"Fine_LedStrip_{s:+d}_{k}", surf, (4.0, s * y, T.Z(166.0 - 3.0 * k)), (-1, 0, 0), (0.04, ln, 0.012),
                   "lamp", bevel=0.002, sink=0.006, along=(0, s, 0))
-        mount(builder, f"Fine_NoseIntake_{s:+d}", surf, (T.X(729.0), s * 3.0, T.Z(176.0)), (0, -s, 0), (0.24, 0.12, 0.014),
-              "iron", bevel=0.003, sink=0.010,
-              poly=[(x, y * -s) for x, y in ((-0.12, -0.05), (0.12, -0.02), (0.12, 0.05), (-0.12, 0.06))])
+        mount(builder, f"Fine_NoseIntake_{s:+d}", surf, (T.X(729.0), s * 3.0, T.Z(176.0)), (0, -s, 0), (0.34, 0.26, 0.014),
+              "iron", bevel=0.003, sink=0.012,
+              poly=[(x, y * -s) for x, y in ((-0.17, -0.12), (0.17, -0.06), (0.17, 0.10), (-0.17, 0.13))])
         mount(builder, f"Fine_SkirtScoop_{s:+d}", surf, (T.X(522.0), s * 3.0, T.Z(179.0)), (0, -s, 0), (1.45, 0.07, 0.012),
               "iron", bevel=0.003, sink=0.006)
         mount(builder, f"Fine_DoorHandle_{s:+d}", surf, (T.X(511.0), s * 3.0, T.Z(125.0)), (0, -s, 0), (0.17, 0.035, 0.022),
