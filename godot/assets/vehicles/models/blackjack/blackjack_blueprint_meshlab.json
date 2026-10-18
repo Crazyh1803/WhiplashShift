@@ -1,6 +1,6 @@
 {
   "engine": "MeshLab 2025.07 / PyMeshLab 2025.7.post1",
-  "glb_sha256": "1550a0b58091275b6a6a1113c1d2443f012ec405c803e5eba657a419c5d2eb7e",
+  "glb_sha256": "51aa4659d94f75c7346537dc22d227708f078a483bd9b2289c3fc2f51b9d3e95",
   "filters": [
     "get_topological_measures",
     "get_geometric_measures"

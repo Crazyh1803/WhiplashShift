@@ -869,7 +869,7 @@ def junction_measurements(surface, step=3):
     instead be a monotone, kink-free, non-pinched ramp between its two ends.
     """
     rows = []
-    for px in range(JUNCTION_PX[0], JUNCTION_PX[1]+1, step):
+    for px in list(range(JUNCTION_PX[0], JUNCTION_PX[1], step))+[JUNCTION_PX[1]]:
         x = point(px, 0).x
         top = surface.ray_cast(Vector((x, 1.5, 0)), Vector((0, -1, 0)))[0]
         bottom = surface.ray_cast(Vector((x, -1.5, 0)), Vector((0, 1, 0)))[0]
@@ -882,16 +882,21 @@ def junction_measurements(surface, step=3):
     roof = [r['roof_y_pixels'] for r in rows]
     sill = [r['sill_y_pixels'] for r in rows]
     width = [r['belt_half_width_pixels'] for r in rows]
+    xs = [r['pixel_x'] for r in rows]
     tol = .35  # pixels; the subdivided cage may overshoot a hair
+
+    def slopes(values):
+        return [math.degrees(math.atan((b-a)/(xb-xa))) for a, b, xa, xb in zip(values, values[1:], xs, xs[1:])]
+    roof_slope, sill_slope = slopes(roof), slopes(sill)
     stats = {
         'region_pixels': list(JUNCTION_PX),
         'roof_drop_pixels': roof[0]-roof[-1],
         'roof_monotone_violation': max(max(0, b-a) for a, b in zip(roof, roof[1:])),
         'sill_monotone_violation': max(max(0, b-a) for a, b in zip(sill, sill[1:])),
-        'max_roof_slope_degrees': max(math.degrees(math.atan(abs(a-b)/step)) for a, b in zip(roof, roof[1:])),
-        'max_sill_slope_degrees': max(math.degrees(math.atan(abs(a-b)/step)) for a, b in zip(sill, sill[1:])),
-        'max_roof_slope_change_degrees': max(abs(math.degrees(math.atan((b-a)/step))-math.degrees(math.atan((c-b)/step)))
-                                             for a, b, c in zip(roof, roof[1:], roof[2:])),
+        'max_roof_slope_degrees': max(abs(v) for v in roof_slope),
+        'max_sill_slope_degrees': max(abs(v) for v in sill_slope),
+        'max_roof_slope_change_degrees': max(abs(a-b) for a, b in zip(roof_slope, roof_slope[1:])),
+        'max_sill_slope_change_degrees': max(abs(a-b) for a, b in zip(sill_slope, sill_slope[1:])),
         'min_belt_half_width_pixels': min(width),
         'belt_half_width_range_pixels': max(width)-min(width),
         'end_belt_half_width_pixels': [width[0], width[-1]],
@@ -902,6 +907,8 @@ def junction_measurements(surface, step=3):
     assert stats['sill_monotone_violation'] < tol, ('Sill staircase in junction', stats)
     assert stats['max_roof_slope_degrees'] < 40, ('Roof junction too steep', stats)
     assert stats['max_roof_slope_change_degrees'] < 14, ('Roof junction kink', stats)
+    assert stats['max_sill_slope_degrees'] < 40, ('Sill junction too steep', stats)
+    assert stats['max_sill_slope_change_degrees'] < 14, ('Sill junction kink', stats)
     assert stats['min_belt_half_width_pixels'] > min(width[0], width[-1])-2.5, ('Junction waist pinch', stats)
     assert stats['belt_half_width_range_pixels'] < 8, ('Junction flank not continuous', stats)
     return {'stats': stats, 'samples': rows}
