@@ -37,10 +37,10 @@ ak-blender tools/vehicle_pipeline/blender/render_knifeedge_lods.py
   `Coupe` is the shared End-A prefix). One `_Tire_` object per wheel; every part's origin is the hub.
   End A hub x +1.66, y +/-0.90, z 0.390; End B hub x -1.72, y +/-0.93, z 0.446.
   **Display radii: A 0.390, B 0.446; display half-tracks A 0.90, B 0.93** (`handoff.display_radii`, `display_half_track`).
-  Truck wheel (14 parts): tyre, rim, hub (boss + 16 beadlock bolts) and 6 spokes. Coupe wheel (15 parts): tyre, rim, hub,
+  Truck wheel (9 parts): tyre, rim, hub (boss + 16 beadlock bolts) and 6 spokes. Coupe wheel (15 parts): tyre, rim, hub,
   10 spokes, brake rotor, caliper. 48 wheel objects in all, identical in every LOD.
 - Decorative machinery (body-mounted, **not wheels**, no physics): `Prop_Engine_{Block,Head_*,Barrel_*}`, `Prop_Transaxle(_Bell)`,
-  `Prop_Exhaust_{Muffler,Header_*,Tailpipe}`, `Prop_Upright_*` (15 objects, preserved in all LODs).
+  `Prop_Exhaust_{Muffler,Header_*,Tailpipe}`, `Prop_Upright_*` (rear) and `Prop_UprightA_*` (front hub carriers) (17 objects, preserved in all LODs).
 - Materials: semantic `Knifeedge_Paint` (blue shell), `Knifeedge_Secondary` (ice white), `Knifeedge_Stripe` (orange cage); fixed
   `Knifeedge_Glass`, `_Rubber`, `_Steel`, `_Iron`, `_Lamp`.
 - Prefixes: `Body_*` main masses (shell, floor, deck, tail plate, splitter, `Body_Cage*` tube groups), `Glass_*`, `Trim_*`/`Fine_*`
@@ -57,11 +57,11 @@ ak-blender tools/vehicle_pipeline/blender/render_knifeedge_lods.py
 - The sheet draws a steering wheel in the end-B elevation on one seat: kept as the only asymmetric part.
 - Wing tips seen behind the cabin in the end-A elevation are not placed (no counterpart in the side/top views).
 
-## Numeric gates (`validate_knifeedge.py`, 47 checks)
+## Numeric gates (`validate_knifeedge.py`, 51 checks)
 Masses closed/positive volume; whole-assembly mirror symmetry (exempt: steering wheel + column, helical shock springs which are
 chiral, and the badge on the tessellated hood crease); shell top/sill/half-width vs the traced tables (px); overall length, height,
 cage roof, tail hoop; four wheels, one `_Tire_` each, hub origins, tyre radius, ground contact; supercar tyres outside the solid
 shell (no surface overlap, ray-parity inside test) with >= 50 mm arch clearance; suspension clear of truck tyres; nothing but axles
 touches a wheel; glass seated in cage tubes, never crossing or touching the shell, full ray coverage of roof and windshield; no
-floating parts (12 mm); lamps on housings; UV and exact material set; triangle budget and LOD monotonic; GLB re-import counts,
+every part chained to the shell by 12 mm contact or interpenetration, shocks clear of cage tubes, truss feet inside the floor pan, hood vents conformal to the hood (3 mm), cage pillars sunk into the shell; lamps on housings; UV and exact material set; triangle budget and LOD monotonic; GLB re-import counts,
 materials, props, wheel parts, envelope, hubs and tyre radius.

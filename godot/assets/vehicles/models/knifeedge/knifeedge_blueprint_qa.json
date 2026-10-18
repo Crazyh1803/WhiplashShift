@@ -1,10 +1,10 @@
 {
   "pass": true,
   "failed": [],
-  "checks": 49,
+  "checks": 51,
   "triangles": [
-    34898,
-    24780,
+    35186,
+    25068,
     14542
   ],
   "results": {
@@ -27,9 +27,9 @@
     "assembly_mirror_symmetry": {
       "ok": true,
       "detail": {
-        "max_mm": 0.04,
+        "max_mm": 0.09,
         "p99_mm": 0.0,
-        "vertices": 16861,
+        "vertices": 17005,
         "intentional_asymmetric": [
           "Fine_SteeringWheel",
           "Fine_SteeringColumn",
@@ -303,6 +303,17 @@
       "ok": true,
       "detail": {}
     },
+    "rear_truss_feet_land_on_floor_pan": {
+      "ok": true,
+      "detail": {}
+    },
+    "hood_vents_conform_to_hood_3mm": {
+      "ok": true,
+      "detail": {
+        "Fine_HoodVent_+1": 0.0,
+        "Fine_HoodVent_-1": 0.0
+      }
+    },
     "lamps_seated_on_housings": {
       "ok": true,
       "detail": {}
@@ -322,8 +333,8 @@
     "triangle_budget_and_lod_monotonic": {
       "ok": true,
       "detail": [
-        34898,
-        24780,
+        35186,
+        25068,
         14542
       ]
     },

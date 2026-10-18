@@ -2,19 +2,19 @@
   "blend": "tools/vehicle_pipeline/blender/knifeedge_blueprint.blend",
   "exports": {
     "lod0": {
-      "triangles": 34898,
+      "triangles": 35186,
       "objects": 83,
-      "bytes": 1618452
+      "bytes": 1624792
     },
     "lod1": {
-      "triangles": 24780,
+      "triangles": 25068,
       "objects": 83,
-      "bytes": 1235828
+      "bytes": 1242240
     },
     "lod2": {
       "triangles": 14542,
       "objects": 80,
-      "bytes": 759400
+      "bytes": 758572
     }
   },
   "handoff": {

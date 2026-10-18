@@ -131,7 +131,7 @@ def build_tail_plate(builder):
     """Vertical End-B tail plate carrying the grille, lamps and bumper hoop (side view x 311.5..317.5)."""
     x = T.X(314.5)
     zb, zt = T.Z(159.0), T.Z(110.0)
-    return P.rbox(builder, "Body_TailPlate", (T.W(6.0), 2 * T.W(49.0), zt - zb), "paint", bevel=0.01,
+    return P.rbox(builder, "Body_TailPlate", (T.W(6.0), 2 * T.W(47.0), zt - zb), "paint", bevel=0.01,
                   location=(x, 0, (zb + zt) / 2))
 
 

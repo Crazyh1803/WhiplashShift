@@ -85,8 +85,7 @@ def engine(builder):
     P.sweep(builder, "Prop_Exhaust_Tailpipe", P.rounded_path(route, 0.10, steps=5), "steel", radius=0.034, sides=16)
 
 
-TOWER_APEX = (362.0, 99.0, 0.40)   # px, px, y : shock tower A-frame apex (see knifeedge_cage.rear)
-TOWER_FOOT = {"R": (335.0, 175.0, 0.50), "F": (392.0, 176.0, 0.50)}
+TOWER_APEX, TOWER_FOOT = T.TOWER_APEX, T.TOWER_FOOT  # shock tower A-frame (see knifeedge_cage.rear)
 
 
 def tower_leg_point(tag, z):

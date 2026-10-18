@@ -426,6 +426,37 @@ for o in objs.values():
         if n:
             spring_hits[o.name] = n
 check("shocks_clear_of_cage_tubes", not spring_hits, spring_hits)
+floor_tree = union_tree([objs["Body_Floor"]])
+
+
+def inside_floor(p):
+    origin, hits = Vector(p), 0
+    while hits < 8:
+        h = floor_tree.ray_cast(origin + Vector((0, 0, 1e-5)), Vector((0, 0, 1)))
+        if h[0] is None:
+            break
+        hits += 1
+        origin = h[0] + Vector((0, 0, 1e-4))
+    return hits % 2 == 1
+
+
+feet = {}
+foot_list = [(px, K.foot_y(px)) for px in (345, 400, 318)] + [(T.TOWER_FOOT[t][0], T.TOWER_FOOT[t][2]) for t in "RF"]
+for px, y in foot_list:
+    for s in (-1, 1):
+        py = T.TOWER_FOOT["R"][1] if (px, y) in [(T.TOWER_FOOT[t][0], T.TOWER_FOOT[t][2]) for t in "RF"] else K.FOOT_PY
+        if not inside_floor((T.X(px), s * y, T.Z(py))):
+            feet[f"px{px:.0f}{s:+d}"] = "foot centre outside the floor pan"
+check("rear_truss_feet_land_on_floor_pan", not feet, feet)
+vent_gap = {}
+for n in objs:
+    if n.startswith("Fine_HoodVent"):
+        worst = 0.0
+        for p in all_vertices([objs[n]]):
+            h = ray(shell_tree, (p.x, p.y, 3.0), (0, 0, -1))[0]
+            worst = max(worst, min(abs(p.z - (h.z + 0.010)), abs(p.z - (h.z - 0.004))))
+        vent_gap[n] = mm(worst)
+check("hood_vents_conform_to_hood_3mm", all(g < 3.0 for g in vent_gap.values()), vent_gap)
 lens_bad = {}
 for n, o in objs.items():
     housing = None
