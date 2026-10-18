@@ -44,21 +44,16 @@ def make_material(name, color, metallic=0.0, roughness=0.5, coat=0.0, coat_rough
 
 
 def build_materials():
-    """Three semantic paint channels plus protected brass/copper/iron, glass, rubber, lamps."""
+    """Three semantic paint channels plus fixed rubber, glass, hardware and light materials."""
     return {
-        "paint": make_material("Helix_Paint", (0.025, 0.150, 0.085), 0.55, 0.32, 0.6, 0.06),
-        "paint2": make_material("Helix_Secondary", (0.62, 0.53, 0.34), 0.35, 0.42, 0.4, 0.08),
-        "accent": make_material("Helix_Stripe", (0.46, 0.045, 0.030), 0.45, 0.34, 0.5, 0.06),
-        "glass": make_material("Helix_Glass", (0.010, 0.026, 0.030), 0.15, 0.04, 1.0, 0.0),
-        "rubber": make_material("Helix_Rubber", (0.018, 0.017, 0.016), 0.0, 0.86),
-        "brass": make_material("Helix_Brass", (0.70, 0.46, 0.13), 1.0, 0.24),
-        "copper": make_material("Helix_Copper", (0.62, 0.24, 0.10), 1.0, 0.30),
-        "iron": make_material("Helix_Iron", (0.030, 0.032, 0.035), 0.9, 0.42),
-        "dial": make_material("Helix_Dial", (0.80, 0.76, 0.62), 0.0, 0.50),
-        "lamp": make_material("Helix_Lamp", (0.85, 0.66, 0.34), 0.05, 0.10,
-                              emission=(1.0, 0.62, 0.22), emission_strength=3.0),
-        "amber": make_material("Helix_Amber", (0.80, 0.30, 0.03), 0.05, 0.18,
-                               emission=(1.0, 0.35, 0.04), emission_strength=1.8),
+        "paint": make_material("Helix_Paint", (0.10, 0.17, 0.30), 0.45, 0.30, 0.6, 0.05),
+        "paint2": make_material("Helix_Secondary", (0.58, 0.52, 0.40), 0.25, 0.46, 0.3, 0.10),
+        "accent": make_material("Helix_Stripe", (0.72, 0.12, 0.04), 0.35, 0.34, 0.5, 0.06),
+        "glass": make_material("Helix_Glass", (0.012, 0.030, 0.040), 0.15, 0.04, 1.0, 0.0),
+        "rubber": make_material("Helix_Rubber", (0.020, 0.019, 0.018), 0.0, 0.82),
+        "hardware": make_material("Helix_Hardware", (0.075, 0.080, 0.088), 0.9, 0.40),
+        "light": make_material("Helix_Light", (0.30, 0.75, 0.85), 0.05, 0.10,
+                               emission=(0.25, 0.80, 1.0), emission_strength=3.0),
     }
 
 

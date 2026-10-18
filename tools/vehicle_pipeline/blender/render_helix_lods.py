@@ -22,7 +22,7 @@ for tag, rel in (("gameplay", f"{STEM}.glb"), ("lod1", f"lod/{STEM}_LOD1.glb"),
     cols = C.reset_scene()
     bpy.ops.import_scene.gltf(filepath=str(MODEL_DIR / rel))
     Q.build_studio(cols)
-    for view in ("three_quarter_coupe", "three_quarter_truck"):
+    for view in ("three_quarter_nose", "three_quarter_claw"):
         Q.configure(view, 1024, 576)
         Q.render(OUT / f"{STEM}_lod_{tag}_{view}.png")
 print("AK: lod renders done")

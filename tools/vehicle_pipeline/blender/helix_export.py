@@ -1,5 +1,6 @@
 """Scene finalisation, GLB/LOD export and QA renders for the Helix candidate."""
 
+import bmesh
 import bpy
 
 import helix_core as C
@@ -20,7 +21,7 @@ def finalize_scene(cols, hull, blueprint):
             C.smart_uv(obj)
     image = bpy.data.images.load(str(blueprint), check_existing=True)
     image.pack()
-    ref = bpy.data.objects.new("Reference_SteamPunk_Blueprint", None)
+    ref = bpy.data.objects.new("Reference_RType_Blueprint", None)
     ref.empty_display_type = "IMAGE"
     ref.data = image
     ref.empty_display_size = 5.0
@@ -28,18 +29,13 @@ def finalize_scene(cols, hull, blueprint):
     ref.hide_viewport = True
     cols["REFERENCE"].objects.link(ref)
     hull["vehicle_id"] = "helix"
-    hull["design"] = "Helix 88: Victorian steam speedster (End A +X) / boiler off-road truck (End B -X)"
-    hull["blueprint"] = "steam-punk.jpg"
-    hull["wheelbase"] = T.WHEELBASE
+    hull["design"] = "Helix Wraith: hovering R-9 style nose (End A +X) / biomechanical tracked claw rig (End B -X)"
+    hull["blueprint"] = "r-type.jpg"
     hull["scale_m_per_px"] = T.SCALE
     for name in ("CUTTERS", "REFERENCE"):
         cols[name].hide_render = True
         cols[name].hide_viewport = True
     bpy.context.scene.unit_settings.system = "METRIC"
-
-
-def _is_wheel(obj):
-    return obj.name.startswith(("Wheel_Truck_", "Wheel_Coupe_"))
 
 
 def _copy(obj, col):
@@ -57,6 +53,33 @@ def _decimate(obj, ratio):
     mod.use_collapse_triangulate = False
     C.apply_all_modifiers(obj)
     C.harden(obj, 35.0)
+
+
+def _split_materials(obj, col):
+    """Move faces of every material but slot 0 into separate undecimated objects (name + _mN)."""
+    out = []
+    mats = list(obj.data.materials)
+    for idx in range(1, len(mats)):
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        keep = [f for f in bm.faces if f.material_index != idx]
+        bmesh.ops.delete(bm, geom=keep, context="FACES")
+        if bm.faces:
+            mesh = bpy.data.meshes.new(f"{obj.name}_m{idx}_mesh")
+            bm.to_mesh(mesh)
+            for m in mats:
+                mesh.materials.append(m)
+            piece = bpy.data.objects.new(f"{obj.name}_m{idx}", mesh)
+            piece.matrix_world = obj.matrix_world
+            col.objects.link(piece)
+            out.append(piece)
+        bm.free()
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.material_index != 0], context="FACES")
+    bm.to_mesh(obj.data)
+    bm.free()
+    return out
 
 
 def _join(objs, name, col):
@@ -78,9 +101,13 @@ def _join(objs, name, col):
     return joined
 
 
-LOD1_DROP = ("Fine_Rivets_Fenders", "Fine_Rivets_Hood", "Fine_Rivets_Plow", "Fine_Rivets_Door", "Fine_DoorHinge",
-             "Fine_PipeBracket", "Fine_ExhaustClamp", "Fine_GrilleBoss", "Fine_SmokeboxHandle", "Fine_LeafSpring")
-LOD2_KEEP = ("Fine_TruckLamp", "Fine_SpeedsterLamp", "Fine_RoofLamp")
+LOD1_DROP = ("Fine_ClawTeeth", "Fine_Gills", "Fine_SpineSlots", "Fine_HoseFlanges", "Fine_ClawPivotB",
+             "Fine_Bolts")
+LOD2_KEEP = ("Fine_NacelleLens", "Fine_PodLens")
+DECIMATE = {"Body_Hull": (0.62, 0.34), "Body_Plate": (0.6, 0.38), "Body_Hose": (0.6, 0.34),
+            "Body_Claw": (0.6, 0.38), "Body_Collar": (0.55, 0.30), "Body_Shoulder": (0.55, 0.3),
+            "Body_Fender": (0.6, 0.35), "Body_Pod": (0.6, 0.35), "Body_Nacelle": (0.6, 0.35),
+            "Body_Wing": (1.0, 1.0)}
 
 
 def build_export_set(cols, level):
@@ -97,23 +124,18 @@ def build_export_set(cols, level):
         obj = _copy(src, col)
         for m in list(obj.modifiers):
             obj.modifiers.remove(m)
-        if name.startswith("Body_"):
-            if level:
-                _decimate(obj, (0.70, 0.45)[level - 1])
-        elif name.startswith("Glass_"):
-            pass
-        elif _is_wheel(obj):
-            if level and ("_Tire_" in name or "_Rim_" in name):
-                _decimate(obj, (0.50, 0.28)[level - 1])
-            # spokes and wire bundles are never decimated: collapsing them drops a wheel part (LOD2 lost one)
-        elif name.startswith(("Prop_MidDrive_", "Gear_")):
-            if level == 2:
-                _decimate(obj, 0.6)
+        if level and name.startswith("Body_") and len(obj.data.materials) > 1:
+            _split_materials(obj, col)  # keep thin paint-channel bands out of the decimation
+        if name.startswith(("Body_", "Trim_")):
+            key = next((k for k in DECIMATE if name.startswith(k)), None)
+            if level and key:
+                _decimate(obj, DECIMATE[key][level - 1])
+            if name.startswith("Trim_"):
+                groups.setdefault(obj.data.materials[0].name, []).append(obj)
+        elif name.startswith(("Glass_", "Frame_", "Prop_Track_")):
+            pass  # tracks stay whole in every LOD (cleats/teeth must not vanish)
         else:
-            if name.startswith("Trim_") and level:
-                _decimate(obj, (0.6, 0.45)[level - 1])
-            key = obj.data.materials[0].name
-            groups.setdefault(key, []).append(obj)
+            groups.setdefault(obj.data.materials[0].name, []).append(obj)
     for key, objs in sorted(groups.items()):
         _join(objs, "Detail_" + key.replace("Helix_", ""), col)
     return col
@@ -158,10 +180,7 @@ def render_qa(cols, model_dir, stem, blueprint, views=None):
     out_dir = model_dir.parents[4] / "tools/vehicle_pipeline" / QA_DIR_NAME
     out_dir.mkdir(parents=True, exist_ok=True)
     Q.build_studio(cols)
-    for view in ("side", "top", "front_truck", "front_coupe", "three_quarter_truck",
-                 "three_quarter_coupe", "far_side_three_quarter", "cab", "truck_detail",
-                 "coupe_detail", "wheel_truck", "wheel_coupe", "middrive", "flywheel",
-                 "boiler_top", "cockpit", "roof", "underside"):
+    for view in Q.VIEWS:
         if views and view not in views:
             continue
         Q.configure(view, 1280, 720)
