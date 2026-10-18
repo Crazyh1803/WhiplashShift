@@ -16,3 +16,11 @@ into a deliberate continuous chassis transition, keeping the recognizable ends.
 3. Codex integrates assets, runs ak-test and actual garage/paint/driving/swap
    verification, checks generated rig metadata against unchanged physical anchors,
    records reviews/limits and leaves the revised Blackjack preview available.
+
+## Complete
+
+Source/assets integrated; native and rebuild checks pass, source/integration
+reviews APPROVE, studio/runtime visual QA PASS. Final merged export passes all
+4,781 checks. Physics and rig metadata are unchanged, and the Blackjack garage
+preview is open. See `.ai/reports/blackjack-junction-complete.md` for evidence and
+minor authoring notes.

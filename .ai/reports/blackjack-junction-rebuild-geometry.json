@@ -1,0 +1,16 @@
+{
+  "gameplay": {
+    "meshes": 397,
+    "same_mesh_names": true,
+    "identical_nodes": true,
+    "same_geometry_uv_materials_at_1_micrometre": true,
+    "differing_meshes": []
+  },
+  "lod1": {
+    "meshes": 217,
+    "same_mesh_names": true,
+    "identical_nodes": true,
+    "same_geometry_uv_materials_at_1_micrometre": true,
+    "differing_meshes": []
+  }
+}

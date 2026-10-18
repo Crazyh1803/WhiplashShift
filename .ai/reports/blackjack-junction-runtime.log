@@ -1,0 +1,12 @@
+QA_CAPTURE garage_roster error=0
+QA_LAYOUT viewport=[P: (0.0, 0.0), S: (1600.0, 900.0)] garage=(1600.0, 900.0) last_vehicle=[P: (550.0, 784.0), S: (242.0, 40.0)] next=[P: (567.0, 838.0), S: (130.0, 34.0)] ignite=[P: (1114.0, 760.0), S: (396.0, 60.0)]
+QA_CAPTURE blackjack_garage error=0
+QA_CAPTURE blackjack_roster error=0
+QA_CAPTURE blackjack_garage error=0
+QA_CAPTURE blackjack_custom_paint error=0
+QA_CAPTURE blackjack_garage_coupe error=0
+QA_CAPTURE blackjack_grid error=0
+QA_DRIVE speed_kmh=59.2478050231934
+QA_CAPTURE blackjack_driving error=0
+QA_SWAP active_end=B position_finite=true
+QA_CAPTURE blackjack_swapped error=0
