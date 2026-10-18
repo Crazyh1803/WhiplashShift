@@ -7,7 +7,7 @@ var _output := ProjectSettings.globalize_path("res://").path_join("../.ai/captur
 
 func _ready() -> void:
 	for argument: String in OS.get_cmdline_user_args():
-		if argument in ["--nightshift", "--ramjet", "--boilerfang", "--helix", "--knifeedge"]:
+		if argument in ["--blackjack", "--nightshift", "--ramjet", "--boilerfang", "--helix", "--knifeedge"]:
 			_vehicle_id = argument.trim_prefix("--")
 	DirAccess.make_dir_recursive_absolute(_output)
 	var garage: Variant = load("res://scenes/garage.tscn").instantiate()
