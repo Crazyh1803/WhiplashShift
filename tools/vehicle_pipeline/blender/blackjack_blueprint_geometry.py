@@ -1,5 +1,9 @@
 """Supported, mirrored cage and modular detail authored from blueprint pixels."""
+import math
 import bmesh
+
+# Later builder stages rebind the name `profile`; keep the trace function.
+station_profile = profile
 from mathutils.bvhtree import BVHTree
 
 
@@ -174,9 +178,14 @@ def build_shell():
         if (min(edge.vertices)>=end or
             (abs(a.x-b.x)<.00001 and a.x<point(282,0).x)):
             crease.data[edge.index].value = 1
-        elif abs(a.x-b.x)>.00001 and max(a.x,b.x)<point(548,0).x:
+        elif abs(a.x-b.x)>.00001 and max(a.x,b.x)<point(JUNCTION_PX[1],0).x:
             if edge.vertices[0]%n == edge.vertices[1]%n and edge.vertices[0]%n in (7,9,10,15,16,18):
-                crease.data[edge.index].value = .45
+                # Shoulder creases fade out across the junction instead of
+                # stopping dead at one station.
+                px = ((a.x+b.x)/2-X_OFFSET)/SCALE+527
+                fade = 1 if px <= JUNCTION_PX[0] else 1-_ease(
+                    (px-JUNCTION_PX[0])/(JUNCTION_PX[1]-JUNCTION_PX[0]))
+                crease.data[edge.index].value = .45*fade
     mirror = shell.modifiers.new('ManualCageMirror','MIRROR')
     mirror.use_axis = (False,False,True)
     mirror.use_bisect_axis = (False,False,True)
@@ -288,12 +297,12 @@ def panel(name,outline,projection,mat):
     return obj
 
 
-def side_seam(name,outline,side,radius=.0013,mat=None):
+def side_seam(name,outline,side,radius=.0013,mat=None,offset=.002):
     vertices = []
     for a,b in zip(outline,outline[1:]+outline[:1]):
         for i in range(4):
             t = i/4
-            vertices.append(side_point(a[0]*(1-t)+b[0]*t,a[1]*(1-t)+b[1]*t,side,.002))
+            vertices.append(side_point(a[0]*(1-t)+b[0]*t,a[1]*(1-t)+b[1]*t,side,offset))
     return tube(name,vertices,radius,mat or MAT['Rubber'],cyclic=True)
 
 
@@ -359,15 +368,17 @@ for side in (-1,1):
     coupe = [(558,144),(566,132),(592,133),(614,139),(638,153),(608,152),(562,147)]
     panel(f'Glass_CoupeSide_{side}',coupe,project_side,MAT['Glass'])
     side_seam(f'Glass_CoupeGasket_{side}',coupe,side,.0022)
-    quarter = [(530,145),(539,135),(544,134),(542,146)]
-    panel(f'Glass_CoupeQuarter_{side}',quarter,project_side,MAT['Glass'])
-    side_seam(f'Glass_CoupeQuarterSeal_{side}',quarter,side,.0018)
+    # The isolated triangular quarter-light that sat in the old cab/coupe notch is gone.
     truck_door = [(345,150),(345,118),(349,84),(395,81),(398,148),(389,152)]
     side_seam(f'Door_Rugged_{side}',truck_door,side)
     equipment = [(403,80),(459,80),(461,148),(402,148)]
     side_seam(f'Armor_EquipmentPlate_{side}',equipment,side,.0015,MAT['Gunmetal'])
-    transition = [(490,89),(528,115),(530,128),(490,140)]
-    side_seam(f'Armor_TransitionInset_{side}',transition,side,.0017,MAT['Gunmetal'])
+    # Frame follows the eased roof and belt lines of the junction rather than
+    # fixed pixel corners from the old notched profile.
+    def roof_at(px): return station_profile(px)[3]
+    def belt_at(px): return station_profile(px)[2]
+    transition = [(490,roof_at(490)+16),(528,roof_at(528)+16),(530,belt_at(530)-8),(490,belt_at(490)-1)]
+    side_seam(f'Armor_TransitionInset_{side}',transition,side,.0017,MAT['Gunmetal'],.003)
     door = [(555,150),(609,156),(647,163),(643,209),(580,209),(569,190)]
     side_seam(f'Door_Coupe_{side}',door,side)
     # The drawing's long shoulder crease and fastened lower door panel are
@@ -387,9 +398,11 @@ for side in (-1,1):
     for px in (414,428,442,453):
         for py in (83,146):
             rivet(f'Rivet_EquipmentEdge_{side}_{px}_{py}',side_point(px,py,side))
-    for px,py in [(351,119),(351,138),(362,149),(381,149),(392,137),(393,118),
-                  (490,95),(490,133),(512,121),(526,121)]:
+    for px,py in [(351,119),(351,138),(362,149),(381,149),(392,137),(393,118)]:
         rivet(f'Rivet_DoorAndTransition_{side}_{px}_{py}',side_point(px,py,side))
+    for px,py in [(497,roof_at(497)+24),(497,belt_at(497)-10),(512,(roof_at(512)+belt_at(512))/2+6),
+                  (521,(roof_at(521)+belt_at(521))/2+6)]:
+        rivet(f'Rivet_DoorAndTransition_{side}_{px}_{round(py)}',side_point(px,py,side,.003))
     for py in (89,144):
         box(f'Hinge_Truck_{side}_{py}',side_point(346,py,side,.004),(.010,.017,.010),MAT['Gunmetal'],bevel_width=.002)
     # Real folded wheel-bay overhang, with a thin seam instead of a trim ring.
@@ -412,12 +425,18 @@ for side in (-1,1):
         solid = liner.modifiers.new('WheelBayThickness','SOLIDIFY')
         solid.thickness = .003
     # Central exposed sill, tank and pipe are below the body, not a solid slab.
-    box(f'Drivetrain_Tank_{side}',point(515,205,side*.208),(.18,.098,.111),MAT['BrushedMetal'],bevel_width=.013)
+    # The tank hangs from the eased sill (not the old stair-stepped one) and the
+    # pipe rides the flank, which no longer pinches inward at the junction.
+    tank_y = profile(515)[1]+12
+    box(f'Drivetrain_Tank_{side}',point(515,tank_y,side*.208),(.18,.098,.111),MAT['BrushedMetal'],bevel_width=.013)
     for px in (502,525):
-        box(f'Tank_Strap_{side}_{px}',point(px,205,side*.267),(.009,.101,.006),MAT['Gunmetal'],bevel_width=.001)
-    points = [point(476,145,side*.31),point(479,162,side*.31),point(488,169,side*.30),
-              point(539,170,side*.26),point(562,192,side*.30)]
+        box(f'Tank_Strap_{side}_{px}',point(px,tank_y,side*.267),(.009,.101,.006),MAT['Gunmetal'],bevel_width=.001)
+    points = [side_point(476,145,side,.012),side_point(484,150,side,.012),side_point(496,158,side,.012),
+              side_point(539,172,side,.012),side_point(566,188,side,.012)]
     tube(f'Drivetrain_ExternalPipe_{side}',points,.009,MAT['BrushedMetal'])
+    for px,py in ((500,160),(536,172)):
+        cylinder_between(f'Drivetrain_PipeBracket_{side}_{px}',side_point(px,py,side,.002),
+                         side_point(px,py,side,.012),.006,MAT['Gunmetal'],10)
     for j in range(5):
         box(f'Vent_Armor_{side}_{j}',side_point(433,90+j*2.4,side,.003),(.080,.003,.004),MAT['Grille'],bevel_width=.0008)
     box(f'Armor_AccessLatch_{side}',side_point(498,120,side,.004),(.009,.030,.008),MAT['Gunmetal'],bevel_width=.002)
@@ -841,3 +860,48 @@ def render_overlay(view,path):
         obj.hide_render = visible
     reference.hide_render = True
     refs.hide_render = True
+
+
+def junction_measurements(surface, step=3):
+    """Transition gates for the bounded central junction (level blueprint frame).
+
+    Inside JUNCTION_PX the old trace fidelity no longer applies; the shell must
+    instead be a monotone, kink-free, non-pinched ramp between its two ends.
+    """
+    rows = []
+    for px in range(JUNCTION_PX[0], JUNCTION_PX[1]+1, step):
+        x = point(px, 0).x
+        top = surface.ray_cast(Vector((x, 1.5, 0)), Vector((0, -1, 0)))[0]
+        bottom = surface.ray_cast(Vector((x, -1.5, 0)), Vector((0, 1, 0)))[0]
+        belt_y = point(px, station_profile(px)[2]).y
+        side = surface.ray_cast(Vector((x, belt_y, .8)), Vector((0, 0, -1)))[0]
+        assert top and bottom and side, ('Junction section missing', px)
+        rows.append({'pixel_x': px, 'roof_y_pixels': (top.y-point(px, 0).y)/SCALE,
+                     'sill_y_pixels': (bottom.y-point(px, 0).y)/SCALE,
+                     'belt_half_width_pixels': side.z/SCALE})
+    roof = [r['roof_y_pixels'] for r in rows]
+    sill = [r['sill_y_pixels'] for r in rows]
+    width = [r['belt_half_width_pixels'] for r in rows]
+    tol = .35  # pixels; the subdivided cage may overshoot a hair
+    stats = {
+        'region_pixels': list(JUNCTION_PX),
+        'roof_drop_pixels': roof[0]-roof[-1],
+        'roof_monotone_violation': max(max(0, b-a) for a, b in zip(roof, roof[1:])),
+        'sill_monotone_violation': max(max(0, b-a) for a, b in zip(sill, sill[1:])),
+        'max_roof_slope_degrees': max(math.degrees(math.atan(abs(a-b)/step)) for a, b in zip(roof, roof[1:])),
+        'max_sill_slope_degrees': max(math.degrees(math.atan(abs(a-b)/step)) for a, b in zip(sill, sill[1:])),
+        'max_roof_slope_change_degrees': max(abs(math.degrees(math.atan((b-a)/step))-math.degrees(math.atan((c-b)/step)))
+                                             for a, b, c in zip(roof, roof[1:], roof[2:])),
+        'min_belt_half_width_pixels': min(width),
+        'belt_half_width_range_pixels': max(width)-min(width),
+        'end_belt_half_width_pixels': [width[0], width[-1]],
+    }
+    # Roof must fall (y grows in pixel-down terms => height shrinks) without a
+    # step-up notch; sill only lowers; no waist narrower than the ends.
+    assert stats['roof_monotone_violation'] < tol, ('Roof notch in junction', stats)
+    assert stats['sill_monotone_violation'] < tol, ('Sill staircase in junction', stats)
+    assert stats['max_roof_slope_degrees'] < 40, ('Roof junction too steep', stats)
+    assert stats['max_roof_slope_change_degrees'] < 14, ('Roof junction kink', stats)
+    assert stats['min_belt_half_width_pixels'] > min(width[0], width[-1])-2.5, ('Junction waist pinch', stats)
+    assert stats['belt_half_width_range_pixels'] < 8, ('Junction flank not continuous', stats)
+    return {'stats': stats, 'samples': rows}

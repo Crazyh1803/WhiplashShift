@@ -38,6 +38,37 @@ STATIONS = [
 ]
 WHEELS = [(360, 201, 34, .360), (440, 201, 34, .360), (694, 203, 32, .343)]
 
+# Central body junction (truck cabin to coupe), redesigned after the traced
+# stations produced a roof notch, a staircase sill and a pinched waist. Stations
+# strictly inside JUNCTION_PX are authored curves, not drawing traces; every
+# station outside (and both bounding rows) keeps the original hand trace.
+LEGACY_STATIONS = STATIONS
+JUNCTION_PX = (469, 596)
+
+
+def _ease(t):
+    return t*t*(3-2*t)
+
+
+def _junction_row(px):
+    a = next(r for r in LEGACY_STATIONS if r[0] == JUNCTION_PX[0])
+    b = next(r for r in LEGACY_STATIONS if r[0] == JUNCTION_PX[1])
+    t = (px-JUNCTION_PX[0])/(JUNCTION_PX[1]-JUNCTION_PX[0])
+    s = _ease(t)
+    # Sill, belt, roof and greenhouse ease with zero slope into both ends. The
+    # shoulder half-width stays level (no hourglass), so the flank is continuous.
+    return (px, a[1]+(b[1]-a[1])*s, a[2]+(b[2]-a[2])*s, a[3]+(b[3]-a[3])*s,
+            a[4]+(b[4]-a[4])*t, a[5]+(b[5]-a[5])*s)
+
+
+STATIONS = ([r for r in LEGACY_STATIONS if r[0] <= JUNCTION_PX[0]]
+            + [_junction_row(px) for px in range(474, 596, 9)]
+            + [r for r in LEGACY_STATIONS if r[0] >= JUNCTION_PX[1]])
+
+
+def in_junction(px):
+    return JUNCTION_PX[0] < px < JUNCTION_PX[1]
+
 
 def point(px, py, z=0):
     return Vector(((px - 527) * SCALE + X_OFFSET,

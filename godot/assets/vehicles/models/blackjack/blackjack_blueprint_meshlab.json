@@ -1,6 +1,6 @@
 {
   "engine": "MeshLab 2025.07 / PyMeshLab 2025.7.post1",
-  "glb_sha256": "9e5dd02eface241054a18a46b7e060f537c0f21cc52349b8cf947324209bb183",
+  "glb_sha256": "1550a0b58091275b6a6a1113c1d2443f012ec405c803e5eba657a419c5d2eb7e",
   "filters": [
     "get_topological_measures",
     "get_geometric_measures"
@@ -21,10 +21,10 @@
     "vertices_number": 2244
   },
   "source_shell_extents": [
-    2.0862972736358643,
-    0.607260450720787,
+    2.086326837539673,
+    0.6089704781770706,
     0.6801722347736359
   ],
   "game_scale": 2.345,
-  "source_shell_volume": 0.32189713032706235
+  "source_shell_volume": 0.3418225956066817
 }
