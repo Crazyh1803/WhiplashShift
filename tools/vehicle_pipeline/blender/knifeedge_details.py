@@ -104,13 +104,41 @@ def mirrors(builder):
                location=(T.X(595.0), s * 0.79, T.Z(108.0)))
 
 
+def conform_vent(builder, name, surf, px0, px1, yc, width, rows=9, cols=5, lift=0.010, sink=0.004):
+    """Forward-pointing triangular vent as a closed skin sampled on the hood surface (no flat plate on a curve)."""
+    bm = bmesh.new()
+    top, low = [], []
+    for i in range(rows):
+        t = i / (rows - 1)
+        x = T.X(px0 + (px1 - px0) * t)
+        w = max(0.014, width * (1.0 - t))
+        rt, rl = [], []
+        for j in range(cols):
+            y = yc + (j / (cols - 1) - 0.5) * w
+            z = surf.top(x, y)[0].z
+            rt.append(bm.verts.new((x, y, z + lift)))
+            rl.append(bm.verts.new((x, y, z - sink)))
+        top.append(rt)
+        low.append(rl)
+    for i in range(rows - 1):
+        for j in range(cols - 1):
+            bm.faces.new((top[i][j], top[i][j + 1], top[i + 1][j + 1], top[i + 1][j]))
+            bm.faces.new((low[i][j], low[i + 1][j], low[i + 1][j + 1], low[i][j + 1]))
+    for i in range(rows - 1):
+        bm.faces.new((low[i][0], top[i][0], top[i + 1][0], low[i + 1][0]))
+        bm.faces.new((low[i][-1], low[i + 1][-1], top[i + 1][-1], top[i][-1]))
+    for j in range(cols - 1):
+        bm.faces.new((low[0][j], low[0][j + 1], top[0][j + 1], top[0][j]))
+        bm.faces.new((low[-1][j + 1], low[-1][j], top[-1][j], top[-1][j + 1]))
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    return P.finish(builder, name, bm, "iron", smooth_angle=40)
+
+
 def front_detail(builder, surf):
-    # twin triangular hood vents
+    # twin triangular hood vents: thin skins that follow the (curved, sloping) hood surface
     L = T.W(51.0)
     for s in (-1, 1):
-        poly = [(-L / 2, -0.11), (-L / 2, 0.11), (L / 2, 0.0)]
-        mount(builder, f"Fine_HoodVent_{s:+d}", surf, (T.X(681.5), s * 0.43, 2.0), (0, 0, -1), (L, 0.22, 0.012), "iron",
-              bevel=0.003, sink=0.006, poly=poly)
+        conform_vent(builder, f"Fine_HoodVent_{s:+d}", surf, 656.0, 707.0, s * 0.43, 0.22)
         for k in range(3):
             mount(builder, f"Fine_HoodLouvre_{s:+d}_{k}", surf, (T.X(670.0 + 9.0 * k), s * 0.43, 2.0), (0, 0, -1),
                   (0.03, 0.13 - 0.034 * k, 0.012), "steel", bevel=0.002, sink=0.004)
@@ -162,9 +190,9 @@ def tail_detail(builder):
         P.rbox(builder, f"Fine_TailSlat_{k}", (0.012, 0.52, 0.012), "steel", bevel=0.002,
                location=(plate_rear - 0.022, 0, T.Z(131.0) - 0.085 + k * 0.042))
     for s in (-1, 1):
-        P.rbox(builder, f"Fine_TailBezel_{s:+d}", (0.02, 0.35, 0.22), "iron", bevel=0.01, segments=2,
-               location=(plate_rear - 0.008, s * 0.365, 0.92))
-        for y, r in ((0.30, 0.065), (0.43, 0.055)):
+        P.rbox(builder, f"Fine_TailBezel_{s:+d}", (0.02, 0.33, 0.22), "iron", bevel=0.01, segments=2,
+               location=(plate_rear - 0.008, s * 0.355, 0.92))
+        for y, r in ((0.29, 0.062), (0.42, 0.053)):
             P.sweep(builder, f"Fine_TailLamp_{s:+d}_{int(y * 100)}", [(plate_rear - 0.016, s * y, 0.92),
                                                                       (plate_rear - 0.044, s * y, 0.92)], "lamp", radius=r, sides=16)
         # winch bracket

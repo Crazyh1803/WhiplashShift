@@ -426,6 +426,23 @@ for o in objs.values():
         if n:
             spring_hits[o.name] = n
 check("shocks_clear_of_cage_tubes", not spring_hits, spring_hits)
+floor_tree = union_tree([objs["Body_Floor"]])
+feet = {}
+for p in all_vertices([objs["Body_CageRear"]]):
+    if p.z < 0.36:
+        d_ = floor_tree.find_nearest(p)[3]
+        if d_ > 0.03:
+            feet[f"{p.x:.2f},{p.y:.2f},{p.z:.2f}"] = mm(d_)
+check("rear_truss_feet_land_on_floor_pan", not feet, dict(list(feet.items())[:8]))
+vent_gap = {}
+for n in objs:
+    if n.startswith("Fine_HoodVent"):
+        worst = 0.0
+        for p in all_vertices([objs[n]]):
+            h = ray(shell_tree, (p.x, p.y, 3.0), (0, 0, -1))[0]
+            worst = max(worst, min(abs(p.z - (h.z + 0.010)), abs(p.z - (h.z - 0.004))))
+        vent_gap[n] = mm(worst)
+check("hood_vents_conform_to_hood_3mm", all(g < 3.0 for g in vent_gap.values()), vent_gap)
 lens_bad = {}
 for n, o in objs.items():
     housing = None

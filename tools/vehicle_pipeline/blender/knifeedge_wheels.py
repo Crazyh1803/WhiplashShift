@@ -198,7 +198,7 @@ def build_brake(builder, side, location):
                  (0.190, -side * 0.011), (0.0, -side * 0.011)], 48)
     bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=1e-5)
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
-    return P.finish(builder, f"Wheel_Coupe_Brake_{side:+d}", bm, "steel", location=location, smooth_angle=40)
+    return P.finish(builder, f"Wheel_Coupe_Brake_{side:+d}", bm, "iron", location=location, smooth_angle=40)
 
 
 def build_caliper(builder, side, location):
