@@ -98,7 +98,7 @@ def light_bar(builder):
 
 def mirrors(builder):
     for s in (-1, 1):
-        P.sweep(builder, f"Fine_MirrorStalk_{s:+d}", [K.pt(612, 111, s * 0.66), K.pt(600, 107, s * 0.74)], "iron",
+        P.sweep(builder, f"Fine_MirrorStalk_{s:+d}", [K.pt(612, 111, s * 0.66), K.pt(596, 108, s * 0.78)], "iron",
                 radius=0.012, sides=8)
         P.rbox(builder, f"Fine_Mirror_{s:+d}", (0.11, 0.17, 0.10), "paint", bevel=0.025, segments=2,
                location=(T.X(595.0), s * 0.79, T.Z(108.0)))
@@ -145,8 +145,8 @@ def front_detail(builder, surf):
     mount(builder, "Fine_Badge", surf, (T.X(738.0), 0, 2.0), (0, 0, -1), (0.07, 0.07, 0.012), "steel", bevel=0.003)
     for s in (-1, 1):
         # angled LED headlamp slit on the nose, three short segments following the curved nose
-        for k, (y, ln) in enumerate(((0.36, 0.18), (0.52, 0.16), (0.66, 0.12))):
-            mount(builder, f"Fine_LedStrip_{s:+d}_{k}", surf, (4.0, s * y, T.Z(166.0 - 3.0 * k)), (-1, 0, 0), (ln, 0.035, 0.012),
+        for k, (y, ln) in enumerate(((0.34, 0.20), (0.50, 0.20), (0.66, 0.16))):
+            mount(builder, f"Fine_LedStrip_{s:+d}_{k}", surf, (4.0, s * y, T.Z(165.0)), (-1, 0, 0), (ln, 0.035, 0.012),
                   "lamp", bevel=0.002, sink=0.006, along=(0, s, 0))
         mount(builder, f"Fine_NoseIntake_{s:+d}", surf, (T.X(729.0), s * 3.0, T.Z(176.0)), (0, -s, 0), (0.34, 0.26, 0.014),
               "iron", bevel=0.003, sink=0.012,
