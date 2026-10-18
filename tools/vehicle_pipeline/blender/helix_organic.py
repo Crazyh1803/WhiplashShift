@@ -24,7 +24,7 @@ def build_claws(builder):
                     (T.X(250), s * 0.45, T.Z(262)), (T.X(236), s * 0.34, T.Z(244))),
         }.items():
             path = P.bezier((p0, p1, p2, p3), 40)
-            radii = _taper_radii(len(path), 0.085, 0.018)
+            radii = _taper_radii(len(path), 0.085, 0.003)
             P.tube(builder, f"Body_Claw{jaw}_{SN[s]}", path, radii, "paint2", sides=12, ribs=6, rib_depth=0.07)
             # serrated inner edge: cones pointing toward the claw's axis
             for k in range(10, 38, 4):
@@ -42,20 +42,27 @@ def build_claws(builder):
 
 
 def build_hoses(builder):
-    """Four ribbed S-curve conduits per flank from the carapace shoulders to the collar sockets."""
+    """Four ribbed S-curve conduits per flank from the shoulder lobes to sockets on the collar."""
+    from helix_body import Surface
+    objs = builder.cols["HELIX_SOURCE"].objects
+    collar = Surface(objs["Body_Collar"])
     for s in SIDES:
+        lobe = Surface(objs[f"Body_Shoulder_{SN[s]}"])
         sockets = bmesh.new()
         for i in range(4):
-            z0 = 0.86 - 0.115 * i
-            z3 = 0.70 - 0.10 * i
-            p0 = (T.X(438 + 3 * i), s * 0.60, z0)
-            p3 = (T.X(500), s * (T.half_w(T.X(500)) + 0.035 - 0.004 * i), z3)
-            p1 = (p0[0] + 0.16, s * (0.70 + 0.02 * i), z0 + 0.06)
-            p2 = (p3[0] - 0.14, s * (abs(p3[1]) + 0.10), z3 + 0.05)
+            z0 = 0.80 - 0.085 * i
+            z3 = 0.74 - 0.090 * i
+            x0, x3 = T.X(432 + 3 * i), T.X(498)
+            y0 = lobe.side_y(x0, z0, s)
+            y3 = collar.side_y(x3, z3, s)
+            p0 = (x0, y0 - s * 0.012, z0)
+            p3 = (x3, y3 - s * 0.012, z3)
+            p1 = (p0[0] + 0.16, s * (abs(y0) + 0.10 + 0.02 * i), z0 + 0.05)
+            p2 = (p3[0] - 0.14, s * (abs(y3) + 0.10), z3 + 0.04)
             path = P.bezier((p0, p1, p2, p3), 40)
             P.tube(builder, f"Body_Hose{i}_{SN[s]}", path, 0.033, "rubber", sides=12, ribs=18, rib_depth=0.13)
-            P.bm_cyl(sockets, (p3[0] - 0.004, p3[1], p3[2]), (1, 0, 0), 0.047, 0.026, sides=12)
-            P.bm_cyl(sockets, (p0[0] - 0.01, p0[1], p0[2]), (1, 0, 0), 0.045, 0.024, sides=12)
+            P.bm_cyl(sockets, (p3[0], y3 + s * 0.002, p3[2]), (0, 1, 0), 0.040, 0.020, sides=12)
+            P.bm_cyl(sockets, (p0[0], y0 + s * 0.002, p0[2]), (0, 1, 0), 0.040, 0.020, sides=12)
         P.bm_object(builder, f"Fine_HoseFlanges_{SN[s]}", sockets, "hardware")
 
 
@@ -67,7 +74,7 @@ def build_fins(builder, surf):
             x = T.X(px)
             base = T.top_z(x) - 0.155  # shoulder lobe crown, sunk into the shell
             for i in range(6):
-                rot = Matrix.Rotation(math.radians(-24), 3, "Y")
+                rot = Matrix.Rotation(s * math.radians(38), 3, "X") @ Matrix.Rotation(math.radians(-24), 3, "Y")
                 P.bm_box(bm, (x + 0.034 * i, s * 0.50, base + 0.045), (0.010, 0.17, 0.115), rot)
         P.bm_object(builder, f"Fine_Fins_{SN[s]}", bm, "hardware")
 

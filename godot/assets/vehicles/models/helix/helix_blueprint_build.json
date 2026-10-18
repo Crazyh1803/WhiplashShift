@@ -2,19 +2,19 @@
   "blend": "tools/vehicle_pipeline/blender/helix_blueprint.blend",
   "exports": {
     "lod0": {
-      "triangles": 35800,
+      "triangles": 35576,
       "objects": 60,
-      "bytes": 1412592
+      "bytes": 1395424
     },
     "lod1": {
-      "triangles": 24905,
-      "objects": 65,
-      "bytes": 1062244
+      "triangles": 25678,
+      "objects": 66,
+      "bytes": 1067984
     },
     "lod2": {
-      "triangles": 18707,
-      "objects": 65,
-      "bytes": 886384
+      "triangles": 20050,
+      "objects": 66,
+      "bytes": 907308
     }
   },
   "handoff": {

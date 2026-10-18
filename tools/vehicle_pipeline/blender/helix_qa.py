@@ -12,7 +12,7 @@ TOP_CENTER_PY = T.TOP_CENTER_PY
 
 
 VIEWS = ("side", "top", "front_claw", "front_nose", "three_quarter_claw", "three_quarter_nose",
-         "far_three_quarter", "claws", "track", "track_inner", "hoses", "canopy", "nose", "pod", "underside")
+         "far_three_quarter", "claws", "track", "track_low", "hoses", "canopy", "nose", "pod", "underside")
 
 
 def build_studio(cols):
@@ -89,7 +89,7 @@ def configure(view, width=1280, height=720):
         "far_three_quarter": ((4.6, 5.0, 2.4), (0.0, 0, 0.55)),
         "claws": ((-4.4, -2.4, 1.5), (-2.1, 0, 0.55)),
         "track": ((-1.2, -3.0, 0.9), (-1.1, -0.62, 0.2)),
-        "track_inner": ((-1.1, 0.4, 0.5), (-1.1, -0.62, 0.2)),
+        "track_low": ((-1.0, -1.7, 0.12), (-1.1, -0.62, 0.2)),
         "hoses": ((-0.1, -2.2, 1.5), (-0.4, -0.5, 0.65)),
         "canopy": ((1.6, -2.2, 1.5), (0.5, 0, 0.8)),
         "nose": ((3.9, -1.6, 0.9), (2.0, 0, 0.4)),

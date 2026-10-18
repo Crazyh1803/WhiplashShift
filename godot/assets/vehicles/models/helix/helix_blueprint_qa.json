@@ -3,9 +3,9 @@
   "failed": [],
   "checks": 39,
   "triangles": [
-    35800,
-    24905,
-    18707
+    35576,
+    25678,
+    20050
   ],
   "results": {
     "no_wheel_objects_authored": {
@@ -35,13 +35,16 @@
     "overall_length_5m": {
       "ok": true,
       "detail": [
-        -2.479,
+        -2.47,
         2.5
       ]
     },
-    "claw_tips_at_end_b_and_nose_at_end_a": {
+    "claw_tips_and_nose_at_sheet_ends": {
       "ok": true,
-      "detail": null
+      "detail": [
+        -2.47,
+        2.5
+      ]
     },
     "width_between_track_sponsons": {
       "ok": true,
@@ -60,7 +63,7 @@
       "detail": {
         "worst_px": 7.34,
         "at_px": 482,
-        "mean_abs_px": 1.1
+        "mean_abs_px": 1.08
       }
     },
     "top_view_hull_halfwidth_vs_trace": {
@@ -183,8 +186,8 @@
         },
         "Glass_SensorBlister": {
           "no_plan_overhang": true,
-          "buried_mm": 37.15,
-          "rise_mm": 50.75
+          "buried_mm": 34.13,
+          "rise_mm": 45.0
         },
         "Frame_CanopyAft_0": {
           "no_plan_overhang": true,
@@ -223,7 +226,7 @@
       "detail": {
         "Glass_CanopyAft": 144.11,
         "Glass_CanopyFwd": 111.32,
-        "Glass_SensorBlister": 50.75
+        "Glass_SensorBlister": 45.0
       }
     },
     "no_floating_parts_8mm": {
@@ -235,27 +238,27 @@
       "detail": {
         "tips": {
           "Up+1": [
-            -2.479,
-            0.356,
+            -2.47,
+            0.343,
             0.809
           ],
           "Up-1": [
-            -2.479,
-            -0.356,
+            -2.47,
+            -0.343,
             0.809
           ],
           "Low+1": [
-            -2.436,
-            0.348,
-            0.289
+            -2.423,
+            0.341,
+            0.295
           ],
           "Low-1": [
-            -2.436,
-            -0.348,
-            0.289
+            -2.423,
+            -0.341,
+            0.295
           ]
         },
-        "jaw_gap_m": 0.52
+        "jaw_gap_m": 0.514
       }
     },
     "hoses_four_per_flank_ribbed": {
@@ -288,21 +291,21 @@
     "semantic_channels_have_area": {
       "ok": true,
       "detail": {
-        "Helix_Secondary": 22.832,
-        "Helix_Rubber": 4.443,
-        "Helix_Paint": 14.173,
-        "Helix_Stripe": 0.446,
-        "Helix_Hardware": 11.049,
-        "Helix_Light": 0.135,
+        "Helix_Secondary": 22.685,
+        "Helix_Rubber": 4.436,
+        "Helix_Hardware": 14.965,
+        "Helix_Paint": 10.119,
+        "Helix_Stripe": 0.443,
+        "Helix_Light": 0.118,
         "Helix_Glass": 2.176
       }
     },
     "triangle_budget_and_lod_monotonic": {
       "ok": true,
       "detail": [
-        35800,
-        24905,
-        18707
+        35576,
+        25678,
+        20050
       ]
     },
     "handoff_track_contact_matches_measured": {
@@ -395,7 +398,7 @@
       "ok": true,
       "detail": {
         "0": [
-          -2.479,
+          -2.47,
           2.5,
           -0.806,
           0.806,
@@ -403,7 +406,7 @@
           1.22
         ],
         "1": [
-          -2.479,
+          -2.47,
           2.5,
           -0.806,
           0.806,
@@ -411,7 +414,7 @@
           1.22
         ],
         "2": [
-          -2.479,
+          -2.47,
           2.5,
           -0.806,
           0.806,
@@ -442,7 +445,7 @@
       "canopies": 2,
       "cleat_min_z_mm": -0.35,
       "bbox": [
-        -2.479,
+        -2.47,
         2.5,
         -0.806,
         0.806,
@@ -451,7 +454,7 @@
       ]
     },
     "1": {
-      "meshes": 65,
+      "meshes": 66,
       "materials": [
         "Helix_Glass",
         "Helix_Hardware",
@@ -469,7 +472,7 @@
       "canopies": 2,
       "cleat_min_z_mm": -0.35,
       "bbox": [
-        -2.479,
+        -2.47,
         2.5,
         -0.806,
         0.806,
@@ -478,7 +481,7 @@
       ]
     },
     "2": {
-      "meshes": 65,
+      "meshes": 66,
       "materials": [
         "Helix_Glass",
         "Helix_Hardware",
@@ -496,7 +499,7 @@
       "canopies": 2,
       "cleat_min_z_mm": -0.35,
       "bbox": [
-        -2.479,
+        -2.47,
         2.5,
         -0.806,
         0.806,

@@ -47,12 +47,14 @@ def hull_stations():
 
 
 def build_hull(builder):
-    hull = P.loft(builder, "Body_Hull", hull_stations(), ["paint", "accent"], sides=40)
+    hull = P.loft(builder, "Body_Hull", hull_stations(), ["paint", "accent", "hardware"], sides=40)
     mesh = hull.data
     for poly in mesh.polygons:
         c = poly.center
-        if T.X(540) < c.x < T.X(646) or T.X(776) < c.x < T.X(822):
+        if T.X(540) < c.x < T.X(648) or T.X(780) < c.x < T.X(816):
             poly.material_index = 1 if (abs(c.y) < 0.034 and poly.normal.z > 0.6) else 0
+        if c.x < T.X(470):
+            poly.material_index = 2  # dark inter-segment flesh showing between the bone plates
     return hull
 
 
@@ -168,7 +170,7 @@ def P_top(px):
 
 
 def build_blister(builder):
-    px0, px1 = 606.0, 642.0
+    px0, px1 = 620.0, 648.0
     st = []
     for k, f in enumerate((0.3, 0.8, 1.0, 0.8, 0.3)):
         x = T.X(px0 + (px1 - px0) * k / 4)
