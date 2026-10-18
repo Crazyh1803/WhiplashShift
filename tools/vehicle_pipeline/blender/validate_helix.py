@@ -126,10 +126,9 @@ xs = [v.x for v in allv]
 ys = [abs(v.y) for v in allv]
 zs = [v.z for v in allv]
 check("overall_length_5m", abs((max(xs) - min(xs)) - T.LENGTH) < 0.04, [round(min(xs), 3), round(max(xs), 3)])
-check("claw_tips_at_end_b_and_nose_at_end_a", abs(min(xs) - T.X(226)) < 0.03 and abs(max(xs) - T.X(850)) < 0.03 and
-      max(xs) > 2.4 > 2.0 > -min(xs) - 0.0 + 0.0 or True, None)
+check("claw_tips_and_nose_at_sheet_ends", abs(min(xs) - T.X(226)) < 0.05 and abs(max(xs) - T.X(850)) < 0.05, [round(min(xs), 3), round(max(xs), 3)])
 check("width_between_track_sponsons", 0.74 <= max(ys) <= 0.84, round(max(ys), 3))
-check("height_matches_sheet", abs(max(zs) - T.top_z(T.X(380))) < 0.06 or abs(max(zs) - T.Z(131)) < 0.06, round(max(zs), 3))
+check("height_matches_sheet", abs(max(zs) - T.Z(131)) < 0.06, round(max(zs), 3))
 check("nothing_below_ground", min(zs) > -0.002, mm(min(zs)))
 
 shape = [o for o in objs.values() if o.name.startswith(("Body_", "Glass_", "Frame_", "Fine_"))]
@@ -149,13 +148,6 @@ mean_top = sum(abs(e[0]) for e in errs) / len(errs)
 check("side_silhouette_top_vs_trace", abs(worst_top[0]) <= 14.0 and mean_top <= 5.0,
       {"worst_px": round(worst_top[0], 2), "at_px": worst_top[1], "mean_abs_px": round(mean_top, 2)})
 hull_only = tree_of([objs["Body_Hull"]])
-errs_w = []
-for px in range(480, 840, 20):
-    x = T.X(px)
-    w = max((abs(hull_only.ray_cast(Vector((x, 2.0 * s, T.hull_top_z(x) - 0.02)), Vector((0, -s, 0)))[0].y)
-             if hull_only.ray_cast(Vector((x, 2.0 * s, T.hull_top_z(x) - 0.02)), Vector((0, -s, 0)))[0] else 0.0)
-            for s in (1, -1))
-    errs_w.append(w)
 side_hw = []
 for px in range(480, 840, 20):
     x = T.X(px)
@@ -227,7 +219,6 @@ check("canopy_rise_realistic", all(15 <= seat[n]["rise_mm"] <= 220 for n in seat
 
 # --- no floating parts ---------------------------------------------------------------------------------
 float_report = {}
-all_tree_by = {o.name: tree_of([o]) for o in list(bodies) + tracks}
 for o in hardware + frames + glass + bodies + tracks:
     others = tree_of([b for n, b in objs.items() if (n.startswith(("Body_", "Prop_Track_")) and b is not o)])
     best = 9.9
