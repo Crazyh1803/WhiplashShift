@@ -128,6 +128,7 @@ const VISUALS: Dictionary = {
 	},
 	"knifeedge": {
 		"rig": "knifeedge_blueprint",
+		"display_radius": {"A": 0.390, "B": 0.446},
 		"scene": "res://assets/vehicles/models/knifeedge/knifeedge_blueprint.glb",
 		"rotation_degrees": Vector3(0.0, 90.0, 0.0),
 		"offset": Vector3(0.0, -0.62, 0.0),
