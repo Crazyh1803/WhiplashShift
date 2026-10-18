@@ -2,6 +2,7 @@
 import math
 
 import bmesh
+import bpy
 from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
 
@@ -20,6 +21,7 @@ class Surface:
     def __init__(self, obj):
         mesh = C.evaluated_mesh(obj)
         self.bvh = C.bvh_of(mesh)
+        bpy.data.meshes.remove(mesh)
 
     def side_y(self, x, z, s):
         hit = self.bvh.ray_cast(Vector((x, s * 3.0, z)), Vector((0, -s, 0)))
@@ -182,6 +184,6 @@ def build_blister(builder):
 def build_maw(builder):
     """Domed forward carapace cap between the claws (Front B elevation)."""
     st = []
-    for px, f in ((296, 0.55), (306, 0.95), (322, 1.0), (338, 0.9)):
+    for px, f in ((288, 0.50), (296, 0.82), (308, 1.0), (326, 1.0), (342, 0.9)):
         st.append(_taper(dict(x=T.X(px), hw=0.29, zt=T.Z(158), zb=T.Z(236), n=2.2, belly=0.9), f))
     P.loft(builder, "Body_Maw", st, "paint2", sides=28)

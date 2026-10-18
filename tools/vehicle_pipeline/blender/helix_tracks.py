@@ -73,9 +73,10 @@ def _belt(builder, name, y, mat):
 
 def _cleats(builder, name, y):
     bm = bmesh.new()
-    per = 2 * (X2 - X1) + 2 * math.pi * R_OUT
+    r = R_OUT - 0.006  # cleat centre radius; spacing uses this loop's own perimeter
+    per = 2 * (X2 - X1) + 2 * math.pi * r
     for i in range(CLEATS):
-        (px, pz), (nx, nz) = at_arclength(R_OUT - 0.006, per * i / CLEATS)
+        (px, pz), (nx, nz) = at_arclength(r, per * i / CLEATS)
         n = Vector((nx, 0, nz))
         t = Vector((nz, 0, -nx))
         rot = Matrix(((t.x, 0, n.x), (0, 1, 0), (t.z, 0, n.z)))
