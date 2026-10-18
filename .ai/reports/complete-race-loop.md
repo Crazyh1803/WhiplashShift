@@ -18,5 +18,10 @@ Validation:
   another minute with a fresh race clock and progress.
 - `git diff --check`: clean.
 
+Independent review: `ak-review codex/blackjack-junction` could not complete.
+Gemini returned RESOURCE_EXHAUSTED / individual quota reached (HTTP 429).
+No current approval was produced; `.ai/reviews/latest.md` belongs to an older
+change and must not be interpreted as approval of this branch.
+
 Headless checks do not validate rendered layout, audio or human driving feel.
 Those playtests remain pending while the Nvidia GPU is unavailable.
