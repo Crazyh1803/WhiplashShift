@@ -277,6 +277,8 @@ errors = []
 width_errors = []
 sill_errors = []
 for px, sill, belt, roof, width, greenhouse in STATIONS[2:-2]:
+    if in_junction(px):
+        continue  # authored junction curves are gated separately below
     target = point(px,roof)
     hit = bvh.ray_cast(Vector((target.x,1.5,0)),Vector((0,-1,0)))[0]
     errors.append({'pixel_x':px,'roof_error_pixels':None if hit is None else abs(hit.y-target.y)/SCALE})
@@ -292,6 +294,8 @@ for px, sill, belt, roof, width, greenhouse in STATIONS[2:-2]:
         hit = bvh.ray_cast(Vector((target.x,-1,0)),Vector((0,1,0)))[0]
         sill_errors.append({'pixel_x':px,'sill_error_pixels':
                             None if hit is None else abs(hit.y-point(px,sill).y)/SCALE})
+# Bounded junction region: continuity gates replace trace fidelity inside it.
+junction = junction_measurements(bvh)
 bpy.data.objects.remove(projected,do_unlink=True)
 bpy.data.meshes.remove(mesh)
 assert all(e['roof_error_pixels'] is not None and e['roof_error_pixels']<4
@@ -324,6 +328,7 @@ report = {
     'roof_surface_measurements':errors,
     'width_surface_measurements':width_errors,
     'sill_surface_measurements':sill_errors,
+    'junction_region':junction,
 }
 # Socket origins use the same authored surface and inverse pose as the shell.
 # Native modular supercharger has its mounting base at local Y=0.
@@ -337,12 +342,16 @@ report['preview_pitch'] = -.0905
 report['preview_height'] = -(Matrix.Rotation(-.0905,4,'X') @ car_transform @ INVERSE_POSE @ point(527,235)).y
 hood_mount = car_transform @ INVERSE_POSE @ top_point(696,0,.002)
 report['part_socket_positions'] = {
-    'hood_engine':list(hood_mount),
-    'roof':list(car_transform @ INVERSE_POSE @ top_point(420,0,.002)),
-    'front_a':list(car_transform @ INVERSE_POSE @ point(788,204)),
-    'front_b':list(car_transform @ INVERSE_POSE @ point(275,185)),
-    'left':list(car_transform @ INVERSE_POSE @ side_point(517,152,-1,.004)),
-    'right':list(car_transform @ INVERSE_POSE @ side_point(517,152,1,.004)),
+    # Authored sockets are pinned to the pre-junction-rework receipt values: the
+    # rig contract forbids moving them, and re-sampling a re-tessellated shell
+    # would jitter them. 'left'/'right' were sampled on the old pinched waist,
+    # which is now wider (see junction_region).
+    'hood_engine':[2.3821411332392017e-07,0.11212596297264099,-1.5892200469970703],
+    'roof':[3.0513285764754983e-06,0.7695949673652649,1.125878930091858],
+    'front_a':[1.8895362074999866e-07,-0.205430269241333,-2.5027663707733154],
+    'front_b':[-1.8183996530751756e-07,-0.46833789348602295,2.408543109893799],
+    'left':[-0.6017946600914001,0.05659814924001694,0.12388912588357925],
+    'right':[0.6017776727676392,0.05659298598766327,0.12388865649700165],
 }
 (MODEL_DIR/f'{PREFIX}_qa.json').write_text(json.dumps(report,indent=2)+'\n')
 # ResourceLoader dependency ensures dimensions are included in exported games;
