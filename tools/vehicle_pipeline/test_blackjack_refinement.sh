@@ -9,7 +9,7 @@ if grep -Eq '(^ERROR:|SCRIPT ERROR:|Parse Error:)' "$import_log"; then
   exit 1
 fi
 result=0
-for scene in test_main cpu_main blackjack_refined_tests blackjack_blueprint_tests consolidation_tests nightshift_blueprint_tests ramjet_blueprint_tests boilerfang_blueprint_tests; do
+for scene in test_main cpu_main blackjack_refined_tests blackjack_blueprint_tests consolidation_tests nightshift_blueprint_tests ramjet_blueprint_tests boilerfang_blueprint_tests helix_blueprint_tests knifeedge_blueprint_tests; do
   timeout 120 "$GODOT_BIN" --headless --fixed-fps 120 --path godot "res://tests/${scene}.tscn" || result=1
 done
 exit "$result"

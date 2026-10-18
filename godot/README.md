@@ -13,8 +13,11 @@ pivots derived from the visible tire hubs. Nightshift also uses its dedicated Ch
 semantic paint channels through the same authored-hub adapter. Ramjet adds the
 Dodge Ram / Conquest TSi blueprint model through that contract. Boilerfang adds
 the steampunk plow truck / speedster and visible central drive machinery while
-retaining four physical wheels. The other two
-chassis keep their greybox fallback until production models exist.
+retaining four physical wheels. Helix adds the biomechanical `r-type.jpg` model;
+Knifeedge adds the `hot-wheels.jpg` sand rail/supercar. All seven roster entries
+now use production artwork in the garage, player and CPU paths. Display tire
+radii and visual tracks follow the reference models independently of physical
+tuning and hardpoints.
 
 ## Running it
 

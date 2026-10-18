@@ -112,9 +112,11 @@ const VISUALS: Dictionary = {
 		"collision_boxes": [], # Keep the tuning-owned physics independent of the art.
 	},
 	"helix": {
-		"scene": "res://assets/vehicles/models/helix/helix.glb",
-		"wheel_scene_a": "res://assets/vehicles/models/helix/wheel_a.glb",
-		"wheel_scene_b": "res://assets/vehicles/models/helix/wheel_b.glb",
+		"rig": "helix_blueprint",
+		"scene": "res://assets/vehicles/models/helix/helix_blueprint.glb",
+		"rotation_degrees": Vector3(0.0, 90.0, 0.0),
+		"offset": Vector3(0.0, -0.62, 0.0),
+		"collision_boxes": [], # Retain tuning-owned physics independently of artwork.
 	},
 	"ramjet": {
 		"rig": "ramjet_blueprint",
@@ -124,9 +126,11 @@ const VISUALS: Dictionary = {
 		"collision_boxes": [], # Preserve the tuning-owned collider and hardpoints.
 	},
 	"knifeedge": {
-		"scene": "res://assets/vehicles/models/knifeedge/knifeedge.glb",
-		"wheel_scene_a": "res://assets/vehicles/models/knifeedge/wheel_a.glb",
-		"wheel_scene_b": "res://assets/vehicles/models/knifeedge/wheel_b.glb",
+		"rig": "knifeedge_blueprint",
+		"scene": "res://assets/vehicles/models/knifeedge/knifeedge_blueprint.glb",
+		"rotation_degrees": Vector3(0.0, 90.0, 0.0),
+		"offset": Vector3(0.0, -0.62, 0.0),
+		"collision_boxes": [], # Retain tuning-owned physics independently of artwork.
 	},
 	"deadbolt": {
 		"rig": "deadbolt_blueprint",

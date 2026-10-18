@@ -13,11 +13,11 @@ Open `godot/project.godot` in Godot 4.7.2 and press **F5** for the project.
 The garage offers seven named chassis buttons, including **DEADBOLT**;
 **VIEW 3D // PAINT & PARTS** opens the rotatable 3D preview. Left/right arrows also
 cycle the roster, and returning from a race keeps the selected chassis.
-Blackjack, Deadbolt, Nightshift, Ramjet and Boilerfang use authored models; the other two use greybox
-vehicles with their saved handling and blueprint images. Enter a callsign and choose
+All seven vehicles use authored models with their saved handling and blueprint
+images. Enter a callsign and choose
 **IGNITE** to drive against two CPU opponents. `Esc` returns to the garage.
 
-Run `ak-test` for the core handling, CPU, Blackjack, consolidation, Nightshift, Ramjet and Boilerfang suites. Set
+Run `ak-test` for core handling, CPU driving, all seven vehicles and consolidation checks. Set
 `GODOT_BIN` to use another installed executable. For rendered garage and driving
 captures, run:
 
@@ -27,6 +27,7 @@ godot --path godot --fixed-fps 120 res://tests/consolidation_visual_qa.tscn
 
 Append `-- --nightshift` to capture Nightshift, including both ends, custom paint, driving and swapping.
 Use `-- --ramjet` for Ramjet or `-- --boilerfang` for Boilerfang.
+Use `-- --helix` or `-- --knifeedge` for the remaining vehicles.
 Add `--keep-open` after the vehicle flag to leave
 its garage preview open after successful captures.
 Captures go to `.ai/captures/`. Historical reports live separately under
@@ -50,6 +51,12 @@ Boilerfang uses `boilerfang_blueprint.glb`, based on `steam-punk.jpg`: a plow tr
 and ornate speedster with boilers, brass machinery and a central flywheel drive.
 The middle mechanism is visible body artwork; four physical wheels retain the saved
 handling. Display tire radii are independent of the tuning-owned physics radii.
+
+Helix uses `helix_blueprint.glb`, based on `r-type.jpg`, for its biomechanical
+racer body. Knifeedge uses `knifeedge_blueprint.glb`, based on `hot-wheels.jpg`,
+for its sand rail/supercar body. Both use the same authored-hub adapter, measured
+visual tire radii and three paint channels. Their native sources, builders and
+LODs are documented under `tools/vehicle_pipeline/`.
 
 Rendered wheel assemblies pivot around their authored hubs and follow the existing
 suspension and steering. Their visual offsets are independent of the physical wheel

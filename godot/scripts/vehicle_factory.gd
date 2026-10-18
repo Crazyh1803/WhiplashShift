@@ -13,6 +13,10 @@ static func create(spec: Dictionary) -> Vehicle:
 		vehicle = load("res://scripts/ramjet_blueprint_vehicle.gd").new()
 	elif spec.get("visual", {}).get("rig", "") == "boilerfang_blueprint":
 		vehicle = load("res://scripts/boilerfang_blueprint_vehicle.gd").new()
+	elif spec.get("visual", {}).get("rig", "") == "helix_blueprint":
+		vehicle = load("res://scripts/helix_blueprint_vehicle.gd").new()
+	elif spec.get("visual", {}).get("rig", "") == "knifeedge_blueprint":
+		vehicle = load("res://scripts/knifeedge_blueprint_vehicle.gd").new()
 	else:
 		vehicle=Vehicle.new()
 	vehicle.apply_vehicle_spec(spec)

@@ -75,7 +75,7 @@ func _ready() -> void:
 				and center.length() < 0.005)
 		_check("%s occupies its correct end" % wheel.name,
 			(car.to_local(assembly.global_position).z < 0.0) == (wheel.end == "A"))
-		if vehicle_id == "boilerfang":
+		if vehicle_id in ["boilerfang", "helix", "knifeedge"]:
 			var low := INF
 			var high := -INF
 			for mesh: MeshInstance3D in assembly.find_children("*", "MeshInstance3D", true, false):
