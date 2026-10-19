@@ -11,6 +11,9 @@ var _yaw: float = 0.0
 
 
 func _ready() -> void:
+	# This branch follows the rendered car each frame, so do not interpolate
+	# the camera again on top of its manually smoothed movement.
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	cam = Camera3D.new()
 	cam.position = Vector3(0.0, 4.2, 9.0)
 	cam.rotation = Vector3(deg_to_rad(-13.0), 0.0, 0.0)
@@ -18,10 +21,21 @@ func _ready() -> void:
 	cam.current = true
 	add_child(cam)
 	if target:
-		global_position = target.global_position
-		var f := target.forward_vector()
-		_yaw = atan2(-f.x, -f.z)
-		rotation.y = _yaw
+		reset_follow()
+
+
+func reset_follow() -> void:
+	if target == null or cam == null:
+		return
+	# Seed Godot's interpolation history before the first moving frame.
+	target.get_global_transform_interpolated()
+	var pose := target.global_transform
+	global_position = pose.origin
+	var f := pose.basis * Vector3.FORWARD * target.forward_sign()
+	_yaw = atan2(-f.x, -f.z)
+	rotation.y = _yaw
+	cam.position = Vector3(0.0, 4.2, 9.0)
+	cam.look_at(pose.origin + Vector3.UP * 0.75)
 
 
 func toggle_mode() -> void:
@@ -31,7 +45,8 @@ func toggle_mode() -> void:
 func _process(delta: float) -> void:
 	if target == null:
 		return
-	var f: Vector3 = target.forward_vector()
+	var pose := target.get_global_transform_interpolated()
+	var f := pose.basis * Vector3.FORWARD * target.forward_sign()
 	var want: float = atan2(-f.x, -f.z)
 	if mode == "snap":
 		_yaw = want
@@ -48,5 +63,5 @@ func _process(delta: float) -> void:
 	# while the orbit swings around to the newly active end.
 	var lead: Vector3 = f * minf(target.speed * 0.4, maxf(0.0, cam.position.z - 7.0))
 	global_position = global_position.lerp(
-		target.global_position + lead, 1.0 - exp(-7.0 * delta))
-	cam.look_at(target.global_position + Vector3.UP * 0.75)
+		pose.origin + lead, 1.0 - exp(-7.0 * delta))
+	cam.look_at(pose.origin + Vector3.UP * 0.75)

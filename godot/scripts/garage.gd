@@ -393,11 +393,13 @@ func _build_customization_preview(parent: VBoxContainer) -> void:
 	key_light.shadow_normal_bias = 0.005
 	_preview_viewport.add_child(key_light)
 	_preview_camera = Camera3D.new()
+	_preview_camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_preview_camera.fov = 38.0
 	_preview_viewport.add_child(_preview_camera)
 	_update_preview_camera()
 
 	_preview_vehicle = Vehicle.new()
+	_preview_vehicle.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_preview_vehicle.name = "CustomizationPreviewVehicle"
 	_preview_vehicle.tuning = TuningProfile.new()
 	_preview_vehicle.freeze = true
@@ -526,6 +528,7 @@ func _refresh_customization_preview(vehicle_id: String, data: Dictionary) -> voi
 		spec["customization"] = data
 		_preview_vehicle.free()
 		_preview_vehicle=preload("res://scripts/vehicle_factory.gd").create(spec)
+		_preview_vehicle.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 		_preview_vehicle.name="CustomizationPreviewVehicle"
 		_preview_vehicle.tuning=TuningProfile.new()
 		_preview_vehicle.freeze=true

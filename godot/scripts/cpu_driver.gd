@@ -176,6 +176,7 @@ func _place(index: int) -> void:
 	PhysicsServer3D.body_set_state(target.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, transform)
 	PhysicsServer3D.body_set_state(target.get_rid(), PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY, Vector3.ZERO)
 	PhysicsServer3D.body_set_state(target.get_rid(), PhysicsServer3D.BODY_STATE_ANGULAR_VELOCITY, Vector3.ZERO)
+	target.reset_physics_interpolation()
 	_stuck_time = 0.0
 	_off_time = 0.0
 	_turn_time = 0.0

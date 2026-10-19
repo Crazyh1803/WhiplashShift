@@ -289,6 +289,9 @@ func _place_player(transform: Transform3D, end: String) -> void:
 	PhysicsServer3D.body_set_state(car.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, transform)
 	PhysicsServer3D.body_set_state(car.get_rid(), PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY, Vector3.ZERO)
 	PhysicsServer3D.body_set_state(car.get_rid(), PhysicsServer3D.BODY_STATE_ANGULAR_VELOCITY, Vector3.ZERO)
+	car.reset_physics_interpolation()
+	if is_instance_valid(rig):
+		rig.reset_follow()
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

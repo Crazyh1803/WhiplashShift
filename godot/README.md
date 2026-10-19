@@ -8,6 +8,11 @@ position and time, and results with same-roster retry or return to the garage.
 The race ends when the player finishes; rivals still on course are marked
 UNFINISHED. Combat and the four-course arcade mode remain future work.
 
+Driving rendering interpolates between the unchanged 120 Hz physics ticks.
+The chase camera follows that rendered pose each frame; player/CPU recovery and
+retry reset interpolation, and the camera snaps to recovered positions. Garage
+turntables and their orbit camera remain frame-driven without interpolation.
+
 The project loads the blueprint-traced Deadbolt hard-surface truck/coupe model through
 the same garage, player and CPU factory as Blackjack. Deadbolt retains its authored
 glass, metal, tires and lights; the three paint channels remain customizable.
@@ -154,6 +159,14 @@ under `.ai/captures/race-loop/`, checks UI bounds and clock/banner overlap, and
 checks engine streaming/pitch response and the swap sound starting. Results use
 staged finish progress; the full physical three-lap race is the headless suite.
 Human assessment of handling feel and audio quality is still required.
+
+For real-time motion diagnostics, run
+`godot --path godot --max-fps 144 res://tests/driving_frame_probe.tscn -- --label=smooth144`.
+The test holds throttle after countdown and writes frame-time and raw/rendered
+movement samples under `.ai/captures/smooth-driving/`. Add `--no-interpolation`
+for a process-local control run. Do not use `--fixed-fps` for this measurement;
+it disables real-time synchronization. `camera_tests` checks camera pose sampling,
+swap framing, recovery/retry reset and garage interpolation exceptions headlessly.
 
 Add `-- --terrain` to the rendered smoke-test command to capture staged mud, ice
 and tarmac approaches; combine with `--small` for the smaller window. Captures go
