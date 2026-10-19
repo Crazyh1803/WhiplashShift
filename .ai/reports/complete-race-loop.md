@@ -25,3 +25,21 @@ change and must not be interpreted as approval of this branch.
 
 Headless checks do not validate rendered layout, audio or human driving feel.
 Those playtests remain pending while the Nvidia GPU is unavailable.
+
+## Resumed verification — 2026-10-19
+
+- Reconfirmed Codex as code lead and Gemini as the configured reviewer.
+- Retried `ak-review codex/blackjack-junction`, then retried with
+  `GEMINI_MODEL=gemini-4-argon-high` explicitly selected. Both requests returned
+  RESOURCE_EXHAUSTED (HTTP 429), reporting approximately 122 hours until reset.
+  The review helper uses Antigravity (`agy`); no separate `gemini` CLI is installed.
+  No review approval or findings were produced. The previous approval in
+  `.ai/reviews/latest.md` still concerns an older change.
+- Re-ran full `ak-test` on the final implementation: all 11 suites passed,
+  including all 37 race checks (4,818 checks overall). The physical player again
+  finished in 428.83 seconds, position 2, with zero recoveries; physical retry
+  also passed. No script errors were reported.
+- `git diff --check` passed. No game code changed during this verification.
+
+Remaining: independent Gemini review once this installation's quota is usable,
+then address any findings; rendered layout/audio and human driving playtests.
