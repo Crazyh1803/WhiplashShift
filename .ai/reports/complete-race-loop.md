@@ -43,3 +43,7 @@ Those playtests remain pending while the Nvidia GPU is unavailable.
 
 Remaining: independent Gemini review once this installation's quota is usable,
 then address any findings; rendered layout/audio and human driving playtests.
+
+Rendered follow-up on 2026-10-19: AMD Vulkan now runs the repeatable race-loop
+capture fixture. See `race-rendered-qa.md` for bounds/audio-state checks and the
+remaining independent review, Nvidia and human playtest limits.

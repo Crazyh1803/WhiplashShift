@@ -8,3 +8,14 @@ Goal: garage → stationary grid/countdown → three-lap race with two CPUs → 
 4. Add deterministic rules tests and real scene integration for grid locks, recovery, finish, retry, button wiring and selection retention. Adapt existing CPU/visual fixtures to wait out countdown; add suite to ak-test's existing runner. Run ak-test and ak-review, address findings, update docs.
 
 Scope excludes combat, extra courses, graphics assets, saved records and new handling tuning. R recovers while racing; Enter/button retries after finish. All entrants start behind the finish line and need three complete laps. Spawn offsets must not grant a short first lap.
+
+## Rendered verification follow-up
+
+Use the available AMD Vulkan renderer to capture countdown, GO, driving/swap,
+results, same-roster retry and garage return at 1600×900 and 1280×720 window sizes.
+Add a repeatable scene fixture with layout bounds/overlap assertions; use staged
+finish progress for results captures (full physical laps remain the headless test).
+Run ak-look on captures, fix concrete UI issues, then run ak-test and ak-review.
+Record GPU identity and distinguish automated/rendered checks from human handling
+and audio assessment. Nvidia-specific verification remains pending if its driver
+continues to be unavailable. Do not create road assets before closing this milestone.

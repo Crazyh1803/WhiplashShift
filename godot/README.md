@@ -138,6 +138,15 @@ an entire three-lap race, then drives the first minute of the retry, using the r
 vehicle physics and race scene. These checks run headlessly without the Nvidia GPU;
 rendered layout, audio and human handling assessment still require a playtest.
 
+For a short rendered race-loop smoke test, run
+`godot --path godot --fixed-fps 120 res://tests/race_visual_qa.tscn` from the
+repository root. Add `-- --small` to use a 1280×720 window instead of 1600×900.
+It captures countdown, GO, driving, swapping, results, retry and garage return
+under `.ai/captures/race-loop/`, checks UI bounds and clock/banner overlap, and
+checks engine streaming/pitch response and the swap sound starting. Results use
+staged finish progress; the full physical three-lap race is the headless suite.
+Human assessment of handling feel and audio quality is still required.
+
 ## Structure
 
 | file | role |
