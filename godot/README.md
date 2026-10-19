@@ -35,6 +35,15 @@ holding the current end. You decide when to brake or swap. Cues disappear while
 off-course, travelling the wrong way, during countdown and on results. Board lead
 distance is shortened where terrain boundaries are close together.
 
+The same HUD region now describes upcoming bends, tight turns and hairpins with
+left/right direction and distance. It shows a rounded advisory entry speed based
+on the current vehicle/end and the lowest grip through the bend. Braking prompts
+account for approach speed, braking capability and approach grip; inside a bend
+the cue changes to **EASE SPEED** when appropriate. Ice/oil turns show low-grip
+advice instead of a numeric speed. Terrain advice stays visible alongside it.
+These are conservative centreline estimates, not guaranteed speeds or automatic
+controls. Turn shape is smoothed over metres and cached when the course loads.
+
 ## Running it
 
 Verified with Godot **4.7.2** (the original port used 4.6 and Jolt). Open `godot/`
@@ -172,6 +181,10 @@ Add `-- --terrain` to the rendered smoke-test command to capture staged mud, ice
 and tarmac approaches; combine with `--small` for the smaller window. Captures go
 to `.ai/captures/terrain/`. The headless `course_cues_tests` suite checks seam
 wrapping, rumble collapse, advice, sign orientation and HUD suppression.
+
+Use `-- --corners` (optionally `--small`) for staged right/left entry and in-hairpin
+captures under `.ai/captures/corners/`. The `corner_tests` suite covers geometry,
+sampling density, braking/grip response, seam handling and combined HUD layout.
 
 ## Structure
 

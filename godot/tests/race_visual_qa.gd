@@ -20,19 +20,23 @@ func _ready() -> void:
 	GameSession.configure("ROADGHOST", "deadbolt", ["boilerfang", "ramjet"])
 	_scene = load("res://scenes/proving_ground.tscn").instantiate()
 	add_child(_scene)
-	if "--terrain" in OS.get_cmdline_user_args():
-		await _terrain_captures()
+	if "--terrain" in OS.get_cmdline_user_args() or "--corners" in OS.get_cmdline_user_args():
+		var corner_mode := "--corners" in OS.get_cmdline_user_args()
+		if corner_mode:
+			await _corner_captures()
+		else:
+			await _terrain_captures()
 		# Dispose streamed audio while the audio server is still running.
 		_scene.queue_free()
 		for frame in 3:
 			await get_tree().process_frame
-		_check("terrain fixture frees race before shutdown", not is_instance_valid(_scene))
+		_check("approach fixture frees race before shutdown", not is_instance_valid(_scene))
 		# The audio mixer runs in real time even with --fixed-fps. Give it a
 		# bounded wall-clock interval to retire the stopped stream before exit.
 		var audio_cleanup_deadline := Time.get_ticks_msec() + 300
 		while Time.get_ticks_msec() < audio_cleanup_deadline:
 			await get_tree().process_frame
-		print("TERRAIN_VISUAL_QA failures=%d window=%s" % [_fail, _size])
+		print("%s_VISUAL_QA failures=%d window=%s" % ["CORNER" if corner_mode else "TERRAIN", _fail, _size])
 		get_tree().quit(1 if _fail else 0)
 		return
 	await _capture("countdown")
@@ -147,6 +151,48 @@ func _terrain_captures() -> void:
 		_check("approach cue visible " + Surfaces.KEYS[sid], Surfaces.NAMES[sid] in _scene.hud._upcoming.text)
 		_check("terrain cue above controls", not _scene.hud._upcoming.get_global_rect().intersects(_scene.hud._hint.get_global_rect()))
 		_check("terrain cue fits viewport", get_viewport().get_visible_rect().encloses(_scene.hud._upcoming.get_global_rect()))
+		_scene.car.freeze = false
+
+
+func _corner_captures() -> void:
+	_output = ProjectSettings.globalize_path("res://").path_join("../.ai/captures/corners")
+	DirAccess.make_dir_recursive_absolute(_output)
+	_scene.set_physics_process(false)
+	for driver: CpuDriver in _scene.cpu_drivers:
+		driver.enabled = false
+		driver.target.freeze = true
+	_scene.race.state = RaceDirector.State.RACING
+	_scene.race.elapsed = 30.0
+	var hairpin: Dictionary = {}
+	var left: Dictionary = {}
+	for corner: Dictionary in _scene.course_cues.corners:
+		if "HAIRPIN" in corner["label"]:
+			hairpin = corner
+		if "LEFT" in corner["label"]:
+			left = corner
+	var examples: Array[Dictionary] = [
+		{"name": "right_entry", "corner": _scene.course_cues.corners[0], "end": "A", "inside": false},
+		{"name": "left_entry", "corner": left, "end": "B", "inside": false},
+		{"name": "hairpin_inside", "corner": hairpin, "end": "B", "inside": true},
+	]
+	for example: Dictionary in examples:
+		var corner: Dictionary = example["corner"]
+		var distance := float(corner["distance"]) + (float(corner["length"]) * 0.3 if example["inside"] else -70.0)
+		var sample: Dictionary = _scene.course_cues.sample_at(distance)
+		var direction: Vector3 = sample["direction"]
+		var yaw := atan2(-direction.x, -direction.z) + (PI if example["end"] == "B" else 0.0)
+		_scene._place_player(Transform3D(Basis(Vector3.UP, yaw), sample["position"] + Vector3.UP * 1.4), example["end"])
+		_scene.player_progress.reset(int(sample["index"]))
+		for frame in 180:
+			await get_tree().physics_frame
+		_scene.player_progress.update(_scene.car.global_position)
+		_scene.car.speed = 45.0
+		_scene.car.freeze = true
+		await _capture(example["name"])
+		_check("corner direction appears " + example["name"], corner["label"] in _scene.hud._upcoming.text)
+		_check("braking context appears " + example["name"], ("EASE SPEED" if example["inside"] else "BRAKE BEFORE TURN") in _scene.hud._upcoming.text)
+		_check("combined cue fits viewport", get_viewport().get_visible_rect().encloses(_scene.hud._upcoming.get_global_rect()))
+		_check("combined cue stays above controls", not _scene.hud._upcoming.get_global_rect().intersects(_scene.hud._hint.get_global_rect()))
 		_scene.car.freeze = false
 
 

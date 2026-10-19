@@ -56,12 +56,12 @@ func _ready() -> void:
 	_race_status.offset_right = 210.0
 	_race_status.offset_top = 18.0
 	_race_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_upcoming = _label(22, Vector2.ZERO)
+	_upcoming = _label(20, Vector2.ZERO)
 	_upcoming.name = "UpcomingTerrain"
 	_upcoming.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	_upcoming.offset_left = -430.0
 	_upcoming.offset_right = 430.0
-	_upcoming.offset_top = -112.0
+	_upcoming.offset_top = -160.0
 	_upcoming.offset_bottom = -48.0
 	_upcoming.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_upcoming.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -194,9 +194,22 @@ func _update_upcoming(tracker: TrackProgress) -> void:
 	if tracker.off_line >= width * 0.65:
 		return
 	var cue := course_cues.upcoming(tracker.distance, target.speed)
-	if cue.is_empty():
-		return
-	var sid := int(cue["surface"])
-	_upcoming.text = "%s IN %dm\n%s" % [Surfaces.NAMES[sid], ceili(float(cue["metres"])),
-		CourseCues.advice(sid, target.active_end)]
-	_upcoming.modulate = Color("ffdc80") if sid in [Surfaces.Id.ICE, Surfaces.Id.OIL] else Color("e7f1ff")
+	var lines := PackedStringArray()
+	var caution := false
+	if not cue.is_empty():
+		var sid := int(cue["surface"])
+		lines.append("%s IN %dm" % [Surfaces.NAMES[sid], ceili(float(cue["metres"]))])
+		lines.append(CourseCues.advice(sid, target.active_end))
+		caution = sid in [Surfaces.Id.ICE, Surfaces.Id.OIL]
+	var corner := course_cues.corner_advice(tracker.distance, target)
+	if not corner.is_empty():
+		var where := "IN CORNER" if bool(corner["inside"]) else "IN %dm" % ceili(float(corner["metres"]))
+		lines.append("%s · %s" % [corner["label"], where])
+		var action := "EASE SPEED · " if bool(corner["inside"]) else "BRAKE BEFORE TURN · "
+		if bool(corner["low_grip"]):
+			lines.append("LOW GRIP — EASE SPEED")
+		else:
+			lines.append((action if bool(corner["slow"]) else "") + "ADVISORY %d KM/H" % (floori(float(corner["speed"]) * 3.6 / 5.0) * 5))
+		caution = caution or bool(corner["slow"]) or bool(corner["low_grip"])
+	_upcoming.text = "\n".join(lines)
+	_upcoming.modulate = Color("ffdc80") if caution else Color("e7f1ff")
