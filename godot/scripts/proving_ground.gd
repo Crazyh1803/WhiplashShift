@@ -15,6 +15,7 @@ var hud: Hud
 var overlay: DebugOverlay
 var vehicle_audio: Node
 var course: CourseDefinition
+var course_cues: CourseCues
 var track: Array
 var cpu_drivers: Array[CpuDriver] = []
 var cpu_cars: Array[Vehicle] = []
@@ -84,6 +85,9 @@ func _build_world() -> void:
 	track = course.points
 	TrackBuilder.build(self, track)
 	TrackBuilder.build_guard_rails(self, track)
+	course_cues = CourseCues.new()
+	course_cues.setup(course)
+	TrackBuilder.build_approach_boards(self, course_cues)
 	TrackBuilder.build_proving_ground(self, Vector3(-620.0, 0.0, 0.0))
 	_build_finish_line()
 
@@ -151,6 +155,7 @@ func _build_ui() -> void:
 	hud.pilot_callsign = GameSession.callsign
 	hud.cpu_drivers = cpu_drivers
 	hud.race = race
+	hud.course_cues = course_cues
 	add_child(hud)
 	hud.main_menu_requested.connect(_return_to_menu)
 	hud.retry_requested.connect(restart_race)

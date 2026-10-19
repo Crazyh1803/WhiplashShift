@@ -6,6 +6,8 @@
 class_name TrackBuilder
 extends RefCounted
 
+const RAIL_OFFSET := 0.8
+
 ## Grey-box palette: readable, not pretty. Comedy needs legible, not photoreal.
 static func _material(sid: int) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -57,8 +59,8 @@ static func build_guard_rails(parent: Node3D, pts: Array) -> StaticBody3D:
 		for side: float in [-1.0, 1.0]:
 			var an := Vector3(-a["dir"].z, 0.0, a["dir"].x) * side
 			var bn := Vector3(-b["dir"].z, 0.0, b["dir"].x) * side
-			var ac: Vector3 = a["pos"] + an * (a["w"] * 0.5 + 0.8)
-			var bc: Vector3 = b["pos"] + bn * (b["w"] * 0.5 + 0.8)
+			var ac: Vector3 = a["pos"] + an * (a["w"] * 0.5 + RAIL_OFFSET)
+			var bc: Vector3 = b["pos"] + bn * (b["w"] * 0.5 + RAIL_OFFSET)
 
 			# The invisible collision panel reaches the ground, while the visible
 			# steel beam is raised like a conventional roadside guard rail.
@@ -104,6 +106,70 @@ static func build_guard_rails(parent: Node3D, pts: Array) -> StaticBody3D:
 	body.add_child(cs)
 	parent.add_child(body, true)
 	return body
+
+
+## Primitive approach boards sit beyond the rails and never affect collisions.
+static func build_approach_boards(parent: Node3D, cues: CourseCues) -> Node3D:
+	var root := Node3D.new()
+	root.name = "TerrainWarnings"
+	parent.add_child(root)
+	var panel_material := StandardMaterial3D.new()
+	panel_material.albedo_color = Color("121b26")
+	panel_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for event: Dictionary in cues.events:
+		var sample := cues.sample_at(float(event["distance"]) - float(event["lead"]))
+		var direction: Vector3 = sample["direction"]
+		var right := Vector3(-direction.z, 0.0, direction.x)
+		var sid := int(event["surface"])
+		for side: float in [-1.0, 1.0]:
+			var board := Node3D.new()
+			board.name = "Warning_%d_%s" % [int(event["index"]), "L" if side < 0.0 else "R"]
+			board.position = sample["position"] + right * side * (float(sample["width"]) * 0.5 + 5.0) + Vector3.UP * 4.2
+			if not _warning_clearance(board.position, cues.course.points):
+				board.free()
+				continue
+			board.rotation.y = atan2(-direction.x, -direction.z)
+			board.set_meta("surface", sid)
+			root.add_child(board)
+			var panel := MeshInstance3D.new()
+			var box := BoxMesh.new()
+			box.size = Vector3(6.0, 2.4, 0.18)
+			panel.mesh = box
+			panel.material_override = panel_material
+			board.add_child(panel)
+			for x: float in [-2.4, 2.4]:
+				var post := MeshInstance3D.new()
+				var post_mesh := BoxMesh.new()
+				post_mesh.size = Vector3(0.15, 3.0, 0.15)
+				post.mesh = post_mesh
+				post.material_override = panel_material
+				post.position = Vector3(x, -2.7, 0.0)
+				board.add_child(post)
+			var text := Label3D.new()
+			text.name = "WarningText"
+			text.text = "%dm  %s\n%s" % [roundi(float(event["lead"])), Surfaces.NAMES[sid], CourseCues.board_advice(sid)]
+			text.font_size = 48
+			text.pixel_size = 0.008
+			text.outline_size = 8
+			text.double_sided = false
+			text.modulate = Color("ffdc80") if sid in [Surfaces.Id.ICE, Surfaces.Id.OIL] else Color("e7f1ff")
+			text.position.z = 0.10
+			board.add_child(text)
+	return root
+
+
+static func _warning_clearance(position: Vector3, points: Array) -> bool:
+	var flat := Vector3(position.x, 0.0, position.z)
+	for i in points.size():
+		var a: Vector3 = points[i]["pos"]
+		var b: Vector3 = points[(i + 1) % points.size()]["pos"]
+		var segment := b - a
+		var t := clampf((flat - a).dot(segment) / maxf(segment.length_squared(), 0.0001), 0.0, 1.0)
+		# Reserve the full panel half-width plus the rail and a small margin,
+		# including against other branches of this looping course.
+		if flat.distance_to(a + segment * t) < float(points[i]["w"]) * 0.5 + RAIL_OFFSET + 3.2:
+			return false
+	return true
 
 
 static func _build_run(parent: Node3D, run: Array, sid: int, index: int) -> void:

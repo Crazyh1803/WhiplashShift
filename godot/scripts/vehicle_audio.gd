@@ -92,6 +92,13 @@ func _process(delta: float) -> void:
 		_engine_playback.push_frame(Vector2(sample, sample))
 
 
+func _exit_tree() -> void:
+	if _engine_player != null:
+		_engine_player.stop()
+		_engine_player.stream = null
+	_engine_playback = null
+
+
 func _on_swapped(_record: Dictionary) -> void:
 	if _swap_player != null:
 		_swap_player.play()

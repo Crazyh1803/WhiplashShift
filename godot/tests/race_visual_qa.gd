@@ -20,6 +20,21 @@ func _ready() -> void:
 	GameSession.configure("ROADGHOST", "deadbolt", ["boilerfang", "ramjet"])
 	_scene = load("res://scenes/proving_ground.tscn").instantiate()
 	add_child(_scene)
+	if "--terrain" in OS.get_cmdline_user_args():
+		await _terrain_captures()
+		# Dispose streamed audio while the audio server is still running.
+		_scene.queue_free()
+		for frame in 3:
+			await get_tree().process_frame
+		_check("terrain fixture frees race before shutdown", not is_instance_valid(_scene))
+		# The audio mixer runs in real time even with --fixed-fps. Give it a
+		# bounded wall-clock interval to retire the stopped stream before exit.
+		var audio_cleanup_deadline := Time.get_ticks_msec() + 300
+		while Time.get_ticks_msec() < audio_cleanup_deadline:
+			await get_tree().process_frame
+		print("TERRAIN_VISUAL_QA failures=%d window=%s" % [_fail, _size])
+		get_tree().quit(1 if _fail else 0)
+		return
 	await _capture("countdown")
 	_check_layout("countdown")
 	while _scene.race.state == RaceDirector.State.COUNTDOWN:
@@ -97,6 +112,42 @@ func _check_layout(label: String) -> void:
 		if not hud._banner.text.is_empty():
 			_check(label + " race clock and banner do not overlap",
 				not hud._race_status.get_global_rect().intersects(hud._banner.get_global_rect()))
+
+
+func _terrain_captures() -> void:
+	_output = ProjectSettings.globalize_path("res://").path_join("../.ai/captures/terrain")
+	DirAccess.make_dir_recursive_absolute(_output)
+	_scene.set_physics_process(false)
+	for driver: CpuDriver in _scene.cpu_drivers:
+		driver.enabled = false
+		driver.target.freeze = true
+	_scene.race.state = RaceDirector.State.RACING
+	_scene.race.elapsed = 30.0
+	for sid: int in [Surfaces.Id.MUD, Surfaces.Id.ICE, Surfaces.Id.TARMAC]:
+		var event: Dictionary = {}
+		for candidate: Dictionary in _scene.course_cues.events:
+			if int(candidate["surface"]) == sid:
+				event = candidate
+				break
+		var sample: Dictionary = _scene.course_cues.sample_at(float(event["distance"]) - float(event["lead"]) - 30.0)
+		var direction: Vector3 = sample["direction"]
+		var end := "A" if sid == Surfaces.Id.MUD else "B"
+		var yaw := atan2(-direction.x, -direction.z) + (PI if end == "B" else 0.0)
+		_scene._place_player(Transform3D(Basis(Vector3.UP, yaw), sample["position"] + Vector3.UP * 1.4), end)
+		_scene.player_progress.reset(int(sample["index"]))
+		_scene.rig.global_position = _scene.car.global_position
+		for frame in 180:
+			await get_tree().physics_frame
+		_scene.player_progress.update(_scene.car.global_position)
+		# Present a realistic approach speed to the read-only lookahead HUD.
+		_scene.car.speed = 35.0
+		_scene.hud._process(0.0)
+		_scene.car.freeze = true
+		await _capture("terrain_" + Surfaces.KEYS[sid])
+		_check("approach cue visible " + Surfaces.KEYS[sid], Surfaces.NAMES[sid] in _scene.hud._upcoming.text)
+		_check("terrain cue above controls", not _scene.hud._upcoming.get_global_rect().intersects(_scene.hud._hint.get_global_rect()))
+		_check("terrain cue fits viewport", get_viewport().get_visible_rect().encloses(_scene.hud._upcoming.get_global_rect()))
+		_scene.car.freeze = false
 
 
 func _capture(label: String) -> void:

@@ -22,6 +22,14 @@ now use production artwork in the garage, player and CPU paths. Display tire
 radii and visual tracks follow the reference models independently of physical
 tuning and hardpoints.
 
+Terrain changes now have approach boards outside the guard rails and a lower HUD
+callout with remaining distance and end advice. The HUD looks roughly four seconds
+ahead (90–200 metres); rumble strips lead into the next meaningful surface rather
+than becoming a separate destination. Ice and oil warn about low grip and advise
+holding the current end. You decide when to brake or swap. Cues disappear while
+off-course, travelling the wrong way, during countdown and on results. Board lead
+distance is shortened where terrain boundaries are close together.
+
 ## Running it
 
 Verified with Godot **4.7.2** (the original port used 4.6 and Jolt). Open `godot/`
@@ -146,6 +154,11 @@ under `.ai/captures/race-loop/`, checks UI bounds and clock/banner overlap, and
 checks engine streaming/pitch response and the swap sound starting. Results use
 staged finish progress; the full physical three-lap race is the headless suite.
 Human assessment of handling feel and audio quality is still required.
+
+Add `-- --terrain` to the rendered smoke-test command to capture staged mud, ice
+and tarmac approaches; combine with `--small` for the smaller window. Captures go
+to `.ai/captures/terrain/`. The headless `course_cues_tests` suite checks seam
+wrapping, rumble collapse, advice, sign orientation and HUD suppression.
 
 ## Structure
 

@@ -9,6 +9,8 @@ signal retry_requested
 var cpu_drivers: Array[CpuDriver] = []
 var pilot_callsign: String = "ROADGHOST"
 var race: RaceDirector
+var course_cues: CourseCues
+var _upcoming: Label
 var _main: Label
 var _banner: Label
 var _hint: Label
@@ -54,6 +56,15 @@ func _ready() -> void:
 	_race_status.offset_right = 210.0
 	_race_status.offset_top = 18.0
 	_race_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_upcoming = _label(22, Vector2.ZERO)
+	_upcoming.name = "UpcomingTerrain"
+	_upcoming.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_upcoming.offset_left = -430.0
+	_upcoming.offset_right = 430.0
+	_upcoming.offset_top = -112.0
+	_upcoming.offset_bottom = -48.0
+	_upcoming.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_upcoming.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_results()
 
 
@@ -152,6 +163,7 @@ func _update_race() -> void:
 	if race == null:
 		return
 	var tracker: TrackProgress = race.entrants[0]["progress"]
+	_update_upcoming(tracker)
 	_race_status.text = "%s\nLAP %d / %d    POS %d / %d\n%s%s" % [
 		race.course.display_name.to_upper(), mini(tracker.lap + 1, race.course.default_laps),
 		race.course.default_laps, race.player_position(), race.entrants.size(),
@@ -172,3 +184,19 @@ func _update_race() -> void:
 			RaceDirector.clock_text(time) if time >= 0.0 else "UNFINISHED"])
 	lines.append("\nRace ends when you finish.")
 	_results_text.text = "\n".join(lines)
+
+
+func _update_upcoming(tracker: TrackProgress) -> void:
+	_upcoming.text = ""
+	if course_cues == null or race.state != RaceDirector.State.RACING or tracker.wrong_way:
+		return
+	var width := float(race.course.points[tracker.index]["w"])
+	if tracker.off_line >= width * 0.65:
+		return
+	var cue := course_cues.upcoming(tracker.distance, target.speed)
+	if cue.is_empty():
+		return
+	var sid := int(cue["surface"])
+	_upcoming.text = "%s IN %dm\n%s" % [Surfaces.NAMES[sid], ceili(float(cue["metres"])),
+		CourseCues.advice(sid, target.active_end)]
+	_upcoming.modulate = Color("ffdc80") if sid in [Surfaces.Id.ICE, Surfaces.Id.OIL] else Color("e7f1ff")
