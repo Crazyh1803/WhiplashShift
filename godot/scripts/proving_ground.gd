@@ -39,21 +39,8 @@ func _ready() -> void:
 
 
 func _build_world() -> void:
-	var sun := DirectionalLight3D.new()
-	sun.rotation = Vector3(deg_to_rad(-52.0), deg_to_rad(38.0), 0.0)
-	sun.light_energy = 1.1
-	sun.shadow_enabled = true
-	add_child(sun)
-
 	var env := WorldEnvironment.new()
-	var e := Environment.new()
-	e.background_mode = Environment.BG_SKY
-	var sky := Sky.new()
-	sky.sky_material = ProceduralSkyMaterial.new()
-	e.sky = sky
-	e.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	e.ambient_light_energy = 0.55
-	env.environment = e
+	env.environment = TrackMaterials.environment()
 	add_child(env)
 
 	# everything off the ribbon is "off track": soft, draggy, survivable
@@ -71,10 +58,7 @@ func _build_world() -> void:
 	gbm.size = gb.size
 	gm.mesh = gbm
 	gm.position = gs.position
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Surfaces.COLORS[Surfaces.Id.OFF]
-	mat.roughness = 1.0
-	gm.material_override = mat
+	gm.material_override = TrackMaterials.surface(Surfaces.Id.OFF)
 	ground.add_child(gm)
 	add_child(ground)
 
@@ -85,6 +69,9 @@ func _build_world() -> void:
 	track = course.points
 	TrackBuilder.build(self, track)
 	TrackBuilder.build_guard_rails(self, track)
+	TrackScenery.build(self, course)
+	TrackScenery.build_guidance(self, course)
+	TrackScenery.build_deposits(self, course)
 	course_cues = CourseCues.new()
 	course_cues.setup(course)
 	TrackBuilder.build_approach_boards(self, course_cues)
@@ -111,6 +98,7 @@ func _build_car() -> void:
 	var tune: Resource = load("res://resources/default_tuning.tres")
 	car.tuning = tune as TuningProfile if tune else TuningProfile.new()
 	add_child(car)
+	TrackMaterials.attach_driving_light(car)
 
 	_grid_indices.assign([track.size() - 14, track.size() - 4, track.size() - 9])
 	_spawn = _grid_transform(_grid_indices[0])
@@ -289,6 +277,7 @@ func _place_player(transform: Transform3D, end: String) -> void:
 	PhysicsServer3D.body_set_state(car.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, transform)
 	PhysicsServer3D.body_set_state(car.get_rid(), PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY, Vector3.ZERO)
 	PhysicsServer3D.body_set_state(car.get_rid(), PhysicsServer3D.BODY_STATE_ANGULAR_VELOCITY, Vector3.ZERO)
+	car.reset_terrain_response()
 	car.reset_physics_interpolation()
 	if is_instance_valid(rig):
 		rig.reset_follow()

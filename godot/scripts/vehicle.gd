@@ -13,6 +13,8 @@
 class_name Vehicle
 extends RigidBody3D
 
+const VISCERA_RESPONSE_SCRIPT := preload("res://scripts/viscera_response.gd")
+
 const BLACKJACK_LIVERY_SHADER: Shader = preload("res://assets/vehicles/blackjack_livery.gdshader")
 
 signal swapped(record: Dictionary)
@@ -96,6 +98,16 @@ func _build() -> void:
 	_build_wheels()
 	_build_axles()
 	_build_visual_bogie()
+	var response := VISCERA_RESPONSE_SCRIPT.new()
+	response.name = "VisceraResponse"
+	add_child(response)
+	response.setup(self)
+
+
+func reset_terrain_response() -> void:
+	var response := get_node_or_null("VisceraResponse")
+	if response != null:
+		response.reset_effect()
 
 
 func _rebuild_visuals() -> void:

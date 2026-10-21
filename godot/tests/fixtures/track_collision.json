@@ -1,0 +1,62 @@
+{
+	"Run_00_tarmac": {
+		"sha256": "5ab92f1bf8fcf35760c1126397869360a0f5af291931f97c16bc9ba5d5c1899c",
+		"surface": "tarmac",
+		"vertices": 648
+	},
+	"Run_01_rumble": {
+		"sha256": "55ef5630b094ea0f9b58509e59c62ea60bf24ff2bd525aafb4d777b1380ed8af",
+		"surface": "rumble",
+		"vertices": 126
+	},
+	"Run_02_mud": {
+		"sha256": "48a38e3700f9fc5d763fcf77b094ca2a0a66eb9a0b3fcdf5ecc158f57d9cdaa0",
+		"surface": "mud",
+		"vertices": 396
+	},
+	"Run_03_water": {
+		"sha256": "44c23939997635573619c229b49b8e33b86f44d2820daadc38368d5f730eb21c",
+		"surface": "water",
+		"vertices": 114
+	},
+	"Run_04_boulder": {
+		"sha256": "98e2aad780730527c444955b1dc10ea9f7dfaaa53f97591bd9c138d3f4868394",
+		"surface": "boulder",
+		"vertices": 510
+	},
+	"Run_05_gravel": {
+		"sha256": "a5ee604f4d108a78cf5bbef0c973660d7eeb5836b5129acbfe2bf81c4fbfefde",
+		"surface": "gravel",
+		"vertices": 294
+	},
+	"Run_06_ice": {
+		"sha256": "2ba6ade214b1da85b645841bb78610f82ff1bd6ac57c2a277fc523abc3f7e85c",
+		"surface": "ice",
+		"vertices": 156
+	},
+	"Run_07_gravel": {
+		"sha256": "f874191d4c03209f11ac22ac8a6d952a0ca7c89afd7b2024962bdef62ae70967",
+		"surface": "gravel",
+		"vertices": 120
+	},
+	"Run_08_mud": {
+		"sha256": "6d9d9a8daee7f334208e38e3760f58268998c8b07599913645173ba5884f07a5",
+		"surface": "mud",
+		"vertices": 528
+	},
+	"Run_09_gravel": {
+		"sha256": "da6bd2c2204d88c5752dbd263a21a5694eb4312c2340af1ec078031591b9d678",
+		"surface": "gravel",
+		"vertices": 756
+	},
+	"Run_10_rumble": {
+		"sha256": "540e92bfc51c45bab2d34955e3b1876e705e23d62cc9c983c1a9c762606b2033",
+		"surface": "rumble",
+		"vertices": 120
+	},
+	"Run_11_tarmac": {
+		"sha256": "27bdd89d8c6009f98afca0d55ca1525c66d4d8734dc8113728a3582f365de6ad",
+		"surface": "tarmac",
+		"vertices": 696
+	}
+}

@@ -75,6 +75,15 @@ are preserved. The body artwork extends beyond the simplified collider near the 
 
 ---
 
+## Bydo-Grid roads and terrain feedback
+
+Roads use procedural ceramic armor, chitin rubble, viscera, spinal armor, vitrified
+coolant, reactor effluent and black ichor materials. Rough surfaces have bounded
+real relief. Each special terrain has contact-driven spray/debris and a distinct
+body response, exaggerated with the wrong frame. Void lighting uses localized
+beacons and a smooth vehicle light pool. See
+[the terrain implementation guide](docs/art-direction/terrain-responses.md).
+
 ## The web prototype (`web/`)
 
 - **End A — Asphalt Racer.** Slicks, low clearance, aero downforce, ~180 km/h on tarmac.

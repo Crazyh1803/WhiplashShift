@@ -9,7 +9,12 @@ if grep -Eq '(^ERROR:|SCRIPT ERROR:|Parse Error:)' "$import_log"; then
   exit 1
 fi
 result=0
-for scene in test_main cpu_main race_tests course_cues_tests camera_tests corner_tests blackjack_refined_tests blackjack_blueprint_tests consolidation_tests nightshift_blueprint_tests ramjet_blueprint_tests boilerfang_blueprint_tests helix_blueprint_tests knifeedge_blueprint_tests; do
-  timeout 120 "$GODOT_BIN" --headless --fixed-fps 120 --path godot "res://tests/${scene}.tscn" || result=1
+for scene in test_main viscera_response_tests rubble_response_tests armor_response_tests coolant_response_tests effluent_response_tests ichor_response_tests track_visual_tests cpu_main race_tests course_cues_tests camera_tests corner_tests blackjack_refined_tests blackjack_blueprint_tests consolidation_tests nightshift_blueprint_tests ramjet_blueprint_tests boilerfang_blueprint_tests helix_blueprint_tests knifeedge_blueprint_tests; do
+  scene_timeout=120
+  scene_log=$(mktemp /tmp/whiplash-tests.XXXXXX)
+  timeout "$scene_timeout" "$GODOT_BIN" --headless --fixed-fps 120 --path godot "res://tests/${scene}.tscn" > "$scene_log" 2>&1 || result=1
+  cat "$scene_log"
+  if grep -Eq '(^ERROR:|SCRIPT ERROR:|Parse Error:)' "$scene_log"; then result=1; fi
+  rm -f "$scene_log"
 done
 exit "$result"

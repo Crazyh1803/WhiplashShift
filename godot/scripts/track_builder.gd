@@ -8,22 +8,16 @@ extends RefCounted
 
 const RAIL_OFFSET := 0.8
 
-## Grey-box palette: readable, not pretty. Comedy needs legible, not photoreal.
-static func _material(sid: int) -> StandardMaterial3D:
-	var m := StandardMaterial3D.new()
-	m.albedo_color = Surfaces.COLORS[sid]
-	m.roughness = 0.95 if sid != Surfaces.Id.ICE else 0.15
-	m.metallic = 0.0
-	# greybox ribbon is a single-sided strip; don't let winding decide whether
-	# you can see the track you are driving on
-	m.cull_mode = BaseMaterial3D.CULL_DISABLED
-	return m
+## Materials share one seamless noise map; collider surface ids stay authoritative.
+static func _material(sid: int) -> ShaderMaterial:
+	return TrackMaterials.surface(sid)
 
 
-static func build(parent: Node3D, pts: Array) -> void:
+static func build(parent: Node3D, pts: Array, relief: bool = true) -> void:
 	var n := pts.size()
 	var i := 0
 	var run_index := 0
+	var distance := 0.0
 	while i < n:
 		var sid: int = pts[i]["s"]
 		var j := i
@@ -35,7 +29,9 @@ static func build(parent: Node3D, pts: Array) -> void:
 			run.append(pts[k])
 		if j + 1 >= n:
 			run.append(pts[0])
-		_build_run(parent, run, sid, run_index)
+		_build_run(parent, run, sid, run_index, distance, relief)
+		for k in range(i, j + 1):
+			distance += float(pts[k]["dist"])
 		run_index += 1
 		i = j + 1
 
@@ -87,8 +83,8 @@ static func build_guard_rails(parent: Node3D, pts: Array) -> StaticBody3D:
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 
 	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(0.72, 0.76, 0.82)
-	material.metallic = 0.55
+	material.albedo_color = Color("a8a08e")
+	material.metallic = 0.1
 	material.roughness = 0.42
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	var mi := MeshInstance3D.new()
@@ -172,15 +168,25 @@ static func _warning_clearance(position: Vector3, points: Array) -> bool:
 	return true
 
 
-static func _build_run(parent: Node3D, run: Array, sid: int, index: int) -> void:
+static func _build_run(parent: Node3D, run: Array, sid: int, index: int, start_distance: float = 0.0, relief: bool = true) -> void:
 	if run.size() < 2:
 		return
 	var verts := PackedVector3Array()
 	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var uv2s := PackedVector2Array()
+	var distance := start_distance
+	var run_length := 0.0
+	for k in range(run.size() - 1):
+		run_length += float(run[k]["dist"])
 
 	for k in range(run.size() - 1):
 		var a: Dictionary = run[k]
 		var b: Dictionary = run[k + 1]
+		if relief and TrackRelief.enabled(sid):
+			TrackRelief.append_quad(verts, normals, uvs, uv2s, a, b, sid, distance, start_distance, run_length, index)
+			distance += float(a["dist"])
+			continue
 		var an: Vector3 = Vector3(-a["dir"].z, 0.0, a["dir"].x) * (a["w"] * 0.5)
 		var bn: Vector3 = Vector3(-b["dir"].z, 0.0, b["dir"].x) * (b["w"] * 0.5)
 		var al: Vector3 = a["pos"] + an
@@ -190,6 +196,12 @@ static func _build_run(parent: Node3D, run: Array, sid: int, index: int) -> void
 		# Wound for Godot's convention: the other order builds a surface a
 		# downward ray passes straight through.
 		verts.append_array([al, ar, bl, bl, ar, br])
+		var next_distance := distance + float(a["dist"])
+		uvs.append_array([Vector2(0, distance), Vector2(1, distance), Vector2(0, next_distance),
+			Vector2(0, next_distance), Vector2(1, distance), Vector2(1, next_distance)])
+		uv2s.append_array([Vector2(a["w"], 0), Vector2(a["w"], 0), Vector2(b["w"], 0),
+			Vector2(b["w"], 0), Vector2(a["w"], 0), Vector2(b["w"], 0)])
+		distance = next_distance
 		for _t in 6:
 			normals.append(Vector3.UP)
 
@@ -197,6 +209,8 @@ static func _build_run(parent: Node3D, run: Array, sid: int, index: int) -> void
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = verts
 	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_TEX_UV2] = uv2s
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 
@@ -207,7 +221,8 @@ static func _build_run(parent: Node3D, run: Array, sid: int, index: int) -> void
 
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
-	mi.material_override = _material(sid)
+	mi.name = "RoadMesh"
+	mi.material_override = TrackMaterials.surface(sid, true)
 	# lift the ribbon a hair above the ground plane so they don't z-fight
 	mi.position = Vector3(0.0, 0.02, 0.0)
 	body.add_child(mi)
