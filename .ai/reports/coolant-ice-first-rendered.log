@@ -1,0 +1,32 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: Failed to create wd.xic as the input method or its xim server may not have started yet.
+     at: _create_xic (platform/linuxbsd/x11/display_server_x11.cpp:6347)
+Vulkan 1.4.354 - Forward+ - Using Device #0: AMD - AMD Radeon Graphics (RADV RENOIR)
+
+  PASS: wrong B has stronger shard spray and skid response
+  PASS: coolant has no dry rattle armor kick or mud sinking
+  PASS: skid changes sign with actual lateral motion
+  PASS: straight rolling has no invented lateral wobble
+  PASS: stationary unspinning coolant has no spray or skid
+  PASS: stationary wheelspin scatters frost without fake slide
+  PASS: airborne contact cannot produce skid
+  PASS: coolant exclusively emits flakes and splinters within shared pool
+  PASS: wrong B skid pose is visible and bounded without sinking
+  PASS: skid leaves physical body velocity collider and wheel mounts intact
+  PASS: coolant never creates collision objects
+  PASS: coolant mesh 8 is thin faceted and opaque without glow
+  PASS: coolant mesh 9 is thin faceted and opaque without glow
+  PASS: body skid reverses smoothly with slide direction
+  PASS: correct A keeps a small signed response
+  PASS: skid uses body-local velocity after turning
+  PASS: mixed seam combines four responses in one body pose
+  PASS: leaving coolant stops spray and restores original pose
+  PASS: player recovery clears skid and flakes
+  PASS: CPU recovery clears skid and flakes
+  PASS: comparison uses the gameplay chase camera
+  PASS: correct-A rendered actual contact-driven clumps
+TERRAIN_CAPTURE ice correct-A speed=11.59 sink=0.000 rattle=0.000 impact=0.000 skid=-0.019 live=3 emitted=46
+  PASS: comparison uses the gameplay chase camera
+  PASS: wrong-B rendered actual contact-driven clumps
+TERRAIN_CAPTURE ice wrong-B speed=11.56 sink=0.000 rattle=0.000 impact=0.000 skid=0.098 live=35 emitted=252
+COOLANT_RESPONSE: 24 passed, 0 failed

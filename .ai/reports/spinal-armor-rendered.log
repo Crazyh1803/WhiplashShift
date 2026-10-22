@@ -1,0 +1,33 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: Failed to create wd.xic as the input method or its xim server may not have started yet.
+     at: _create_xic (platform/linuxbsd/x11/display_server_x11.cpp:6347)
+Vulkan 1.4.354 - Forward+ - Using Device #0: AMD - AMD Radeon Graphics (RADV RENOIR)
+
+  PASS: wrong end has stronger armor bursts and impacts
+  PASS: armor has discrete impacts without mud sinking or gravel rattle
+  PASS: stationary unspinning armor has no impact or debris
+  PASS: wheelspin can eject armor
+  PASS: airborne armor cannot jolt the chassis
+  PASS: armor emits plates and broken ribs exclusively within shared capacity
+  PASS: heavy impacts have bounded lift and quiet gaps
+  PASS: impacts never write body velocity collider or wheel transforms
+  PASS: armor has no added collision geometry
+  PASS: armor mesh 6 has bounded nondegenerate geometry
+  PASS: armor mesh 7 has bounded nondegenerate geometry
+  PASS: mixed terrain blends all three responses in one controller
+  PASS: leaving armor restores the body and clears debris
+  PASS: production local illumination has no opposed cone masks
+  PASS: void remains free of global sun lighting
+  PASS: player recovery clears armor impacts
+  PASS: CPU recovery clears armor impacts
+LIGHT_POOL radius=9m min=0.110 max=0.110
+  PASS: local light reaches both sides and both ends at 9m
+LIGHT_POOL radius=18m min=0.032 max=0.032
+  PASS: local light reaches both sides and both ends at 18m
+  PASS: comparison uses the gameplay chase camera
+  PASS: correct-B rendered actual contact-driven clumps
+TERRAIN_CAPTURE boulder correct-B speed=13.06 sink=0.000 rattle=0.000 impact=0.140 live=5 emitted=28
+  PASS: comparison uses the gameplay chase camera
+  PASS: wrong-A rendered actual contact-driven clumps
+TERRAIN_CAPTURE boulder wrong-A speed=8.86 sink=0.000 rattle=0.000 impact=1.000 live=58 emitted=146
+ARMOR_RESPONSE: 23 passed, 0 failed

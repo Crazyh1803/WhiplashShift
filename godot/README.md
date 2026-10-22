@@ -6,7 +6,35 @@ progress tracking, and vehicle-specific handling feed the proving-ground race.
 The single-course race now has a three-second countdown, three full laps, live
 position and time, and results with same-roster retry or return to the garage.
 The race ends when the player finishes; rivals still on course are marked
-UNFINISHED. Combat and the four-course arcade mode remain future work.
+UNFINISHED. The four-course arcade mode remains future work. Combat uses a solo arcade item loop.
+
+Gold pickup rows grant one random item. Press **E once** to activate it; holding
+the key is unnecessary. The single slot stays occupied until the active timer ends.
+
+| Item | Pickup chance | Active behavior |
+|---|---:|---|
+| Shield | 20% | Blocks weapon hits and oil for 5 seconds |
+| Machine guns | 24% | Automatic fire every 0.15 seconds for 6 seconds |
+| Rockets | 18% | Fires an explosive rocket every second for 5 seconds |
+| Grenades | 12% | Lobs an explosive grenade every 1.2 seconds for 6 seconds |
+| Smoke screen | 13% | Drops smoke every 0.5 seconds for 5 seconds |
+| Oil slick | 12% | Drops oil every 0.65 seconds for 5 seconds |
+| Homing missile | 1% | One missile; needs a visible target ahead, otherwise stays held |
+
+Attacks fire from the active end; smoke and oil deploy behind it. Swapping redirects
+subsequent shots and drops. Smoke clouds last 5 seconds and obscure sight, CPU
+attack decisions and missile guidance. Oil patches last 7 seconds and reduce grip
+to 35% while crossed, lingering 1.2 seconds after leaving. Shields clear oil effects.
+Missiles keep their original target, turn gradually and collide with scenery.
+Grenades arc and explode on impact or after a 1.5-second fuse. Scenery blocks blast
+damage. Hits remove a bounded amount of speed; there is no health or elimination.
+
+CPUs use the same odds, durations and physical effects. Countdown/results block
+combat; retry clears everything; recovery clears owned projectiles, hazards and
+active items and restores grip. Finished racers lose combat objects. No copilot or
+second player is required. Pickups respawn after six seconds. The HUD shows the
+held item or active countdown, smoke and low-grip status.
+
 
 Driving rendering interpolates between the unchanged 120 Hz physics ticks.
 The chase camera follows that rendered pose each frame; player/CPU recovery and
@@ -44,6 +72,30 @@ advice instead of a numeric speed. Terrain advice stays visible alongside it.
 These are conservative centreline estimates, not guaranteed speeds or automatic
 controls. Turn shape is smoothed over metres and cached when the course loads.
 
+## First track visual sample
+
+The circuit now uses seamless procedural asphalt, gravel, mud, rock, ice and water
+materials, with metre-spaced worn asphalt markings and animated water ripples.
+A shared generated 256-pixel noise map and mipmaps provide detail at driving speed.
+Road materials are reusable around the loop; the detailed scenery sample covers
+the first 720 metres, including the opening straight and first mud corner.
+
+That sample adds dirt shoulders, batched rail posts, scrub rocks, a service yard,
+storage tanks, a corner industrial landmark and distant landforms. Warm daylight,
+a cooler sky and light distance haze establish an industrial scrubland palette.
+Scenery is visual-only, checked against every course branch and the proving ground.
+All twelve road collision runs match the original renderer byte for byte.
+This is a first material/scenery pass; the rest of the circuit is not yet dressed.
+
+Capture overview and driver views with:
+
+```sh
+TEST_CMD='timeout 90 godot --fixed-fps 120 --path godot res://tests/track_visual_tests.tscn -- --capture' ak-test
+```
+
+Captures go to `.ai/captures/track-sample/`. Headless geometry and material checks
+are included in the normal `ak-test` suite.
+
 ## Running it
 
 Verified with Godot **4.7.2** (the original port used 4.6 and Jolt). Open `godot/`
@@ -68,8 +120,8 @@ remain unchanged. CPU speed planning reads the same modifiers as the physical ca
 
 ## Controls
 
-Identical to the web prototype on purpose, so muscle memory transfers and a
-side-by-side comparison isn't confounded by different bindings.
+Core driving controls carry over from the web prototype; **E** now uses the held
+arcade item. The Games launcher starts play, with an editor option in its context menu.
 
 | | |
 |---|---|
@@ -77,6 +129,7 @@ side-by-side comparison isn't confounded by different bindings.
 | `A` `D` | steer |
 | **`SPACE`** | **swap ends** |
 | `SHIFT` | handbrake |
+| `E` | activate held item; timed items then run automatically |
 | `R` | recover the player to the last checkpoint during a race |
 | `Enter` | race again from the results screen, keeping the same roster |
 | `C` | camera: 180° swing vs. instant snap |

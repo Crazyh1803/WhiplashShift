@@ -1,0 +1,83 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] partial seam crossing does not award a lap 
+  [pass] complete ordered circuit awards one lap 
+  [pass] checkpoint recovery cannot add lap or distance 
+  [pass] backwards driving detects wrong-way without awarding a lap 
+  [pass] off-course projection cannot advance the recovery anchor 
+  [pass] CPU difficulty defaults to Medium 
+  [pass] unknown CPU difficulty falls back to Medium 
+  [pass] race configuration preserves CPU difficulty 
+  [pass] unknown driver preset uses Medium 
+  [pass] Hard carries speed on a clear straight and brakes near the transition straight=43.6 approach=23.3
+  [pass] corner planning respects the inactive axle's grip 
+CPU DIFFICULTY: hard
+  [pass] two CPU drivers use the player's tuning 
+  [pass] race applies selected difficulty to both CPU racers 
+t=30 CPU_1_BOILERFANG_88 lap=0 idx=172 speed=17.6 swaps=1 recoveries=0 off=5.2
+t=30 CPU_2_RAMJET_K-6 lap=0 idx=162 speed=12.5 swaps=1 recoveries=0 off=2.5
+t=60 CPU_1_BOILERFANG_88 lap=0 idx=360 speed=22.4 swaps=1 recoveries=0 off=4.0
+t=60 CPU_2_RAMJET_K-6 lap=0 idx=344 speed=26.6 swaps=1 recoveries=0 off=4.0
+t=90 CPU_1_BOILERFANG_88 lap=0 idx=486 speed=20.0 swaps=1 recoveries=0 off=5.2
+t=90 CPU_2_RAMJET_K-6 lap=0 idx=469 speed=15.6 swaps=1 recoveries=0 off=4.1
+t=120 CPU_1_BOILERFANG_88 lap=0 idx=694 speed=31.4 swaps=2 recoveries=0 off=0.1
+t=120 CPU_2_RAMJET_K-6 lap=0 idx=658 speed=30.2 swaps=2 recoveries=0 off=6.7
+t=150 CPU_1_BOILERFANG_88 lap=1 idx=174 speed=17.8 swaps=3 recoveries=0 off=7.2
+t=150 CPU_2_RAMJET_K-6 lap=1 idx=154 speed=12.5 swaps=3 recoveries=0 off=6.3
+t=180 CPU_1_BOILERFANG_88 lap=1 idx=361 speed=22.4 swaps=3 recoveries=0 off=4.0
+t=180 CPU_2_RAMJET_K-6 lap=1 idx=326 speed=26.3 swaps=3 recoveries=0 off=3.8
+t=210 CPU_1_BOILERFANG_88 lap=1 idx=487 speed=20.2 swaps=3 recoveries=0 off=5.3
+t=210 CPU_2_RAMJET_K-6 lap=1 idx=460 speed=13.7 swaps=3 recoveries=0 off=3.7
+t=240 CPU_1_BOILERFANG_88 lap=1 idx=695 speed=31.4 swaps=4 recoveries=0 off=0.1
+t=240 CPU_2_RAMJET_K-6 lap=1 idx=637 speed=27.4 swaps=4 recoveries=0 off=4.6
+t=270 CPU_1_BOILERFANG_88 lap=2 idx=174 speed=17.8 swaps=5 recoveries=0 off=7.5
+t=270 CPU_2_RAMJET_K-6 lap=2 idx=146 speed=12.4 swaps=5 recoveries=0 off=7.1
+t=300 CPU_1_BOILERFANG_88 lap=2 idx=362 speed=22.4 swaps=5 recoveries=0 off=4.0
+t=300 CPU_2_RAMJET_K-6 lap=2 idx=309 speed=22.7 swaps=5 recoveries=0 off=0.6
+t=330 CPU_1_BOILERFANG_88 lap=2 idx=488 speed=20.4 swaps=5 recoveries=0 off=5.3
+t=330 CPU_2_RAMJET_K-6 lap=2 idx=451 speed=12.9 swaps=5 recoveries=0 off=6.3
+t=360 CPU_1_BOILERFANG_88 lap=2 idx=697 speed=31.4 swaps=6 recoveries=0 off=0.1
+t=360 CPU_2_RAMJET_K-6 lap=2 idx=621 speed=18.8 swaps=6 recoveries=0 off=5.0
+t=390 CPU_1_BOILERFANG_88 lap=3 idx=175 speed=17.8 swaps=7 recoveries=0 off=7.6
+t=390 CPU_2_RAMJET_K-6 lap=3 idx=138 speed=12.6 swaps=7 recoveries=0 off=5.1
+t=420 CPU_1_BOILERFANG_88 lap=3 idx=363 speed=22.4 swaps=7 recoveries=0 off=4.0
+t=420 CPU_2_RAMJET_K-6 lap=3 idx=294 speed=20.9 swaps=7 recoveries=0 off=1.6
+  [pass] CPU simulation remains finite 
+  [pass] every CPU swap preserves body momentum and basis 
+  [pass] CPU_1_BOILERFANG_88 completes laps on hard 
+  [pass] CPU_1_BOILERFANG_88 performs surface swaps 
+  [pass] CPU_1_BOILERFANG_88 drives with limited recoveries 0 recoveries
+  [pass] CPU_2_RAMJET_K-6 completes laps on hard 
+  [pass] CPU_2_RAMJET_K-6 performs surface swaps 
+  [pass] CPU_2_RAMJET_K-6 drives with limited recoveries 0 recoveries
+BENCHMARK hard distance=18006.03 first_laps=[126.0, 130.0]
+PROFILE hard cpu=0 TARMAC seconds=83 speed=33.2 requested=47.3 turning=0 braking=7
+PROFILE hard cpu=0 RUMBLE seconds=27 speed=19.8 requested=32.6 turning=13 braking=8
+PROFILE hard cpu=0 MUD BOG seconds=123 speed=15.0 requested=20.7 turning=0 braking=0
+PROFILE hard cpu=0 OFF TRACK seconds=9 speed=11.5 requested=17.0 turning=0 braking=0
+PROFILE hard cpu=0 WATER seconds=14 speed=19.3 requested=25.9 turning=0 braking=0
+PROFILE hard cpu=0 BOULDERS seconds=53 speed=22.2 requested=24.4 turning=0 braking=0
+PROFILE hard cpu=0 GRAVEL seconds=95 speed=23.0 requested=24.5 turning=4 braking=10
+PROFILE hard cpu=0 ICE seconds=16 speed=22.4 requested=22.4 turning=0 braking=0
+PROFILE hard cpu=1 TARMAC seconds=82 speed=33.3 requested=51.3 turning=0 braking=10
+PROFILE hard cpu=1 RUMBLE seconds=26 speed=19.2 requested=31.7 turning=11 braking=8
+PROFILE hard cpu=1 MUD BOG seconds=143 speed=13.1 requested=21.0 turning=1 braking=0
+PROFILE hard cpu=1 WATER seconds=13 speed=19.6 requested=30.6 turning=0 braking=0
+PROFILE hard cpu=1 BOULDERS seconds=52 speed=22.5 requested=25.5 turning=0 braking=2
+PROFILE hard cpu=1 GRAVEL seconds=92 speed=22.9 requested=25.4 turning=3 braking=12
+PROFILE hard cpu=1 ICE seconds=10 speed=25.2 requested=25.0 turning=0 braking=4
+PROFILE hard cpu=1 OFF TRACK seconds=2 speed=6.3 requested=14.5 turning=0 braking=0
+  [FAIL] Hard leader beats previous opponent pace by at least 20% 9112.64142946194
+  [pass] Hard field improves average pace by at least 15% 18006.0294921775
+  [pass] off-course CPU returns to a checkpoint 
+  [pass] physical recovery awards no race progress 
+  [pass] CPU brakes for a stopped vehicle ahead 
+Single-tier race progress: [18006.0294921775]
+  [pass] garage offers three tiers with Medium selected 
+  [pass] garage selection updates CPU difficulty 
+  [pass] difficulty and ignition fit the garage 
+  [pass] garage reload restores saved difficulty 
+  [pass] existing callsign-only profiles default to Medium 
+  [pass] invalid saved difficulty falls back to Medium 
+
+CPU: 31 passed, 1 failed

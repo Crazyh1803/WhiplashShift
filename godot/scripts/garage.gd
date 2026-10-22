@@ -14,6 +14,7 @@ var _model_number: Label
 var _name_label: Label
 var _class_label: Label
 var _description: Label
+var _difficulty: OptionButton
 var _callsign: LineEdit
 var _validation: Label
 var _start_button: Button
@@ -218,10 +219,21 @@ func _build_dossier(parent: HBoxContainer) -> void:
 	var cpu := PanelContainer.new()
 	cpu.add_theme_stylebox_override("panel", _panel_style(Color("0a0e10"), Color("41515a66"), 1))
 	box.add_child(cpu)
-	var cpu_label := _label("  ●  CPU ROSTER          RANDOMIZED ON IGNITION", 11, Color("a7ef4e"))
-	cpu_label.custom_minimum_size.y = 38
-	cpu_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	cpu.add_child(cpu_label)
+	cpu.tooltip_text = "Two randomized CPU opponents. Difficulty applies to both racers."
+	var difficulty_row := HBoxContainer.new()
+	cpu.add_child(difficulty_row)
+	var difficulty_label := _label("  CPU DIFFICULTY", 11, Color("a7ef4e"))
+	difficulty_label.custom_minimum_size.y = 38
+	difficulty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	difficulty_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	difficulty_row.add_child(difficulty_label)
+	_difficulty = OptionButton.new()
+	_difficulty.add_theme_font_size_override("font_size", 14)
+	for id: String in CpuDriver.DIFFICULTIES:
+		_difficulty.add_item(CpuDriver.DIFFICULTIES[id]["label"])
+		_difficulty.set_item_metadata(_difficulty.item_count - 1, id)
+	_difficulty.item_selected.connect(_select_difficulty)
+	difficulty_row.add_child(_difficulty)
 
 	var callsign_label := _label("PILOT CALLSIGN", 11, MUTED)
 	box.add_child(callsign_label)
@@ -590,6 +602,7 @@ func _ignite() -> void:
 	_save_profile(pilot)
 	_start_button.text = "IGNITION SEQUENCE // ARMED"
 	_start_button.disabled = true
+	_difficulty.disabled = true
 	_prev_button.disabled = true
 	_next_button.disabled = true
 	for button: Button in _roster_buttons:
@@ -605,13 +618,30 @@ func _load_profile() -> void:
 	var config := ConfigFile.new()
 	if config.load(PROFILE_PATH) == OK:
 		_callsign.text = String(config.get_value("profile", "callsign", "ROADGHOST"))
+		GameSession.set_cpu_difficulty(String(config.get_value("profile", "cpu_difficulty", "medium")))
 	else:
 		_callsign.text = "ROADGHOST"
+
+	for i in _difficulty.item_count:
+		if _difficulty.get_item_metadata(i) == GameSession.cpu_difficulty:
+			_difficulty.select(i)
+	_update_difficulty_tooltip()
+
+
+func _select_difficulty(index: int) -> void:
+	GameSession.set_cpu_difficulty(String(_difficulty.get_item_metadata(index)))
+	_update_difficulty_tooltip()
+	_save_profile(_callsign.text.strip_edges().to_upper())
+
+
+func _update_difficulty_tooltip() -> void:
+	_difficulty.tooltip_text = CpuDriver.DIFFICULTIES[GameSession.cpu_difficulty]["description"]
 
 
 func _save_profile(pilot: String) -> void:
 	var config := ConfigFile.new()
 	config.set_value("profile", "callsign", pilot)
+	config.set_value("profile", "cpu_difficulty", GameSession.cpu_difficulty)
 	config.save(PROFILE_PATH)
 
 

@@ -6,6 +6,7 @@ const CUSTOMIZATION_SCHEMA_VERSION := 1
 var callsign: String = "ROADGHOST"
 var selected_vehicle_id: String = "blackjack"
 var cpu_vehicle_ids: Array[String] = []
+var cpu_difficulty: String = "medium"
 var vehicle_customizations: Dictionary = {}
 
 
@@ -18,6 +19,10 @@ func configure(p_callsign: String, p_vehicle_id: String, p_cpu_ids: Array[String
 	callsign = clean_callsign if not clean_callsign.is_empty() else "ROADGHOST"
 	selected_vehicle_id = p_vehicle_id if not p_vehicle_id.is_empty() else "blackjack"
 	cpu_vehicle_ids = p_cpu_ids.duplicate()
+
+
+func set_cpu_difficulty(value: String) -> void:
+	cpu_difficulty = value if CpuDriver.DIFFICULTIES.has(value) else "medium"
 
 
 func selected_vehicle() -> Dictionary:

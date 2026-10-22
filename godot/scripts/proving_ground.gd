@@ -21,6 +21,7 @@ var cpu_drivers: Array[CpuDriver] = []
 var cpu_cars: Array[Vehicle] = []
 var _spawn: Transform3D
 var race: RaceDirector
+var items: RaceItems
 var player_progress: TrackProgress
 var _grid_indices: Array[int] = []
 var _retired: Array[int] = []
@@ -33,6 +34,14 @@ func _ready() -> void:
 	_build_car()
 	_build_cpu_drivers()
 	_setup_race()
+	items = RaceItems.new()
+	items.name = "RaceItems"
+	add_child(items)
+	var racers: Array[Vehicle] = [car]
+	racers.append_array(cpu_cars)
+	items.setup(race, racers)
+	for i in cpu_drivers.size():
+		cpu_drivers[i].recovered.connect(items.reset_racer.bind(i + 1))
 	_build_ui()
 	# Drivers update their trackers first; race rules then sample the whole field.
 	process_physics_priority = 100
@@ -124,7 +133,7 @@ func _build_cpu_drivers() -> void:
 		var driver := CpuDriver.new()
 		driver.name = "CpuDriver_%d" % (i + 1)
 		driver.lane_offset = -4.0 if i == 0 else 4.0
-		driver.skill = 0.72 if i == 0 else 0.80
+		driver.set_difficulty(GameSession.cpu_difficulty, i)
 		driver.setup(cpu, course, _grid_indices[i + 1])
 		add_child(driver)
 		driver.reset(_grid_indices[i + 1])
@@ -143,6 +152,7 @@ func _build_ui() -> void:
 	hud.pilot_callsign = GameSession.callsign
 	hud.cpu_drivers = cpu_drivers
 	hud.race = race
+	hud.items = items
 	hud.course_cues = course_cues
 	add_child(hud)
 	hud.main_menu_requested.connect(_return_to_menu)
@@ -214,6 +224,7 @@ func restart_race() -> void:
 	race.setup(course, names, trackers)
 	for driver: CpuDriver in cpu_drivers:
 		driver.peers.assign(cars)
+	items.reset()
 	_set_grid_controls()
 
 
@@ -249,6 +260,7 @@ func _recover_player() -> void:
 	if end == "B":
 		recovery.basis = recovery.basis.rotated(Vector3.UP, PI)
 	_place_player(recovery, end)
+	items.reset_racer(0)
 
 
 func _respawn() -> void:
@@ -291,6 +303,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_SPACE:
 			if race.state == RaceDirector.State.RACING and car.can_swap():
 				car.swap_ends("manual")
+		KEY_E:
+			items.fire(0)
 		KEY_R:
 			if race.state == RaceDirector.State.RACING:
 				_recover_player()
@@ -333,6 +347,7 @@ func _physics_process(delta: float) -> void:
 			driver.enabled = true
 			# The countdown already provided suspension settling time.
 			driver._settle_time = 0.0
+	items.tick(delta)
 	for index: int in race.finish_order:
 		_retire(index)
 	if race.state == RaceDirector.State.RESULTS:

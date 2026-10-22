@@ -31,6 +31,8 @@ var vehicle_accent_color: Color = Color("ffb238")
 var top_speed_multiplier: float = 1.0
 var drive_multiplier: float = 1.0
 var grip_multiplier: float = 1.0
+# Race-owned oil effect; independent of persistent vehicle tuning.
+var item_grip_multiplier: float = 1.0
 var mass_multiplier: float = 1.0
 var brake_multiplier: float = 1.0
 
@@ -775,7 +777,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 
 		var sid: int = wheel.surface_id
 		var hb: bool = handbrake and wheel.end == hb_end
-		var mu: float = tuning.tire_grip(wheel.end) * grip_multiplier * Surfaces.GRIP[sid] * Surfaces.mod_grip(wheel.end, sid)
+		var mu: float = tuning.tire_grip(wheel.end) * grip_multiplier * clampf(item_grip_multiplier, 0.3, 1.0) * Surfaces.GRIP[sid] * Surfaces.mod_grip(wheel.end, sid)
 		if hb:
 			mu *= tuning.handbrake_grip
 		var max_f: float = mu * load

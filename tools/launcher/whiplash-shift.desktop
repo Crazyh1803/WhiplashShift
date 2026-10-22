@@ -1,0 +1,16 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Whiplash Shift
+Comment=Solo arcade combat racing
+Exec="/home/crazyh/Documents/ChatGPT/Whiplash/tools/launcher/whiplash-shift"
+Path=/home/crazyh/Documents/ChatGPT/Whiplash
+Icon=input-gaming
+Terminal=false
+Categories=Game;
+Keywords=racing;arcade;cars;Godot;
+Actions=Editor;
+
+[Desktop Action Editor]
+Name=Open in Godot Editor
+Exec="/home/crazyh/Documents/ChatGPT/Whiplash/tools/launcher/whiplash-shift" --editor

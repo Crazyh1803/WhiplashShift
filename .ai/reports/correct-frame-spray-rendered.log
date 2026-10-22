@@ -1,0 +1,213 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: Failed to create wd.xic as the input method or its xim server may not have started yet.
+     at: _create_xic (platform/linuxbsd/x11/display_server_x11.cpp:6347)
+Vulkan 1.4.354 - Forward+ - Using Device #0: AMD - AMD Radeon Graphics (RADV RENOIR)
+
+  PASS: wrong end throws substantially more viscera at matched speed
+  PASS: wrong end sinks deeper and throws higher/larger clumps
+  PASS: stationary unspinning tyres do not spray
+  PASS: stuck driven wheelspin can churn viscera
+  PASS: airborne wheels cannot generate contact response
+  PASS: smooth terrain does not produce viscera immersion
+  PASS: seams blend immersion by actual wet-wheel coverage
+  PASS: mud doubles correct-frame spray and preserves wrong-frame output
+  PASS: gravel doubles correct-frame spray and preserves wrong-frame output
+  PASS: boulder doubles correct-frame spray and preserves wrong-frame output
+  PASS: ice doubles correct-frame spray and preserves wrong-frame output
+  PASS: water doubles correct-frame spray and preserves wrong-frame output
+  PASS: oil doubles correct-frame spray and preserves wrong-frame output
+  PASS: pool has active clumps and is bounded
+  PASS: all viscera kinds are emitted while sharing the terrain budget
+  PASS: anatomical meshes have nondegenerate triangles within budget
+  PASS: entrails have a narrow elongated silhouette
+  PASS: wrong-end body has bounded cosmetic immersion
+  PASS: effect never creates collision objects
+  PASS: body, wheel hardpoints and collider stay unchanged
+  PASS: airborne transition stops spray and drains particles
+  PASS: body returns to its original pose after leaving viscera
+  PASS: stationary wet tyres have no surrounding platforms or standing geometry
+  PASS: model rebuild and reset restore the new visual root
+  PASS: freeze clears lingering spray and immersion
+  PASS: unexpected teleport clears the world-space trail
+  PASS: particle root does not inherit vehicle movement
+  PASS: player and CPUs each own one response effect
+  PASS: player recovery clears the response immediately
+  PASS: CPU recovery clears its response immediately
+  PASS: retry retains exactly one effect per car
+  PASS: comparison uses the gameplay chase camera
+  PASS: correct-B rendered actual contact-driven clumps
+TERRAIN_CAPTURE mud correct-B speed=11.48 sink=0.022 rattle=0.000 impact=0.000 skid=0.000 wash=0.000 peak_skid=0.000 peak_oil_slide=0.000 live=16 emitted=100
+  PASS: comparison uses the gameplay chase camera
+  PASS: wrong-A rendered actual contact-driven clumps
+TERRAIN_CAPTURE mud wrong-A speed=5.66 sink=0.108 rattle=0.000 impact=0.000 skid=0.000 wash=0.000 peak_skid=0.000 peak_oil_slide=0.000 live=37 emitted=146
+VISCERA_RESPONSE: 35 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: Failed to create wd.xic as the input method or its xim server may not have started yet.
+     at: _create_xic (platform/linuxbsd/x11/display_server_x11.cpp:6347)
+Vulkan 1.4.354 - Forward+ - Using Device #0: AMD - AMD Radeon Graphics (RADV RENOIR)
+
+  PASS: wrong end has stronger rubble spray and chassis response
+  PASS: rubble rattles without viscera sinking
+  PASS: stationary unspinning rubble has no spray or rattle
+  PASS: wheelspin can scatter rubble when bogged
+  PASS: airborne contact cannot trigger chassis rattle
+  PASS: all dry debris kinds emit without organic fragments
+  PASS: six batches share one bounded live pool
+  PASS: rubble is dry rather than wet or glowing
+  PASS: rubble pieces have a bounded ground bounce
+  PASS: wrong-end chassis shudder is visible but bounded
+  PASS: chassis rattle stays continuous across oscillation cycles
+  PASS: shudder never moves physical body, collider or wheel mounts
+  PASS: rubble never adds collision objects
+  PASS: mixed seams emit the debris belonging to each tyre contact
+  PASS: mixed seams blend one body pose without competing controllers
+  PASS: leaving rubble stops emission and restores the body
+  PASS: player recovery clears rubble and rattle immediately
+  PASS: CPU recovery clears rubble and rattle immediately
+  PASS: retry keeps one combined response controller per car
+  PASS: comparison uses the gameplay chase camera
+  PASS: correct-B rendered actual contact-driven clumps
+TERRAIN_CAPTURE gravel correct-B speed=13.95 sink=0.000 rattle=0.180 impact=0.000 skid=0.000 wash=0.000 peak_skid=0.000 peak_oil_slide=0.000 live=26 emitted=138
+  PASS: comparison uses the gameplay chase camera
+  PASS: wrong-A rendered actual contact-driven clumps
+TERRAIN_CAPTURE gravel wrong-A speed=11.47 sink=0.000 rattle=1.000 impact=0.000 skid=0.000 wash=0.000 peak_skid=0.000 peak_oil_slide=0.000 live=80 emitted=250
+RUBBLE_RESPONSE: 23 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: Failed to create wd.xic as the input method or its xim server may not have started yet.
+     at: _create_xic (platform/linuxbsd/x11/display_server_x11.cpp:6347)
+Vulkan 1.4.354 - Forward+ - Using Device #0: AMD - AMD Radeon Graphics (RADV RENOIR)
+
+  PASS: wrong end has stronger armor bursts and impacts
+  PASS: armor has discrete impacts without mud sinking or gravel rattle
+  PASS: stationary unspinning armor has no impact or debris
+  PASS: wheelspin can eject armor
+  PASS: airborne armor cannot jolt the chassis
+  PASS: armor emits plates and broken ribs exclusively within shared capacity
+  PASS: heavy impacts have bounded lift and quiet gaps
+  PASS: impacts never write body velocity collider or wheel transforms
+  PASS: armor has no added collision geometry
+  PASS: armor mesh 6 has bounded nondegenerate geometry
+  PASS: armor mesh 7 has bounded nondegenerate geometry
+  PASS: mixed terrain blends all three responses in one controller
+  PASS: leaving armor restores the body and clears debris
+  PASS: production local illumination has no opposed cone masks
+  PASS: void remains free of global sun lighting
+  PASS: player recovery clears armor impacts
+  PASS: CPU recovery clears armor impacts
+LIGHT_POOL radius=9m min=0.110 max=0.110
+  PASS: local light reaches both sides and both ends at 9m
+LIGHT_POOL radius=18m min=0.032 max=0.032
+  PASS: local light reaches both sides and both ends at 18m
+  PASS: comparison uses the gameplay chase camera
+  PASS: correct-B rendered actual contact-driven clumps
+TERRAIN_CAPTURE boulder correct-B speed=13.06 sink=0.000 rattle=0.000 impact=0.140 skid=0.000 wash=0.000 peak_skid=0.000 peak_oil_slide=0.000 live=11 emitted=58
+  PASS: comparison uses the gameplay chase camera
+  PASS: wrong-A rendered actual contact-driven clumps
+TERRAIN_CAPTURE boulder wrong-A speed=8.86 sink=0.000 rattle=0.000 impact=1.000 skid=0.000 wash=0.000 peak_skid=0.000 peak_oil_slide=0.000 live=58 emitted=146
+ARMOR_RESPONSE: 23 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: Failed to create wd.xic as the input method or its xim server may not have started yet.
+     at: _create_xic (platform/linuxbsd/x11/display_server_x11.cpp:6347)
+Vulkan 1.4.354 - Forward+ - Using Device #0: AMD - AMD Radeon Graphics (RADV RENOIR)
+
+  PASS: wrong B has stronger shard spray and skid response
+  PASS: coolant has no dry rattle armor kick or mud sinking
+  PASS: skid changes sign with actual lateral motion
+  PASS: straight rolling has no invented lateral wobble
+  PASS: stationary unspinning coolant has no spray or skid
+  PASS: stationary wheelspin scatters frost without fake slide
+  PASS: airborne contact cannot produce skid
+  PASS: coolant exclusively emits flakes and splinters within shared pool
+  PASS: wrong B skid pose is visible and bounded without sinking
+  PASS: skid leaves physical body velocity collider and wheel mounts intact
+  PASS: coolant never creates collision objects
+  PASS: coolant mesh 8 is thin faceted and opaque without glow
+  PASS: coolant mesh 9 is thin faceted and opaque without glow
+  PASS: body skid reverses smoothly with slide direction
+  PASS: correct A keeps a small signed response
+  PASS: skid uses body-local velocity after turning
+  PASS: mixed seam combines four responses in one body pose
+  PASS: leaving coolant stops spray and restores original pose
+  PASS: player recovery clears skid and flakes
+  PASS: CPU recovery clears skid and flakes
+  PASS: comparison uses the gameplay chase camera
+  PASS: correct-A rendered actual contact-driven clumps
+  PASS: correct-A shows an actual lateral skid during capture
+TERRAIN_CAPTURE ice correct-A speed=11.59 sink=0.000 rattle=0.000 impact=0.000 skid=-0.019 wash=0.000 peak_skid=0.125 peak_oil_slide=0.000 live=9 emitted=94
+  PASS: comparison uses the gameplay chase camera
+  PASS: wrong-B rendered actual contact-driven clumps
+  PASS: wrong-B shows an actual lateral skid during capture
+TERRAIN_CAPTURE ice wrong-B speed=11.56 sink=0.000 rattle=0.000 impact=0.000 skid=0.098 wash=0.000 peak_skid=0.628 peak_oil_slide=0.000 live=35 emitted=252
+COOLANT_RESPONSE: 26 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: Failed to create wd.xic as the input method or its xim server may not have started yet.
+     at: _create_xic (platform/linuxbsd/x11/display_server_x11.cpp:6347)
+Vulkan 1.4.354 - Forward+ - Using Device #0: AMD - AMD Radeon Graphics (RADV RENOIR)
+
+  PASS: wrong A has much stronger spray and drag pose
+  PASS: effluent avoids dry rattle armor kicks and ice skid
+  PASS: standing liquid contact has no invented spray or plowing
+  PASS: water wheelspin can churn liquid when bogged
+  PASS: neighboring ice wheelspin cannot churn stationary water
+  PASS: airborne water cannot produce a drag pose
+  PASS: water exclusively emits sheets and droplets within shared pool
+  PASS: wrong A plows nose down with bounded immersion
+  PASS: liquid re-entry never bounces like solid fragments
+  PASS: liquid sheets spread and flatten during flight
+  PASS: plowing never writes physical body velocity collider or wheels
+  PASS: effluent adds no collision geometry
+  PASS: effluent mesh 10 has bounded wet geometry without emission
+  PASS: effluent mesh 11 has bounded wet geometry without emission
+  PASS: torn sheets and stretched droplets have distinct silhouettes
+  PASS: airborne transition stops spray and clears pose
+  PASS: correct B has shallow immersion and reverse-end nose pitch
+  PASS: mixed seams blend liquid mud gravel and ice in one pose
+  PASS: leaving effluent clears spray and restores the body
+  PASS: player recovery clears liquid drag and spray
+  PASS: CPU recovery clears liquid drag and spray
+  PASS: comparison uses the gameplay chase camera
+  PASS: correct-B rendered actual contact-driven clumps
+TERRAIN_CAPTURE water correct-B speed=11.34 sink=0.015 rattle=0.000 impact=0.000 skid=0.000 wash=0.180 peak_skid=0.000 peak_oil_slide=0.000 live=12 emitted=120
+  PASS: comparison uses the gameplay chase camera
+  PASS: wrong-A rendered actual contact-driven clumps
+TERRAIN_CAPTURE water wrong-A speed=4.62 sink=0.045 rattle=0.000 impact=0.000 skid=0.000 wash=0.595 peak_skid=0.000 peak_oil_slide=0.000 live=14 emitted=136
+EFFLUENT_RESPONSE: 25 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: Failed to create wd.xic as the input method or its xim server may not have started yet.
+     at: _create_xic (platform/linuxbsd/x11/display_server_x11.cpp:6347)
+Vulkan 1.4.354 - Forward+ - Using Device #0: AMD - AMD Radeon Graphics (RADV RENOIR)
+
+  PASS: wrong B has stronger oil spray and lateral slip pose
+  PASS: oil does not sink rattle kick or wash like other surfaces
+  PASS: oil slip follows measured slide direction
+  PASS: straight rolling cannot invent sideways motion
+  PASS: stationary unspinning oil has no spray or slide
+  PASS: oil wheelspin throws spray without fake lateral slide
+  PASS: neighboring water wheelspin cannot trigger stationary oil
+  PASS: airborne oil cannot produce slip pose
+  PASS: oil exclusively emits strands and drops within shared pool
+  PASS: wrong B has visible bounded yaw and roll without sinking
+  PASS: oil re-entry never bounces like solid fragments
+  PASS: oil strands stretch thin during flight
+  PASS: oil pose never writes physical body velocity collider or wheels
+  PASS: oil adds no collision geometry
+  PASS: oil mesh 12 is finite glossy opaque and non-emissive
+  PASS: oil mesh 13 is finite glossy opaque and non-emissive
+  PASS: oil strands have a thin elongated silhouette
+  PASS: oil pose reverses with actual slide
+  PASS: correct A has a small signed slip pose
+  PASS: oil slide uses body-local velocity after turning
+  PASS: mixed seam blends oil ice mud and water in one pose
+  PASS: airborne transition stops spray and restores pose
+  PASS: dry road cannot emit ichor or invent lateral pose
+  PASS: player recovery clears oil slip and spray
+  PASS: CPU recovery clears oil slip and spray
+  PASS: comparison uses the gameplay chase camera
+  PASS: correct-A rendered actual contact-driven clumps
+  PASS: correct-A shows an actual oil slide during capture
+TERRAIN_CAPTURE oil correct-A speed=10.93 sink=0.000 rattle=0.000 impact=0.000 skid=0.000 wash=0.000 peak_skid=0.000 peak_oil_slide=0.117 live=9 emitted=100
+  PASS: comparison uses the gameplay chase camera
+  PASS: wrong-B rendered actual contact-driven clumps
+  PASS: wrong-B shows an actual oil slide during capture
+TERRAIN_CAPTURE oil wrong-B speed=10.82 sink=0.000 rattle=0.000 impact=0.000 skid=0.000 wash=0.000 peak_skid=0.000 peak_oil_slide=0.828 live=53 emitted=274
+ICHOR_RESPONSE: 31 passed, 0 failed

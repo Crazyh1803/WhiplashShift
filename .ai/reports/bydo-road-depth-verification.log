@@ -1,0 +1,481 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  PASS: same surface-run count as original renderer
+  PASS: Run_00_tarmac smooth collider bytes match original
+  PASS: Run_00_tarmac keeps physical surface metadata
+  PASS: Run_00_tarmac keeps original collision height
+  PASS: Run_00_tarmac visual matches collision vertices
+  PASS: Run_00_tarmac metre UVs continue across runs
+  PASS: Run_00_tarmac carries road width for paint
+  PASS: Run_01_rumble smooth collider bytes match original
+  PASS: Run_01_rumble keeps physical surface metadata
+  PASS: Run_01_rumble keeps original collision height
+  PASS: Run_01_rumble visual matches collision vertices
+  PASS: Run_01_rumble metre UVs continue across runs
+  PASS: Run_01_rumble carries road width for paint
+  PASS: Run_02_mud has bounded real relief
+  PASS: Run_02_mud has safe slopes and positive area
+  PASS: Run_02_mud keeps physical surface metadata
+  PASS: Run_02_mud keeps original collision height
+  PASS: Run_02_mud visual matches collision vertices
+  PASS: Run_02_mud metre UVs continue across runs
+  PASS: Run_02_mud carries road width for paint
+  PASS: Run_03_water has bounded real relief
+  PASS: Run_03_water has safe slopes and positive area
+  PASS: Run_03_water keeps physical surface metadata
+  PASS: Run_03_water keeps original collision height
+  PASS: Run_03_water visual matches collision vertices
+  PASS: Run_03_water metre UVs continue across runs
+  PASS: Run_03_water carries road width for paint
+  PASS: Run_04_boulder has bounded real relief
+  PASS: Run_04_boulder has safe slopes and positive area
+  PASS: Run_04_boulder keeps physical surface metadata
+  PASS: Run_04_boulder keeps original collision height
+  PASS: Run_04_boulder visual matches collision vertices
+  PASS: Run_04_boulder metre UVs continue across runs
+  PASS: Run_04_boulder carries road width for paint
+  PASS: Run_05_gravel has bounded real relief
+  PASS: Run_05_gravel has safe slopes and positive area
+  PASS: Run_05_gravel keeps physical surface metadata
+  PASS: Run_05_gravel keeps original collision height
+  PASS: Run_05_gravel visual matches collision vertices
+  PASS: Run_05_gravel metre UVs continue across runs
+  PASS: Run_05_gravel carries road width for paint
+  PASS: Run_06_ice smooth collider bytes match original
+  PASS: Run_06_ice keeps physical surface metadata
+  PASS: Run_06_ice keeps original collision height
+  PASS: Run_06_ice visual matches collision vertices
+  PASS: Run_06_ice metre UVs continue across runs
+  PASS: Run_06_ice carries road width for paint
+  PASS: Run_07_gravel has bounded real relief
+  PASS: Run_07_gravel has safe slopes and positive area
+  PASS: Run_07_gravel keeps physical surface metadata
+  PASS: Run_07_gravel keeps original collision height
+  PASS: Run_07_gravel visual matches collision vertices
+  PASS: Run_07_gravel metre UVs continue across runs
+  PASS: Run_07_gravel carries road width for paint
+  PASS: Run_08_mud has bounded real relief
+  PASS: Run_08_mud has safe slopes and positive area
+  PASS: Run_08_mud keeps physical surface metadata
+  PASS: Run_08_mud keeps original collision height
+  PASS: Run_08_mud visual matches collision vertices
+  PASS: Run_08_mud metre UVs continue across runs
+  PASS: Run_08_mud carries road width for paint
+  PASS: Run_09_gravel has bounded real relief
+  PASS: Run_09_gravel has safe slopes and positive area
+  PASS: Run_09_gravel keeps physical surface metadata
+  PASS: Run_09_gravel keeps original collision height
+  PASS: Run_09_gravel visual matches collision vertices
+  PASS: Run_09_gravel metre UVs continue across runs
+  PASS: Run_09_gravel carries road width for paint
+  PASS: Run_10_rumble smooth collider bytes match original
+  PASS: Run_10_rumble keeps physical surface metadata
+  PASS: Run_10_rumble keeps original collision height
+  PASS: Run_10_rumble visual matches collision vertices
+  PASS: Run_10_rumble metre UVs continue across runs
+  PASS: Run_10_rumble carries road width for paint
+  PASS: Run_11_tarmac smooth collider bytes match original
+  PASS: Run_11_tarmac keeps physical surface metadata
+  PASS: Run_11_tarmac keeps original collision height
+  PASS: Run_11_tarmac visual matches collision vertices
+  PASS: Run_11_tarmac metre UVs continue across runs
+  PASS: Run_11_tarmac carries road width for paint
+  PASS: UV distance covers full closed course
+  PASS: flat benchmark control retains every original collider hash
+  PASS: building visuals leaves authored course data unchanged
+  PASS: road material instances are cached
+  PASS: tarmac uses matching shader id and shared noise
+  PASS: rumble uses matching shader id and shared noise
+  PASS: gravel uses matching shader id and shared noise
+  PASS: mud uses matching shader id and shared noise
+  PASS: boulder uses matching shader id and shared noise
+  PASS: ice uses matching shader id and shared noise
+  PASS: water uses matching shader id and shared noise
+  PASS: oil uses matching shader id and shared noise
+  PASS: off uses matching shader id and shared noise
+  PASS: void background and depth fog
+  PASS: no sky ambient or reflections
+  PASS: bloom restricted to HDR highlights
+  PASS: flesh has active SSS and dedicated maps
+  PASS: viscera road shares dedicated sinew normal map
+  PASS: viscera road shares calibrated wet roughness map
+  PASS: flesh roughness map stays wet 0.1 to 0.25
+  PASS: guidance is visual only
+  PASS: both bead palettes cover the loop
+  PASS: bounded light count and no sun
+  PASS: bead stations leave no large gaps including loop closure
+  PASS: scenery adds no collision objects
+  PASS: sample has service-yard landmark
+  PASS: sample has tank landmark
+  PASS: sample has corner landmark
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: sample contains ribbed spines
+  PASS: SpineColumn clears every track branch
+  PASS: SpineColumn2 clears every track branch
+  PASS: SpineColumn3 clears every track branch
+  PASS: SpineColumn4 clears every track branch
+  PASS: SpineColumn5 clears every track branch
+  PASS: SpineColumn6 clears every track branch
+  PASS: SpineColumn7 clears every track branch
+  PASS: SpineColumn8 clears every track branch
+  PASS: SpineColumn9 clears every track branch
+  PASS: SpineColumn10 clears every track branch
+  PASS: SpineColumn11 clears every track branch
+  PASS: SpineColumn12 clears every track branch
+  PASS: SpineColumn13 clears every track branch
+  PASS: SpineColumn14 clears every track branch
+  PASS: SpineColumn15 clears every track branch
+  PASS: SpineColumn16 clears every track branch
+  PASS: SpineColumn17 clears every track branch
+  PASS: SpineColumn18 clears every track branch
+  PASS: SpineColumn19 clears every track branch
+  PASS: SpineColumn20 clears every track branch
+  PASS: SpineColumn21 clears every track branch
+  PASS: SpineColumn22 clears every track branch
+  PASS: SpineColumn23 clears every track branch
+  PASS: SpineColumn24 clears every track branch
+  PASS: SpineColumn25 clears every track branch
+  PASS: SpineColumn26 clears every track branch
+  PASS: SpineColumn27 clears every track branch
+  PASS: SpineColumn28 clears every track branch
+  PASS: SpineColumn29 clears every track branch
+  PASS: SpineColumn30 clears every track branch
+  PASS: SpineColumn31 clears every track branch
+  PASS: SpineColumn32 clears every track branch
+  PASS: SpineColumn33 clears every track branch
+  PASS: SpineColumn34 clears every track branch
+  PASS: SpineColumn35 clears every track branch
+  PASS: SpineColumn36 clears every track branch
+  PASS: SpineColumn37 clears every track branch
+  PASS: SpineColumn38 clears every track branch
+  PASS: ServiceYard clears every track branch
+  PASS: StorageTanks clears every track branch
+  PASS: CornerLandmark clears every track branch
+  PASS: DistantRidge clears every track branch
+  PASS: DistantRidge2 clears every track branch
+  PASS: DistantRidge3 clears every track branch
+  PASS: sample has a bounded prop count
+  PASS: rail posts are batched
+  PASS: shoulder triangles have positive area
+  PASS: shoulder geometry stays within sample budget
+  PASS: clearance rejects road center
+  PASS: clearance reserves proving ground
+  PASS: terrain banks are outside racing collision
+  PASS: large terrain deposits clear every branch
+  PASS: relief fades exactly to flat edges and joins
+  PASS: relief fades exactly to flat edges and joins
+  PASS: relief fades exactly to flat edges and joins
+  PASS: relief fades exactly to flat edges and joins
+  PASS: all relief profiles have conservative height and gradient bounds
+  PASS: relief rebuild is deterministic
+  PASS: downward contacts cross relief without holes and retain surface ID
+  PASS: A on gravel stays supported at 50m/s entry
+  RELIEF_DRIVE A gravel gap=0 roll=0.000 drift=0.000 travel=93.2
+  PASS: B on gravel stays supported at 50m/s entry
+  RELIEF_DRIVE B gravel gap=0 roll=0.000 drift=0.000 travel=95.0
+  PASS: A on mud stays supported at 50m/s entry
+  RELIEF_DRIVE A mud gap=0 roll=0.000 drift=0.000 travel=87.1
+  PASS: B on mud stays supported at 50m/s entry
+  RELIEF_DRIVE B mud gap=0 roll=0.007 drift=0.003 travel=90.0
+  PASS: A on boulder stays supported at 50m/s entry
+  RELIEF_DRIVE A boulder gap=0 roll=0.000 drift=0.000 travel=91.2
+  PASS: B on boulder stays supported at 50m/s entry
+  RELIEF_DRIVE B boulder gap=0 roll=0.000 drift=0.000 travel=93.6
+  PASS: A on water stays supported at 50m/s entry
+  RELIEF_DRIVE A water gap=0 roll=0.000 drift=0.000 travel=86.0
+  PASS: B on water stays supported at 50m/s entry
+  RELIEF_DRIVE B water gap=0 roll=0.009 drift=0.003 travel=88.8
+TRACK_VISUALS: 214 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+WARNING: Failed to create wd.xic as the input method or its xim server may not have started yet.
+     at: _create_xic (platform/linuxbsd/x11/display_server_x11.cpp:6347)
+Vulkan 1.4.354 - Forward+ - Using Device #0: AMD - AMD Radeon Graphics (RADV RENOIR)
+
+  PASS: same surface-run count as original renderer
+  PASS: Run_00_tarmac smooth collider bytes match original
+  PASS: Run_00_tarmac keeps physical surface metadata
+  PASS: Run_00_tarmac keeps original collision height
+  PASS: Run_00_tarmac visual matches collision vertices
+  PASS: Run_00_tarmac metre UVs continue across runs
+  PASS: Run_00_tarmac carries road width for paint
+  PASS: Run_01_rumble smooth collider bytes match original
+  PASS: Run_01_rumble keeps physical surface metadata
+  PASS: Run_01_rumble keeps original collision height
+  PASS: Run_01_rumble visual matches collision vertices
+  PASS: Run_01_rumble metre UVs continue across runs
+  PASS: Run_01_rumble carries road width for paint
+  PASS: Run_02_mud has bounded real relief
+  PASS: Run_02_mud has safe slopes and positive area
+  PASS: Run_02_mud keeps physical surface metadata
+  PASS: Run_02_mud keeps original collision height
+  PASS: Run_02_mud visual matches collision vertices
+  PASS: Run_02_mud metre UVs continue across runs
+  PASS: Run_02_mud carries road width for paint
+  PASS: Run_03_water has bounded real relief
+  PASS: Run_03_water has safe slopes and positive area
+  PASS: Run_03_water keeps physical surface metadata
+  PASS: Run_03_water keeps original collision height
+  PASS: Run_03_water visual matches collision vertices
+  PASS: Run_03_water metre UVs continue across runs
+  PASS: Run_03_water carries road width for paint
+  PASS: Run_04_boulder has bounded real relief
+  PASS: Run_04_boulder has safe slopes and positive area
+  PASS: Run_04_boulder keeps physical surface metadata
+  PASS: Run_04_boulder keeps original collision height
+  PASS: Run_04_boulder visual matches collision vertices
+  PASS: Run_04_boulder metre UVs continue across runs
+  PASS: Run_04_boulder carries road width for paint
+  PASS: Run_05_gravel has bounded real relief
+  PASS: Run_05_gravel has safe slopes and positive area
+  PASS: Run_05_gravel keeps physical surface metadata
+  PASS: Run_05_gravel keeps original collision height
+  PASS: Run_05_gravel visual matches collision vertices
+  PASS: Run_05_gravel metre UVs continue across runs
+  PASS: Run_05_gravel carries road width for paint
+  PASS: Run_06_ice smooth collider bytes match original
+  PASS: Run_06_ice keeps physical surface metadata
+  PASS: Run_06_ice keeps original collision height
+  PASS: Run_06_ice visual matches collision vertices
+  PASS: Run_06_ice metre UVs continue across runs
+  PASS: Run_06_ice carries road width for paint
+  PASS: Run_07_gravel has bounded real relief
+  PASS: Run_07_gravel has safe slopes and positive area
+  PASS: Run_07_gravel keeps physical surface metadata
+  PASS: Run_07_gravel keeps original collision height
+  PASS: Run_07_gravel visual matches collision vertices
+  PASS: Run_07_gravel metre UVs continue across runs
+  PASS: Run_07_gravel carries road width for paint
+  PASS: Run_08_mud has bounded real relief
+  PASS: Run_08_mud has safe slopes and positive area
+  PASS: Run_08_mud keeps physical surface metadata
+  PASS: Run_08_mud keeps original collision height
+  PASS: Run_08_mud visual matches collision vertices
+  PASS: Run_08_mud metre UVs continue across runs
+  PASS: Run_08_mud carries road width for paint
+  PASS: Run_09_gravel has bounded real relief
+  PASS: Run_09_gravel has safe slopes and positive area
+  PASS: Run_09_gravel keeps physical surface metadata
+  PASS: Run_09_gravel keeps original collision height
+  PASS: Run_09_gravel visual matches collision vertices
+  PASS: Run_09_gravel metre UVs continue across runs
+  PASS: Run_09_gravel carries road width for paint
+  PASS: Run_10_rumble smooth collider bytes match original
+  PASS: Run_10_rumble keeps physical surface metadata
+  PASS: Run_10_rumble keeps original collision height
+  PASS: Run_10_rumble visual matches collision vertices
+  PASS: Run_10_rumble metre UVs continue across runs
+  PASS: Run_10_rumble carries road width for paint
+  PASS: Run_11_tarmac smooth collider bytes match original
+  PASS: Run_11_tarmac keeps physical surface metadata
+  PASS: Run_11_tarmac keeps original collision height
+  PASS: Run_11_tarmac visual matches collision vertices
+  PASS: Run_11_tarmac metre UVs continue across runs
+  PASS: Run_11_tarmac carries road width for paint
+  PASS: UV distance covers full closed course
+  PASS: flat benchmark control retains every original collider hash
+  PASS: building visuals leaves authored course data unchanged
+  PASS: road material instances are cached
+  PASS: tarmac uses matching shader id and shared noise
+  PASS: rumble uses matching shader id and shared noise
+  PASS: gravel uses matching shader id and shared noise
+  PASS: mud uses matching shader id and shared noise
+  PASS: boulder uses matching shader id and shared noise
+  PASS: ice uses matching shader id and shared noise
+  PASS: water uses matching shader id and shared noise
+  PASS: oil uses matching shader id and shared noise
+  PASS: off uses matching shader id and shared noise
+  PASS: void background and depth fog
+  PASS: no sky ambient or reflections
+  PASS: bloom restricted to HDR highlights
+  PASS: flesh has active SSS and dedicated maps
+  PASS: viscera road shares dedicated sinew normal map
+  PASS: viscera road shares calibrated wet roughness map
+  PASS: flesh roughness map stays wet 0.1 to 0.25
+  PASS: guidance is visual only
+  PASS: both bead palettes cover the loop
+  PASS: bounded light count and no sun
+  PASS: bead stations leave no large gaps including loop closure
+  PASS: scenery adds no collision objects
+  PASS: sample has service-yard landmark
+  PASS: sample has tank landmark
+  PASS: sample has corner landmark
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: sample contains ribbed spines
+  PASS: SpineColumn clears every track branch
+  PASS: SpineColumn2 clears every track branch
+  PASS: SpineColumn3 clears every track branch
+  PASS: SpineColumn4 clears every track branch
+  PASS: SpineColumn5 clears every track branch
+  PASS: SpineColumn6 clears every track branch
+  PASS: SpineColumn7 clears every track branch
+  PASS: SpineColumn8 clears every track branch
+  PASS: SpineColumn9 clears every track branch
+  PASS: SpineColumn10 clears every track branch
+  PASS: SpineColumn11 clears every track branch
+  PASS: SpineColumn12 clears every track branch
+  PASS: SpineColumn13 clears every track branch
+  PASS: SpineColumn14 clears every track branch
+  PASS: SpineColumn15 clears every track branch
+  PASS: SpineColumn16 clears every track branch
+  PASS: SpineColumn17 clears every track branch
+  PASS: SpineColumn18 clears every track branch
+  PASS: SpineColumn19 clears every track branch
+  PASS: SpineColumn20 clears every track branch
+  PASS: SpineColumn21 clears every track branch
+  PASS: SpineColumn22 clears every track branch
+  PASS: SpineColumn23 clears every track branch
+  PASS: SpineColumn24 clears every track branch
+  PASS: SpineColumn25 clears every track branch
+  PASS: SpineColumn26 clears every track branch
+  PASS: SpineColumn27 clears every track branch
+  PASS: SpineColumn28 clears every track branch
+  PASS: SpineColumn29 clears every track branch
+  PASS: SpineColumn30 clears every track branch
+  PASS: SpineColumn31 clears every track branch
+  PASS: SpineColumn32 clears every track branch
+  PASS: SpineColumn33 clears every track branch
+  PASS: SpineColumn34 clears every track branch
+  PASS: SpineColumn35 clears every track branch
+  PASS: SpineColumn36 clears every track branch
+  PASS: SpineColumn37 clears every track branch
+  PASS: SpineColumn38 clears every track branch
+  PASS: ServiceYard clears every track branch
+  PASS: StorageTanks clears every track branch
+  PASS: CornerLandmark clears every track branch
+  PASS: DistantRidge clears every track branch
+  PASS: DistantRidge2 clears every track branch
+  PASS: DistantRidge3 clears every track branch
+  PASS: sample has a bounded prop count
+  PASS: rail posts are batched
+  PASS: shoulder triangles have positive area
+  PASS: shoulder geometry stays within sample budget
+  PASS: clearance rejects road center
+  PASS: clearance reserves proving ground
+  PASS: terrain banks are outside racing collision
+  PASS: large terrain deposits clear every branch
+  PASS: relief fades exactly to flat edges and joins
+  PASS: relief fades exactly to flat edges and joins
+  PASS: relief fades exactly to flat edges and joins
+  PASS: relief fades exactly to flat edges and joins
+  PASS: all relief profiles have conservative height and gradient bounds
+  PASS: relief rebuild is deterministic
+  PASS: downward contacts cross relief without holes and retain surface ID
+  PASS: driving world has no directional lights
+  PASS: seamless noise is ready for rendered capture
+  PASS: straight.png camera is current
+  PASS: straight.png saved
+  PASS: straight-driver.png camera is current
+  PASS: straight-driver.png saved
+  PASS: mud-entry.png camera is current
+  PASS: mud-entry.png saved
+  PASS: mud-corner.png camera is current
+  PASS: mud-corner.png saved
+  PASS: mud-corner-driver.png camera is current
+  PASS: mud-corner-driver.png saved
+  PASS: gravel-depth.png camera is current
+  PASS: gravel-depth.png saved
+  PASS: gravel-depth-driver.png camera is current
+  PASS: gravel-depth-driver.png saved
+  PASS: boulder-depth.png camera is current
+  PASS: boulder-depth.png saved
+  PASS: boulder-depth-driver.png camera is current
+  PASS: boulder-depth-driver.png saved
+  PASS: water-depth.png camera is current
+  PASS: water-depth.png saved
+  PASS: water-depth-driver.png camera is current
+  PASS: water-depth-driver.png saved
+  PASS: sample-overview.png camera is current
+  PASS: sample-overview.png saved
+  PASS: ceramic.png camera is current
+  PASS: ceramic.png saved
+  PASS: hazard-curb.png camera is current
+  PASS: hazard-curb.png saved
+  PASS: chitin-rubble.png camera is current
+  PASS: chitin-rubble.png saved
+  PASS: viscera.png camera is current
+  PASS: viscera.png saved
+  PASS: spinal-armor.png camera is current
+  PASS: spinal-armor.png saved
+  PASS: vitrified-coolant.png camera is current
+  PASS: vitrified-coolant.png saved
+  PASS: reactor-effluent.png camera is current
+  PASS: reactor-effluent.png saved
+  PASS: black-ichor.png camera is current
+  PASS: black-ichor.png saved
+  PASS: carbon-debris.png camera is current
+  PASS: carbon-debris.png saved
+TRACK_VISUALS: 250 passed, 0 failed

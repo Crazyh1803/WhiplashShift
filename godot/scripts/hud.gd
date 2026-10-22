@@ -9,6 +9,8 @@ signal retry_requested
 var cpu_drivers: Array[CpuDriver] = []
 var pilot_callsign: String = "ROADGHOST"
 var race: RaceDirector
+var items: RaceItems
+var _item_status: Label
 var course_cues: CourseCues
 var _upcoming: Label
 var _main: Label
@@ -32,7 +34,7 @@ func _ready() -> void:
 	_hint.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	_hint.offset_top = -34.0
 	_hint.offset_left = 18.0
-	_hint.text = "W/S throttle-brake  A/D steer  SPACE swap  SHIFT handbrake  R recover  C camera  F1 debug  F2 CPUs"
+	_hint.text = "W/S throttle-brake  A/D steer  SPACE swap  SHIFT handbrake  E item  R recover  C camera  F1 debug  F2 CPUs"
 	_hint.modulate = Color(1, 1, 1, 0.45)
 	_cpu = _label(15, Vector2.ZERO)
 	_cpu.set_anchors_preset(Control.PRESET_TOP_RIGHT)
@@ -65,6 +67,9 @@ func _ready() -> void:
 	_upcoming.offset_bottom = -48.0
 	_upcoming.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_upcoming.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_item_status = _label(19, Vector2(18, 228))
+	_item_status.name = "HeldItem"
+	_item_status.add_theme_color_override("font_color", Color("ffc34d"))
 	_build_results()
 
 
@@ -156,6 +161,19 @@ func _process(_delta: float) -> void:
 		_banner.text = ""
 	else:
 		_banner.text = "%s   %d%% MOMENTUM RETAINED" % [wl["kind"], roundi(float(wl["retained"]) * 100.0)]
+	if items != null:
+		_item_status.visible = race.state == RaceDirector.State.RACING
+		_item_status.text = "ITEM: EMPTY — COLLECT A GOLD BOX"
+		if not items.active[0].is_empty():
+			_item_status.text = "%s ACTIVE  %.1fs" % [ItemCatalog.label(items.active[0]), items.remaining[0]]
+		elif not items.held[0].is_empty():
+			_item_status.text = "%s  [E] ACTIVATE" % ItemCatalog.label(items.held[0])
+		if items.oil_time[0] > 0.0:
+			_item_status.text += "  // LOW GRIP"
+		if items.obscured[0]:
+			_item_status.text += "  // SMOKE"
+		if items.feedback_time > 0.0:
+			_item_status.text += "\n" + items.feedback
 	_update_race()
 
 

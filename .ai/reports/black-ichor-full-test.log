@@ -1,0 +1,1427 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+
+the thesis: a swap must not touch the body state
+  [pass] linear velocity preserved exactly  12.151818 -> 12.151818 m/s
+  [pass] angular velocity preserved exactly  y -0.453150 rad/s
+  [pass] basis untouched (the body does not rotate on a swap)
+  [pass] active end actually changed  A -> B
+  [pass] transmission drops out and has to spool back up
+
+sign checks (where an axis change bites)
+  [pass] steer right goes right, steer left goes left  right x=12.4  left x=-12.4
+  [pass] steering stays correct with End B driving  x=7.0
+  [pass] End A drives along its own forward axis  z=-10.1
+  [pass] fwd_speed reads positive when driving forward  10.5 m/s
+  [pass] End B drives along ITS forward axis, not End A's  z=-3.6
+
+suspension (the one system with no web equivalent)
+  [pass] all four wheels find the ground
+  [pass] car settles instead of sinking or launching  y=0.72 m
+  [pass] suspension carries roughly the car's weight  13721 N vs 13734 N static
+  [pass] End B rides visibly higher than End A  A 0.58 m, B 0.87 m
+  [pass] ride height is steady, not oscillating  drift 0.000 m over 1 s
+
+faithfulness to the web prototype (km/h, +/-15%)
+  [pass] A_tarmac     183 (web 192)
+  [pass] B_tarmac      71 (web 71)
+  [pass] A_mud          4 (web 4)
+  [pass] B_mud         86 (web 91)
+  [pass] A_gravel      80 (web 84)
+  [pass] B_gravel     105 (web 104)
+  [pass] A_ice         89 (web 96)
+  [pass] B_ice         81 (web 86)
+
+asymmetry invariants
+  [pass] End A out-tops End B on tarmac by >35%%  178 vs 71 km/h
+  [pass] End A loses >=60%% of its acceleration in mud  10.5 -> 0.8 m/s after 2 s
+  [pass] End B out-accelerates End A in mud by >2x  3.0 vs 0.8 m/s
+
+stability
+  [pass] no NaN in position or velocity after 20 s
+  [pass] car stays on its wheels through full lock at speed  up.y = 1.00
+
+the real scene (authoring -> mesh -> collision -> metadata -> raycast)
+  [pass] proving ground scene loads
+  [pass] scene exposes a reusable course definition
+  [pass] course owns the authored centreline  744 points
+  [pass] course derives its closed-loop length  2608 m
+  [pass] course derives recovery checkpoints  24 checkpoints
+  [pass] course definition validates
+  [pass] circuit built as surface runs  12 runs
+  [pass] proving ground built beside it  7 strips
+  [pass] course has one continuous guard-rail body
+  [pass] guard rails identify themselves for impact audio
+  [pass] guard rails have visible and collision geometry
+  [pass] race HUD exposes a main-menu button
+  [pass] procedural vehicle audio is attached
+  [pass] rail contacts are enabled for impact audio
+  [pass] car settles on the grid with all four wheels down
+  [pass] and the surface under it reads TARMAC  tarmac
+  [pass] driving the start straight stays on tarmac  tarmac at 69 km/h
+  [pass] keeps driving without falling through the ribbon  y=0.71 surface=tarmac
+
+Blackjack production customization
+  [pass] axles begin centered on their wheel mounts
+  [pass] production GLB is instanced
+  [pass] all three semantic paint channels are customizable
+  [pass] protected Blackjack materials reject garage paint
+  [pass] dual-front collision uses three tuned volumes
+  [pass] all six modular part sockets exist
+  [pass] Blackjack loads its default modular supercharger
+  [pass] four modular wheel assemblies are mounted
+  [pass] wheels use tread rubber and visible brake hardware
+  [pass] both suspension pairs have visible axle hardware
+  [pass] six-wheel silhouette uses a visual-only middle bogie
+  [pass] factory package uses suspension-mounted wheels
+  [pass] save schema normalizes paint values
+  [pass] save schema preserves valid wheel and socket selections
+  [pass] save schema drops unknown sockets
+
+61 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  PASS: wrong end throws substantially more viscera at matched speed
+  PASS: wrong end sinks deeper and throws higher/larger clumps
+  PASS: stationary unspinning tyres do not spray
+  PASS: stuck driven wheelspin can churn viscera
+  PASS: airborne wheels cannot generate contact response
+  PASS: smooth terrain does not produce viscera immersion
+  PASS: seams blend immersion by actual wet-wheel coverage
+  PASS: pool has active clumps and is bounded
+  PASS: all viscera kinds are emitted while sharing the terrain budget
+  PASS: anatomical meshes have nondegenerate triangles within budget
+  PASS: entrails have a narrow elongated silhouette
+  PASS: wrong-end body has bounded cosmetic immersion
+  PASS: effect never creates collision objects
+  PASS: body, wheel hardpoints and collider stay unchanged
+  PASS: airborne transition stops spray and drains particles
+  PASS: body returns to its original pose after leaving viscera
+  PASS: stationary wet tyres have no surrounding platforms or standing geometry
+  PASS: model rebuild and reset restore the new visual root
+  PASS: freeze clears lingering spray and immersion
+  PASS: unexpected teleport clears the world-space trail
+  PASS: particle root does not inherit vehicle movement
+  PASS: player and CPUs each own one response effect
+  PASS: player recovery clears the response immediately
+  PASS: CPU recovery clears its response immediately
+  PASS: retry retains exactly one effect per car
+VISCERA_RESPONSE: 25 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  PASS: wrong end has stronger rubble spray and chassis response
+  PASS: rubble rattles without viscera sinking
+  PASS: stationary unspinning rubble has no spray or rattle
+  PASS: wheelspin can scatter rubble when bogged
+  PASS: airborne contact cannot trigger chassis rattle
+  PASS: all dry debris kinds emit without organic fragments
+  PASS: six batches share one bounded live pool
+  PASS: rubble is dry rather than wet or glowing
+  PASS: rubble pieces have a bounded ground bounce
+  PASS: wrong-end chassis shudder is visible but bounded
+  PASS: chassis rattle stays continuous across oscillation cycles
+  PASS: shudder never moves physical body, collider or wheel mounts
+  PASS: rubble never adds collision objects
+  PASS: mixed seams emit the debris belonging to each tyre contact
+  PASS: mixed seams blend one body pose without competing controllers
+  PASS: leaving rubble stops emission and restores the body
+  PASS: player recovery clears rubble and rattle immediately
+  PASS: CPU recovery clears rubble and rattle immediately
+  PASS: retry keeps one combined response controller per car
+RUBBLE_RESPONSE: 19 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  PASS: wrong end has stronger armor bursts and impacts
+  PASS: armor has discrete impacts without mud sinking or gravel rattle
+  PASS: stationary unspinning armor has no impact or debris
+  PASS: wheelspin can eject armor
+  PASS: airborne armor cannot jolt the chassis
+  PASS: armor emits plates and broken ribs exclusively within shared capacity
+  PASS: heavy impacts have bounded lift and quiet gaps
+  PASS: impacts never write body velocity collider or wheel transforms
+  PASS: armor has no added collision geometry
+  PASS: armor mesh 6 has bounded nondegenerate geometry
+  PASS: armor mesh 7 has bounded nondegenerate geometry
+  PASS: mixed terrain blends all three responses in one controller
+  PASS: leaving armor restores the body and clears debris
+  PASS: production local illumination has no opposed cone masks
+  PASS: void remains free of global sun lighting
+  PASS: player recovery clears armor impacts
+  PASS: CPU recovery clears armor impacts
+ARMOR_RESPONSE: 17 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  PASS: wrong B has stronger shard spray and skid response
+  PASS: coolant has no dry rattle armor kick or mud sinking
+  PASS: skid changes sign with actual lateral motion
+  PASS: straight rolling has no invented lateral wobble
+  PASS: stationary unspinning coolant has no spray or skid
+  PASS: stationary wheelspin scatters frost without fake slide
+  PASS: airborne contact cannot produce skid
+  PASS: coolant exclusively emits flakes and splinters within shared pool
+  PASS: wrong B skid pose is visible and bounded without sinking
+  PASS: skid leaves physical body velocity collider and wheel mounts intact
+  PASS: coolant never creates collision objects
+  PASS: coolant mesh 8 is thin faceted and opaque without glow
+  PASS: coolant mesh 9 is thin faceted and opaque without glow
+  PASS: body skid reverses smoothly with slide direction
+  PASS: correct A keeps a small signed response
+  PASS: skid uses body-local velocity after turning
+  PASS: mixed seam combines four responses in one body pose
+  PASS: leaving coolant stops spray and restores original pose
+  PASS: player recovery clears skid and flakes
+  PASS: CPU recovery clears skid and flakes
+COOLANT_RESPONSE: 20 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  PASS: wrong A has much stronger spray and drag pose
+  PASS: effluent avoids dry rattle armor kicks and ice skid
+  PASS: standing liquid contact has no invented spray or plowing
+  PASS: water wheelspin can churn liquid when bogged
+  PASS: neighboring ice wheelspin cannot churn stationary water
+  PASS: airborne water cannot produce a drag pose
+  PASS: water exclusively emits sheets and droplets within shared pool
+  PASS: wrong A plows nose down with bounded immersion
+  PASS: liquid re-entry never bounces like solid fragments
+  SKIP: sheet spread requires GPU MultiMesh transform readback
+  PASS: plowing never writes physical body velocity collider or wheels
+  PASS: effluent adds no collision geometry
+  PASS: effluent mesh 10 has bounded wet geometry without emission
+  PASS: effluent mesh 11 has bounded wet geometry without emission
+  PASS: torn sheets and stretched droplets have distinct silhouettes
+  PASS: airborne transition stops spray and clears pose
+  PASS: correct B has shallow immersion and reverse-end nose pitch
+  PASS: mixed seams blend liquid mud gravel and ice in one pose
+  PASS: leaving effluent clears spray and restores the body
+  PASS: player recovery clears liquid drag and spray
+  PASS: CPU recovery clears liquid drag and spray
+EFFLUENT_RESPONSE: 20 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  PASS: wrong B has stronger oil spray and lateral slip pose
+  PASS: oil does not sink rattle kick or wash like other surfaces
+  PASS: oil slip follows measured slide direction
+  PASS: straight rolling cannot invent sideways motion
+  PASS: stationary unspinning oil has no spray or slide
+  PASS: oil wheelspin throws spray without fake lateral slide
+  PASS: neighboring water wheelspin cannot trigger stationary oil
+  PASS: airborne oil cannot produce slip pose
+  PASS: oil exclusively emits strands and drops within shared pool
+  PASS: wrong B has visible bounded yaw and roll without sinking
+  PASS: oil re-entry never bounces like solid fragments
+  SKIP: strand stretch requires GPU MultiMesh transform readback
+  PASS: oil pose never writes physical body velocity collider or wheels
+  PASS: oil adds no collision geometry
+  PASS: oil mesh 12 is finite glossy opaque and non-emissive
+  PASS: oil mesh 13 is finite glossy opaque and non-emissive
+  PASS: oil strands have a thin elongated silhouette
+  PASS: oil pose reverses with actual slide
+  PASS: correct A has a small signed slip pose
+  PASS: oil slide uses body-local velocity after turning
+  PASS: mixed seam blends oil ice mud and water in one pose
+  PASS: airborne transition stops spray and restores pose
+  PASS: dry road cannot emit ichor or invent lateral pose
+  PASS: player recovery clears oil slip and spray
+  PASS: CPU recovery clears oil slip and spray
+ICHOR_RESPONSE: 24 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  PASS: same surface-run count as original renderer
+  PASS: Run_00_tarmac smooth collider bytes match original
+  PASS: Run_00_tarmac keeps physical surface metadata
+  PASS: Run_00_tarmac keeps original collision height
+  PASS: Run_00_tarmac visual matches collision vertices
+  PASS: Run_00_tarmac metre UVs continue across runs
+  PASS: Run_00_tarmac carries road width for paint
+  PASS: Run_01_rumble smooth collider bytes match original
+  PASS: Run_01_rumble keeps physical surface metadata
+  PASS: Run_01_rumble keeps original collision height
+  PASS: Run_01_rumble visual matches collision vertices
+  PASS: Run_01_rumble metre UVs continue across runs
+  PASS: Run_01_rumble carries road width for paint
+  PASS: Run_02_mud has bounded real relief
+  PASS: Run_02_mud has safe slopes and positive area
+  PASS: Run_02_mud keeps physical surface metadata
+  PASS: Run_02_mud keeps original collision height
+  PASS: Run_02_mud visual matches collision vertices
+  PASS: Run_02_mud metre UVs continue across runs
+  PASS: Run_02_mud carries road width for paint
+  PASS: Run_03_water has bounded real relief
+  PASS: Run_03_water has safe slopes and positive area
+  PASS: Run_03_water keeps physical surface metadata
+  PASS: Run_03_water keeps original collision height
+  PASS: Run_03_water visual matches collision vertices
+  PASS: Run_03_water metre UVs continue across runs
+  PASS: Run_03_water carries road width for paint
+  PASS: Run_04_boulder has bounded real relief
+  PASS: Run_04_boulder has safe slopes and positive area
+  PASS: Run_04_boulder keeps physical surface metadata
+  PASS: Run_04_boulder keeps original collision height
+  PASS: Run_04_boulder visual matches collision vertices
+  PASS: Run_04_boulder metre UVs continue across runs
+  PASS: Run_04_boulder carries road width for paint
+  PASS: Run_05_gravel has bounded real relief
+  PASS: Run_05_gravel has safe slopes and positive area
+  PASS: Run_05_gravel keeps physical surface metadata
+  PASS: Run_05_gravel keeps original collision height
+  PASS: Run_05_gravel visual matches collision vertices
+  PASS: Run_05_gravel metre UVs continue across runs
+  PASS: Run_05_gravel carries road width for paint
+  PASS: Run_06_ice smooth collider bytes match original
+  PASS: Run_06_ice keeps physical surface metadata
+  PASS: Run_06_ice keeps original collision height
+  PASS: Run_06_ice visual matches collision vertices
+  PASS: Run_06_ice metre UVs continue across runs
+  PASS: Run_06_ice carries road width for paint
+  PASS: Run_07_gravel has bounded real relief
+  PASS: Run_07_gravel has safe slopes and positive area
+  PASS: Run_07_gravel keeps physical surface metadata
+  PASS: Run_07_gravel keeps original collision height
+  PASS: Run_07_gravel visual matches collision vertices
+  PASS: Run_07_gravel metre UVs continue across runs
+  PASS: Run_07_gravel carries road width for paint
+  PASS: Run_08_mud has bounded real relief
+  PASS: Run_08_mud has safe slopes and positive area
+  PASS: Run_08_mud keeps physical surface metadata
+  PASS: Run_08_mud keeps original collision height
+  PASS: Run_08_mud visual matches collision vertices
+  PASS: Run_08_mud metre UVs continue across runs
+  PASS: Run_08_mud carries road width for paint
+  PASS: Run_09_gravel has bounded real relief
+  PASS: Run_09_gravel has safe slopes and positive area
+  PASS: Run_09_gravel keeps physical surface metadata
+  PASS: Run_09_gravel keeps original collision height
+  PASS: Run_09_gravel visual matches collision vertices
+  PASS: Run_09_gravel metre UVs continue across runs
+  PASS: Run_09_gravel carries road width for paint
+  PASS: Run_10_rumble smooth collider bytes match original
+  PASS: Run_10_rumble keeps physical surface metadata
+  PASS: Run_10_rumble keeps original collision height
+  PASS: Run_10_rumble visual matches collision vertices
+  PASS: Run_10_rumble metre UVs continue across runs
+  PASS: Run_10_rumble carries road width for paint
+  PASS: Run_11_tarmac smooth collider bytes match original
+  PASS: Run_11_tarmac keeps physical surface metadata
+  PASS: Run_11_tarmac keeps original collision height
+  PASS: Run_11_tarmac visual matches collision vertices
+  PASS: Run_11_tarmac metre UVs continue across runs
+  PASS: Run_11_tarmac carries road width for paint
+  PASS: UV distance covers full closed course
+  PASS: flat benchmark control retains every original collider hash
+  PASS: building visuals leaves authored course data unchanged
+  PASS: road material instances are cached
+  PASS: tarmac uses matching shader id and shared noise
+  PASS: rumble uses matching shader id and shared noise
+  PASS: gravel uses matching shader id and shared noise
+  PASS: mud uses matching shader id and shared noise
+  PASS: boulder uses matching shader id and shared noise
+  PASS: ice uses matching shader id and shared noise
+  PASS: water uses matching shader id and shared noise
+  PASS: oil uses matching shader id and shared noise
+  PASS: off uses matching shader id and shared noise
+  PASS: void background and depth fog
+  PASS: no sky ambient or reflections
+  PASS: bloom restricted to HDR highlights
+  PASS: flesh has active SSS and dedicated maps
+  PASS: viscera road shares dedicated sinew normal map
+  PASS: viscera road shares calibrated wet roughness map
+  PASS: flesh roughness map stays wet 0.1 to 0.25
+  PASS: guidance is visual only
+  PASS: both bead palettes cover the loop
+  PASS: bounded light count and no sun
+  PASS: bead stations leave no large gaps including loop closure
+  PASS: scenery adds no collision objects
+  PASS: sample has service-yard landmark
+  PASS: sample has tank landmark
+  PASS: sample has corner landmark
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: spine retains opaque segmented geometry
+  PASS: sample contains ribbed spines
+  PASS: SpineColumn clears every track branch
+  PASS: SpineColumn2 clears every track branch
+  PASS: SpineColumn3 clears every track branch
+  PASS: SpineColumn4 clears every track branch
+  PASS: SpineColumn5 clears every track branch
+  PASS: SpineColumn6 clears every track branch
+  PASS: SpineColumn7 clears every track branch
+  PASS: SpineColumn8 clears every track branch
+  PASS: SpineColumn9 clears every track branch
+  PASS: SpineColumn10 clears every track branch
+  PASS: SpineColumn11 clears every track branch
+  PASS: SpineColumn12 clears every track branch
+  PASS: SpineColumn13 clears every track branch
+  PASS: SpineColumn14 clears every track branch
+  PASS: SpineColumn15 clears every track branch
+  PASS: SpineColumn16 clears every track branch
+  PASS: SpineColumn17 clears every track branch
+  PASS: SpineColumn18 clears every track branch
+  PASS: SpineColumn19 clears every track branch
+  PASS: SpineColumn20 clears every track branch
+  PASS: SpineColumn21 clears every track branch
+  PASS: SpineColumn22 clears every track branch
+  PASS: SpineColumn23 clears every track branch
+  PASS: SpineColumn24 clears every track branch
+  PASS: SpineColumn25 clears every track branch
+  PASS: SpineColumn26 clears every track branch
+  PASS: SpineColumn27 clears every track branch
+  PASS: SpineColumn28 clears every track branch
+  PASS: SpineColumn29 clears every track branch
+  PASS: SpineColumn30 clears every track branch
+  PASS: SpineColumn31 clears every track branch
+  PASS: SpineColumn32 clears every track branch
+  PASS: SpineColumn33 clears every track branch
+  PASS: SpineColumn34 clears every track branch
+  PASS: SpineColumn35 clears every track branch
+  PASS: SpineColumn36 clears every track branch
+  PASS: SpineColumn37 clears every track branch
+  PASS: SpineColumn38 clears every track branch
+  PASS: ServiceYard clears every track branch
+  PASS: StorageTanks clears every track branch
+  PASS: CornerLandmark clears every track branch
+  PASS: DistantRidge clears every track branch
+  PASS: DistantRidge2 clears every track branch
+  PASS: DistantRidge3 clears every track branch
+  PASS: sample has a bounded prop count
+  PASS: rail posts are batched
+  PASS: shoulder triangles have positive area
+  PASS: shoulder geometry stays within sample budget
+  PASS: clearance rejects road center
+  PASS: clearance reserves proving ground
+  PASS: terrain banks are outside racing collision
+  PASS: large terrain deposits clear every branch
+  PASS: relief fades exactly to flat edges and joins
+  PASS: relief fades exactly to flat edges and joins
+  PASS: relief fades exactly to flat edges and joins
+  PASS: relief fades exactly to flat edges and joins
+  PASS: all relief profiles have conservative height and gradient bounds
+  PASS: relief rebuild is deterministic
+  PASS: downward contacts cross relief without holes and retain surface ID
+  PASS: A on gravel stays supported at 50m/s entry
+  RELIEF_DRIVE A gravel gap=0 roll=0.000 drift=0.000 travel=93.2
+  PASS: B on gravel stays supported at 50m/s entry
+  RELIEF_DRIVE B gravel gap=0 roll=0.000 drift=0.000 travel=95.0
+  PASS: A on mud stays supported at 50m/s entry
+  RELIEF_DRIVE A mud gap=0 roll=0.000 drift=0.000 travel=87.1
+  PASS: B on mud stays supported at 50m/s entry
+  RELIEF_DRIVE B mud gap=0 roll=0.007 drift=0.003 travel=90.0
+  PASS: A on boulder stays supported at 50m/s entry
+  RELIEF_DRIVE A boulder gap=0 roll=0.000 drift=0.000 travel=91.2
+  PASS: B on boulder stays supported at 50m/s entry
+  RELIEF_DRIVE B boulder gap=0 roll=0.000 drift=0.000 travel=93.6
+  PASS: A on water stays supported at 50m/s entry
+  RELIEF_DRIVE A water gap=0 roll=0.000 drift=0.000 travel=86.0
+  PASS: B on water stays supported at 50m/s entry
+  RELIEF_DRIVE B water gap=0 roll=0.009 drift=0.003 travel=88.8
+TRACK_VISUALS: 214 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  PASS: shield has configured pickup odds
+  PASS: machine_guns has configured pickup odds
+  PASS: rockets has configured pickup odds
+  PASS: grenades has configured pickup odds
+  PASS: smoke has configured pickup odds
+  PASS: oil has configured pickup odds
+  PASS: homing has configured pickup odds
+  PASS: homing is rare at exactly one percent
+  PASS: roll boundaries are safe
+  PASS: course has rows of three pickups
+  PASS: countdown blocks activation
+  PASS: pickup grants a random valid item
+  PASS: held slot leaves other pickups untouched
+  PASS: E starts automatic weapon and consumes inventory
+  PASS: active item prevents inventory stacking
+  PASS: repeat E cannot restart timer
+  PASS: guns keep firing without more input
+  PASS: long frame expires guns without a catch-up barrage
+  PASS: rockets fire repeatedly after one activation
+  PASS: rockets expire automatically
+  PASS: grenades fire repeatedly after one activation
+  PASS: grenades launch in an arc
+  PASS: grenades expire automatically
+  PASS: swept rockets hit between ticks
+  PASS: weapon hit reduces real speed
+  PASS: swap redirects automatic fire to active end
+  PASS: shield blocks multiple hits for entire duration
+  PASS: shield persists until its deadline
+  PASS: expired shield no longer blocks
+  PASS: normal timer cadence emits forty bullets over six seconds
+  PASS: adjacent track sections cannot be missile targets
+  PASS: wall blocks projectiles and splash
+  PASS: grenade blast hits nearby car without direct collision
+  PASS: homing locks a visible target
+  PASS: homing emits exactly one missile with no active timer
+  PASS: homing steers towards locked target
+  PASS: homing cannot auto-repeat
+  PASS: no lock preserves rare missile
+  PASS: smoke deploys behind the active end
+  PASS: smoke continues deploying automatically
+  PASS: smoke obstructs targeting
+  PASS: car inside smoke has obscured status
+  PASS: smoke prevents an otherwise visible missile lock
+  PASS: missile lock returns after smoke expires
+  PASS: deployed smoke expires
+  PASS: oil creates a road patch
+  PASS: oil reduces grip temporarily
+  PASS: shield clears oil and blocks reapplication
+  PASS: grip returns after leaving oil
+  PASS: CPU activates collected weapon under same rules
+  PASS: CPU weapon also auto-fires
+  PASS: CPU can activate defensive items
+  PASS: recovery cancels active weapon and restores grip
+  PASS: finish cancels active shield
+  PASS: results clear all combat objects and grip effects
+  PASS: retry resets all item timers and inventory
+  PASS: repeat setup preserves racer array sizes
+  PASS: repeat setup does not duplicate pickup rows
+  PASS: leaving item scene restores grip
+ITEMS: 59 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Easy waits for a sustained opportunity 
+  [pass] Medium assesses traffic before passing 
+  [pass] Medium commits to an available pass 
+  [pass] Hard commits sooner to an available pass 
+  [pass] passing line changes smoothly 
+  [pass] new traffic cannot flip a committed passing side 
+  [pass] a nose ahead is insufficient to merge 
+  [pass] completed pass is recorded only after rear clearance 
+  [pass] fast rear traffic prevents merging 
+  [pass] clear return lane allows a gradual merge 
+  [pass] occupied left corridor chooses the clear right side 
+  [pass] boxed-in traffic and a closing rear car prevent passing 
+  [pass] boxed-in driver follows with brakes instead of forcing a gap 
+  [pass] oncoming traffic is not mistaken for a slow rival 
+  [pass] a car drifting into the passing corridor prevents commitment 
+  [pass] narrow road prevents an unsafe pass 
+  [pass] impending surface swap prevents committing to a pass 
+  [pass] sharp bend ahead prevents committing to a pass 
+  [pass] swap or wrong-way driving cancels the maneuver 
+  [pass] retired racers do not obstruct or trigger passing 
+  [pass] removed opponents cancel stale maneuvers 
+  [pass] freed peer references cannot prevent assessing valid traffic 
+  [pass] a retired pass target cancels the maneuver 
+  [pass] planner cannot move vehicles or award progress 
+  [pass] retry clears passing state and returns the assigned grid lane 
+  [pass] Hard begins the end swap on the approach 
+  [pass] an anticipated swap stays committed until the boundary 
+  [pass] crossing the new surface releases swap commitment 
+  [pass] recovery clears anticipated swap state 
+  [pass] easy physically passes a slower moving rival and merges passes=1 lane=-0.10 gap=41.9
+  [pass] easy pass avoids vehicle contact and recovery 
+  [pass] easy rival keeps moving during the pass 
+  [pass] easy pass retains shared power and grip 
+  [pass] medium physically passes a slower moving rival and merges passes=1 lane=-0.10 gap=35.2
+  [pass] medium pass avoids vehicle contact and recovery 
+  [pass] medium rival keeps moving during the pass 
+  [pass] medium pass retains shared power and grip 
+  [pass] hard physically passes a slower moving rival and merges passes=1 lane=-0.08 gap=29.0
+  [pass] hard pass avoids vehicle contact and recovery 
+  [pass] hard rival keeps moving during the pass 
+  [pass] hard pass retains shared power and grip 
+  [pass] rough pass fixture begins on mud 
+  [pass] hard rough physically passes a slower moving rival and merges passes=1 lane=0.10 gap=17.5
+  [pass] hard rough pass avoids vehicle contact and recovery 
+  [pass] hard rough rival keeps moving during the pass 
+  [pass] hard rough pass retains shared power and grip 
+RACECRAFT: 46 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] partial seam crossing does not award a lap 
+  [pass] complete ordered circuit awards one lap 
+  [pass] checkpoint recovery cannot add lap or distance 
+  [pass] backwards driving detects wrong-way without awarding a lap 
+  [pass] off-course projection cannot advance the recovery anchor 
+  [pass] CPU difficulty defaults to Medium 
+  [pass] unknown CPU difficulty falls back to Medium 
+  [pass] race configuration preserves CPU difficulty 
+  [pass] unknown driver preset uses Medium 
+  [pass] Hard carries speed on a clear straight and brakes near the transition straight=43.6 approach=23.3
+  [pass] corner planning respects the inactive axle's grip 
+CPU DIFFICULTY: hard LIVE RELIEF
+  [pass] two CPU drivers use the player's tuning 
+  [pass] race applies selected difficulty to both CPU racers 
+t=30 CPU_1_BOILERFANG_88 lap=0 idx=172 speed=17.6 swaps=1 recoveries=0 off=5.2
+t=30 CPU_2_RAMJET_K-6 lap=0 idx=162 speed=12.5 swaps=1 recoveries=0 off=2.5
+t=60 CPU_1_BOILERFANG_88 lap=0 idx=360 speed=22.4 swaps=1 recoveries=0 off=4.0
+t=60 CPU_2_RAMJET_K-6 lap=0 idx=344 speed=26.6 swaps=1 recoveries=0 off=4.0
+t=90 CPU_1_BOILERFANG_88 lap=0 idx=486 speed=20.0 swaps=1 recoveries=0 off=5.2
+t=90 CPU_2_RAMJET_K-6 lap=0 idx=469 speed=15.6 swaps=1 recoveries=0 off=4.1
+t=120 CPU_1_BOILERFANG_88 lap=0 idx=694 speed=31.4 swaps=2 recoveries=0 off=0.1
+t=120 CPU_2_RAMJET_K-6 lap=0 idx=658 speed=30.2 swaps=2 recoveries=0 off=6.7
+t=150 CPU_1_BOILERFANG_88 lap=1 idx=174 speed=17.8 swaps=3 recoveries=0 off=7.2
+t=150 CPU_2_RAMJET_K-6 lap=1 idx=154 speed=12.5 swaps=3 recoveries=0 off=6.3
+t=180 CPU_1_BOILERFANG_88 lap=1 idx=361 speed=22.4 swaps=3 recoveries=0 off=4.0
+t=180 CPU_2_RAMJET_K-6 lap=1 idx=326 speed=26.3 swaps=3 recoveries=0 off=3.8
+t=210 CPU_1_BOILERFANG_88 lap=1 idx=487 speed=20.2 swaps=3 recoveries=0 off=5.3
+t=210 CPU_2_RAMJET_K-6 lap=1 idx=460 speed=13.7 swaps=3 recoveries=0 off=3.7
+t=240 CPU_1_BOILERFANG_88 lap=1 idx=695 speed=31.4 swaps=4 recoveries=0 off=0.1
+t=240 CPU_2_RAMJET_K-6 lap=1 idx=637 speed=27.4 swaps=4 recoveries=0 off=4.6
+t=270 CPU_1_BOILERFANG_88 lap=2 idx=174 speed=17.8 swaps=5 recoveries=0 off=7.5
+t=270 CPU_2_RAMJET_K-6 lap=2 idx=146 speed=12.4 swaps=5 recoveries=0 off=7.1
+t=300 CPU_1_BOILERFANG_88 lap=2 idx=362 speed=22.4 swaps=5 recoveries=0 off=4.0
+t=300 CPU_2_RAMJET_K-6 lap=2 idx=309 speed=22.7 swaps=5 recoveries=0 off=0.6
+t=330 CPU_1_BOILERFANG_88 lap=2 idx=488 speed=20.4 swaps=5 recoveries=0 off=5.3
+t=330 CPU_2_RAMJET_K-6 lap=2 idx=451 speed=12.9 swaps=5 recoveries=0 off=6.3
+t=360 CPU_1_BOILERFANG_88 lap=2 idx=697 speed=31.4 swaps=6 recoveries=0 off=0.1
+t=360 CPU_2_RAMJET_K-6 lap=2 idx=621 speed=18.8 swaps=6 recoveries=0 off=5.0
+t=390 CPU_1_BOILERFANG_88 lap=3 idx=175 speed=17.8 swaps=7 recoveries=0 off=7.6
+t=390 CPU_2_RAMJET_K-6 lap=3 idx=138 speed=12.6 swaps=7 recoveries=0 off=5.1
+t=420 CPU_1_BOILERFANG_88 lap=3 idx=363 speed=22.4 swaps=7 recoveries=0 off=4.0
+t=420 CPU_2_RAMJET_K-6 lap=3 idx=294 speed=20.9 swaps=7 recoveries=0 off=1.6
+  [pass] CPU simulation remains finite 
+  [pass] every CPU swap preserves body momentum and basis 
+  [pass] CPU_1_BOILERFANG_88 completes laps on hard 
+  [pass] CPU_1_BOILERFANG_88 performs surface swaps 
+  [pass] CPU_1_BOILERFANG_88 drives with limited recoveries 0 recoveries
+  [pass] CPU_2_RAMJET_K-6 completes laps on hard 
+  [pass] CPU_2_RAMJET_K-6 performs surface swaps 
+  [pass] CPU_2_RAMJET_K-6 drives with limited recoveries 0 recoveries
+BENCHMARK hard distance=18006.03 first_laps=[126.0, 130.0]
+PROFILE hard cpu=0 TARMAC seconds=83 speed=33.2 requested=47.3 turning=0 braking=7
+PROFILE hard cpu=0 RUMBLE seconds=27 speed=19.8 requested=32.6 turning=13 braking=8
+PROFILE hard cpu=0 MUD BOG seconds=123 speed=15.0 requested=20.7 turning=0 braking=0
+PROFILE hard cpu=0 OFF TRACK seconds=9 speed=11.5 requested=17.0 turning=0 braking=0
+PROFILE hard cpu=0 WATER seconds=14 speed=19.3 requested=25.9 turning=0 braking=0
+PROFILE hard cpu=0 BOULDERS seconds=53 speed=22.2 requested=24.4 turning=0 braking=0
+PROFILE hard cpu=0 GRAVEL seconds=95 speed=23.0 requested=24.5 turning=4 braking=10
+PROFILE hard cpu=0 ICE seconds=16 speed=22.4 requested=22.4 turning=0 braking=0
+PROFILE hard cpu=1 TARMAC seconds=82 speed=33.3 requested=51.3 turning=0 braking=10
+PROFILE hard cpu=1 RUMBLE seconds=26 speed=19.2 requested=31.7 turning=11 braking=8
+PROFILE hard cpu=1 MUD BOG seconds=143 speed=13.1 requested=21.0 turning=1 braking=0
+PROFILE hard cpu=1 WATER seconds=13 speed=19.6 requested=30.6 turning=0 braking=0
+PROFILE hard cpu=1 BOULDERS seconds=52 speed=22.5 requested=25.5 turning=0 braking=2
+PROFILE hard cpu=1 GRAVEL seconds=92 speed=22.9 requested=25.4 turning=3 braking=12
+PROFILE hard cpu=1 ICE seconds=10 speed=25.2 requested=25.0 turning=0 braking=4
+PROFILE hard cpu=1 OFF TRACK seconds=2 speed=6.3 requested=14.5 turning=0 braking=0
+  [pass] off-course CPU returns to a checkpoint 
+  [pass] physical recovery awards no race progress 
+  [pass] CPU brakes for a stopped vehicle ahead 
+CPU DIFFICULTY: medium LIVE RELIEF
+  [pass] two CPU drivers use the player's tuning 
+  [pass] race applies selected difficulty to both CPU racers 
+t=30 CPU_1_BOILERFANG_88 lap=0 idx=161 speed=15.5 swaps=1 recoveries=0 off=4.5
+t=30 CPU_2_RAMJET_K-6 lap=0 idx=159 speed=14.8 swaps=1 recoveries=0 off=2.7
+t=60 CPU_1_BOILERFANG_88 lap=0 idx=322 speed=23.2 swaps=1 recoveries=0 off=4.0
+t=60 CPU_2_RAMJET_K-6 lap=0 idx=322 speed=25.5 swaps=1 recoveries=0 off=4.0
+t=90 CPU_1_BOILERFANG_88 lap=0 idx=441 speed=10.2 swaps=1 recoveries=0 off=6.0
+t=90 CPU_2_RAMJET_K-6 lap=0 idx=445 speed=11.4 swaps=1 recoveries=0 off=1.7
+t=120 CPU_1_BOILERFANG_88 lap=0 idx=599 speed=20.5 swaps=1 recoveries=0 off=4.0
+t=120 CPU_2_RAMJET_K-6 lap=0 idx=596 speed=22.0 swaps=1 recoveries=0 off=4.0
+t=150 CPU_1_BOILERFANG_88 lap=1 idx=82 speed=34.3 swaps=2 recoveries=0 off=4.0
+t=150 CPU_2_RAMJET_K-6 lap=1 idx=84 speed=33.6 swaps=2 recoveries=0 off=4.0
+t=180 CPU_1_BOILERFANG_88 lap=1 idx=224 speed=21.3 swaps=3 recoveries=0 off=4.0
+t=180 CPU_2_RAMJET_K-6 lap=1 idx=223 speed=22.7 swaps=3 recoveries=0 off=4.0
+t=210 CPU_1_BOILERFANG_88 lap=1 idx=390 speed=13.9 swaps=3 recoveries=0 off=3.9
+t=210 CPU_2_RAMJET_K-6 lap=1 idx=395 speed=11.5 swaps=3 recoveries=0 off=5.1
+t=240 CPU_1_BOILERFANG_88 lap=1 idx=500 speed=17.6 swaps=3 recoveries=0 off=6.0
+t=240 CPU_2_RAMJET_K-6 lap=1 idx=503 speed=16.9 swaps=3 recoveries=0 off=1.7
+t=270 CPU_1_BOILERFANG_88 lap=1 idx=676 speed=25.0 swaps=4 recoveries=0 off=1.5
+t=270 CPU_2_RAMJET_K-6 lap=1 idx=675 speed=24.0 swaps=4 recoveries=0 off=6.2
+t=300 CPU_1_BOILERFANG_88 lap=2 idx=143 speed=13.9 swaps=5 recoveries=0 off=3.4
+t=300 CPU_2_RAMJET_K-6 lap=2 idx=143 speed=13.1 swaps=5 recoveries=0 off=4.3
+t=330 CPU_1_BOILERFANG_88 lap=2 idx=295 speed=18.1 swaps=5 recoveries=0 off=2.4
+t=330 CPU_2_RAMJET_K-6 lap=2 idx=298 speed=18.1 swaps=5 recoveries=0 off=5.1
+t=360 CPU_1_BOILERFANG_88 lap=2 idx=432 speed=10.5 swaps=5 recoveries=0 off=7.8
+t=360 CPU_2_RAMJET_K-6 lap=2 idx=434 speed=9.5 swaps=5 recoveries=0 off=5.8
+t=390 CPU_1_BOILERFANG_88 lap=2 idx=574 speed=23.2 swaps=5 recoveries=0 off=4.0
+t=390 CPU_2_RAMJET_K-6 lap=2 idx=569 speed=24.0 swaps=5 recoveries=0 off=3.9
+t=420 CPU_1_BOILERFANG_88 lap=3 idx=40 speed=39.8 swaps=6 recoveries=0 off=4.0
+t=420 CPU_2_RAMJET_K-6 lap=3 idx=41 speed=41.2 swaps=6 recoveries=0 off=4.0
+  [pass] CPU simulation remains finite 
+  [pass] every CPU swap preserves body momentum and basis 
+  [pass] CPU_1_BOILERFANG_88 completes laps on medium 
+  [pass] CPU_1_BOILERFANG_88 performs surface swaps 
+  [pass] CPU_1_BOILERFANG_88 drives with limited recoveries 0 recoveries
+  [pass] CPU_2_RAMJET_K-6 completes laps on medium 
+  [pass] CPU_2_RAMJET_K-6 performs surface swaps 
+  [pass] CPU_2_RAMJET_K-6 drives with limited recoveries 0 recoveries
+BENCHMARK medium distance=15980.34 first_laps=[143.0, 143.0]
+PROFILE medium cpu=0 TARMAC seconds=90 speed=28.3 requested=37.0 turning=0 braking=9
+PROFILE medium cpu=0 RUMBLE seconds=29 speed=15.4 requested=25.8 turning=9 braking=7
+PROFILE medium cpu=0 MUD BOG seconds=127 speed=13.4 requested=16.2 turning=0 braking=1
+PROFILE medium cpu=0 WATER seconds=10 speed=18.7 requested=21.8 turning=0 braking=0
+PROFILE medium cpu=0 BOULDERS seconds=47 speed=19.3 requested=19.8 turning=0 braking=0
+PROFILE medium cpu=0 GRAVEL seconds=103 speed=19.4 requested=19.7 turning=3 braking=7
+PROFILE medium cpu=0 ICE seconds=14 speed=18.8 requested=18.7 turning=0 braking=2
+PROFILE medium cpu=1 TARMAC seconds=87 speed=28.3 requested=41.1 turning=0 braking=10
+PROFILE medium cpu=1 RUMBLE seconds=31 speed=15.4 requested=24.7 turning=9 braking=7
+PROFILE medium cpu=1 MUD BOG seconds=126 speed=12.8 requested=16.3 turning=0 braking=0
+PROFILE medium cpu=1 WATER seconds=12 speed=18.9 requested=26.1 turning=0 braking=0
+PROFILE medium cpu=1 BOULDERS seconds=45 speed=19.4 requested=20.4 turning=0 braking=1
+PROFILE medium cpu=1 GRAVEL seconds=105 speed=19.4 requested=20.5 turning=5 braking=11
+PROFILE medium cpu=1 ICE seconds=14 speed=19.5 requested=19.0 turning=0 braking=12
+  [pass] off-course CPU returns to a checkpoint 
+  [pass] physical recovery awards no race progress 
+  [pass] CPU brakes for a stopped vehicle ahead 
+CPU DIFFICULTY: easy LIVE RELIEF
+  [pass] two CPU drivers use the player's tuning 
+  [pass] race applies selected difficulty to both CPU racers 
+t=30 CPU_1_BOILERFANG_88 lap=0 idx=154 speed=13.9 swaps=1 recoveries=0 off=3.1
+t=30 CPU_2_RAMJET_K-6 lap=0 idx=151 speed=13.0 swaps=1 recoveries=0 off=2.5
+t=60 CPU_1_BOILERFANG_88 lap=0 idx=294 speed=16.3 swaps=1 recoveries=0 off=2.2
+t=60 CPU_2_RAMJET_K-6 lap=0 idx=298 speed=16.4 swaps=1 recoveries=0 off=5.2
+t=90 CPU_1_BOILERFANG_88 lap=0 idx=420 speed=10.8 swaps=1 recoveries=0 off=2.6
+t=90 CPU_2_RAMJET_K-6 lap=0 idx=429 speed=10.3 swaps=1 recoveries=0 off=2.8
+t=120 CPU_1_BOILERFANG_88 lap=0 idx=544 speed=15.8 swaps=1 recoveries=0 off=6.1
+t=120 CPU_2_RAMJET_K-6 lap=0 idx=549 speed=15.2 swaps=1 recoveries=0 off=2.4
+t=150 CPU_1_BOILERFANG_88 lap=0 idx=710 speed=22.4 swaps=2 recoveries=0 off=1.4
+t=150 CPU_2_RAMJET_K-6 lap=0 idx=726 speed=21.6 swaps=2 recoveries=0 off=6.1
+t=180 CPU_1_BOILERFANG_88 lap=1 idx=154 speed=13.9 swaps=3 recoveries=0 off=3.1
+t=180 CPU_2_RAMJET_K-6 lap=1 idx=164 speed=13.4 swaps=3 recoveries=0 off=3.5
+t=210 CPU_1_BOILERFANG_88 lap=1 idx=293 speed=16.3 swaps=3 recoveries=0 off=2.2
+t=210 CPU_2_RAMJET_K-6 lap=1 idx=316 speed=22.8 swaps=3 recoveries=0 off=4.0
+t=240 CPU_1_BOILERFANG_88 lap=1 idx=419 speed=10.7 swaps=3 recoveries=0 off=2.6
+t=240 CPU_2_RAMJET_K-6 lap=1 idx=440 speed=10.3 swaps=3 recoveries=0 off=3.4
+t=270 CPU_1_BOILERFANG_88 lap=1 idx=543 speed=15.8 swaps=3 recoveries=0 off=6.1
+t=270 CPU_2_RAMJET_K-6 lap=1 idx=566 speed=21.7 swaps=3 recoveries=0 off=3.9
+t=300 CPU_1_BOILERFANG_88 lap=1 idx=709 speed=22.4 swaps=4 recoveries=0 off=1.4
+t=300 CPU_2_RAMJET_K-6 lap=2 idx=8 speed=33.4 swaps=4 recoveries=0 off=4.1
+t=330 CPU_1_BOILERFANG_88 lap=2 idx=153 speed=13.9 swaps=5 recoveries=0 off=3.1
+t=330 CPU_2_RAMJET_K-6 lap=2 idx=177 speed=14.6 swaps=5 recoveries=0 off=3.1
+t=360 CPU_1_BOILERFANG_88 lap=2 idx=292 speed=16.3 swaps=5 recoveries=0 off=2.1
+t=360 CPU_2_RAMJET_K-6 lap=2 idx=337 speed=20.1 swaps=5 recoveries=0 off=4.0
+t=390 CPU_1_BOILERFANG_88 lap=2 idx=419 speed=10.7 swaps=5 recoveries=0 off=2.6
+t=390 CPU_2_RAMJET_K-6 lap=2 idx=450 speed=11.9 swaps=5 recoveries=0 off=3.5
+t=420 CPU_1_BOILERFANG_88 lap=2 idx=542 speed=15.8 swaps=5 recoveries=0 off=6.1
+t=420 CPU_2_RAMJET_K-6 lap=2 idx=587 speed=23.0 swaps=5 recoveries=0 off=4.0
+  [pass] CPU simulation remains finite 
+  [pass] every CPU swap preserves body momentum and basis 
+  [pass] CPU_1_BOILERFANG_88 completes laps on easy 
+  [pass] CPU_1_BOILERFANG_88 performs surface swaps 
+  [pass] CPU_1_BOILERFANG_88 drives with limited recoveries 0 recoveries
+  [pass] CPU_2_RAMJET_K-6 completes laps on easy 
+  [pass] CPU_2_RAMJET_K-6 performs surface swaps 
+  [pass] CPU_2_RAMJET_K-6 drives with limited recoveries 0 recoveries
+BENCHMARK easy distance=14439.56 first_laps=[155.0, 153.0]
+PROFILE easy cpu=0 TARMAC seconds=75 speed=26.6 requested=31.4 turning=0 braking=16
+PROFILE easy cpu=0 RUMBLE seconds=27 speed=13.3 requested=21.1 turning=8 braking=4
+PROFILE easy cpu=0 MUD BOG seconds=130 speed=12.8 requested=14.2 turning=0 braking=0
+PROFILE easy cpu=0 WATER seconds=12 speed=16.8 requested=17.8 turning=0 braking=0
+PROFILE easy cpu=0 BOULDERS seconds=53 speed=17.1 requested=17.1 turning=0 braking=1
+PROFILE easy cpu=0 GRAVEL seconds=105 speed=16.8 requested=16.9 turning=4 braking=1
+PROFILE easy cpu=0 ICE seconds=18 speed=15.4 requested=15.4 turning=0 braking=0
+PROFILE easy cpu=1 TARMAC seconds=74 speed=26.5 requested=35.0 turning=0 braking=14
+PROFILE easy cpu=1 RUMBLE seconds=27 speed=13.1 requested=20.3 turning=8 braking=4
+PROFILE easy cpu=1 MUD BOG seconds=128 speed=12.3 requested=14.7 turning=0 braking=0
+PROFILE easy cpu=1 WATER seconds=10 speed=19.0 requested=21.7 turning=0 braking=0
+PROFILE easy cpu=1 BOULDERS seconds=49 speed=17.6 requested=17.9 turning=0 braking=1
+PROFILE easy cpu=1 GRAVEL seconds=117 speed=17.4 requested=17.9 turning=4 braking=5
+PROFILE easy cpu=1 ICE seconds=15 speed=17.6 requested=17.3 turning=0 braking=2
+  [pass] off-course CPU returns to a checkpoint 
+  [pass] physical recovery awards no race progress 
+  [pass] CPU brakes for a stopped vehicle ahead 
+  [pass] each difficulty gains at least 10% race progress over the same time [18006.0294921775, 15980.3433727073, 14439.5646355572]
+CPU DIFFICULTY: hard FLAT CONTROL
+  [pass] two CPU drivers use the player's tuning 
+  [pass] race applies selected difficulty to both CPU racers 
+t=30 CPU_1_BOILERFANG_88 lap=0 idx=173 speed=17.6 swaps=1 recoveries=0 off=5.8
+t=30 CPU_2_RAMJET_K-6 lap=0 idx=162 speed=12.3 swaps=1 recoveries=0 off=1.8
+t=60 CPU_1_BOILERFANG_88 lap=0 idx=361 speed=22.4 swaps=1 recoveries=0 off=4.0
+t=60 CPU_2_RAMJET_K-6 lap=0 idx=343 speed=26.9 swaps=1 recoveries=0 off=4.0
+t=90 CPU_1_BOILERFANG_88 lap=0 idx=487 speed=20.5 swaps=1 recoveries=0 off=5.3
+t=90 CPU_2_RAMJET_K-6 lap=0 idx=468 speed=15.3 swaps=1 recoveries=0 off=3.4
+t=120 CPU_1_BOILERFANG_88 lap=0 idx=696 speed=31.4 swaps=2 recoveries=0 off=0.1
+t=120 CPU_2_RAMJET_K-6 lap=0 idx=656 speed=30.2 swaps=2 recoveries=0 off=6.6
+t=150 CPU_1_BOILERFANG_88 lap=1 idx=175 speed=17.9 swaps=3 recoveries=0 off=7.9
+t=150 CPU_2_RAMJET_K-6 lap=1 idx=153 speed=12.3 swaps=3 recoveries=0 off=7.1
+t=180 CPU_1_BOILERFANG_88 lap=1 idx=363 speed=22.4 swaps=3 recoveries=0 off=4.0
+t=180 CPU_2_RAMJET_K-6 lap=1 idx=322 speed=25.6 swaps=3 recoveries=0 off=3.6
+t=210 CPU_1_BOILERFANG_88 lap=1 idx=490 speed=21.0 swaps=3 recoveries=0 off=5.3
+t=210 CPU_2_RAMJET_K-6 lap=1 idx=458 speed=13.2 swaps=3 recoveries=0 off=5.8
+t=240 CPU_1_BOILERFANG_88 lap=1 idx=700 speed=31.4 swaps=4 recoveries=0 off=0.1
+t=240 CPU_2_RAMJET_K-6 lap=1 idx=633 speed=25.6 swaps=4 recoveries=0 off=4.2
+t=270 CPU_1_BOILERFANG_88 lap=2 idx=177 speed=18.0 swaps=5 recoveries=0 off=8.2
+t=270 CPU_2_RAMJET_K-6 lap=2 idx=144 speed=12.5 swaps=5 recoveries=0 off=7.1
+t=300 CPU_1_BOILERFANG_88 lap=2 idx=366 speed=22.4 swaps=5 recoveries=0 off=4.0
+t=300 CPU_2_RAMJET_K-6 lap=2 idx=304 speed=21.0 swaps=5 recoveries=0 off=3.2
+t=330 CPU_1_BOILERFANG_88 lap=2 idx=493 speed=21.3 swaps=5 recoveries=0 off=5.4
+t=330 CPU_2_RAMJET_K-6 lap=2 idx=448 speed=12.8 swaps=5 recoveries=0 off=5.5
+t=360 CPU_1_BOILERFANG_88 lap=2 idx=703 speed=31.4 swaps=6 recoveries=0 off=0.1
+t=360 CPU_2_RAMJET_K-6 lap=2 idx=617 speed=16.5 swaps=6 recoveries=0 off=6.4
+t=390 CPU_1_BOILERFANG_88 lap=3 idx=179 speed=18.1 swaps=7 recoveries=0 off=8.3
+t=390 CPU_2_RAMJET_K-6 lap=3 idx=135 speed=12.7 swaps=7 recoveries=0 off=3.9
+t=420 CPU_1_BOILERFANG_88 lap=3 idx=369 speed=22.4 swaps=7 recoveries=0 off=4.0
+t=420 CPU_2_RAMJET_K-6 lap=3 idx=288 speed=21.4 swaps=7 recoveries=0 off=0.0
+  [pass] CPU simulation remains finite 
+  [pass] every CPU swap preserves body momentum and basis 
+  [pass] CPU_1_BOILERFANG_88 completes laps on hard 
+  [pass] CPU_1_BOILERFANG_88 performs surface swaps 
+  [pass] CPU_1_BOILERFANG_88 drives with limited recoveries 0 recoveries
+  [pass] CPU_2_RAMJET_K-6 completes laps on hard 
+  [pass] CPU_2_RAMJET_K-6 performs surface swaps 
+  [pass] CPU_2_RAMJET_K-6 drives with limited recoveries 0 recoveries
+BENCHMARK hard distance=18003.97 first_laps=[126.0, 130.0]
+PROFILE hard cpu=0 TARMAC seconds=83 speed=33.3 requested=46.8 turning=0 braking=9
+PROFILE hard cpu=0 RUMBLE seconds=26 speed=19.8 requested=32.8 turning=11 braking=8
+PROFILE hard cpu=0 MUD BOG seconds=122 speed=15.1 requested=20.8 turning=1 braking=1
+PROFILE hard cpu=0 OFF TRACK seconds=11 speed=11.6 requested=17.0 turning=0 braking=0
+PROFILE hard cpu=0 WATER seconds=13 speed=19.2 requested=25.9 turning=0 braking=0
+PROFILE hard cpu=0 BOULDERS seconds=54 speed=22.3 requested=24.4 turning=0 braking=0
+PROFILE hard cpu=0 GRAVEL seconds=95 speed=23.1 requested=24.5 turning=4 braking=9
+PROFILE hard cpu=0 ICE seconds=16 speed=22.4 requested=22.4 turning=0 braking=0
+PROFILE hard cpu=1 TARMAC seconds=81 speed=33.4 requested=51.3 turning=0 braking=10
+PROFILE hard cpu=1 RUMBLE seconds=26 speed=19.6 requested=31.7 turning=9 braking=9
+PROFILE hard cpu=1 MUD BOG seconds=145 speed=13.1 requested=21.0 turning=2 braking=1
+PROFILE hard cpu=1 WATER seconds=13 speed=19.4 requested=30.6 turning=0 braking=0
+PROFILE hard cpu=1 BOULDERS seconds=51 speed=22.5 requested=25.6 turning=0 braking=3
+PROFILE hard cpu=1 GRAVEL seconds=91 speed=22.9 requested=25.9 turning=4 braking=11
+PROFILE hard cpu=1 ICE seconds=11 speed=25.1 requested=25.0 turning=0 braking=4
+PROFILE hard cpu=1 OFF TRACK seconds=2 speed=8.3 requested=14.5 turning=0 braking=0
+  [pass] Hard leader beats previous opponent pace by at least 20% 9132.59779453462
+  [pass] Hard field improves average pace by at least 15% 18003.9739520228
+  [pass] off-course CPU returns to a checkpoint 
+  [pass] physical recovery awards no race progress 
+  [pass] CPU brakes for a stopped vehicle ahead 
+  [pass] live relief keeps Hard field within 2% of flat control 
+  [pass] garage offers three tiers with Medium selected 
+  [pass] garage selection updates CPU difficulty 
+  [pass] difficulty and ignition fit the garage 
+  [pass] garage reload restores saved difficulty 
+  [pass] existing callsign-only profiles default to Medium 
+  [pass] invalid saved difficulty falls back to Medium 
+
+CPU: 73 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] grid standings follow staggered route position
+  [pass] countdown does not advance the race clock
+  [pass] GO opens the race with a zero clock
+  [pass] crossing from the grid does not complete a lap
+  [pass] line crossing keeps standings continuous
+  [pass] two full laps do not finish a three-lap race
+  [pass] same-tick finishers sort by crossing time
+  [pass] CPU finish leaves the player racing
+  [pass] third full lap produces player results
+  [pass] results clock and finish order are immutable
+  [pass] clock renders minutes seconds and hundredths
+  [pass] player win leaves unfinished rivals without times
+  [pass] exact finish ties use stable entrant order
+  [pass] recovery moves standings back to the checkpoint
+  [pass] redriving recovered ground cannot inflate standings
+  [pass] reverse across finish moves standings backwards
+  [pass] skipped checkpoints prevent a lap award
+  [pass] a clean lap after skipped checkpoints counts normally
+  [pass] countdown locks player throttle and swap
+  [pass] countdown holds all CPU controls
+  [pass] grid suspension settles before GO
+  [pass] countdown starts both CPU opponents
+  [pass] swap becomes available during racing
+  [pass] R recovers only the player without awarding progress
+  [pass] finished CPU is retired from collisions and peer braking
+  [pass] debug CPU toggle cannot revive a finisher
+  [pass] player finish freezes field and shows standings
+  [pass] results block swap and recovery
+  [pass] retry button returns same roster to a fresh countdown
+  [pass] retry restores collisions visibility and grid control locks
+  [pass] Enter retries results
+  [pass] result actions do not steal keyboard focus
+  [pass] result garage button emits menu action and preserves selection
+  [pass] physical player completes three full laps and reaches results
+  [pass] physical finish records a plausible race time
+  Driven race: 432.13s, position 3, pilot recoveries 0
+  [pass] physical race requires bounded recovery
+  [pass] physical retry starts driving a fresh race
+RACE: 37 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] cue setup preserves course data
+  [pass] rumble warnings do not hide meaningful destinations
+  [pass] mud cue reports route distance
+  [pass] high-speed lookahead gives preparation time
+  [pass] slow lookahead does not announce distant terrain
+  [pass] current boundary is not announced as upcoming
+  [pass] mud suggests B while keeping B ready
+  [pass] tarmac suggests A
+  [pass] ice advises low grip and holds either active end
+  [pass] oil advice avoids unnecessary turnaround
+  [pass] single surface course has no warnings
+  [pass] same surface either side of rumble produces no warning
+  [pass] warning boards stay after the previous terrain boundary
+  [pass] sampling wraps at finish
+  [pass] next-lap transition is announced across finish seam
+  [pass] every transition has paired roadside signs
+  [pass] approach signs add no collisions
+  [pass] sign text faces approaching traffic
+  [pass] sign text does not show mirrored through the back
+  [pass] racing HUD shows advance surface advice
+  [pass] advice never swaps or changes velocity
+  [pass] cue fits viewport above controls
+  [pass] wrong-way suppresses forward advice
+  [pass] off-course suppresses route advice
+  [pass] countdown suppresses race advice
+  [pass] results suppress race advice
+COURSE_CUES: 26 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] render interpolation enabled without lowering physics rate
+  [pass] frame-driven camera opts out of double interpolation
+  [pass] test exercises distinct physical and rendered poses
+  [pass] camera aim follows the rendered body
+  [pass] swap orbit remains finite and preserves body state
+  [pass] snap mode follows the active end
+  [pass] recovery snaps the camera instead of flying across the course
+  [pass] player teleport clears old rendered pose
+  [pass] CPU reset clears old rendered pose
+  [pass] retry snaps camera to the new grid
+  [pass] retry renders at the new grid
+  [pass] garage turntable and orbit remain frame-driven
+CAMERA: 12 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] straight headings produce no corner
+  [pass] short alternating heading noise produces no corner
+  [pass] right semicircles are right hairpins
+  [pass] mirrored semicircles are left hairpins
+  [pass] arc sampling density preserves labels and curvature
+  [pass] hairpin through finish remains a single run
+  [pass] S bend splits opposite turn directions
+  [pass] overspeed approach asks for early braking
+  [pass] advisory is a finite positive speed
+  [pass] lower grip lowers advisory speed
+  [pass] weaker brakes increase required approach lead
+  [pass] heavier vehicle increases braking lead
+  [pass] swap changes speed advice without changing turn label
+  [pass] advisory does not exceed end-specific top speed
+  [pass] slow approach does not request braking
+  [pass] corner label remains active through bend
+  [pass] corner releases after its exit
+  [pass] advice leaves controls physics and tuning unchanged
+  [pass] icy turn is explicitly marked low grip
+  [pass] real course has its right-hand hairpin
+  [pass] real HUD shows turn and advisory braking
+  [pass] corner and terrain advice coexist
+  [pass] expanded cue fits above controls and inside viewport
+  [pass] wrong-way hides corner and terrain advice
+  [pass] results hide corner advice
+CORNERS: 25 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BLACKJACK_REFINED_TESTS 670 passed, 0 failed; gameplay 35684; LOD 17158
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+BLUEPRINT_OPTIONAL_ENGINE full triangles=39943 base=0.11212596297264
+BLACKJACK_BLUEPRINT_TESTS 3563 passed, 0 failed; body 17143; full 37599
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] blackjack reference survives consolidation
+  [pass] blackjack constructs four physical wheels
+  [pass] boilerfang reference survives consolidation
+  [pass] boilerfang constructs four physical wheels
+  [pass] helix reference survives consolidation
+  [pass] helix constructs four physical wheels
+  [pass] ramjet reference survives consolidation
+  [pass] ramjet constructs four physical wheels
+  [pass] knifeedge reference survives consolidation
+  [pass] knifeedge constructs four physical wheels
+  [pass] deadbolt reference survives consolidation
+  [pass] deadbolt constructs four physical wheels
+  [pass] Deadbolt loads the rebuilt hard-surface mesh
+  [pass] Deadbolt coupe faces End A
+  [pass] Deadbolt embedded wheel copies are hidden
+  [pass] Wheel_A_L has exactly one complete authored wheel
+  [pass] Wheel_A_L art follows suspension and steering
+  [pass] Wheel_A_L steers about its tire hub without orbiting
+  [pass] Wheel_A_R has exactly one complete authored wheel
+  [pass] Wheel_A_R art follows suspension and steering
+  [pass] Wheel_A_R steers about its tire hub without orbiting
+  [pass] Wheel_B_L has exactly one complete authored wheel
+  [pass] Wheel_B_L art follows suspension and steering
+  [pass] Wheel_B_L steers about its tire hub without orbiting
+  [pass] Wheel_B_R has exactly one complete authored wheel
+  [pass] Wheel_B_R art follows suspension and steering
+  [pass] Wheel_B_R steers about its tire hub without orbiting
+  [pass] A axle follows the authored wheel hubs
+  [pass] B axle follows the authored wheel hubs
+  [pass] Deadbolt loads the rebuilt hard-surface mesh
+  [pass] Deadbolt coupe faces End A
+  [pass] Deadbolt embedded wheel copies are hidden
+  [pass] Wheel_A_L has exactly one complete authored wheel
+  [pass] Wheel_A_L art follows suspension and steering
+  [pass] Wheel_A_L steers about its tire hub without orbiting
+  [pass] Wheel_A_R has exactly one complete authored wheel
+  [pass] Wheel_A_R art follows suspension and steering
+  [pass] Wheel_A_R steers about its tire hub without orbiting
+  [pass] Wheel_B_L has exactly one complete authored wheel
+  [pass] Wheel_B_L art follows suspension and steering
+  [pass] Wheel_B_L steers about its tire hub without orbiting
+  [pass] Wheel_B_R has exactly one complete authored wheel
+  [pass] Wheel_B_R art follows suspension and steering
+  [pass] Wheel_B_R steers about its tire hub without orbiting
+  [pass] A axle follows the authored wheel hubs
+  [pass] B axle follows the authored wheel hubs
+  [pass] Deadbolt_Paint paint changes
+  [pass] Deadbolt_Secondary paint changes
+  [pass] Deadbolt_Stripe paint changes
+  [pass] Deadbolt glass and hardware retain authored materials
+  [pass] nightshift reference survives consolidation
+  [pass] nightshift constructs four physical wheels
+  [pass] deadbolt physics comparison uses the intended visual variant
+  [pass] deadbolt physics comparison uses the intended visual variant
+  [pass] deadbolt swap preserves momentum and orientation
+  [pass] deadbolt swap preserves momentum and orientation
+  [pass] deadbolt artwork preserves driving/braking/swap physics
+  [pass] deadbolt accelerates with the saved handling
+  [pass] nightshift physics comparison uses the intended visual variant
+  [pass] nightshift physics comparison uses the intended visual variant
+  [pass] nightshift swap preserves momentum and orientation
+  [pass] nightshift swap preserves momentum and orientation
+  [pass] nightshift artwork preserves driving/braking/swap physics
+  [pass] nightshift accelerates with the saved handling
+  [pass] ramjet physics comparison uses the intended visual variant
+  [pass] ramjet physics comparison uses the intended visual variant
+  [pass] ramjet swap preserves momentum and orientation
+  [pass] ramjet swap preserves momentum and orientation
+  [pass] ramjet artwork preserves driving/braking/swap physics
+  [pass] ramjet accelerates with the saved handling
+  [pass] boilerfang physics comparison uses the intended visual variant
+  [pass] boilerfang physics comparison uses the intended visual variant
+  [pass] boilerfang swap preserves momentum and orientation
+  [pass] boilerfang swap preserves momentum and orientation
+  [pass] boilerfang artwork preserves driving/braking/swap physics
+  [pass] boilerfang accelerates with the saved handling
+  [pass] helix physics comparison uses the intended visual variant
+  [pass] helix physics comparison uses the intended visual variant
+  [pass] helix swap preserves momentum and orientation
+  [pass] helix swap preserves momentum and orientation
+  [pass] helix artwork preserves driving/braking/swap physics
+  [pass] helix accelerates with the saved handling
+  [pass] knifeedge physics comparison uses the intended visual variant
+  [pass] knifeedge physics comparison uses the intended visual variant
+  [pass] knifeedge swap preserves momentum and orientation
+  [pass] knifeedge swap preserves momentum and orientation
+  [pass] knifeedge artwork preserves driving/braking/swap physics
+  [pass] knifeedge accelerates with the saved handling
+  [pass] All named vehicle and ignition buttons fit the garage
+  [pass] Garage exposes seven named vehicle buttons
+  [pass] Deadbolt button selects the chassis directly
+  [pass] Customize opens the selected Deadbolt model
+  [pass] Garage preview switches to blackjack
+  [pass] blackjack uses the appropriate studio lighting
+  [pass] Garage preview switches to deadbolt
+  [pass] deadbolt uses the appropriate studio lighting
+  [pass] Garage preview switches to nightshift
+  [pass] nightshift uses the appropriate studio lighting
+  [pass] Garage preview switches to ramjet
+  [pass] ramjet uses the appropriate studio lighting
+  [pass] Garage preview switches to boilerfang
+  [pass] boilerfang uses the appropriate studio lighting
+  [pass] Garage preview switches to helix
+  [pass] helix uses the appropriate studio lighting
+  [pass] Garage preview switches to knifeedge
+  [pass] knifeedge uses the appropriate studio lighting
+  [pass] Garage preview switches to deadbolt
+  [pass] deadbolt uses the appropriate studio lighting
+  [pass] Returning from a Deadbolt race keeps Deadbolt selected
+  [pass] Race builds Deadbolt player and two CPU drivers
+  [pass] Race player uses Deadbolt production art
+CONSOLIDATION: 111 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Nightshift loads its dedicated adapter
+  [pass] Nightshift loads authored production model
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Body_NightshiftShell_001
+  [pass] Paint channel applies to Detail_Secondary
+  [pass] Paint channel applies to Wheel_Truck_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Truck_Hub_+1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Nightshift constructs as player and CPU
+  [pass] Nightshift player has production artwork
+NIGHTSHIFT: 46 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Ramjet loads its dedicated adapter
+  [pass] Ramjet loads authored production model
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Body_RamjetShell_001
+  [pass] Paint channel applies to Detail_Paint
+  [pass] Paint channel applies to Detail_Secondary
+  [pass] Paint channel applies to Wheel_Truck_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Truck_Hub_+1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_-1_001
+  [pass] Paint channel applies to Wheel_Coupe_Hub_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Ramjet constructs as player and CPU
+  [pass] Ramjet player has production artwork
+RAMJET: 47 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Boilerfang loads its dedicated adapter
+  [pass] Boilerfang loads authored production model
+  [pass] Paint channel applies to Body_Hull_001
+  [pass] Paint channel applies to Body_Hull_001
+  [pass] Paint channel applies to Body_FenderTruck_-_001
+  [pass] Paint channel applies to Body_FenderSpeedster_-_001
+  [pass] Paint channel applies to Body_FenderTruck_+_001
+  [pass] Paint channel applies to Body_FenderSpeedster_+_001
+  [pass] Paint channel applies to Detail_Stripe
+  [pass] Paint channel applies to Body_SideTank_-1_001
+  [pass] Paint channel applies to Body_SideTank_+1_001
+  [pass] Paint channel applies to Prop_MidDrive_Guard_-1_001
+  [pass] Paint channel applies to Prop_MidDrive_Guard_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L display radius matches the entire visible wheel
+  [pass] Wheel_A_L frozen wheel meets the ground
+  [pass] Wheel_A_L keeps its physical radius and hardpoint
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R display radius matches the entire visible wheel
+  [pass] Wheel_A_R frozen wheel meets the ground
+  [pass] Wheel_A_R keeps its physical radius and hardpoint
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L display radius matches the entire visible wheel
+  [pass] Wheel_B_L frozen wheel meets the ground
+  [pass] Wheel_B_L keeps its physical radius and hardpoint
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R display radius matches the entire visible wheel
+  [pass] Wheel_B_R frozen wheel meets the ground
+  [pass] Wheel_B_R keeps its physical radius and hardpoint
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Central drive mechanism remains visible body artwork
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Central drive meshes are visible and stay out of wheel assemblies
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Boilerfang constructs as player and CPU
+  [pass] Boilerfang player has production artwork
+BOILERFANG: 68 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Helix uses its dedicated tracked/hover adapter
+  [pass] Helix loads authored production model
+  [pass] Four simulation wheels remain authoritative
+  [pass] No customization style exposes physics wheels
+  [pass] No invented road wheels enter the hover artwork
+  [pass] Source track bogies are present
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Tracks remain visible body artwork
+  [pass] Each track contacts the frozen preview ground
+  [pass] Each track contacts the frozen preview ground
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] All three authored paint channels exist
+  [pass] Glass, track rubber, lenses and hardware retain authored materials
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics axle shafts stay hidden
+  [pass] No extra visual bogie is generated
+  [pass] Customization retains the complete track assemblies
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] Helix paint channel applies
+  [pass] All three authored paint channels exist
+  [pass] Glass, track rubber, lenses and hardware retain authored materials
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics wheel stays hidden after customization
+  [pass] Physical radius and hardpoint remain unchanged
+  [pass] Physics axle shafts stay hidden
+  [pass] No extra visual bogie is generated
+  [pass] Customization retains the complete track assemblies
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Track artwork remains visible after customization
+  [pass] Helix constructs as player and CPU
+  [pass] Helix player retains production artwork
+  [pass] Player physics wheels remain hidden
+  [pass] Player physics wheels remain hidden
+  [pass] Player physics wheels remain hidden
+  [pass] Player physics wheels remain hidden
+HELIX: 136 passed, 0 failed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  [pass] Knifeedge loads its dedicated adapter
+  [pass] Knifeedge loads authored production model
+  [pass] Paint channel applies to Body_Shell_001
+  [pass] Paint channel applies to Body_Shell_001
+  [pass] Paint channel applies to Body_Deck_001
+  [pass] Paint channel applies to Body_TailPlate_001
+  [pass] Paint channel applies to Body_CageRoof_001
+  [pass] Paint channel applies to Body_CageRear_001
+  [pass] Paint channel applies to Body_CageBumper_001
+  [pass] Paint channel applies to Detail_Secondary
+  [pass] Paint channel applies to Detail_Paint
+  [pass] Paint channel applies to Detail_Stripe
+  [pass] Paint channel applies to Wheel_Coupe_Caliper_-1_001
+  [pass] Paint channel applies to Wheel_Coupe_Caliper_+1_001
+  [pass] All three authored paint channels exist
+  [pass] Glass, lamps and hardware retain authored materials
+  [pass] Authored wheel parts exist
+  [pass] Embedded static wheels stay hidden
+  [pass] Wheel_A_L has an authored assembly
+  [pass] Wheel_A_L copies every part exactly once
+  [pass] Wheel_A_L has one tire
+  [pass] Wheel_A_L pivots at its hub after rotated spawn
+  [pass] Wheel_A_L occupies its correct end
+  [pass] Wheel_A_L display radius matches the entire visible wheel
+  [pass] Wheel_A_L frozen wheel meets the ground
+  [pass] Wheel_A_L keeps its physical radius and hardpoint
+  [pass] Wheel_A_L follows steering and suspension
+  [pass] Wheel_A_R has an authored assembly
+  [pass] Wheel_A_R copies every part exactly once
+  [pass] Wheel_A_R has one tire
+  [pass] Wheel_A_R pivots at its hub after rotated spawn
+  [pass] Wheel_A_R occupies its correct end
+  [pass] Wheel_A_R display radius matches the entire visible wheel
+  [pass] Wheel_A_R frozen wheel meets the ground
+  [pass] Wheel_A_R keeps its physical radius and hardpoint
+  [pass] Wheel_A_R follows steering and suspension
+  [pass] Wheel_B_L has an authored assembly
+  [pass] Wheel_B_L copies every part exactly once
+  [pass] Wheel_B_L has one tire
+  [pass] Wheel_B_L pivots at its hub after rotated spawn
+  [pass] Wheel_B_L occupies its correct end
+  [pass] Wheel_B_L display radius matches the entire visible wheel
+  [pass] Wheel_B_L frozen wheel meets the ground
+  [pass] Wheel_B_L keeps its physical radius and hardpoint
+  [pass] Wheel_B_L follows steering and suspension
+  [pass] Wheel_B_R has an authored assembly
+  [pass] Wheel_B_R copies every part exactly once
+  [pass] Wheel_B_R has one tire
+  [pass] Wheel_B_R pivots at its hub after rotated spawn
+  [pass] Wheel_B_R occupies its correct end
+  [pass] Wheel_B_R display radius matches the entire visible wheel
+  [pass] Wheel_B_R frozen wheel meets the ground
+  [pass] Wheel_B_R keeps its physical radius and hardpoint
+  [pass] Wheel_B_R follows steering and suspension
+  [pass] A axle follows the authored hubs
+  [pass] B axle follows the authored hubs
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Repeated customization does not duplicate wheel parts
+  [pass] Knifeedge constructs as player and CPU
+  [pass] Knifeedge player has production artwork
+KNIFEEDGE: 62 passed, 0 failed

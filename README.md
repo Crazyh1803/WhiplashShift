@@ -1,6 +1,6 @@
 # Whiplash Shift
 
-A bi-directional combat racer: one chassis, two ends, and a swap that hands the drive from
+A solo arcade combat racer: one chassis, two ends, and a swap that hands the drive from
 one to the other **without touching the body's momentum**.
 
 ## Consolidated project — 2026-10-16
@@ -16,7 +16,27 @@ cycle the roster, and returning from a race keeps the selected chassis.
 All seven vehicles use authored models with their saved handling and blueprint
 images. Enter a callsign and choose
 **IGNITE** to race two CPU opponents over three full laps after a countdown.
-The HUD shows lap, position and race time; finishing opens results with **RACE AGAIN**
+Choose **CPU DIFFICULTY** in the garage: **Easy** gives a relaxed pace with earlier
+braking and more space in traffic; **Medium** gives a balanced racing pace;
+**Hard** carries more speed, brakes later and commits sooner to clear passes. Medium is the
+default. The selection is saved and retained for retries. All levels use the same
+vehicle physics, with no power/grip bonuses or catch-up speed boosts.
+CPU racers assess both passing sides, hold their line alongside another car, and
+merge back after clearing it. Easy waits longer and leaves more room; Hard commits
+sooner to clear opportunities. They follow traffic when both sides are occupied,
+check approaching cars before merging, and avoid starting passes near tight bends
+or surface swaps. Hard can also pass on clear, wide rough-surface straights.
+Racers plan braking distance instead of adopting a distant corner's speed for the
+whole approach. They prepare end swaps before the boundary and keep the maneuver
+committed until they reach the new surface. Difficulty changes requested pace,
+cornering confidence, braking and overtaking decisions.
+Gold pickup boxes grant one random item. Press **E** once to activate it: machine
+guns, rockets and grenades fire automatically for a short timer; shields protect
+for their full timer; smoke and oil deploy behind the active end. The **1% rare homing
+missile** locks a visible racer ahead and fires once. Swapping redirects subsequent
+shots and drops. CPU racers use the same item odds and rules. No second player or
+copilot is required.
+The HUD shows the held item or active timer, lap, position and race time; finishing opens results with **RACE AGAIN**
 (`Enter`) or **BACK TO GARAGE**. Retry keeps the same vehicles. `R` recovers only
 the player to the last checkpoint; `Esc` returns to the garage.
 
@@ -84,7 +104,16 @@ body response, exaggerated with the wrong frame. Void lighting uses localized
 beacons and a smooth vehicle light pool. See
 [the terrain implementation guide](docs/art-direction/terrain-responses.md).
 
+## Launch from Games
+
+The installed **Whiplash Shift** entry in your desktop’s **Games** category starts the
+game through Godot. Its context menu also offers **Open in Godot Editor**. The executable
+`tools/launcher/whiplash-shift` accepts Godot arguments, including `--editor`.
+
 ## The web prototype (`web/`)
+
+The following describes the historical prototype, including its old copilot concept.
+Current development follows the solo arcade item-combat direction above.
 
 - **End A — Asphalt Racer.** Slicks, low clearance, aero downforce, ~180 km/h on tarmac.
   Effectively immobilised in a bog.

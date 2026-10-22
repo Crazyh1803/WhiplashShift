@@ -8,11 +8,83 @@ var _momentum_preserved := true
 
 func _ready() -> void:
 	_test_progress()
+	_test_difficulty_settings()
+	_test_braking_plan()
+	var distances: Array[float] = []
+	var tiers: Array[String] = ["hard", "medium", "easy"]
+	if "--hard-only" in OS.get_cmdline_user_args() or "--probe" in OS.get_cmdline_user_args():
+		tiers = ["hard"]
+	for difficulty: String in tiers:
+		distances.append(await _test_difficulty_race(difficulty))
+	if tiers.size() == 3:
+		_check("each difficulty gains at least 10% race progress over the same time",
+			distances[0] > distances[1] * 1.10 and distances[1] > distances[2] * 1.10, str(distances))
+	else:
+		print("Single-tier race progress: ", distances)
+	if "--probe" not in OS.get_cmdline_user_args():
+		# Historical opponent timing was measured on the flat course. Keep that
+		# control, and separately bound the effect of the actual uneven track.
+		var flat_distance := await _test_difficulty_race("hard", true)
+		_check("live relief keeps Hard field within 2% of flat control", distances[0] >= flat_distance * 0.98)
+	await _test_garage_difficulty()
+	print("\nCPU: %d passed, %d failed" % [_pass, _fail])
+	get_tree().quit(1 if _fail else 0)
+
+
+func _test_difficulty_settings() -> void:
+	_check("CPU difficulty defaults to Medium", GameSession.cpu_difficulty == "medium")
+	GameSession.set_cpu_difficulty("invalid")
+	_check("unknown CPU difficulty falls back to Medium", GameSession.cpu_difficulty == "medium")
+	GameSession.set_cpu_difficulty("hard")
+	GameSession.configure("RETRY", "blackjack", ["ramjet", "boilerfang"])
+	_check("race configuration preserves CPU difficulty", GameSession.cpu_difficulty == "hard")
+	var driver := CpuDriver.new()
+	driver.set_difficulty("invalid")
+	_check("unknown driver preset uses Medium", is_equal_approx(driver.skill, 0.81))
+	driver.free()
+
+
+func _test_braking_plan() -> void:
+	var course := TrackData.build_course()
+	var car := Vehicle.new()
+	car.tuning = TuningProfile.new()
+	car.freeze = true
+	add_child(car)
+	car.speed = 25.0
+	var driver := CpuDriver.new()
+	driver.set_difficulty("hard")
+	driver.setup(car, course)
+	var straight_speed := driver._speed_limit()
+	driver.progress.reset(130)
+	var approach_speed := driver._speed_limit()
+	_check("Hard carries speed on a clear straight and brakes near the transition",
+		straight_speed > 40.0 and approach_speed < straight_speed - 10.0 and approach_speed > 10.0,
+		"straight=%.1f approach=%.1f" % [straight_speed, approach_speed])
+	driver.progress.reset(160)
+	car.active_end = "B"
+	var full_grip := driver._speed_limit()
+	car.tuning.a_tire_grip *= 0.5
+	_check("corner planning respects the inactive axle's grip", driver._speed_limit() < full_grip)
+	driver.free()
+	car.free()
+
+
+func _test_difficulty_race(difficulty: String, flat_control: bool = false) -> float:
+	print("CPU DIFFICULTY: ", difficulty, " FLAT CONTROL" if flat_control else " LIVE RELIEF")
+	GameSession.set_cpu_difficulty(difficulty)
 	# Exercise the authored-rig CPU paths with a reproducible roster.
 	GameSession.configure("CPU TEST", "blackjack", ["boilerfang", "ramjet"])
 	var packed: PackedScene = load("res://scenes/proving_ground.tscn")
 	var scene: Node3D = packed.instantiate()
 	add_child(scene)
+	if flat_control:
+		# Rebuild only the ribbon. Keep the roster, tuning, route and all race
+		# systems identical, using the original flat triangles for comparison.
+		for child in scene.get_children():
+			if child is StaticBody3D and String(child.name).begins_with("Run_"):
+				scene.remove_child(child)
+				child.free()
+		TrackBuilder.build(scene, scene.get("course").points, false)
 	await get_tree().physics_frame
 	while scene.get("race").state == RaceDirector.State.COUNTDOWN:
 		await get_tree().physics_frame
@@ -25,14 +97,32 @@ func _ready() -> void:
 		driver.target.swapped.connect(_observe_swap)
 	_check("two CPU drivers use the player's tuning", drivers.size() == 2
 		and drivers[0].target.tuning == player.tuning and drivers[1].target.tuning == player.tuning)
+	_check("race applies selected difficulty to both CPU racers",
+		is_equal_approx(drivers[0].skill, CpuDriver.DIFFICULTIES[difficulty]["pace"] - 0.04)
+		and is_equal_approx(drivers[1].skill, CpuDriver.DIFFICULTIES[difficulty]["pace"] + 0.04))
+	var first_laps: Array[float] = [-1.0, -1.0]
+	var samples: Array[Dictionary] = [{}, {}]
 	var stable := true
-	for seconds in 420:
+	var probe := "--probe" in OS.get_cmdline_user_args()
+	for seconds in (180 if probe else 420):
 		for _frame in 120:
 			await get_tree().physics_frame
 		for driver: CpuDriver in drivers:
 			var p := driver.target.global_position
 			var v := driver.target.linear_velocity
 			stable = stable and p.is_finite() and v.is_finite()
+		for i in drivers.size():
+			var driver: CpuDriver = drivers[i]
+			var sid := driver.target.surface_under
+			var sample: Dictionary = samples[i].get(sid, {"seconds": 0, "speed": 0.0, "requested": 0.0, "turning": 0, "braking": 0})
+			sample["seconds"] += 1
+			sample["speed"] += driver.target.speed
+			sample["requested"] += driver.target_speed
+			sample["turning"] += 1 if driver._turning else 0
+			sample["braking"] += 1 if driver.target.brake > 0.1 else 0
+			samples[i][sid] = sample
+			if drivers[i].progress.lap >= 1 and first_laps[i] < 0.0:
+				first_laps[i] = float(seconds + 1)
 		if seconds % 30 == 29:
 			for driver: CpuDriver in drivers:
 				print("t=%d %s lap=%d idx=%d speed=%.1f swaps=%d recoveries=%d off=%.1f" % [
@@ -41,16 +131,82 @@ func _ready() -> void:
 	_check("CPU simulation remains finite", stable)
 	_check("every CPU swap preserves body momentum and basis", _momentum_preserved)
 	for driver: CpuDriver in drivers:
-		_check("%s completes two laps" % driver.target.name, driver.progress.lap >= 2)
-		_check("%s performs surface swaps" % driver.target.name, driver.swaps >= 4)
-		_check("%s drives with limited recoveries" % driver.target.name, driver.recoveries <= 4,
+		_check("%s completes laps on %s" % [driver.target.name, difficulty], driver.progress.lap >= (1 if probe else 2))
+		_check("%s performs surface swaps" % driver.target.name, driver.swaps >= (2 if probe else 4))
+		_check("%s drives with limited recoveries" % driver.target.name, driver.recoveries <= (1 if difficulty == "hard" else 4),
 			"%d recoveries" % driver.recoveries)
+	var distance := drivers[0].progress.total_distance + drivers[1].progress.total_distance
+	print("BENCHMARK %s distance=%.2f first_laps=%s" % [difficulty, distance, first_laps])
+	for i in samples.size():
+		for sid: int in samples[i]:
+			var sample: Dictionary = samples[i][sid]
+			print("PROFILE %s cpu=%d %s seconds=%d speed=%.1f requested=%.1f turning=%d braking=%d" % [difficulty,
+				i, Surfaces.NAMES[sid], sample["seconds"], sample["speed"] / sample["seconds"],
+				sample["requested"] / sample["seconds"], sample["turning"], sample["braking"]])
+	if flat_control and not probe:
+		# Winning requires beating the lead rival, while the whole field must
+		# also improve. Compare against the previous fixed-roster benchmark.
+		var leading_distance := maxf(drivers[0].progress.total_distance, drivers[1].progress.total_distance)
+		_check("Hard leader beats previous opponent pace by at least 20%", leading_distance > (15215.05 / 2.0) * 1.20, str(leading_distance))
+		_check("Hard field improves average pace by at least 15%", distance > 15215.05 * 1.15, str(distance))
 	await _test_recovery(drivers[0])
 	_test_peer_braking(drivers[1], player)
 	scene.queue_free()
 	await get_tree().process_frame
-	print("\nCPU: %d passed, %d failed" % [_pass, _fail])
-	get_tree().quit(1 if _fail else 0)
+	return distance
+
+
+func _test_garage_difficulty() -> void:
+	# Preserve the user's profile, including a missing-file first launch.
+	var profile_path := "user://profile.cfg"
+	var existed := FileAccess.file_exists(profile_path)
+	var original := FileAccess.get_file_as_bytes(profile_path) if existed else PackedByteArray()
+	DirAccess.remove_absolute(profile_path)
+	GameSession.set_cpu_difficulty("medium")
+	var garage: Control = load("res://scenes/garage.tscn").instantiate()
+	add_child(garage)
+	_check("garage offers three tiers with Medium selected", garage._difficulty.item_count == 3
+		and garage._difficulty.get_item_metadata(garage._difficulty.selected) == "medium")
+	garage._difficulty.select(2)
+	garage._difficulty.item_selected.emit(2)
+	_check("garage selection updates CPU difficulty", GameSession.cpu_difficulty == "hard"
+		and "Fast pace" in garage._difficulty.tooltip_text)
+	for _frame in 2:
+		await get_tree().process_frame
+	var visible := get_viewport().get_visible_rect()
+	_check("difficulty and ignition fit the garage",
+		visible.encloses(garage._difficulty.get_global_rect())
+		and visible.encloses(garage._start_button.get_global_rect()))
+	garage.free()
+	GameSession.set_cpu_difficulty("easy")
+	garage = load("res://scenes/garage.tscn").instantiate()
+	add_child(garage)
+	_check("garage reload restores saved difficulty", GameSession.cpu_difficulty == "hard"
+		and garage._difficulty.get_item_metadata(garage._difficulty.selected) == "hard")
+	garage.free()
+	var legacy := ConfigFile.new()
+	legacy.set_value("profile", "callsign", "LEGACY")
+	legacy.save(profile_path)
+	garage = load("res://scenes/garage.tscn").instantiate()
+	add_child(garage)
+	_check("existing callsign-only profiles default to Medium", GameSession.cpu_difficulty == "medium"
+		and garage._callsign.text == "LEGACY")
+	garage.free()
+	legacy.set_value("profile", "cpu_difficulty", "unknown")
+	legacy.save(profile_path)
+	garage = load("res://scenes/garage.tscn").instantiate()
+	add_child(garage)
+	_check("invalid saved difficulty falls back to Medium", GameSession.cpu_difficulty == "medium"
+		and garage._difficulty.get_item_metadata(garage._difficulty.selected) == "medium")
+	garage.free()
+	if existed:
+		var file := FileAccess.open(profile_path, FileAccess.WRITE)
+		file.store_buffer(original)
+		file.close()
+	else:
+		DirAccess.remove_absolute(profile_path)
+	GameSession.set_cpu_difficulty("medium")
+	await get_tree().process_frame
 
 
 func _test_progress() -> void:
