@@ -23,7 +23,7 @@ func _test_rubble_policy() -> void:
 	var wheels := _rubble_wheels()
 	var right := VisceraResponse.response(wheels, "B", 10, 1)
 	var wrong := VisceraResponse.response(wheels, "A", 10, 1)
-	_check("wrong end has stronger rubble spray and chassis response", wrong.rubble_rate > right.rubble_rate * 4
+	_check("wrong end has stronger rubble spray and chassis response", wrong.rubble_rate > right.rubble_rate * 2
 		and wrong.rattle > right.rattle * 5 and wrong.rubble_power > right.rubble_power * 2)
 	_check("rubble rattles without viscera sinking", wrong.rattle > 0 and wrong.sink == 0 and wrong.wet == 0)
 	var stationary := VisceraResponse.response(wheels, "A", 0, 1)

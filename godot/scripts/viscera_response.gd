@@ -187,27 +187,27 @@ static func response(wheels: Array, end: String, speed: float, throttle: float, 
 	if absf(speed) < 0.25 and oil_spin < 0.08:
 		oil_motion = 0.0
 	return {"oil": oil, "oil_wrong": oil_wrong,
-		"oil_rate": (27.0 if oil_wrong else 5.0) * oil_motion * (0.35 + 0.65 * clampf(oil_slip, 0.0, 1.0)),
+		"oil_rate": (27.0 if oil_wrong else 10.0) * oil_motion * (0.35 + 0.65 * clampf(oil_slip, 0.0, 1.0)),
 		"oil_slide": float(oil) / 4.0 * clampf(lateral_speed / 2.5, -1.0, 1.0) * minf(absf(speed) / 2.0, 1.0) * (1.0 if oil_wrong else 0.14),
 		"water": water, "water_wrong": water_wrong,
-		"water_rate": (28.0 if water_wrong else 6.0) * water_motion,
+		"water_rate": (28.0 if water_wrong else 12.0) * water_motion,
 		"wash": wash_strength,
 		"water_sink": water_coverage * water_strength * (0.075 if water_wrong else 0.015),
 		"water_pitch": wash_strength * deg_to_rad(2.4),
 		"ice": ice, "ice_wrong": ice_wrong,
-		"ice_rate": (25.0 if ice_wrong else 5.0) * ice_motion * (0.4 + 0.6 * clampf(ice_slip, 0.0, 1.0)),
+		"ice_rate": (25.0 if ice_wrong else 10.0) * ice_motion * (0.4 + 0.6 * clampf(ice_slip, 0.0, 1.0)),
 		"skid": float(ice) / 4.0 * clampf(lateral_speed / 3.0, -1.0, 1.0) * minf(absf(speed) / 2.0, 1.0) * (1.0 if ice_wrong else 0.2),
 		"wrong": wrong, "wet": wet,
-		"rate": (24.0 if wrong else 5.0) * motion,
+		"rate": (24.0 if wrong else 10.0) * motion,
 		"sink": coverage * (0.12 if wrong else 0.025) * (0.5 + 0.5 * absf(throttle)),
 		"pitch": coverage * deg_to_rad(1.5 if wrong else 0.2) * absf(throttle),
-		"power": 3.2 if wrong else 1.3,
+		"power": 3.2 if wrong else 1.56,
 		"rubble": rubble, "rubble_wrong": rubble_wrong,
-		"rubble_rate": (30.0 if rubble_wrong else 7.0) * motion,
-		"rubble_power": 3.0 if rubble_wrong else 1.2,
+		"rubble_rate": (30.0 if rubble_wrong else 14.0) * motion,
+		"rubble_power": 3.0 if rubble_wrong else 1.44,
 		"armor": armor, "armor_wrong": armor_wrong,
-		"armor_rate": (15.0 if armor_wrong else 3.0) * motion,
-		"armor_power": 3.8 if armor_wrong else 1.4,
+		"armor_rate": (15.0 if armor_wrong else 6.0) * motion,
+		"armor_power": 3.8 if armor_wrong else 1.68,
 		"impact": float(armor) / 4.0 * rough_motion * (1.0 if armor_wrong else 0.14),
 		"rattle": float(rubble) / 4.0 * rough_motion * (1.0 if rubble_wrong else 0.18)}
 
@@ -356,7 +356,7 @@ func _emit(point: Vector3, normal: Vector3, outward: Vector3, velocity: Vector3,
 	_velocities[index] = velocity * 0.35 + outward * _rng.randf_range(0.4, power) + normal * power * rise
 	_duration[index] = _rng.randf_range(0.2, 0.35) if low else _rng.randf_range(0.45, 0.85)
 	_life[index] = _duration[index]
-	_sizes[index] = _rng.randf_range(0.055, 0.12) * (1.5 if wrong else 0.75) * (0.65 if low else 1.0)
+	_sizes[index] = _rng.randf_range(0.055, 0.12) * (1.5 if wrong else 0.9) * (0.65 if low else 1.0)
 	_floor_y[index] = point.y + 0.01
 	var pick := _rng.randf()
 	_kind[index] = 0 if pick < 0.55 else (1 if pick < 0.90 else 2)
@@ -377,7 +377,7 @@ func _emit_rubble(point: Vector3, normal: Vector3, outward: Vector3, velocity: V
 	_velocities[index] = velocity * 0.22 + outward * _rng.randf_range(0.3, power) + normal * _rng.randf_range(power * 0.4, power)
 	_duration[index] = _rng.randf_range(0.4, 0.8)
 	_life[index] = _duration[index]
-	_sizes[index] = _rng.randf_range(0.035, 0.085) * (1.4 if wrong else 0.8) * (0.4 if _kind[index] == 4 else 1.0)
+	_sizes[index] = _rng.randf_range(0.035, 0.085) * (1.4 if wrong else 0.96) * (0.4 if _kind[index] == 4 else 1.0)
 	_floor_y[index] = point.y + 0.015
 	_bounces[index] = 0
 	_rotations[index] = Vector3(_rng.randf_range(-PI, PI), _rng.randf_range(-PI, PI), _rng.randf_range(-PI, PI))
@@ -391,7 +391,7 @@ func _emit_armor(point: Vector3, normal: Vector3, outward: Vector3, velocity: Ve
 	_emit_rubble(point, normal, outward, velocity, power, wrong)
 	var index := (_cursor + CAPACITY - 1) % CAPACITY
 	_kind[index] = 6 if _rng.randf() < 0.65 else 7
-	_sizes[index] = _rng.randf_range(0.09, 0.17) * (1.45 if wrong else 0.65)
+	_sizes[index] = _rng.randf_range(0.09, 0.17) * (1.45 if wrong else 0.78)
 	_tumbles[index] *= 0.45
 	_duration[index] = _rng.randf_range(0.65, 1.0)
 	_life[index] = _duration[index]
@@ -402,11 +402,11 @@ func _emit_ice(point: Vector3, normal: Vector3, outward: Vector3, velocity: Vect
 	_cursor = (_cursor + 1) % CAPACITY
 	_kind[index] = 8 if _rng.randf() < 0.7 else 9
 	_positions[index] = point + normal * 0.035
-	var power := 2.0 if wrong else 0.65
+	var power := 2.0 if wrong else 0.78
 	_velocities[index] = velocity * 0.3 + outward * _rng.randf_range(0.3, power) + normal * _rng.randf_range(0.2, power * 0.6)
 	_duration[index] = _rng.randf_range(0.35, 0.7)
 	_life[index] = _duration[index]
-	_sizes[index] = _rng.randf_range(0.035, 0.09) * (1.6 if wrong else 0.7)
+	_sizes[index] = _rng.randf_range(0.035, 0.09) * (1.6 if wrong else 0.84)
 	_floor_y[index] = point.y + 0.008
 	_bounces[index] = 0
 	_rotations[index] = Vector3(_rng.randf_range(-PI, PI), _rng.randf_range(-PI, PI), _rng.randf_range(-PI, PI))
@@ -421,13 +421,13 @@ func _emit_effluent(point: Vector3, normal: Vector3, outward: Vector3, velocity:
 	var sheet := _rng.randf() < 0.6
 	_kind[index] = 10 if sheet else 11
 	_positions[index] = point + normal * 0.05
-	var power := 3.2 if wrong else 1.1
+	var power := 3.2 if wrong else 1.32
 	# Low sheets pull outward; separate droplets form the higher broken spray.
 	var rise := _rng.randf_range(0.15, 0.4) if sheet else _rng.randf_range(0.45, 0.85)
 	_velocities[index] = velocity * 0.25 + outward * _rng.randf_range(0.5, power) + normal * power * rise
 	_duration[index] = _rng.randf_range(0.3, 0.65)
 	_life[index] = _duration[index]
-	_sizes[index] = _rng.randf_range(0.11, 0.20) * (1.55 if wrong else 0.65) * (1.0 if sheet else 0.45)
+	_sizes[index] = _rng.randf_range(0.11, 0.20) * (1.55 if wrong else 0.78) * (1.0 if sheet else 0.45)
 	_floor_y[index] = point.y + 0.008
 	_bounces[index] = 0
 	_rotations[index] = Vector3(_rng.randf_range(-0.3, 0.3), -atan2(outward.z, outward.x), _rng.randf_range(-0.2, 0.2))
@@ -442,11 +442,11 @@ func _emit_ichor(point: Vector3, normal: Vector3, outward: Vector3, velocity: Ve
 	var strand := _rng.randf() < 0.65
 	_kind[index] = 12 if strand else 13
 	_positions[index] = point + normal * 0.04
-	var power := 2.5 if wrong else 0.75
+	var power := 2.5 if wrong else 0.9
 	_velocities[index] = velocity * 0.28 + outward * _rng.randf_range(0.2, power) + normal * _rng.randf_range(0.25, 0.7 if strand else 1.2) * power
 	_duration[index] = _rng.randf_range(0.4, 0.75)
 	_life[index] = _duration[index]
-	_sizes[index] = _rng.randf_range(0.11, 0.18) * (1.6 if wrong else 0.65) * (1.0 if strand else 0.45)
+	_sizes[index] = _rng.randf_range(0.11, 0.18) * (1.6 if wrong else 0.78) * (1.0 if strand else 0.45)
 	_floor_y[index] = point.y + 0.006
 	_bounces[index] = 0
 	_rotations[index] = Vector3.ZERO

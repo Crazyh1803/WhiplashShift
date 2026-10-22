@@ -23,7 +23,7 @@ func _test_armor() -> void:
 	var wheels := _armor_wheels()
 	var right := VisceraResponse.response(wheels, "B", 10, 1)
 	var wrong := VisceraResponse.response(wheels, "A", 10, 1)
-	_check("wrong end has stronger armor bursts and impacts", wrong.armor_rate >= right.armor_rate * 5
+	_check("wrong end has stronger armor bursts and impacts", wrong.armor_rate > right.armor_rate * 2
 		and wrong.impact > right.impact * 7 and wrong.armor_power > right.armor_power * 2)
 	_check("armor has discrete impacts without mud sinking or gravel rattle", wrong.impact > 0 and wrong.sink == 0 and wrong.rattle == 0)
 	var still := VisceraResponse.response(wheels, "A", 0, 1)

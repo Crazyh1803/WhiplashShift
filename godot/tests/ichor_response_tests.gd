@@ -24,7 +24,7 @@ func _test_ichor() -> void:
 	var right := VisceraResponse.response(wheels, "A", 10, 1, 2.5)
 	var wrong := VisceraResponse.response(wheels, "B", 10, 1, 2.5)
 	_check("wrong B has stronger oil spray and lateral slip pose", wrong.oil_wrong and not right.oil_wrong
-		and wrong.oil_rate > right.oil_rate * 5 and wrong.oil_slide > right.oil_slide * 7)
+		and wrong.oil_rate > right.oil_rate * 2 and wrong.oil_slide > right.oil_slide * 7)
 	_check("oil does not sink rattle kick or wash like other surfaces", wrong.sink == 0 and wrong.water_sink == 0
 		and wrong.rattle == 0 and wrong.impact == 0 and wrong.wash == 0 and wrong.skid == 0)
 	_check("oil slip follows measured slide direction", VisceraResponse.response(wheels, "B", 10, 1, -2.5).oil_slide == -wrong.oil_slide)

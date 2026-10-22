@@ -24,7 +24,7 @@ func _test_coolant() -> void:
 	var right := VisceraResponse.response(wheels, "A", 10, 1, 3)
 	var wrong := VisceraResponse.response(wheels, "B", 10, 1, 3)
 	_check("wrong B has stronger shard spray and skid response", wrong.ice_wrong and not right.ice_wrong
-		and wrong.ice_rate >= right.ice_rate * 4.99 and wrong.skid >= right.skid * 4.99)
+		and wrong.ice_rate > right.ice_rate * 2 and wrong.skid >= right.skid * 4.99)
 	_check("coolant has no dry rattle armor kick or mud sinking", wrong.sink == 0 and wrong.rattle == 0 and wrong.impact == 0)
 	_check("skid changes sign with actual lateral motion", VisceraResponse.response(wheels, "B", 10, 1, -3).skid == -wrong.skid)
 	_check("straight rolling has no invented lateral wobble", VisceraResponse.response(wheels, "B", 10, 1, 0).skid == 0)

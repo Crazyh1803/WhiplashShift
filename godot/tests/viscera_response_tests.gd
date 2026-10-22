@@ -6,6 +6,7 @@ var _fail := 0
 
 func _ready() -> void:
 	_test_policy()
+	_test_spray_balance()
 	_test_pool_and_pose()
 	await _test_race_lifecycle()
 	if "--capture" in OS.get_cmdline_user_args():
@@ -28,11 +29,37 @@ func _wheels() -> Array:
 	return result
 
 
+func _test_spray_balance() -> void:
+	# Matched-input baseline: stronger correct-frame spray, unchanged wrong frame.
+	var baselines := {
+		Surfaces.Id.MUD: ["rate", 5.0, 24.0],
+		Surfaces.Id.GRAVEL: ["rubble_rate", 7.0, 30.0],
+		Surfaces.Id.BOULDER: ["armor_rate", 3.0, 15.0],
+		Surfaces.Id.ICE: ["ice_rate", 5.0, 25.0],
+		Surfaces.Id.WATER: ["water_rate", 6.0, 28.0],
+		Surfaces.Id.OIL: ["oil_rate", 5.0, 27.0],
+	}
+	var wheels := _wheels()
+	for sid: int in baselines:
+		for wheel: Wheel in wheels:
+			wheel.surface_id = sid
+			wheel.slip = 1.0
+		var preferred: String = Surfaces.PREFERRED[sid]
+		var right := VisceraResponse.response(wheels, preferred, 10, 1)
+		var wrong := VisceraResponse.response(wheels, "B" if preferred == "A" else "A", 10, 1)
+		var baseline: Array = baselines[sid]
+		_check(Surfaces.KEYS[sid] + " doubles correct-frame spray and preserves wrong-frame output",
+			is_equal_approx(right[baseline[0]], baseline[1] * 2.0)
+			and is_equal_approx(wrong[baseline[0]], baseline[2]))
+	for wheel: Wheel in wheels:
+		wheel.free()
+
+
 func _test_policy() -> void:
 	var wheels := _wheels()
 	var right := VisceraResponse.response(wheels, "B", 10, 1)
 	var wrong := VisceraResponse.response(wheels, "A", 10, 1)
-	_check("wrong end throws substantially more viscera at matched speed", wrong.rate > right.rate * 4)
+	_check("wrong end throws substantially more viscera at matched speed", wrong.rate > right.rate * 2)
 	_check("wrong end sinks deeper and throws higher/larger clumps", wrong.sink > right.sink * 4 and wrong.power > right.power * 2)
 	_check("stationary unspinning tyres do not spray", VisceraResponse.response(wheels, "A", 0, 1).rate == 0)
 	wheels[0].spin = 1.0
@@ -162,7 +189,8 @@ func _captures(sid: int = Surfaces.Id.MUD, folder: String = "viscera-fragments-c
 	for index in 81:
 		points.append({"pos": Vector3(0, 0, -index * 3.5), "dir": Vector3.FORWARD, "w": 24.0, "dist": 3.5})
 	TrackBuilder._build_run(root, points, sid, 0)
-	var path := ProjectSettings.globalize_path("res://../.ai/captures/" + folder)
+	var capture_folder := folder + ("-boosted" if "--spray-preview" in OS.get_cmdline_user_args() else "")
+	var path := ProjectSettings.globalize_path("res://../.ai/captures/" + capture_folder)
 	DirAccess.make_dir_recursive_absolute(path)
 	for end: String in [Surfaces.PREFERRED[sid], "A" if Surfaces.PREFERRED[sid] == "B" else "B"]:
 		var car := preload("res://scripts/vehicle_factory.gd").create(VehicleCatalog.get_vehicle("blackjack"))

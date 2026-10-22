@@ -23,7 +23,7 @@ func _test_effluent() -> void:
 	var right := VisceraResponse.response(wheels, "B", 10, 1)
 	var wrong := VisceraResponse.response(wheels, "A", 10, 1)
 	_check("wrong A has much stronger spray and drag pose", wrong.water_wrong and not right.water_wrong
-		and wrong.water_rate > right.water_rate * 4 and wrong.wash > right.wash * 5
+		and wrong.water_rate > right.water_rate * 2 and wrong.wash > right.wash * 5
 		and wrong.water_sink >= right.water_sink * 4.99 and wrong.water_pitch > right.water_pitch * 5)
 	_check("effluent avoids dry rattle armor kicks and ice skid", wrong.rattle == 0 and wrong.impact == 0 and wrong.skid == 0)
 	var still := VisceraResponse.response(wheels, "A", 0, 1)
