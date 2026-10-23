@@ -22,7 +22,7 @@ Recovery clears all transient poses and fragments.
 
 Rough road runs have bounded real mesh/collision relief. Smooth road runs retain
 the original flat collision geometry. External deposits stay outside the rails.
-The black void, localized beacons and a smooth local vehicle light pool retain
+The black void, localized beacons and headlights on the active driving end retain
 contrast without the former opposed-spotlight hourglass boundary.
 
 Run `ak-test` for geometry, contact, recovery and vehicle regressions. For a chase

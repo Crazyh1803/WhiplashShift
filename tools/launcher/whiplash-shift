@@ -1,6 +1,33 @@
 #!/usr/bin/env bash
 set -euo pipefail
-project_dir="$(cd -- "$(dirname -- "$(readlink -f -- "$0")")/../../godot" && pwd)"
-godot_bin="${GODOT_BIN:-$(command -v godot || true)}"
-if [ -z "$godot_bin" ]; then godot_bin="$HOME/.local/bin/godot"; fi
-exec "$godot_bin" --path "$project_dir" "$@"
+
+# Read the whole function before pulling: the update may replace this script.
+launch() {
+    local repo_dir project_dir godot_bin log_dir before after
+    repo_dir="$(cd -- "$(dirname -- "$(readlink -f -- "$0")")/../.." && pwd)"
+    project_dir="$repo_dir/godot"
+    godot_bin="${GODOT_BIN:-$(command -v godot || true)}"
+    if [ -z "$godot_bin" ]; then godot_bin="$HOME/.local/bin/godot"; fi
+
+    if [ "${WHIPLASH_AUTO_UPDATE:-1}" != "0" ] && command -v git >/dev/null && command -v timeout >/dev/null; then
+        log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/whiplash-shift"
+        mkdir -p "$log_dir"
+        before="$(git -C "$repo_dir" rev-parse HEAD)"
+        # A failed/offline update leaves the installed game available. Never
+        # reset, stash or discard local changes to make an update succeed.
+        if GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never timeout 15 git -C "$repo_dir" pull --ff-only origin main >"$log_dir/launcher.log" 2>&1; then
+            after="$(git -C "$repo_dir" rev-parse HEAD)"
+            if [ "$before" != "$after" ]; then
+                "$godot_bin" --headless --editor --path "$project_dir" --import >>"$log_dir/launcher.log" 2>&1 || {
+                    printf 'Whiplash Shift: asset import failed; see %s/launcher.log\n' "$log_dir" >&2
+                    return 1
+                }
+            fi
+        else
+            printf 'Whiplash Shift: update unavailable; launching current copy. See %s/launcher.log\n' "$log_dir" >&2
+        fi
+    fi
+    exec "$godot_bin" --path "$project_dir" "$@"
+}
+
+launch "$@"

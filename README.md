@@ -101,7 +101,7 @@ Roads use procedural ceramic armor, chitin rubble, viscera, spinal armor, vitrif
 coolant, reactor effluent and black ichor materials. Rough surfaces have bounded
 real relief. Each special terrain has contact-driven spray/debris and a distinct
 body response, exaggerated with the wrong frame. Void lighting uses localized
-beacons and a smooth vehicle light pool. See
+beacons and headlights on the active driving end. See
 [the terrain implementation guide](docs/art-direction/terrain-responses.md).
 
 ## Launch from Games
@@ -109,6 +109,21 @@ beacons and a smooth vehicle light pool. See
 The installed **Whiplash Shift** entry in your desktop’s **Games** category starts the
 game through Godot. Its context menu also offers **Open in Godot Editor**. The executable
 `tools/launcher/whiplash-shift` accepts Godot arguments, including `--editor`.
+
+The launcher pulls updates from GitHub's `main` branch before each launch and
+imports assets when the revision changes. Offline or conflicting updates leave
+the current copy available; local changes are never discarded. Update checks
+time out after 15 seconds. Set `WHIPLASH_AUTO_UPDATE=0` to skip them while developing.
+Diagnostics are saved to `~/.local/state/whiplash-shift/launcher.log`
+(or under `XDG_STATE_HOME` when set).
+
+To enable this on an existing installation, run once on that desktop:
+
+```sh
+git -C /home/crazyh/Documents/ChatGPT/Whiplash pull --ff-only origin main
+```
+
+After that, the same Games shortcut fetches published changes automatically.
 
 ## The web prototype (`web/`)
 
