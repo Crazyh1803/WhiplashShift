@@ -125,6 +125,34 @@ git -C /home/crazyh/Documents/ChatGPT/Whiplash pull --ff-only origin main
 
 After that, the same Games shortcut fetches published changes automatically.
 
+### Windows shortcut and updates
+
+Windows installations under `%LOCALAPPDATA%\WhiplashShift` use
+`tools/launcher/whiplash-shift.ps1`. To upgrade an existing version-pinned shortcut,
+run this once in **PowerShell**:
+
+```powershell
+$installer = Join-Path $env:TEMP 'Install-WhiplashShift.ps1'
+Invoke-WebRequest -UseBasicParsing 'https://raw.githubusercontent.com/Crazyh1803/WhiplashShift/main/tools/launcher/whiplash-shift.ps1' -OutFile $installer
+powershell -NoProfile -ExecutionPolicy Bypass -File $installer -Install
+```
+
+This reuses the existing Godot engine, updates existing Whiplash Shift shortcuts
+in the user's Desktop and Start Menu, and creates a desktop shortcut if needed.
+The shortcut checks for published releases on each launch. A new release downloads
+the source archive, extracts only the game, and imports its assets before activating
+it. The first download can take several minutes. Existing installations and saves
+are retained. An unavailable update launches the current working version. Logs are
+in `%LOCALAPPDATA%\WhiplashShift\launcher.log`. No Git installation is required.
+
+When publishing game changes from the cloud, first commit and test the game, then
+set `tools/launcher/windows-release.json`'s `source_commit` to that full commit SHA
+and publish the manifest to `main`. Windows follows this manifest so it receives
+the same tested game revision. The manifest commit itself need not be the game
+revision. Run `tools/launcher/tests/windows-updater.tests.ps1` with PowerShell to
+check update, import failure, offline fallback, and quoted path behavior without
+network access or a Godot installation.
+
 ## The web prototype (`web/`)
 
 The following describes the historical prototype, including its old copilot concept.
