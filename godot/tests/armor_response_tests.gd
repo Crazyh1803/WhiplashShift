@@ -4,10 +4,12 @@ extends "res://tests/viscera_response_tests.gd"
 
 func _ready() -> void:
 	_test_armor()
+	_test_headlight_roster()
 	await _test_lighting_and_recovery()
 	if "--capture" in OS.get_cmdline_user_args():
-		await _test_rendered_light_pool()
-		await _captures(Surfaces.Id.BOULDER, "spinal-armor-response")
+		await _test_rendered_headlights()
+		if not "--lighting-only" in OS.get_cmdline_user_args():
+			await _captures(Surfaces.Id.BOULDER, "spinal-armor-response")
 	print("ARMOR_RESPONSE: %d passed, %d failed" % [_pass, _fail])
 	get_tree().quit(1 if _fail else 0)
 
@@ -98,12 +100,49 @@ func _test_armor() -> void:
 		wheel.free()
 
 
+func _test_headlight_roster() -> void:
+	for spec: Dictionary in VehicleCatalog.VEHICLES:
+		var car := preload("res://scripts/vehicle_factory.gd").create(VehicleCatalog.get_vehicle(spec["id"]))
+		car.freeze = true
+		add_child(car)
+		TrackMaterials.attach_driving_light(car)
+		TrackMaterials.attach_driving_light(car)
+		var headlights: Node3D = car.get_node("DrivingHeadlights")
+		var valid: bool = not headlights._lens_materials.is_empty()
+		for end: String in ["A", "B"]:
+			car.active_end = end
+			for material: ShaderMaterial in headlights._lens_materials:
+				valid = valid and material.get_shader_parameter("active_sign") == (-1.0 if end == "A" else 1.0)
+			for lamp: SpotLight3D in headlights.get_node("End" + end).get_children():
+				valid = valid and lamp.position.is_finite() and absf(lamp.position.x) > 0.1 and absf(lamp.position.z) > 1.0
+		_check("%s has mounted beams and switching lens emission without duplicate lights" % spec["id"],
+			valid and car.find_children("*", "SpotLight3D", true, false).size() == 4)
+		car.free()
+
+
 func _test_lighting_and_recovery() -> void:
 	var scene = load("res://scenes/proving_ground.tscn").instantiate()
 	add_child(scene)
-	var lamp: OmniLight3D = scene.car.get_node("DrivingLightPool")
-	_check("production local illumination has no opposed cone masks", scene.car.find_children("*", "SpotLight3D", false, false).is_empty()
-		and lamp.omni_range >= 60 and lamp.omni_attenuation > 1 and lamp.light_energy > 0 and not lamp.shadow_enabled)
+	for car: Vehicle in [scene.car] + scene.cpu_cars:
+		var headlights: Node3D = car.get_node("DrivingHeadlights")
+		_check("%s has only paired directional headlights" % car.name,
+			car.find_children("*", "OmniLight3D", true, false).is_empty()
+			and headlights.find_children("*", "SpotLight3D", true, false).size() == 4)
+		_check("%s starts with only End A illuminated" % car.name,
+			headlights.get_node("EndA").visible and not headlights.get_node("EndB").visible)
+		car.swap_ends()
+		_check("%s swap immediately switches the headlights" % car.name,
+			not headlights.get_node("EndA").visible and headlights.get_node("EndB").visible)
+		car.active_end = "A"
+		_check("%s recovery immediately restores End A headlights" % car.name,
+			headlights.get_node("EndA").visible and not headlights.get_node("EndB").visible)
+		for end: String in ["A", "B"]:
+			for lamp: SpotLight3D in headlights.get_node("End" + end).get_children():
+				var forward := -lamp.transform.basis.z
+				_check("%s %s beam points outward and down" % [car.name, end],
+					forward.y < 0 and forward.z * (-1 if end == "A" else 1) > 0.9
+					and lamp.position.z * (-1 if end == "A" else 1) > 1.0
+					and lamp.shadow_enabled and lamp.spot_angle < 45)
 	_check("void remains free of global sun lighting", scene.find_children("*", "DirectionalLight3D", true, false).is_empty()
 		and TrackMaterials.environment().ambient_light_source == Environment.AMBIENT_SOURCE_DISABLED)
 	var wheels := _armor_wheels()
@@ -122,8 +161,8 @@ func _test_lighting_and_recovery() -> void:
 		await get_tree().process_frame
 
 
-func _test_rendered_light_pool() -> void:
-	# Sample a neutral receiver to detect dark side wedges independently of texture.
+func _test_rendered_headlights() -> void:
+	# A neutral receiver isolates forward beams from street lights and textures.
 	var root := Node3D.new()
 	add_child(root)
 	var environment := WorldEnvironment.new()
@@ -138,7 +177,11 @@ func _test_rendered_light_pool() -> void:
 	material.roughness = 1.0
 	floor_mesh.material_override = material
 	root.add_child(floor_mesh)
-	TrackMaterials.attach_driving_light(root)
+	var car := preload("res://scripts/vehicle_factory.gd").create(VehicleCatalog.get_vehicle("blackjack"))
+	car.freeze = true
+	car.position.y = 1.0
+	root.add_child(car)
+	TrackMaterials.attach_driving_light(car)
 	var camera := Camera3D.new()
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	camera.size = 48
@@ -150,18 +193,23 @@ func _test_rendered_light_pool() -> void:
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	var rendered := get_viewport().get_texture().get_image()
-	for radius: float in [9.0, 18.0]:
-		var low := 1.0
-		var high := 0.0
-		for direction: Vector3 in [Vector3.LEFT, Vector3.RIGHT, Vector3.FORWARD, Vector3.BACK]:
-			var screen := camera.unproject_position(direction * radius)
-			# Camera coordinates use the logical viewport; captures use output pixels.
+	for end: String in ["A", "B"]:
+		car.active_end = end
+		for frame in 3:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		rendered = get_viewport().get_texture().get_image()
+		var brightness: Array[float] = []
+		for direction: Vector3 in [Vector3.FORWARD, Vector3.BACK, Vector3.LEFT, Vector3.RIGHT]:
+			var screen := camera.unproject_position(direction * 12.0)
 			var pixel := Vector2i(screen * Vector2(rendered.get_size()) / get_viewport().get_visible_rect().size)
 			var color := rendered.get_pixelv(pixel)
-			var brightness := color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722
-			low = minf(low, brightness)
-			high = maxf(high, brightness)
-		print("LIGHT_POOL radius=%.0fm min=%.3f max=%.3f" % [radius, low, high])
-		_check("local light reaches both sides and both ends at %.0fm" % radius, low > 0.02 and high - low < 0.025)
+			brightness.append(color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722)
+		var front := 0 if end == "A" else 1
+		var rear := 1 - front
+		print("HEADLIGHTS end=%s front=%.3f rear=%.3f sides=%.3f,%.3f" % [end, brightness[front], brightness[rear], brightness[2], brightness[3]])
+		_check("End %s lights the road ahead without a surrounding pool" % end,
+			brightness[front] > 0.02 and brightness[front] > brightness[rear] + 0.02
+			and brightness[front] > maxf(brightness[2], brightness[3]) + 0.02)
 	root.free()
 	await get_tree().process_frame

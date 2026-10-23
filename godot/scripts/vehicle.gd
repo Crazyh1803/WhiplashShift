@@ -21,7 +21,12 @@ signal swapped(record: Dictionary)
 signal whiplash(record: Dictionary)
 
 @export var tuning: TuningProfile
-@export var active_end: String = "A"
+@export var active_end: String = "A":
+	set(value):
+		active_end = value
+		var headlights := get_node_or_null("DrivingHeadlights")
+		if headlights != null:
+			headlights.update_active_end(active_end)
 
 var vehicle_id: String = "blackjack"
 var vehicle_label: String = "BLACKJACK X-17"

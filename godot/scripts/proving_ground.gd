@@ -130,6 +130,7 @@ func _build_cpu_drivers() -> void:
 		cpu.name = "CPU_%d_%s" % [i + 1, String(spec["name"]).replace(" ", "_")]
 		cpu.tuning = car.tuning
 		add_child(cpu)
+		TrackMaterials.attach_driving_light(cpu)
 		var driver := CpuDriver.new()
 		driver.name = "CpuDriver_%d" % (i + 1)
 		driver.lane_offset = -4.0 if i == 0 else 4.0

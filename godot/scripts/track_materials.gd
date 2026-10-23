@@ -95,16 +95,10 @@ static func flesh() -> StandardMaterial3D:
 	return material
 
 
-## A continuous local pool keeps both reversible driving directions readable.
-## No opposed cone masks, global ambient or directional sun.
-static func attach_driving_light(car: Node3D) -> void:
-	var lamp := OmniLight3D.new()
-	lamp.name = "DrivingLightPool"
-	lamp.position = Vector3(0, 2.8, 0)
-	lamp.light_color = Color("d8d3c4")
-	lamp.light_energy = 5.0
-	lamp.omni_range = 65.0
-	lamp.omni_attenuation = 1.5
-	# This represents scattered local illumination, without a vehicle self-shadow wedge.
-	lamp.shadow_enabled = false
-	car.add_child(lamp)
+## Only the driving end projects light; the world supplies all other illumination.
+static func attach_driving_light(car: Vehicle) -> void:
+	if car.has_node("DrivingHeadlights"):
+		return
+	var headlights := preload("res://scripts/driving_headlights.gd").new()
+	headlights.name = "DrivingHeadlights"
+	car.add_child(headlights)
