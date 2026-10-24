@@ -3,6 +3,11 @@
 A solo arcade combat racer: one chassis, two ends, and a swap that hands the drive from
 one to the other **without touching the body's momentum**.
 
+Development uses one chat, branch and worktree per focused change. Start with
+`$whiplash <request>`; tested corrections are pushed to that branch and selected
+for the Windows desktop preview. Main changes only after an explicit
+`$whiplash merge <branch>` instruction. See [the chat workflow](docs/chat-workflow.md).
+
 ## Consolidated project — 2026-10-16
 
 This folder brings forward the saved gameplay and Blackjack work from `Whiplash Shift`
@@ -139,19 +144,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File $installer -Install
 
 This reuses the existing Godot engine, updates existing Whiplash Shift shortcuts
 in the user's Desktop and Start Menu, and creates a desktop shortcut if needed.
-The shortcut checks for published releases on each launch. A new release downloads
+The shortcut defaults to the selected chat preview on each launch. A new release downloads
 the source archive, extracts only the game, and imports its assets before activating
 it. The first download can take several minutes. Existing installations and saves
 are retained. An unavailable update launches the current working version. Logs are
 in `%LOCALAPPDATA%\WhiplashShift\launcher.log`. No Git installation is required.
 
-When publishing game changes from the cloud, first commit and test the game, then
-set `tools/launcher/windows-release.json`'s `source_commit` to that full commit SHA
-and publish the manifest to `main`. Windows follows this manifest so it receives
-the same tested game revision. The manifest commit itself need not be the game
-revision. Run `tools/launcher/tests/windows-updater.tests.ps1` with PowerShell to
-check update, import failure, offline fallback, and quoted path behavior without
-network access or a Godot installation.
+After testing and committing a correction in its chat worktree, run
+`python3 tools/workflow/chat.py publish`. This pushes that branch and updates the
+manifest on `desktop-preview`, without merging main. The most recent preview
+selection wins; `python3 tools/workflow/chat.py preview <branch>` selects another.
+Merged releases remain on the stable channel (`-Install -Channel stable`).
+See [the chat workflow](docs/chat-workflow.md) for the one-time preview launcher
+upgrade, project commands, checks and the merge process.
 
 ## The web prototype (`web/`)
 

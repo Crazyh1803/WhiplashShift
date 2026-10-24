@@ -8,11 +8,13 @@ $global:WhiplashTestCalls = @()
 $global:WhiplashTestOffline = $false
 $global:WhiplashTestImportExit = 0
 $global:WhiplashTestLatest = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+$global:WhiplashTestReleaseUri = ''
 
 function Invoke-RestMethod {
     param($Uri, $TimeoutSec)
     if ($global:WhiplashTestOffline) { throw 'Offline fixture' }
-    return @{ source_commit = $global:WhiplashTestLatest }
+    $global:WhiplashTestReleaseUri = $Uri
+    return @{ source_commit = $global:WhiplashTestLatest; source_branch = 'chat/test-feature' }
 }
 function Invoke-WebRequest {
     param([switch]$UseBasicParsing, $Uri, $OutFile, $TimeoutSec)
@@ -43,6 +45,8 @@ try {
     & $Launcher -NoLaunch -InstallRoot $Installed
     $State = Get-Content -LiteralPath (Join-Path $Installed 'current.json') -Raw | ConvertFrom-Json
     Assert-True ($State.revision -eq $global:WhiplashTestLatest) 'A successful import activates the published revision'
+    Assert-True ($global:WhiplashTestReleaseUri -like '*/desktop-preview/*') 'The default shortcut follows the preview manifest rather than main'
+    Assert-True ($State.source_branch -eq 'chat/test-feature') 'The active task branch is recorded for diagnostics'
     Assert-True ((Get-Content -LiteralPath (Join-Path $State.project_path 'project.godot')).Trim() -eq 'updated project') 'The project is extracted to a new version'
     Assert-True (-not (Test-Path -LiteralPath (Join-Path (Split-Path $State.project_path -Parent) 'not-game.txt'))) 'Only game files are extracted'
     Assert-True ((Get-Content -LiteralPath (Join-Path $Original 'Game/godot/project.godot')).Trim() -eq 'original project') 'The original installation is preserved'
@@ -52,6 +56,9 @@ try {
     & $Launcher -InstallRoot $Installed
     Assert-True ($global:WhiplashTestCalls.Count -eq 1 -and $global:WhiplashTestCalls[0] -notcontains '--import') 'An unchanged release launches without another import'
     Assert-True ($global:WhiplashTestCalls[0][1] -eq ('"{0}"' -f $State.project_path)) 'Paths with spaces are quoted for Godot'
+
+    & $Launcher -NoLaunch -Channel stable -InstallRoot $Installed
+    Assert-True ($global:WhiplashTestReleaseUri -like '*/main/*') 'Stable mode follows only merged releases'
 
     $global:WhiplashTestLatest = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
     $global:WhiplashTestImportExit = 1

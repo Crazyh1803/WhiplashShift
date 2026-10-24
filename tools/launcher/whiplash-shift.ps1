@@ -2,6 +2,8 @@ param(
     [switch]$Install,
     [switch]$NoLaunch,
     [switch]$Editor,
+    [ValidateSet('preview', 'stable')]
+    [string]$Channel = 'preview',
     [string]$InstallRoot = (Join-Path $env:LOCALAPPDATA 'WhiplashShift')
 )
 
@@ -38,9 +40,12 @@ if (Test-Path -LiteralPath $StatePath) {
 }
 
 try {
-    $Release = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/$Repository/main/tools/launcher/windows-release.json" -TimeoutSec 15
+    $ReleaseRef = if ($Channel -eq 'preview') { 'desktop-preview' } else { 'main' }
+    $Release = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/$Repository/$ReleaseRef/tools/launcher/windows-release.json" -TimeoutSec 15
     $Latest = [string]$Release.source_commit
     if ($Latest -notmatch '^[0-9a-f]{40}$') { throw 'Invalid release revision.' }
+    $SourceBranch = if ($Release.source_branch) { [string]$Release.source_branch } else { 'main' }
+    Write-LauncherLog "$Channel channel: $SourceBranch at $($Latest.Substring(0, 8))."
     if ($Latest -ne $Revision) {
         Write-LauncherLog 'Downloading the latest published game. The first update may take a few minutes.'
         $Staging = Join-Path $InstallRoot ('.update-' + [Guid]::NewGuid().ToString('N'))
@@ -78,7 +83,7 @@ try {
             New-Item -ItemType Directory -Path (Split-Path $VersionPath -Parent) -Force | Out-Null
             Move-Item -LiteralPath $GameRoot -Destination $VersionPath
             $NewProject = Join-Path $VersionPath 'godot'
-            $NewState = @{ revision = $Latest; project_path = $NewProject }
+            $NewState = @{ revision = $Latest; project_path = $NewProject; channel = $Channel; source_branch = $SourceBranch }
             $NewState | ConvertTo-Json | Set-Content -LiteralPath ($StatePath + '.tmp') -Encoding UTF8
             Move-Item -LiteralPath ($StatePath + '.tmp') -Destination $StatePath -Force
             $ProjectPath = $NewProject
@@ -118,7 +123,7 @@ if ($Install) {
     foreach ($ShortcutPath in $Shortcuts.Keys) {
         $Link = $Shell.CreateShortcut($ShortcutPath)
         $Link.TargetPath = Join-Path $env:SystemRoot 'System32/WindowsPowerShell/v1.0/powershell.exe'
-        $Link.Arguments = '-NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $LauncherPath
+        $Link.Arguments = '-NoProfile -ExecutionPolicy Bypass -File "{0}" -Channel {1}' -f $LauncherPath, $Channel
         $Link.WorkingDirectory = $InstallRoot
         $Link.IconLocation = $EnginePath + ',0'
         $Link.Save()
