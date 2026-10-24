@@ -102,7 +102,7 @@ func _ready() -> void:
 	for frame in range(4):
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
-	_check("random crate contents screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("crate-contents.png")) == OK)
+	_check("mystery crate screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("mystery-crates.png")) == OK)
 	_check("item bus has a limiter", AudioServer.get_bus_effect_count(AudioServer.get_bus_index("ItemFX")) == 1)
 	for i in range(32):
 		scene.items.audio.play("machine_guns", scene.car.global_position)

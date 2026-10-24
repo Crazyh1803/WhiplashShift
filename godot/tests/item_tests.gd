@@ -290,6 +290,7 @@ func _test_crate_pool() -> void:
 				seed_value += 1
 			items.rng.seed = seed_value
 			items._roll_pickup(pickup)
+			_check("lane %d conceals %s before collection" % [lane + 1, id], pickup.label.text == "MYSTERY ITEM" and pickup.icon.text == "?" and pickup.label.modulate == Color("ffe49b") and pickup.icon.modulate == Color("ffe49b"))
 			items.held[0] = ""
 			items.ammo[0] = 0
 			items.active[0] = ""
@@ -297,9 +298,9 @@ func _test_crate_pool() -> void:
 			items.cars[0].global_position = pickup.pos
 			items.previous_positions[0] = pickup.pos
 			items._collect(0.001)
-			_check("lane %d can offer %s with the displayed quantity" % [lane + 1, id], items.held[0] == id and items.ammo[0] == int(ItemCatalog.DATA[id].get("ammo", 0)))
+			_check("lane %d reveals %s and its quantity only on collection" % [lane + 1, id], items.held[0] == id and items.ammo[0] == int(ItemCatalog.DATA[id].get("ammo", 0)) and items.feedback.contains(ItemCatalog.supply_label(id)))
 			items._collect(6.1)
-			_check("lane %d respawn rerolls a valid displayed item" % [lane + 1], ItemCatalog.IDS.has(pickup.item) and pickup.label.text == ItemCatalog.supply_label(pickup.item))
+			_check("lane %d respawn rerolls while keeping contents concealed" % [lane + 1], ItemCatalog.IDS.has(pickup.item) and pickup.label.text == "MYSTERY ITEM" and pickup.icon.text == "?")
 
 
 func _test_streams() -> void:

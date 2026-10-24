@@ -83,13 +83,13 @@ func projectile(pos: Vector3, direction: Vector3, id: String) -> Node3D:
 		CombatVisuals.box(root, Vector3(0, 0.3, 0), Vector3(0.12, 0.18, 0.2), CombatVisuals.metal(Color("8d999a")))
 		CombatVisuals.box(root, Vector3(0, 0.3, 0.1), Vector3(0.1, 0.05, 0.45), CombatVisuals.metal(Color("bac0bd")))
 	else:
-		# A small incandescent head and fading crossed streak, not parallel laser bars.
+		# A readable amber streak and solid bullet tip, without a camera-facing flare.
 		var material := ShaderMaterial.new()
 		material.shader = TRACER
 		for angle in [0.0, PI / 2]:
 			var streak := MeshInstance3D.new()
 			var quad := QuadMesh.new()
-			quad.size = Vector2(0.055, 1.9)
+			quad.size = Vector2(0.085, 1.5)
 			streak.mesh = quad
 			streak.material_override = material
 			streak.basis = Basis(Vector3.FORWARD, angle) * Basis(Vector3.RIGHT, PI / 2)
@@ -97,7 +97,9 @@ func projectile(pos: Vector3, direction: Vector3, id: String) -> Node3D:
 			streak.position.z = 0.001
 			streak.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			root.add_child(streak)
-		CombatVisuals.billboard(root, Vector3.ZERO, Color("fff4cd"), 0.13, false)
+		var tip := CombatVisuals.cylinder(root, Vector3.ZERO, 0.028, 0.11, CombatVisuals.glow(Color("ffd786"), 0.3))
+		tip.rotation.x = PI / 2
+		tip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 	if direction.cross(Vector3.UP).length_squared() > 0.001:
 		root.look_at(pos + direction, Vector3.UP)
@@ -105,12 +107,26 @@ func projectile(pos: Vector3, direction: Vector3, id: String) -> Node3D:
 	return root
 
 
-func muzzle(pos: Vector3, rocket: bool) -> void:
-	_sprite_effect(pos, Color("fff4cc"), 2.2 if rocket else 0.55, 0.075 if rocket else 0.035, Vector3.ZERO, 0.7 if rocket else 0.2, false)
+func muzzle(pos: Vector3, rocket: bool, direction := Vector3.FORWARD) -> void:
+	if rocket:
+		_sprite_effect(pos, Color("fff4cc"), 2.2, 0.075, Vector3.ZERO, 0.7, false)
+	else:
+		# A brief forward flame cone replaces the star-shaped gun flash.
+		while particles.size() >= 240:
+			var oldest: Dictionary = particles.pop_front()
+			oldest.node.queue_free()
+		var material := CombatVisuals.glow(Color(1.0, 0.67, 0.2, 0.9), 0.4)
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		var flame := CombatVisuals.cylinder(self, pos + direction * 0.14, 0.075, 0.28, material, 0.015)
+		flame.quaternion = Quaternion(Vector3.UP, direction.normalized())
+		flame.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		particles.append({"node": flame, "material": material, "start_color": material.albedo_color,
+			"end_color": Color(1.0, 0.35, 0.06, 0.0), "life": 0.028, "duration": 0.028,
+			"velocity": Vector3.ZERO, "growth": 0.2})
 	var light := OmniLight3D.new()
 	light.light_color = Color("ffbd70")
-	light.light_energy = 2.0
-	light.omni_range = 7.0
+	light.light_energy = 2.0 if rocket else 0.7
+	light.omni_range = 7.0 if rocket else 4.0
 	particles.back().node.add_child(light)
 	_sprite_effect(pos, Color(0.4, 0.42, 0.45, 0.3), 0.7, 0.4, Vector3.UP, 2.0, true)
 
@@ -119,9 +135,9 @@ func trail(shot: Dictionary, delta: float) -> void:
 	var visual: Node3D = shot.visual
 	var velocity: Vector3 = shot.velocity
 	if shot.id == "machine_guns":
-		var length := minf(1.9, float(shot.get("travel", 0.0)))
+		var length := minf(1.5, float(shot.get("travel", 0.0)))
 		for i in range(2):
-			visual.get_child(i).scale.y = maxf(0.001, length / 1.9)
+			visual.get_child(i).scale.y = maxf(0.001, length / 1.5)
 			visual.get_child(i).position.z = length * 0.5
 		return
 	if shot.id == "grenades":
@@ -286,11 +302,12 @@ func animate_hazard(entry: Dictionary) -> void:
 		root.get_child(0).material_override.set_shader_parameter("opacity", fade)
 
 
-func update_supply(pickup: Dictionary, id: String) -> void:
-	pickup["label"].text = ItemCatalog.supply_label(id)
-	pickup["label"].modulate = Color(ItemCatalog.DATA[id]["color"])
-	pickup["icon"].text = {"shield": "◇", "machine_guns": "MG", "rockets": "R", "grenades": "G", "smoke": "SMK", "oil": "OIL", "homing": "H"}[id]
-	pickup["icon"].modulate = Color(ItemCatalog.DATA[id]["color"])
+func conceal_supply(pickup: Dictionary) -> void:
+	# All items share the same public presentation until collection.
+	pickup["label"].text = "MYSTERY ITEM"
+	pickup["label"].modulate = Color("ffe49b")
+	pickup["icon"].text = "?"
+	pickup["icon"].modulate = Color("ffe49b")
 
 
 func prepare_streams(car: Vehicle) -> void:

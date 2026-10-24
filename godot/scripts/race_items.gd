@@ -160,7 +160,7 @@ func grant_item(index: int, id: String) -> void:
 func _roll_pickup(pickup: Dictionary) -> void:
 	# Every lane uses exactly the same full catalog, independently on each respawn.
 	pickup["item"] = ItemCatalog.roll(rng.randf())
-	art.update_supply(pickup, pickup["item"])
+	art.conceal_supply(pickup)
 
 
 func fire(index: int) -> bool:
@@ -311,7 +311,7 @@ func _collect(delta: float) -> void:
 		visual.position.y = sin(art.clock * 3.0) * 0.15
 		visual.get_node("HolographicDisplay").rotate_y(-delta)
 		var label: Label3D = pickup["label"]
-		label.text = ItemCatalog.supply_label(pickup["item"]) if visual.visible else "RESPAWN %.0fs" % ceilf(float(pickup["cooldown"]))
+		label.text = "MYSTERY ITEM" if visual.visible else "RESPAWN %.0fs" % ceilf(float(pickup["cooldown"]))
 		if not visual.visible:
 			continue
 		for i in cars.size():
@@ -330,7 +330,7 @@ func _collect(delta: float) -> void:
 			art.burst(pickup["pos"], Color("ffc34d"), 10, false)
 			if i == 0:
 				audio.play("pickup", cars[i].global_position)
-				_message(ItemCatalog.label(held[i]) + " READY  [E]")
+				_message(ItemCatalog.supply_label(held[i]) + " COLLECTED  [E]")
 			break
 
 
@@ -353,11 +353,11 @@ func _emit(index: int, id: String) -> void:
 	if id == "grenades":
 		velocity += Vector3.UP * 8.0
 	if id == "machine_guns":
-		art.muzzle(origin, false)
+		art.muzzle(origin, false, direction)
 		art.casing(origin - direction * 0.8, cars[index].linear_velocity * 0.5 + cars[index].global_basis.x * 2 + Vector3.UP * 2)
 		_gun_mounts[index][cars[index].active_end].show()
 	else:
-		art.muzzle(origin + direction * cars[index].tuning.body_length * 0.5, true)
+		art.muzzle(origin + direction * cars[index].tuning.body_length * 0.5, true, direction)
 	audio.play(id, origin)
 	if not blocker.is_empty():
 		_impact({"owner": index, "id": id}, blocker["position"], blocker["normal"], blocker["collider"])

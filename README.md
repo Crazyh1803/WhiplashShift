@@ -36,8 +36,9 @@ whole approach. They prepare end swaps before the boundary and keep the maneuver
 committed until they reach the new surface. Difficulty changes requested pace,
 cornering confidence, braking and overtaking decisions.
 All three crates in every row independently roll from the full seven-item catalog.
-Each floating armored box displays its rolled item and quantity, then rerolls after
-its six-second respawn. The shared odds apply to every lane and CPU racer; homing
+Each floating armored box conceals its rolled item behind the same gold question
+mark and mystery label, then rerolls after its six-second respawn. Collection
+reveals the item and quantity in the HUD. The shared odds apply to every lane and CPU racer; homing
 missiles retain their one-percent rarity. See `godot/scripts/item_catalog.gd` for
 ammo counts and odds.
 
@@ -58,8 +59,8 @@ ammo and pending burst rounds. Swapping redirects subsequent shots and the outle
 Smoke/oil use continuous nozzle particles and overlapping surface/cloud deposits;
 stationary emitters refresh a single deposit rather than stacking hazards.
 
-Gun tracers emerge from alternating barrels as small hot tips with tapered streaks,
-slight spread, muzzle flashes and ejected casings. Rockets and grenades retain metal
+Gun tracers emerge from alternating barrels as warm amber streaks with solid bullet tips,
+slight spread, brief flame-shaped muzzle flashes and ejected casings. Rockets and grenades retain metal
 models and textured explosions. The pulsing hex shield flashes when blocking hits.
 Audio uses CC0 recorded contact layers plus broadband cracks, low-frequency noise
 and debris tails for impacts and explosions, rather than pitched hit beeps. Positional
