@@ -10,6 +10,8 @@ const OIL_GRIP := 0.35
 const MAX_HAZARDS := 48
 const MAX_EMISSIONS_PER_TICK := 4
 
+var art: RaceItemArt
+
 var race: RaceDirector
 var cars: Array[Vehicle] = []
 var held: Array[String] = []
@@ -32,6 +34,10 @@ var _shields: Array[MeshInstance3D] = []
 
 
 func setup(p_race: RaceDirector, racers: Array[Vehicle]) -> void:
+	if art == null:
+		art = RaceItemArt.new()
+		art.name = "ItemGraphics"
+		add_child(art)
 	_clear_transients()
 	for car: Vehicle in cars:
 		if is_instance_valid(car):
@@ -53,9 +59,10 @@ func setup(p_race: RaceDirector, racers: Array[Vehicle]) -> void:
 		var side := Vector3(-direction.z, 0.0, direction.x)
 		for lane: float in [-0.25, 0.0, 0.25]:
 			var pos: Vector3 = point["pos"] + side * float(point["w"]) * lane + Vector3.UP * 1.5
-			var visual := _visual(pos, 1.0, Color("ffc34d"))
-			visual.rotation_degrees = Vector3(0, 0, 45)
-			pickups.append({"pos": pos, "cooldown": 0.0, "visual": visual})
+			var supply := art.supply(pos)
+			supply["pos"] = pos
+			supply["cooldown"] = 0.0
+			pickups.append(supply)
 	reset()
 
 
@@ -90,6 +97,7 @@ func reset() -> void:
 	for pickup: Dictionary in pickups:
 		pickup["cooldown"] = 0.0
 		pickup["visual"].visible = true
+		pickup["model"].visible = true
 	feedback = ""
 	feedback_time = 0.0
 
@@ -153,6 +161,7 @@ func tick(delta: float) -> void:
 			obscured[i] = false
 			cars[i].item_grip_multiplier = 1.0
 		return
+	art.tick(delta)
 	feedback_time = maxf(0.0, feedback_time - delta)
 	for i in cars.size():
 		protection[i] = maxf(0.0, protection[i] - delta)
@@ -220,9 +229,13 @@ func _stop(index: int) -> void:
 func _collect(delta: float) -> void:
 	for pickup: Dictionary in pickups:
 		pickup["cooldown"] = maxf(0.0, float(pickup["cooldown"]) - delta)
-		var visual: MeshInstance3D = pickup["visual"]
+		var visual: Node3D = pickup["model"]
 		visual.visible = float(pickup["cooldown"]) <= 0.0
-		visual.rotate_y(delta * 1.5)
+		visual.rotate_y(delta * 0.45)
+		visual.position.y = sin(art.clock * 3.0) * 0.15
+		visual.get_node("HolographicDisplay").rotate_y(-delta)
+		var label: Label3D = pickup["label"]
+		label.text = "ITEM BOX" if visual.visible else "RESPAWN %.0fs" % ceilf(float(pickup["cooldown"]))
 		if not visual.visible:
 			continue
 		for i in cars.size():
@@ -239,6 +252,7 @@ func _collect(delta: float) -> void:
 			_cpu_wait[i] = 0.8
 			pickup["cooldown"] = PICKUP_RESPAWN
 			visual.hide()
+			art.burst(pickup["pos"], Color("ffc34d"), 10, false)
 			if i == 0:
 				_message(ItemCatalog.label(held[i]) + " READY  [E]")
 			break
@@ -254,7 +268,8 @@ func _emit(index: int, id: String) -> void:
 	var velocity := direction * float(data["speed"])
 	if id == "grenades":
 		velocity += Vector3.UP * 8.0
-	var visual := _visual(origin, 0.14 if id == "machine_guns" else 0.45, Color(data["color"]), id == "grenades")
+	var visual := art.projectile(origin, direction, id)
+	art.muzzle(origin + direction * cars[index].tuning.body_length * 0.5, id != "machine_guns")
 	shots.append({"owner": index, "id": id, "pos": origin, "velocity": velocity,
 		"life": float(data["life"]), "target": _target(index) if id == "homing" else -1, "visual": visual})
 
@@ -361,6 +376,7 @@ func _tick_shots(delta: float) -> void:
 			continue
 		shot["pos"] = end
 		shot["visual"].global_position = end
+		art.trail(shot, delta)
 		if float(shot["life"]) <= 0.0:
 			if id == "grenades":
 				_impact(shot, end, Vector3.UP, null)
@@ -384,8 +400,7 @@ func _impact(shot: Dictionary, pos: Vector3, normal: Vector3, collider: Object) 
 			if not sight.is_empty() and sight["collider"] != cars[i]:
 				continue
 		_apply_hit(i, owner, id)
-	var flash := _visual(pos, maxf(0.4, radius * 0.25), Color(data["color"]), true)
-	effects.append({"visual": flash, "life": 0.25})
+	art.burst(pos, Color(data["color"]), 12 if radius > 0 else 4, radius > 0)
 
 
 func _apply_hit(victim: int, owner: int, id: String) -> void:
@@ -473,6 +488,8 @@ func _remove(collection: Array[Dictionary], index: int) -> void:
 
 
 func _clear_transients() -> void:
+	if art:
+		art.clear()
 	for collection: Array[Dictionary] in [shots, effects, hazards]:
 		for entry: Dictionary in collection:
 			entry["visual"].queue_free()
