@@ -63,27 +63,46 @@ func _ready() -> void:
 			progress.route_distance = i * 35
 		await get_tree().physics_frame
 		await get_tree().physics_frame
-		scene.items.held[0] = id
+		scene.items.grant_item(0, id)
 		_check(id + " activates through RaceItems.fire", scene.items.fire(0))
 		_check(id + " starts a positional audio voice", scene.items.audio._voices.any(func(voice: AudioStreamPlayer3D) -> bool: return voice.playing))
 		scene.items.audio.sync(scene.items.cars, scene.items.active)
-		if id in ["shield", "smoke"]:
+		scene.items.art.sync_streams(scene.items.cars, scene.items.active)
+		if id in ["shield", "smoke", "oil"]:
 			_check(id + " sustain loop is playing", scene.items.audio._loops[0].playing)
 		if id in ["machine_guns", "rockets", "homing", "grenades"]:
 			scene.items._tick_shots(0.04)
 		for car: Vehicle in scene.items.cars:
 			car.freeze = true
+		if id in ["smoke", "oil"]:
+			for step in range(16):
+				scene.car.global_position.z -= 0.7
+				scene.items._tick_active(0, 0.03)
+				scene.items.art.sync_streams(scene.items.cars, scene.items.active)
+			_check(id + " continuous emitter is active", scene.items.art.streams[0][id].emitting)
+			scene.car.reset_physics_interpolation()
 		for hazard: Dictionary in scene.items.hazards:
 			scene.items.art.animate_hazard(hazard)
 		var target: Vector3 = scene.car.global_position
 		if id in ["smoke", "oil"]:
-			target = scene.items.hazards[0].pos
+			target = (Vector3(scene.items.hazards[0].pos) + Vector3(scene.items.hazards.back().pos)) * 0.5
 		camera.global_position = target + Vector3(10, 7 if id == "oil" else 4.5, 12)
 		camera.look_at(target + Vector3.UP * 0.5)
 		for frame in 4:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		_check(id + " screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join(id + ".png")) == OK)
+	scene.items.reset()
+	var left: Vector3 = scene.items.pickups[0].pos
+	var center: Vector3 = scene.items.pickups[1].pos
+	var right: Vector3 = scene.items.pickups[2].pos
+	var forward := (right - left).normalized().cross(Vector3.UP)
+	camera.global_position = center + forward * 12 + Vector3.UP * 4
+	camera.look_at(center + Vector3.UP)
+	for frame in range(4):
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_check("random crate contents screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("crate-contents.png")) == OK)
 	_check("item bus has a limiter", AudioServer.get_bus_effect_count(AudioServer.get_bus_index("ItemFX")) == 1)
 	for i in range(32):
 		scene.items.audio.play("machine_guns", scene.car.global_position)
@@ -91,7 +110,7 @@ func _ready() -> void:
 	scene.items.audio.stop_all()
 	_check("cleanup stops every one-shot and sustain loop", scene.items.audio._voices.all(func(v: AudioStreamPlayer3D) -> bool: return not v.playing)
 		and scene.items.audio._loops.values().all(func(v: AudioStreamPlayer3D) -> bool: return not v.playing))
-	for id in ["machine_guns", "smoke", "oil", "shield_on"]:
+	for id in ["machine_guns", "impact", "explosion", "shield_hit", "smoke", "oil", "shield_on"]:
 		ItemAudio.make_sound(id).save_to_wav(output.path_join(id + ".wav"))
 	scene.queue_free()
 	for frame in 3:

@@ -35,25 +35,38 @@ Racers plan braking distance instead of adopting a distant corner's speed for th
 whole approach. They prepare end swaps before the boundary and keep the maneuver
 committed until they reach the new surface. Difficulty changes requested pace,
 cornering confidence, braking and overtaking decisions.
-Floating armored gold crates with holographic question marks grant one random item.
-Collected crates leave a pad with a respawn countdown. Weapon visuals include metal
-missiles, grenade models, tracers, muzzle flashes, exhaust, sparks and textured
-fire/smoke explosions. See `godot/assets/vfx/ATTRIBUTION.md` for texture licenses.
-Item effects have positional audio: gun bursts, rocket/homing launches, grenade
-launches, explosions, oil deployment and smoke hiss, plus pickup and hit confirmations.
-Shield activation, sustain, blocked hits and expiry have distinct cues. The shield
-uses a pulsing hexagonal field that flashes on impact; smoke billows use textured
-clouds, and oil forms a shimmering surface slick. Machine guns show twin tracers,
-muzzle flashes, ejected casings and a mount on the active driving end. Smoke/shield
-loops stop on expiry, recovery or race exit. A dedicated limited audio bus keeps
-overlapping effects bounded without changing the vehicle audio.
+All three crates in every row independently roll from the full seven-item catalog.
+Each floating armored box displays its rolled item and quantity, then rerolls after
+its six-second respawn. The shared odds apply to every lane and CPU racer; homing
+missiles retain their one-percent rarity. See `godot/scripts/item_catalog.gd` for
+ammo counts and odds.
 
-Gold pickup boxes grant one random item. Press **E** once to activate it: machine
-guns, rockets and grenades fire automatically for a short timer; shields protect
-for their full timer; smoke and oil deploy behind the active end. The **1% rare homing
-missile** locks a visible racer ahead and fires once. Swapping redirects subsequent
-shots and drops. CPU racers use the same item odds and rules. No second player or
-copilot is required.
+| Pickup | Supply | E action |
+|---|---|---|
+| Machine guns | 30 rounds | One three-round burst, spaced at 65 ms per round |
+| Rockets | 4 rockets | Fire one |
+| Grenades | 5 grenades | Throw one |
+| Homing missile | 1 missile | Fire one at a visible target; no lock preserves it |
+| Shield | 5 seconds | Activate protection |
+| Smoke screen | 5 seconds | Start a continuous rearward stream |
+| Oil slick | 5 seconds | Start a continuous rearward stream |
+
+Weapons retain ammunition until spent. Holding E does not repeat; each fresh press
+fires once after the weapon cooldown. The HUD shows rounds/shots remaining. CPUs
+use the same finite supply and cooldowns. Recovery, retry and race exit clear held
+ammo and pending burst rounds. Swapping redirects subsequent shots and the outlet.
+Smoke/oil use continuous nozzle particles and overlapping surface/cloud deposits;
+stationary emitters refresh a single deposit rather than stacking hazards.
+
+Gun tracers emerge from alternating barrels as small hot tips with tapered streaks,
+slight spread, muzzle flashes and ejected casings. Rockets and grenades retain metal
+models and textured explosions. The pulsing hex shield flashes when blocking hits.
+Audio uses CC0 recorded contact layers plus broadband cracks, low-frequency noise
+and debris tails for impacts and explosions, rather than pitched hit beeps. Positional
+playback, continuous smoke/oil and shield loops use a bounded, limited effects bus.
+Sound credits: `godot/assets/audio/items/ATTRIBUTION.md`. Particle texture credits:
+`godot/assets/vfx/ATTRIBUTION.md`.
+
 The HUD shows the held item or active timer, lap, position and race time; finishing opens results with **RACE AGAIN**
 (`Enter`) or **BACK TO GARAGE**. Retry keeps the same vehicles. `R` recovers only
 the player to the last checkpoint; `Esc` returns to the garage.

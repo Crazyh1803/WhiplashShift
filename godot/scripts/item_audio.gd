@@ -1,15 +1,18 @@
-## Bounded positional item audio. Deterministic WAV synthesis has no download dependency.
+## Bounded positional item audio with CC0 recorded contact layers and broadband transients.
 class_name ItemAudio
 extends Node3D
 
 signal cue(sound_id: String)
 
+const CONTACT_SMALL = preload("res://assets/audio/items/contact_small.wav")
+const CONTACT_HEAVY = preload("res://assets/audio/items/contact_heavy.wav")
+
 const RATE := 22050
 const MAX_VOICES := 16
 const DURATIONS := {"machine_guns": 0.13, "rockets": 0.48, "homing": 0.55,
-	"grenades": 0.22, "explosion": 0.95, "impact": 0.16, "hit": 0.12,
+	"grenades": 0.22, "explosion": 1.25, "impact": 0.55, "hit": 0.22,
 	"pickup": 0.42, "oil": 0.28, "smoke": 0.35, "shield_on": 0.55,
-	"shield_hit": 0.32, "shield_off": 0.35, "shield_hum": 1.0, "smoke_loop": 1.0}
+	"shield_hit": 0.45, "shield_off": 0.35, "shield_hum": 1.0, "smoke_loop": 1.0, "oil_loop": 1.0}
 var _cache: Dictionary = {}
 var _voices: Array[AudioStreamPlayer3D] = []
 var _loops: Dictionary = {}
@@ -41,7 +44,8 @@ func play(id: String, pos: Vector3) -> void:
 			_voices.append(voice)
 	voice.stop()
 	voice.stream = sound(id)
-	voice.volume_db = -3.0 if id in ["explosion", "rockets", "homing"] else -6.0
+	voice.pitch_scale = randf_range(0.92, 1.08) if id in ["impact", "explosion", "machine_guns", "grenades"] else 1.0
+	voice.volume_db = -12.0 if id == "hit" else (-3.0 if id in ["explosion", "rockets", "homing"] else -6.0)
 	voice.global_position = pos
 	voice.play()
 
@@ -56,7 +60,7 @@ func sync(cars: Array[Vehicle], active: Array[String]) -> void:
 	if DisplayServer.get_name() == "headless":
 		return
 	for i in cars.size():
-		var id := "shield_hum" if active[i] == "shield" else ("smoke_loop" if active[i] == "smoke" else "")
+		var id := "shield_hum" if active[i] == "shield" else ("smoke_loop" if active[i] == "smoke" else ("oil_loop" if active[i] == "oil" else ""))
 		if id.is_empty():
 			if _loops.has(i):
 				_loops[i].stop()
@@ -122,22 +126,20 @@ static func make_sound(id: String) -> AudioStreamWAV:
 		var sample := 0.0
 		match id:
 			"machine_guns":
-				sample = (noise * 0.65 + sin(TAU * 115.0 * t) * 0.55) * exp(-t * 35.0)
-				if t > 0.035:
-					sample += sin(TAU * 950 * t) * exp(-(t - 0.035) * 65) * 0.22
+				sample = noise * 0.8 * exp(-t * 80) + low * 1.5 * exp(-t * 22)
+				sample += _contact(CONTACT_SMALL, t * 1.4) * 0.7 * exp(-t * 10)
 			"rockets", "homing":
 				sample = (low * 2.2 + noise * 0.16 + sin(TAU * 92 * t) * 0.1) * exp(-t * 4)
 				if id == "homing":
 					sample += sin(TAU * 900 * t) * 0.14 * exp(-t * 13)
 			"grenades":
-				sample = (sin(TAU * 160 * t) * 0.65 + noise * 0.3) * exp(-t * 20)
+				sample = _contact(CONTACT_HEAVY, t * 1.7) * 0.8 + low * 0.8 * exp(-t * 20)
 			"explosion":
-				sample = (low * 2.5 + sin(TAU * 49 * t) * 0.45) * exp(-t * 4.7)
-				sample += noise * 0.4 * exp(-t * 19)
-			"impact":
-				sample = (noise * 0.6 + sin(TAU * 1800 * t) * 0.25) * exp(-t * 29)
-			"hit":
-				sample = sin(TAU * (1500 if t < 0.06 else 1100) * t) * 0.35 * exp(-t * 16)
+				sample = _contact(CONTACT_HEAVY, t) * 0.9 + low * 2.0 * exp(-t * 3.5)
+				sample += noise * 0.45 * exp(-t * 26)
+			"impact", "hit":
+				sample = _contact(CONTACT_SMALL, t * (1.3 if id == "hit" else 1.0)) * 0.9
+				sample += (noise - low) * 0.22 * exp(-t * 60)
 			"pickup":
 				var note := mini(2, int(t / 0.11))
 				sample = sin(TAU * [740, 988, 1480][note] * t) * 0.45 * exp(-fmod(t, 0.11) * 13)
@@ -150,18 +152,27 @@ static func make_sound(id: String) -> AudioStreamWAV:
 				phase += TAU * frequency / RATE
 				sample = (sin(phase) * 0.4 + sin(phase * 1.5) * 0.16) * sin(PI * t / duration)
 			"shield_hit":
-				sample = (sin(TAU * 420 * t) * 0.45 + sin(TAU * 931 * t) * 0.3 + noise * 0.15) * exp(-t * 12)
+				sample = _contact(CONTACT_SMALL, t * 1.2) * 0.8 + (noise - low) * 0.15 * exp(-t * 15)
 			"shield_hum":
 				sample = sin(TAU * 110 * t) * 0.14 + sin(TAU * 220 * t) * 0.06
 			"smoke_loop":
 				sample = (noise - low) * 0.12
+			"oil_loop":
+				sample = low * 0.45 + (noise - low) * 0.03
 		var envelope := minf(1, t * 1000) * minf(1, (duration - t) * 100)
 		bytes.encode_s16(i * 2, int(clampf(sample * envelope, -0.9, 0.9) * 32767))
 	var wav := AudioStreamWAV.new()
 	wav.format = AudioStreamWAV.FORMAT_16_BITS
 	wav.mix_rate = RATE
 	wav.data = bytes
-	if id in ["shield_hum", "smoke_loop"]:
+	if id in ["shield_hum", "smoke_loop", "oil_loop"]:
 		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
 		wav.loop_end = count
 	return wav
+
+
+static func _contact(wav: AudioStreamWAV, time: float) -> float:
+	var offset := int(time * wav.mix_rate) * 2
+	if offset + 1 >= wav.data.size():
+		return 0.0
+	return float(wav.data.decode_s16(offset)) / 32768.0

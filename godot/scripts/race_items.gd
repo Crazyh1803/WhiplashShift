@@ -7,8 +7,7 @@ const HIT_PROTECTION := 0.4
 const RECOVERY_PROTECTION := 2.0
 const PICKUP_RADIUS := 3.0
 const OIL_GRIP := 0.35
-const MAX_HAZARDS := 48
-const MAX_EMISSIONS_PER_TICK := 4
+const MAX_HAZARDS := 192
 
 var art: RaceItemArt
 var audio: ItemAudio
@@ -19,6 +18,12 @@ var cars: Array[Vehicle] = []
 var held: Array[String] = []
 var active: Array[String] = []
 var remaining: Array[float] = []
+var ammo: Array[int] = []
+var fire_cooldown: Array[float] = []
+var burst_left: Array[int] = []
+var burst_delay: Array[float] = []
+var _barrel: Array[int] = []
+var _stream_tail: Array[Dictionary] = []
 var protection: Array[float] = []
 var oil_time: Array[float] = []
 var obscured: Array[bool] = []
@@ -31,7 +36,6 @@ var feedback: String = ""
 var feedback_time := 0.0
 var rng := RandomNumberGenerator.new()
 var _cpu_wait: Array[float] = []
-var _next_emit: Array[float] = []
 var _shields: Array[MeshInstance3D] = []
 
 
@@ -78,32 +82,45 @@ func reset() -> void:
 		shield.queue_free()
 	_shields.clear()
 	_free_guns()
+	art.clear_streams()
 	held.clear()
 	active.clear()
 	remaining.clear()
+	ammo.clear()
+	fire_cooldown.clear()
+	burst_left.clear()
+	burst_delay.clear()
+	_barrel.clear()
+	_stream_tail.clear()
 	protection.clear()
 	oil_time.clear()
 	obscured.clear()
 	previous_positions.clear()
 	_cpu_wait.clear()
-	_next_emit.clear()
 	for car: Vehicle in cars:
 		held.append("")
 		active.append("")
 		remaining.append(0.0)
+		ammo.append(0)
+		fire_cooldown.append(0.0)
+		burst_left.append(0)
+		burst_delay.append(0.0)
+		_barrel.append(0)
+		_stream_tail.append({})
 		protection.append(0.0)
 		oil_time.append(0.0)
 		obscured.append(false)
 		previous_positions.append(car.global_position)
 		_cpu_wait.append(0.0)
-		_next_emit.append(0.0)
 		car.item_grip_multiplier = 1.0
 		var shield := art.shield(car.global_position, car.tuning.body_length * 0.65)
 		shield.hide()
 		_shields.append(shield)
 		_gun_mounts.append(art.gun_mounts(car))
+		art.prepare_streams(car)
 	for pickup: Dictionary in pickups:
 		pickup["cooldown"] = 0.0
+		_roll_pickup(pickup)
 		pickup["visual"].visible = true
 		pickup["model"].visible = true
 	feedback = ""
@@ -112,6 +129,8 @@ func reset() -> void:
 
 func reset_racer(index: int) -> void:
 	held[index] = ""
+	ammo[index] = 0
+	fire_cooldown[index] = 0
 	_stop(index)
 	protection[index] = RECOVERY_PROTECTION
 	oil_time[index] = 0.0
@@ -132,32 +151,69 @@ func available(index: int) -> bool:
 		and float(race.entrants[index]["finish_time"]) < 0.0 and not cars[index].freeze
 
 
+func grant_item(index: int, id: String) -> void:
+	held[index] = id
+	ammo[index] = int(ItemCatalog.DATA[id].get("ammo", 0))
+	_cpu_wait[index] = 0.8
+
+
+func _roll_pickup(pickup: Dictionary) -> void:
+	# Every lane uses exactly the same full catalog, independently on each respawn.
+	pickup["item"] = ItemCatalog.roll(rng.randf())
+	art.update_supply(pickup, pickup["item"])
+
+
 func fire(index: int) -> bool:
-	if not available(index) or held[index].is_empty() or not active[index].is_empty():
+	if not available(index) or held[index].is_empty() or not active[index].is_empty() or burst_left[index] > 0:
 		return false
 	var id := held[index]
-	# With no visible target, keep the rare missile rather than silently waste it.
-	if id == "homing" and _target(index) < 0:
+	if ItemCatalog.is_ammo(id):
+		if fire_cooldown[index] > 0 or ammo[index] < int(ItemCatalog.DATA[id]["cost"]):
+			return false
+		if id == "homing" and _target(index) < 0:
+			if index == 0:
+				_message("NO MISSILE LOCK — ITEM SAVED")
+			return false
+		ammo[index] -= int(ItemCatalog.DATA[id]["cost"])
+		fire_cooldown[index] = float(ItemCatalog.DATA[id]["cooldown"])
+		_emit(index, id)
+		if id == "machine_guns":
+			burst_left[index] = 2
+			burst_delay[index] = float(ItemCatalog.DATA[id]["interval"])
+		elif ammo[index] == 0:
+			held[index] = ""
+		_cpu_wait[index] = maxf(0.35, fire_cooldown[index])
 		if index == 0:
-			_message("NO MISSILE LOCK — ITEM SAVED")
-		return false
+			_message("%s · %d LEFT" % [ItemCatalog.label(id), ammo[index]])
+		return true
 	held[index] = ""
 	active[index] = id
 	remaining[index] = float(ItemCatalog.DATA[id]["duration"])
-	_next_emit[index] = float(ItemCatalog.DATA[id]["interval"])
+	_stream_tail[index] = {}
 	if id == "shield":
-		oil_time[index] = 0.0
-		cars[index].item_grip_multiplier = 1.0
+		oil_time[index] = 0
+		cars[index].item_grip_multiplier = 1
 		_shields[index].global_position = cars[index].global_position
 		_shields[index].show()
 		audio.play("shield_on", cars[index].global_position)
 	else:
 		_emit(index, id)
-	if id == "homing":
-		_stop(index)
 	if index == 0:
-		_message(ItemCatalog.label(id) + (" FIRED" if id == "homing" else " ACTIVE"))
+		_message(ItemCatalog.label(id) + " ACTIVE")
 	return true
+
+
+func _tick_weapon(index: int, delta: float) -> void:
+	fire_cooldown[index] = maxf(0, fire_cooldown[index] - delta)
+	if burst_left[index] <= 0:
+		return
+	burst_delay[index] -= delta
+	while burst_left[index] > 0 and burst_delay[index] <= 0:
+		_emit(index, "machine_guns")
+		burst_left[index] -= 1
+		burst_delay[index] += float(ItemCatalog.DATA["machine_guns"]["interval"])
+	if burst_left[index] == 0 and ammo[index] == 0:
+		held[index] = ""
 
 
 func tick(delta: float) -> void:
@@ -165,6 +221,7 @@ func tick(delta: float) -> void:
 		_clear_transients()
 		for i in cars.size():
 			held[i] = ""
+			ammo[i] = 0
 			_stop(i)
 			oil_time[i] = 0.0
 			obscured[i] = false
@@ -179,10 +236,12 @@ func tick(delta: float) -> void:
 		obscured[i] = false
 		if not available(i):
 			held[i] = ""
+			ammo[i] = 0
 			_stop(i)
 			oil_time[i] = 0.0
 			cars[i].item_grip_multiplier = 1.0
 			continue
+		_tick_weapon(i, delta)
 		_tick_active(i, delta)
 	_collect(delta)
 	for i in cars.size():
@@ -197,7 +256,8 @@ func tick(delta: float) -> void:
 		cars[i].item_grip_multiplier = OIL_GRIP if oil_time[i] > 0.0 else 1.0
 		art.update_shield(_shields[i], cars[i].global_position, delta)
 		for end: String in _gun_mounts[i]:
-			_gun_mounts[i][end].visible = active[i] == "machine_guns" and cars[i].active_end == end
+			_gun_mounts[i][end].visible = (held[i] == "machine_guns" or burst_left[i] > 0) and cars[i].active_end == end
+	art.sync_streams(cars, active)
 	audio.sync(cars, active)
 	for i in range(effects.size() - 1, -1, -1):
 		var effect := effects[i]
@@ -211,24 +271,19 @@ func _tick_active(index: int, delta: float) -> void:
 	if active[index].is_empty():
 		return
 	var id := active[index]
-	var interval := float(ItemCatalog.DATA[id]["interval"])
-	var step := minf(delta, remaining[index])
-	remaining[index] = maxf(0.0, remaining[index] - step)
-	if remaining[index] < 0.000001:
-		remaining[index] = 0.0
-	if interval > 0.0:
-		_next_emit[index] -= step
-		var emitted := 0
-		while emitted < MAX_EMISSIONS_PER_TICK and _next_emit[index] <= 0.0 and (remaining[index] > 0.0 or _next_emit[index] < -0.00001):
-			_emit(index, id)
-			_next_emit[index] += interval
-			emitted += 1
-		if _next_emit[index] <= 0.0:
-			_next_emit[index] = interval
-	if remaining[index] <= 0.0:
+	remaining[index] = maxf(0, remaining[index] - delta)
+	if remaining[index] <= 0.000001:
 		_stop(index)
 		if index == 0:
 			_message(ItemCatalog.label(id) + " EXPIRED")
+	elif id in ["smoke", "oil"]:
+		# Spatially overlapping deposits form a continuous trail, not timed blobs.
+		var tail := _stream_tail[index]
+		var spacing := 3.0 if id == "smoke" else 1.75
+		if not tail.is_empty() and float(tail["life"]) > 0 and cars[index].global_position.distance_to(tail["emitter"]) < spacing:
+			tail["life"] = 5.0 if id == "smoke" else 7.0
+		else:
+			_drop(index, id, _fire_direction(index), false)
 
 
 func _stop(index: int) -> void:
@@ -236,26 +291,31 @@ func _stop(index: int) -> void:
 		audio.play("shield_off", cars[index].global_position)
 	for mount: Node3D in _gun_mounts[index].values():
 		mount.hide()
+	burst_left[index] = 0
+	_stream_tail[index] = {}
+	art.stop_stream(index)
 	active[index] = ""
 	remaining[index] = 0.0
-	_next_emit[index] = 0.0
 	_shields[index].hide()
 
 
 func _collect(delta: float) -> void:
 	for pickup: Dictionary in pickups:
-		pickup["cooldown"] = maxf(0.0, float(pickup["cooldown"]) - delta)
+		var before := float(pickup["cooldown"])
+		pickup["cooldown"] = maxf(0.0, before - delta)
+		if before > 0 and pickup["cooldown"] <= 0:
+			_roll_pickup(pickup)
 		var visual: Node3D = pickup["model"]
 		visual.visible = float(pickup["cooldown"]) <= 0.0
 		visual.rotate_y(delta * 0.45)
 		visual.position.y = sin(art.clock * 3.0) * 0.15
 		visual.get_node("HolographicDisplay").rotate_y(-delta)
 		var label: Label3D = pickup["label"]
-		label.text = "ITEM BOX" if visual.visible else "RESPAWN %.0fs" % ceilf(float(pickup["cooldown"]))
+		label.text = ItemCatalog.supply_label(pickup["item"]) if visual.visible else "RESPAWN %.0fs" % ceilf(float(pickup["cooldown"]))
 		if not visual.visible:
 			continue
 		for i in cars.size():
-			if not available(i) or not held[i].is_empty() or not active[i].is_empty():
+			if not available(i) or not held[i].is_empty() or not active[i].is_empty() or burst_left[i] > 0:
 				continue
 			var start := previous_positions[i]
 			var end := cars[i].global_position
@@ -264,8 +324,7 @@ func _collect(delta: float) -> void:
 			var closest := Geometry3D.get_closest_point_to_segment(pickup["pos"], start, end)
 			if closest.distance_to(pickup["pos"]) > PICKUP_RADIUS:
 				continue
-			held[i] = ItemCatalog.roll(rng.randf())
-			_cpu_wait[i] = 0.8
+			grant_item(i, pickup["item"])
 			pickup["cooldown"] = PICKUP_RESPAWN
 			visual.hide()
 			art.burst(pickup["pos"], Color("ffc34d"), 10, false)
@@ -282,24 +341,33 @@ func _emit(index: int, id: String) -> void:
 		_drop(index, id, direction)
 		return
 	var data: Dictionary = ItemCatalog.DATA[id]
+	var blocker := {}
+	if id == "machine_guns":
+		var nozzle := cars[index].global_position + Vector3.UP * 0.74 + direction * (cars[index].tuning.body_length * 0.45 + 0.9)
+		nozzle += cars[index].global_basis.x * (-0.22 if _barrel[index] % 2 == 0 else 0.22)
+		_barrel[index] += 1
+		blocker = _ray(origin, nozzle, index)
+		origin = nozzle
+		direction = (direction + cars[index].global_basis.x * rng.randf_range(-0.003, 0.003) + Vector3.UP * rng.randf_range(-0.001, 0.001)).normalized()
 	var velocity := direction * float(data["speed"])
 	if id == "grenades":
 		velocity += Vector3.UP * 8.0
-	var visual := art.projectile(origin, direction, id)
-	var muzzle := origin + direction * cars[index].tuning.body_length * 0.5
 	if id == "machine_guns":
-		for x in [-0.22, 0.22]:
-			art.muzzle(muzzle + cars[index].global_basis.x * x, false)
-		art.casing(muzzle, cars[index].linear_velocity * 0.5 + cars[index].global_basis.x * 2 + Vector3.UP * 2)
+		art.muzzle(origin, false)
+		art.casing(origin - direction * 0.8, cars[index].linear_velocity * 0.5 + cars[index].global_basis.x * 2 + Vector3.UP * 2)
 		_gun_mounts[index][cars[index].active_end].show()
 	else:
-		art.muzzle(muzzle, true)
+		art.muzzle(origin + direction * cars[index].tuning.body_length * 0.5, true)
 	audio.play(id, origin)
-	shots.append({"owner": index, "id": id, "pos": origin, "velocity": velocity,
+	if not blocker.is_empty():
+		_impact({"owner": index, "id": id}, blocker["position"], blocker["normal"], blocker["collider"])
+		return
+	var visual := art.projectile(origin, direction, id)
+	shots.append({"owner": index, "id": id, "pos": origin, "velocity": velocity, "travel": 0.0,
 		"life": float(data["life"]), "target": _target(index) if id == "homing" else -1, "visual": visual})
 
 
-func _drop(index: int, id: String, direction: Vector3) -> void:
+func _drop(index: int, id: String, direction: Vector3, audible := true) -> void:
 	var start := cars[index].global_position
 	var end := start - direction * (cars[index].tuning.body_length * 0.5 + 4.0)
 	# A rear-facing wall or missing road must not receive a hazard on its far side.
@@ -310,11 +378,13 @@ func _drop(index: int, id: String, direction: Vector3) -> void:
 		return
 	var pos: Vector3 = ground["position"] + Vector3.UP * (3.0 if id == "smoke" else 0.06)
 	var visual := art.hazard(pos, id, ground["normal"])
-	audio.play(id, pos)
+	if audible:
+		audio.play(id, pos)
 	if hazards.size() >= MAX_HAZARDS:
 		_remove(hazards, 0)
 	hazards.append({"id": id, "owner": index, "pos": pos, "life": 5.0 if id == "smoke" else 7.0,
-		"radius": 5.0 if id == "smoke" else 3.5, "visual": visual})
+		"radius": 5.0 if id == "smoke" else 3.5, "visual": visual, "emitter": cars[index].global_position})
+	_stream_tail[index] = hazards.back()
 
 
 func _tick_hazards(delta: float) -> void:
@@ -398,6 +468,7 @@ func _tick_shots(delta: float) -> void:
 			_impact(shot, hit["position"], hit["normal"], hit["collider"])
 			_remove(shots, i)
 			continue
+		shot["travel"] = float(shot.get("travel", 0.0)) + start.distance_to(end)
 		shot["pos"] = end
 		shot["visual"].global_position = end
 		art.trail(shot, delta)
@@ -536,6 +607,7 @@ func _free_guns() -> void:
 
 func _exit_tree() -> void:
 	_free_guns()
+	art.clear_streams()
 	if audio:
 		audio.stop_all()
 	for car: Vehicle in cars:

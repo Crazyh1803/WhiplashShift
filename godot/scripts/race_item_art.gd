@@ -2,6 +2,9 @@
 class_name RaceItemArt
 extends Node3D
 
+const TRACER = preload("res://shaders/item_tracer.gdshader")
+var streams: Array[Dictionary] = []
+
 const SHIELD = preload("res://shaders/item_shield.gdshader")
 const OIL = preload("res://shaders/item_oil.gdshader")
 
@@ -66,7 +69,7 @@ func supply(pos: Vector3) -> Dictionary:
 	label.pixel_size = 0.009
 	label.modulate = Color("ffe49b")
 	root.add_child(label)
-	return {"visual": root, "model": model, "label": label}
+	return {"visual": root, "model": model, "label": label, "icon": icon}
 
 
 func projectile(pos: Vector3, direction: Vector3, id: String) -> Node3D:
@@ -80,16 +83,30 @@ func projectile(pos: Vector3, direction: Vector3, id: String) -> Node3D:
 		CombatVisuals.box(root, Vector3(0, 0.3, 0), Vector3(0.12, 0.18, 0.2), CombatVisuals.metal(Color("8d999a")))
 		CombatVisuals.box(root, Vector3(0, 0.3, 0.1), Vector3(0.1, 0.05, 0.45), CombatVisuals.metal(Color("bac0bd")))
 	else:
-		for x in [-0.22, 0.22]:
-			var tracer := CombatVisuals.box(root, Vector3(x, 0, 0), Vector3(0.12, 0.12, 2.8), CombatVisuals.glow(Color("ffe8aa"), 3))
-			tracer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		# A small incandescent head and fading crossed streak, not parallel laser bars.
+		var material := ShaderMaterial.new()
+		material.shader = TRACER
+		for angle in [0.0, PI / 2]:
+			var streak := MeshInstance3D.new()
+			var quad := QuadMesh.new()
+			quad.size = Vector2(0.055, 1.9)
+			streak.mesh = quad
+			streak.material_override = material
+			streak.basis = Basis(Vector3.FORWARD, angle) * Basis(Vector3.RIGHT, PI / 2)
+			streak.scale.y = 0.001
+			streak.position.z = 0.001
+			streak.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			root.add_child(streak)
+		CombatVisuals.billboard(root, Vector3.ZERO, Color("fff4cd"), 0.13, false)
+
 	if direction.cross(Vector3.UP).length_squared() > 0.001:
 		root.look_at(pos + direction, Vector3.UP)
+	root.reset_physics_interpolation()
 	return root
 
 
 func muzzle(pos: Vector3, rocket: bool) -> void:
-	_sprite_effect(pos, Color("fff4cc"), 2.2 if rocket else 1.3, 0.075, Vector3.ZERO, 0.7, false)
+	_sprite_effect(pos, Color("fff4cc"), 2.2 if rocket else 0.55, 0.075 if rocket else 0.035, Vector3.ZERO, 0.7 if rocket else 0.2, false)
 	var light := OmniLight3D.new()
 	light.light_color = Color("ffbd70")
 	light.light_energy = 2.0
@@ -101,6 +118,12 @@ func muzzle(pos: Vector3, rocket: bool) -> void:
 func trail(shot: Dictionary, delta: float) -> void:
 	var visual: Node3D = shot.visual
 	var velocity: Vector3 = shot.velocity
+	if shot.id == "machine_guns":
+		var length := minf(1.9, float(shot.get("travel", 0.0)))
+		for i in range(2):
+			visual.get_child(i).scale.y = maxf(0.001, length / 1.9)
+			visual.get_child(i).position.z = length * 0.5
+		return
 	if shot.id == "grenades":
 		visual.rotate_x(delta * 5.0)
 		return
@@ -261,3 +284,82 @@ func animate_hazard(entry: Dictionary) -> void:
 			puff.material_override.set_shader_parameter("tint", Color(0.48, 0.5, 0.53, 0.92 * fade))
 	else:
 		root.get_child(0).material_override.set_shader_parameter("opacity", fade)
+
+
+func update_supply(pickup: Dictionary, id: String) -> void:
+	pickup["label"].text = ItemCatalog.supply_label(id)
+	pickup["label"].modulate = Color(ItemCatalog.DATA[id]["color"])
+	pickup["icon"].text = {"shield": "◇", "machine_guns": "MG", "rockets": "R", "grenades": "G", "smoke": "SMK", "oil": "OIL", "homing": "H"}[id]
+	pickup["icon"].modulate = Color(ItemCatalog.DATA[id]["color"])
+
+
+func prepare_streams(car: Vehicle) -> void:
+	var pair := {}
+	for id in ["smoke", "oil"]:
+		var emitter := CPUParticles3D.new()
+		emitter.name = "ItemStream" + id.capitalize()
+		emitter.emitting = false
+		emitter.local_coords = false
+		emitter.amount = 32 if id == "smoke" else 24
+		emitter.lifetime = 0.8 if id == "smoke" else 0.28
+		emitter.direction = Vector3(0, 0.2 if id == "smoke" else -0.2, -1)
+		emitter.spread = 16 if id == "smoke" else 6
+		emitter.initial_velocity_min = 2.0
+		emitter.initial_velocity_max = 4.0
+		emitter.gravity = Vector3(0, 0.8 if id == "smoke" else -14.0, 0)
+		var material := StandardMaterial3D.new()
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		material.vertex_color_use_as_albedo = true
+		if id == "smoke":
+			var quad := QuadMesh.new()
+			quad.size = Vector2(1.5, 1.5)
+			emitter.mesh = quad
+			material.albedo_texture = CombatVisuals.SMOKE
+			material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+			material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			emitter.scale_amount_min = 0.5
+			emitter.scale_amount_max = 1.5
+		else:
+			var drop := SphereMesh.new()
+			drop.radius = 0.055
+			drop.height = 0.11
+			drop.radial_segments = 8
+			drop.rings = 4
+			emitter.mesh = drop
+			material.albedo_color = Color("12131a")
+			material.metallic = 0.7
+			material.roughness = 0.16
+		emitter.material_override = material
+		var ramp := Gradient.new()
+		ramp.set_color(0, Color(0.7, 0.72, 0.75, 0.9) if id == "smoke" else Color.WHITE)
+		ramp.set_color(1, Color(0.4, 0.42, 0.45, 0.0))
+		emitter.color_ramp = ramp
+		emitter.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		car.add_child(emitter)
+		pair[id] = emitter
+	streams.append(pair)
+
+
+func sync_streams(cars: Array[Vehicle], active: Array[String]) -> void:
+	for i in cars.size():
+		var rear := -cars[i].forward_vector().normalized()
+		for id: String in streams[i]:
+			var emitter: CPUParticles3D = streams[i][id]
+			emitter.global_position = cars[i].global_position + rear * (cars[i].tuning.body_length * 0.5 + 0.3) + Vector3.UP * 0.3
+			emitter.look_at(emitter.global_position + rear, Vector3.UP)
+			emitter.emitting = active[i] == id
+
+
+func stop_stream(index: int) -> void:
+	if index >= streams.size():
+		return
+	for emitter: CPUParticles3D in streams[index].values():
+		emitter.emitting = false
+
+
+func clear_streams() -> void:
+	for pair in streams:
+		for emitter: CPUParticles3D in pair.values():
+			if is_instance_valid(emitter):
+				emitter.queue_free()
+	streams.clear()
