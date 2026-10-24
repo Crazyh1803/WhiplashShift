@@ -2,6 +2,9 @@
 class_name RaceItemArt
 extends Node3D
 
+const SHIELD = preload("res://shaders/item_shield.gdshader")
+const OIL = preload("res://shaders/item_oil.gdshader")
+
 var particles: Array[Dictionary] = []
 var clock := 0.0
 
@@ -77,8 +80,9 @@ func projectile(pos: Vector3, direction: Vector3, id: String) -> Node3D:
 		CombatVisuals.box(root, Vector3(0, 0.3, 0), Vector3(0.12, 0.18, 0.2), CombatVisuals.metal(Color("8d999a")))
 		CombatVisuals.box(root, Vector3(0, 0.3, 0.1), Vector3(0.1, 0.05, 0.45), CombatVisuals.metal(Color("bac0bd")))
 	else:
-		var tracer := CombatVisuals.box(root, Vector3.ZERO, Vector3(0.07, 0.07, 2.2), CombatVisuals.glow(Color("ffe8aa"), 3))
-		tracer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		for x in [-0.22, 0.22]:
+			var tracer := CombatVisuals.box(root, Vector3(x, 0, 0), Vector3(0.12, 0.12, 2.8), CombatVisuals.glow(Color("ffe8aa"), 3))
+			tracer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	if direction.cross(Vector3.UP).length_squared() > 0.001:
 		root.look_at(pos + direction, Vector3.UP)
 	return root
@@ -162,3 +166,98 @@ func burst(pos: Vector3, color: Color, count: int, explosion: bool) -> void:
 		var velocity := Vector3(sin(i * 2.4), 0.5 + float(i % 3) * 0.4, cos(i * 2.4)) * (13 if explosion else 5)
 		_sprite_effect(pos, color, 0.2, 0.6, velocity, 0.0, false)
 		particles.back()["gravity"] = true
+
+
+func shield(pos: Vector3, radius: float) -> MeshInstance3D:
+	var visual := MeshInstance3D.new()
+	var sphere := SphereMesh.new()
+	sphere.radius = radius
+	sphere.height = radius * 2
+	sphere.radial_segments = 40
+	sphere.rings = 20
+	visual.mesh = sphere
+	var material := ShaderMaterial.new()
+	material.shader = SHIELD
+	visual.material_override = material
+	visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(visual)
+	visual.global_position = pos
+	return visual
+
+
+func update_shield(visual: MeshInstance3D, pos: Vector3, delta: float) -> void:
+	visual.global_position = pos
+	var strength := maxf(0, float(visual.get_meta("impact", 0.0)) - delta * 3)
+	visual.set_meta("impact", strength)
+	visual.set_instance_shader_parameter("impact_strength", strength)
+
+
+func shield_hit(visual: MeshInstance3D) -> void:
+	visual.set_meta("impact", 1.0)
+	visual.set_instance_shader_parameter("impact_strength", 1.0)
+
+
+func gun_mounts(car: Vehicle) -> Dictionary:
+	var mounts := {}
+	for end in ["A", "B"]:
+		var node := Node3D.new()
+		node.name = "ItemGun" + end
+		car.add_child(node)
+		CombatVisuals.gun(node, car.tuning.body_length * (-0.45 if end == "A" else 0.45))
+		node.hide()
+		mounts[end] = node
+	return mounts
+
+
+func casing(pos: Vector3, velocity: Vector3) -> void:
+	while particles.size() >= 240:
+		var oldest: Dictionary = particles.pop_front()
+		oldest.node.queue_free()
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color("d6ad5d")
+	material.metallic = 0.8
+	material.roughness = 0.3
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var node := CombatVisuals.cylinder(self, pos, 0.045, 0.18, material)
+	node.rotation.z = 0.6
+	particles.append({"node": node, "material": material, "start_color": material.albedo_color,
+		"end_color": material.albedo_color, "life": 0.65, "duration": 0.65, "velocity": velocity,
+		"growth": 0.0, "gravity": true})
+
+
+func hazard(pos: Vector3, id: String, normal: Vector3) -> Node3D:
+	var root := Node3D.new()
+	add_child(root)
+	root.global_position = pos
+	if id == "smoke":
+		for i in range(7):
+			var offset := Vector3(sin(i * 2.4) * 1.7, float(i % 3) * 0.7 - 0.5, cos(i * 2.4) * 1.7)
+			var puff := CombatVisuals.billboard(root, offset, Color(0.48, 0.5, 0.53, 0.92), 6.0, true)
+			puff.set_meta("origin", offset)
+	else:
+		var slick := MeshInstance3D.new()
+		var plane := PlaneMesh.new()
+		plane.size = Vector2(7, 7)
+		slick.mesh = plane
+		var material := ShaderMaterial.new()
+		material.shader = OIL
+		slick.material_override = material
+		slick.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		root.add_child(slick)
+		root.quaternion = Quaternion(Vector3.UP, normal.normalized())
+	return root
+
+
+func animate_hazard(entry: Dictionary) -> void:
+	var root: Node3D = entry.visual
+	var fade := minf(1, float(entry.life))
+	if entry.id == "smoke":
+		var age := 5.0 - float(entry.life)
+		for i in root.get_child_count():
+			var puff := root.get_child(i) as MeshInstance3D
+			var origin: Vector3 = puff.get_meta("origin")
+			puff.position = origin + Vector3(sin(age + i) * 0.2, sin(age * 0.7 + i) * 0.25, cos(age + i) * 0.2)
+			puff.scale = Vector3.ONE * (0.85 + minf(age, 1.5) * 0.12)
+			puff.material_override.set_shader_parameter("tint", Color(0.48, 0.5, 0.53, 0.92 * fade))
+	else:
+		root.get_child(0).material_override.set_shader_parameter("opacity", fade)

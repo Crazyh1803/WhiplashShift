@@ -230,6 +230,7 @@ func _run() -> void:
 	_check("repeat setup preserves racer array sizes", items.held.size() == 3 and items.active.size() == 3
 		and items.oil_time.size() == 3 and items._shields.size() == 3)
 	_check("repeat setup does not duplicate pickup rows", items.pickups.size() % 3 == 0 and items.pickups.size() < 40)
+	await _test_presentation()
 	if OS.get_cmdline_user_args().has("--capture-items"):
 		await _capture()
 	items.cars[0].item_grip_multiplier = RaceItems.OIL_GRIP
@@ -237,6 +238,61 @@ func _run() -> void:
 	_check("leaving item scene restores grip", scene.car.item_grip_multiplier == 1.0)
 	items.free()
 	scene.queue_free()
+
+
+func _test_presentation() -> void:
+	var heard := {}
+	items.audio.cue.connect(func(id: String) -> void: heard[id] = int(heard.get(id, 0)) + 1)
+	for id: String in ItemAudio.DURATIONS:
+		var wav := ItemAudio.make_sound(id)
+		var peak := 0
+		for i in range(0, wav.data.size(), 62):
+			peak = maxi(peak, absi(wav.data.decode_s16(i)))
+		_check(id + " audio has non-silent bounded PCM", wav.mix_rate == 22050 and peak > 500 and peak <= 29492)
+	for id in ["machine_guns", "rockets", "grenades", "homing"]:
+		await _fixture()
+		items.held[0] = id
+		_check(id + " activation triggers its distinct sound", items.fire(0) and heard.has(id))
+	await _fixture()
+	items.held[0] = "machine_guns"
+	items.fire(0)
+	_check("machine guns display the driving-end mount and twin tracers", items._gun_mounts[0]["A"].visible
+		and not items._gun_mounts[0]["B"].visible and items.shots[0].visual.get_child_count() == 2)
+	items.cars[0].active_end = "B"
+	items.tick(0.01)
+	_check("swapping moves the visible gun mount to the active end", items._gun_mounts[0]["B"].visible and not items._gun_mounts[0]["A"].visible)
+	items.reset_racer(0)
+	_check("recovery hides both gun mounts", not items._gun_mounts[0]["A"].visible and not items._gun_mounts[0]["B"].visible)
+	await _fixture()
+	items.held[0] = "shield"
+	items.fire(0)
+	_check("shield activation has a shader and power-up sound", items._shields[0].visible and items._shields[0].material_override is ShaderMaterial and heard.has("shield_on"))
+	items._apply_hit(0, 1, "rockets")
+	_check("shield blocks trigger audio and a visible impact pulse", heard.has("shield_hit") and items._shields[0].get_meta("impact") == 1.0)
+	items.art.update_shield(items._shields[0], items.cars[0].global_position, 0.2)
+	_check("shield impact pulse decays", float(items._shields[0].get_meta("impact")) < 1.0)
+	items._tick_active(0, 5.1)
+	_check("shield expiry powers down with audio", heard.has("shield_off") and not items._shields[0].visible)
+	for id in ["smoke", "oil"]:
+		await _fixture()
+		items.held[0] = id
+		items.fire(0)
+		_check(id + " deploys a visual hazard and sound", items.hazards.size() == 1 and heard.has(id))
+		var root: Node3D = items.hazards[0].visual
+		if id == "smoke":
+			_check("smoke screen uses seven textured billboards", root.get_child_count() == 7 and root.get_child(0).mesh is QuadMesh)
+		else:
+			_check("oil uses a surface plane and iridescent material", root.get_child(0).mesh is PlaneMesh and root.get_child(0).material_override is ShaderMaterial)
+		items.tick(0.01)
+	await _fixture()
+	items._apply_hit(1, 0, "rockets")
+	_check("player hits have an audible confirmation", heard.has("hit"))
+	items._emit(0, "rockets")
+	items._impact(items.shots.back(), items.cars[0].global_position, Vector3.UP, null)
+	_check("explosions trigger a blast sound", heard.has("explosion"))
+	_check("shield and smoke sustain use looped audio", ItemAudio.make_sound("shield_hum").loop_mode == AudioStreamWAV.LOOP_FORWARD
+		and ItemAudio.make_sound("smoke_loop").loop_mode == AudioStreamWAV.LOOP_FORWARD)
+	items.reset()
 
 
 func _fixture() -> void:

@@ -11,6 +11,8 @@ const MAX_HAZARDS := 48
 const MAX_EMISSIONS_PER_TICK := 4
 
 var art: RaceItemArt
+var audio: ItemAudio
+var _gun_mounts: Array[Dictionary] = []
 
 var race: RaceDirector
 var cars: Array[Vehicle] = []
@@ -38,6 +40,10 @@ func setup(p_race: RaceDirector, racers: Array[Vehicle]) -> void:
 		art = RaceItemArt.new()
 		art.name = "ItemGraphics"
 		add_child(art)
+	if audio == null:
+		audio = ItemAudio.new()
+		audio.name = "ItemAudio"
+		add_child(audio)
 	_clear_transients()
 	for car: Vehicle in cars:
 		if is_instance_valid(car):
@@ -71,6 +77,7 @@ func reset() -> void:
 	for shield: MeshInstance3D in _shields:
 		shield.queue_free()
 	_shields.clear()
+	_free_guns()
 	held.clear()
 	active.clear()
 	remaining.clear()
@@ -91,9 +98,10 @@ func reset() -> void:
 		_cpu_wait.append(0.0)
 		_next_emit.append(0.0)
 		car.item_grip_multiplier = 1.0
-		var shield := _visual(car.global_position, car.tuning.body_length * 0.65, Color(0.3, 0.8, 1.0, 0.16), true)
+		var shield := art.shield(car.global_position, car.tuning.body_length * 0.65)
 		shield.hide()
 		_shields.append(shield)
+		_gun_mounts.append(art.gun_mounts(car))
 	for pickup: Dictionary in pickups:
 		pickup["cooldown"] = 0.0
 		pickup["visual"].visible = true
@@ -142,6 +150,7 @@ func fire(index: int) -> bool:
 		cars[index].item_grip_multiplier = 1.0
 		_shields[index].global_position = cars[index].global_position
 		_shields[index].show()
+		audio.play("shield_on", cars[index].global_position)
 	else:
 		_emit(index, id)
 	if id == "homing":
@@ -186,7 +195,10 @@ func tick(delta: float) -> void:
 	_tick_shots(delta)
 	for i in cars.size():
 		cars[i].item_grip_multiplier = OIL_GRIP if oil_time[i] > 0.0 else 1.0
-		_shields[i].global_position = cars[i].global_position
+		art.update_shield(_shields[i], cars[i].global_position, delta)
+		for end: String in _gun_mounts[i]:
+			_gun_mounts[i][end].visible = active[i] == "machine_guns" and cars[i].active_end == end
+	audio.sync(cars, active)
 	for i in range(effects.size() - 1, -1, -1):
 		var effect := effects[i]
 		effect["life"] = float(effect["life"]) - delta
@@ -220,6 +232,10 @@ func _tick_active(index: int, delta: float) -> void:
 
 
 func _stop(index: int) -> void:
+	if active[index] == "shield" and remaining[index] <= 0.0 and race.state == RaceDirector.State.RACING:
+		audio.play("shield_off", cars[index].global_position)
+	for mount: Node3D in _gun_mounts[index].values():
+		mount.hide()
 	active[index] = ""
 	remaining[index] = 0.0
 	_next_emit[index] = 0.0
@@ -254,6 +270,7 @@ func _collect(delta: float) -> void:
 			visual.hide()
 			art.burst(pickup["pos"], Color("ffc34d"), 10, false)
 			if i == 0:
+				audio.play("pickup", cars[i].global_position)
 				_message(ItemCatalog.label(held[i]) + " READY  [E]")
 			break
 
@@ -269,7 +286,15 @@ func _emit(index: int, id: String) -> void:
 	if id == "grenades":
 		velocity += Vector3.UP * 8.0
 	var visual := art.projectile(origin, direction, id)
-	art.muzzle(origin + direction * cars[index].tuning.body_length * 0.5, id != "machine_guns")
+	var muzzle := origin + direction * cars[index].tuning.body_length * 0.5
+	if id == "machine_guns":
+		for x in [-0.22, 0.22]:
+			art.muzzle(muzzle + cars[index].global_basis.x * x, false)
+		art.casing(muzzle, cars[index].linear_velocity * 0.5 + cars[index].global_basis.x * 2 + Vector3.UP * 2)
+		_gun_mounts[index][cars[index].active_end].show()
+	else:
+		art.muzzle(muzzle, true)
+	audio.play(id, origin)
 	shots.append({"owner": index, "id": id, "pos": origin, "velocity": velocity,
 		"life": float(data["life"]), "target": _target(index) if id == "homing" else -1, "visual": visual})
 
@@ -284,10 +309,8 @@ func _drop(index: int, id: String, direction: Vector3) -> void:
 	if ground.is_empty() or ground["collider"] is Vehicle:
 		return
 	var pos: Vector3 = ground["position"] + Vector3.UP * (3.0 if id == "smoke" else 0.06)
-	var color := Color(0.12, 0.14, 0.18, 0.65) if id == "smoke" else Color("41235f")
-	var visual := _visual(pos, 5.0 if id == "smoke" else 3.5, color, true)
-	if id == "oil":
-		visual.scale.y = 0.015
+	var visual := art.hazard(pos, id, ground["normal"])
+	audio.play(id, pos)
 	if hazards.size() >= MAX_HAZARDS:
 		_remove(hazards, 0)
 	hazards.append({"id": id, "owner": index, "pos": pos, "life": 5.0 if id == "smoke" else 7.0,
@@ -301,6 +324,7 @@ func _tick_hazards(delta: float) -> void:
 		if float(hazard["life"]) <= 0.0 or not available(int(hazard["owner"])):
 			_remove(hazards, h)
 			continue
+		art.animate_hazard(hazard)
 		for i in cars.size():
 			if not available(i) or not _same_section(i, int(hazard["owner"])):
 				continue
@@ -401,10 +425,13 @@ func _impact(shot: Dictionary, pos: Vector3, normal: Vector3, collider: Object) 
 				continue
 		_apply_hit(i, owner, id)
 	art.burst(pos, Color(data["color"]), 12 if radius > 0 else 4, radius > 0)
+	audio.play("explosion" if radius > 0 else "impact", pos)
 
 
 func _apply_hit(victim: int, owner: int, id: String) -> void:
 	if active[victim] == "shield":
+		art.shield_hit(_shields[victim])
+		audio.play("shield_hit", cars[victim].global_position)
 		if victim == 0 or owner == 0:
 			_message("SHIELD BLOCKED HIT")
 		return
@@ -419,6 +446,7 @@ func _apply_hit(victim: int, owner: int, id: String) -> void:
 		_message("HIT — SPEED LOST")
 	elif owner == 0:
 		_message("HIT CONFIRMED")
+		audio.play("hit", cars[0].global_position)
 
 
 func _smoke_blocks(start: Vector3, end: Vector3) -> bool:
@@ -488,6 +516,8 @@ func _remove(collection: Array[Dictionary], index: int) -> void:
 
 
 func _clear_transients() -> void:
+	if audio:
+		audio.stop_all()
 	if art:
 		art.clear()
 	for collection: Array[Dictionary] in [shots, effects, hazards]:
@@ -496,7 +526,18 @@ func _clear_transients() -> void:
 		collection.clear()
 
 
+func _free_guns() -> void:
+	for mounts in _gun_mounts:
+		for mount: Node3D in mounts.values():
+			if is_instance_valid(mount):
+				mount.queue_free()
+	_gun_mounts.clear()
+
+
 func _exit_tree() -> void:
+	_free_guns()
+	if audio:
+		audio.stop_all()
 	for car: Vehicle in cars:
 		if is_instance_valid(car):
 			car.item_grip_multiplier = 1.0

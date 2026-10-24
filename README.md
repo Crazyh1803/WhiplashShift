@@ -39,6 +39,15 @@ Floating armored gold crates with holographic question marks grant one random it
 Collected crates leave a pad with a respawn countdown. Weapon visuals include metal
 missiles, grenade models, tracers, muzzle flashes, exhaust, sparks and textured
 fire/smoke explosions. See `godot/assets/vfx/ATTRIBUTION.md` for texture licenses.
+Item effects have positional audio: gun bursts, rocket/homing launches, grenade
+launches, explosions, oil deployment and smoke hiss, plus pickup and hit confirmations.
+Shield activation, sustain, blocked hits and expiry have distinct cues. The shield
+uses a pulsing hexagonal field that flashes on impact; smoke billows use textured
+clouds, and oil forms a shimmering surface slick. Machine guns show twin tracers,
+muzzle flashes, ejected casings and a mount on the active driving end. Smoke/shield
+loops stop on expiry, recovery or race exit. A dedicated limited audio bus keeps
+overlapping effects bounded without changing the vehicle audio.
+
 Gold pickup boxes grant one random item. Press **E** once to activate it: machine
 guns, rockets and grenades fire automatically for a short timer; shields protect
 for their full timer; smoke and oil deploy behind the active end. The **1% rare homing
@@ -289,3 +298,16 @@ independent of frame rate.
 ## Not in this pass
 
 Co-op split-screen, more tracks, vehicle progression, enemy weak-point targeting, gamepad support.
+
+
+Item presentation checks:
+
+```sh
+godot --headless --fixed-fps 120 --path godot res://tests/item_tests.tscn
+godot --path godot res://tests/item_presentation_qa.tscn
+```
+
+The rendered check activates every item through the game, verifies positional
+audio and sustain loops, captures the new materials/effects, and checks audio
+voice limits and cleanup. Captures and sample WAVs go to
+`.ai/captures/item-effects/`. A `Dummy` audio driver can verify routing without speakers.
