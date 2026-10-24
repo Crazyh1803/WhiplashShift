@@ -30,6 +30,10 @@ Racers plan braking distance instead of adopting a distant corner's speed for th
 whole approach. They prepare end swaps before the boundary and keep the maneuver
 committed until they reach the new surface. Difficulty changes requested pace,
 cornering confidence, braking and overtaking decisions.
+Floating armored gold crates with holographic question marks grant one random item.
+Collected crates leave a pad with a respawn countdown. Weapon visuals include metal
+missiles, grenade models, tracers, muzzle flashes, exhaust, sparks and textured
+fire/smoke explosions. See `godot/assets/vfx/ATTRIBUTION.md` for texture licenses.
 Gold pickup boxes grant one random item. Press **E** once to activate it: machine
 guns, rockets and grenades fire automatically for a short timer; shields protect
 for their full timer; smoke and oil deploy behind the active end. The **1% rare homing

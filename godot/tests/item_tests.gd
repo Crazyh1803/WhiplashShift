@@ -57,6 +57,9 @@ func _run() -> void:
 	items.previous_positions[0] = pickup["pos"]
 	items.tick(0.01)
 	_check("pickup grants a random valid item", ItemCatalog.IDS.has(items.held[0]) and float(pickup["cooldown"]) > 0.0)
+	_check("collected crate hides its model but retains respawn pad", not pickup["model"].visible and pickup["visual"].visible)
+	items._collect(0.01)
+	_check("empty crate shows a respawn countdown", String(pickup["label"].text).begins_with("RESPAWN"))
 	var second: Dictionary = items.pickups[1]
 	items.cars[0].global_position = second["pos"]
 	items.previous_positions[0] = second["pos"]
@@ -209,10 +212,17 @@ func _run() -> void:
 	race.entrants[2]["finish_time"] = 12.0
 	items.tick(0.01)
 	_check("finish cancels active shield", items.active[2].is_empty() and not items._shields[2].visible)
+	for i in range(12):
+		items.art.burst(Vector3.ZERO, Color.ORANGE, 12, true)
+	_check("race explosions use bounded textured effects", items.art.particles.size() <= 240 and not items.art.particles.is_empty())
+	for i in range(300):
+		items.art.tick(1.0 / 60.0)
+	_check("race smoke and explosion effects expire", items.art.particles.is_empty())
+	items.art.muzzle(Vector3.ZERO, false)
 	race.state = RaceDirector.State.RESULTS
 	items.tick(0.01)
 	_check("results clear all combat objects and grip effects", items.shots.is_empty() and items.hazards.is_empty()
-		and items.effects.is_empty() and items.cars[0].item_grip_multiplier == 1.0 and not items.fire(0))
+		and items.effects.is_empty() and items.art.particles.is_empty() and items.cars[0].item_grip_multiplier == 1.0 and not items.fire(0))
 	scene.restart_race()
 	_check("retry resets all item timers and inventory", race.state == RaceDirector.State.COUNTDOWN
 		and items.held[0].is_empty() and items.active[0].is_empty() and items.remaining[0] == 0.0)
