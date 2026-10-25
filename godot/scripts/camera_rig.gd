@@ -19,6 +19,7 @@ func _ready() -> void:
 	cam.rotation = Vector3(deg_to_rad(-13.0), 0.0, 0.0)
 	cam.fov = 72.0
 	cam.current = true
+	# Owner smoke renders on every layer; its shader clears the camera->car sightline per pixel.
 	add_child(cam)
 	if target:
 		reset_follow()

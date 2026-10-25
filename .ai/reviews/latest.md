@@ -1,4 +1,6 @@
-VERDICT: BLOCKED
-Corner guidance has no completed independent review. Default Gemini hit quota
-exhaustion; the alternate Flash attempt produced no output because headless
-command permission was automatically denied. See .ai/reports/corner-guidance.md.
+VERDICT: APPROVE
+FINDINGS:
+- [MED] godot/scripts/race_items.gd:429 — Oil patches have no cap. `MAX_HAZARDS` eviction now counts smoke only, and oil lasts until something touches it. Every patch gets a visual node and is tested against every car each tick, so a long dispense can build up hundreds of patches. — Add a per-id oil cap and evict the oldest oil patch when it is reached.
+- [LOW] godot/scripts/race_items.gd:454 — The owner exemption holds only while `active[i] == "oil"`. When dispensing ends, the owner's car may still be within the 3.5 m patch radius of its last patches and will slip on them at once. The new test covers only the explicit `_stop` case. — Consider a short grace window after dispensing ends, or document this as intended.
+- [LOW] godot/tests/item_presentation_qa.gd:~320 — `_deployment_views` writes 120 PNG frames and has only two assertions. The frame-save failure branch calls `_check` with a failing result, but it is easy to miss. The test also never restores `gravity_scale`, and `freeze = true` is set on every car afterwards. — Restore the previous `gravity_scale` and `freeze` values. Optionally prune the frame count.
+- [LOW] .ai/reviews/latest.md:1 — This is a review artifact, and it is stale compared with the code (for example, it still reports the owner exemption and the corrupted message string as open). — Don't commit the review artifacts, or regenerate them after the fixes.

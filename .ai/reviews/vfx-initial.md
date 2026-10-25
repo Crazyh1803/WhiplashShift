@@ -1,0 +1,4 @@
+VERDICT: CHANGES_REQUESTED
+FINDINGS:
+- [HIGH] godot/scripts/race_item_art.gd:65 — Viewport’s method is `get_camera_3d`, so the `get_camera_3D` guard always fails and owner smoke protection stays disabled. Removing camera layer exclusion therefore lets owner smoke obscure the car — use `get_viewport().get_camera_3d()` and test that owner smoke receives `protect = 1.0` with an active camera.
+- [MED] godot/scripts/race_item_art.gd:248 — The new `impact()` effect has no callers; `RaceItems._impact()` still calls `art.burst()`, leaving all new weapon impact visuals unused — update that call to `art.impact(pos, normal, radius > 0)` and add coverage through the weapon impact path.

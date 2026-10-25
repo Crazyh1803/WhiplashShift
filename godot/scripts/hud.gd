@@ -167,7 +167,11 @@ func _process(_delta: float) -> void:
 		if not items.active[0].is_empty():
 			_item_status.text = "%s ACTIVE  %.1fs" % [ItemCatalog.label(items.active[0]), items.remaining[0]]
 		elif not items.held[0].is_empty():
-			_item_status.text = "%s  [E] ACTIVATE" % ItemCatalog.label(items.held[0])
+			var id := items.held[0]
+			if ItemCatalog.is_ammo(id):
+				_item_status.text = "%s · %d LEFT  [E] %s" % [ItemCatalog.label(id), items.ammo[0], "3-ROUND BURST" if id == "machine_guns" else "FIRE ONE"]
+			else:
+				_item_status.text = "%s  [E] ACTIVATE" % ItemCatalog.label(id)
 		if items.oil_time[0] > 0.0:
 			_item_status.text += "  // LOW GRIP"
 		if items.obscured[0]:
