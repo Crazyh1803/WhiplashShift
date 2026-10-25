@@ -428,7 +428,7 @@ func _test_smoke_ownership() -> void:
 	_check("own cloud sits between owner and a target but obstructs rivals only", items._smoke_blocks(pos0, pos1) and not items._smoke_blocks(pos0, pos1, 0))
 	_check("owner keeps its missile lock through its own cloud", items._target(0) == 1)
 	items._stop(0)
-	items.grant_item(0, "homing")
+	_equip(0, "homing")
 	_check("owner can fire homing through its own cloud", items.fire(0) and items.shots.size() == 1 and items.shots[0]["target"] == 1)
 	items.cars[0].global_position = own["pos"]
 	items.previous_positions[0] = own["pos"]
@@ -451,7 +451,7 @@ func _test_smoke_ownership() -> void:
 	_check("rival smoke stays visible to the player's camera", visible_to_camera)
 	_check("rival smoke stream emits on the shared layer", items.art.streams[1]["smoke"].emitting and items.art.streams[1]["smoke"].layers & layer == 0)
 	_check("rival cloud blocks the player's lock on the rival", items._target(0) < 0)
-	items.grant_item(0, "homing")
+	_equip(0, "homing")
 	_check("rival cloud keeps the player's homing missile unfired", not items.fire(0) and items.held[0] == "homing")
 	items.cars[0].global_position = rival["pos"]
 	items.previous_positions[0] = rival["pos"]

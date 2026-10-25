@@ -339,6 +339,16 @@ func _test_oil_contact() -> void:
 	items.oil_time[1] = 0.0
 	_sweep(1, pos + Vector3(-5.5, 1.0, 0), pos + Vector3(5.5, 1.0, 0))
 	_check("a consumed patch cannot oil anybody again", items.oil_time[1] == 0.0 and items.cars[1].item_grip_multiplier == 1.0)
+	# A live dispenser may cross its own tail without wasting it; that exemption ends with the power-up.
+	pos = await _lay_patch()
+	var own_patch: Dictionary = _oils()[0]
+	items.active[0] = "oil"
+	items.remaining[0] = 1.0
+	_sweep(0, pos + Vector3(-5.5, 1.0, 0), pos + Vector3(5.5, 1.0, 0))
+	_check("a live dispenser neither consumes nor slips on its own oil", items.oil_time[0] == 0.0 and not own_patch["consumed"])
+	items._stop(0)
+	_sweep(0, pos + Vector3(-5.5, 1.0, 0), pos + Vector3(5.5, 1.0, 0))
+	_check("the owner can consume its oil after dispensing ends", items.oil_time[0] > 1.0 and own_patch["consumed"])
 	# Shield consumes the patch without grip loss.
 	pos = await _lay_patch()
 	items.grant_item(1, "shield")
