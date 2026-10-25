@@ -188,6 +188,12 @@ func _test_projectile_origins(index: int) -> void:
 				other.global_position = car.global_position + car.forward_vector() * 25.0
 				items.previous_positions[(index + 1) % items.cars.size()] = other.global_position
 				await get_tree().physics_frame
+			if weapon == "rockets":
+				# Keep blind-fire targets isolated; moving the rival later must not overlap a third car.
+				for other_index in items.cars.size():
+					if other_index != index:
+						items.cars[other_index].global_position = car.global_position + Vector3(70 + other_index * 10, 0, 0)
+				await get_tree().physics_frame
 			items.grant_item(index, weapon)
 			_check(label + " fires", items.fire(index) and items.shots.size() == 1)
 			var mount: Node3D = items._gun_mounts[index][end]
