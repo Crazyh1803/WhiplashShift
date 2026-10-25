@@ -254,21 +254,21 @@ func impact(pos: Vector3, normal: Vector3, explosion: bool) -> void:
 	var origin := pos + n * 0.08
 	# Short hot flash, then textured blast/dust/soot.
 	# Soft cloud texture (not the SPARK star) so the flash reads as a glow.
-	_sprite_effect(origin, Color(1.0, 0.82, 0.5, 0.9), 5.0 if explosion else 1.3, 0.08, Vector3.ZERO, 0.6, true)
+	_sprite_effect(origin, Color(1.0, 0.84, 0.58, 0.7), 4.0 if explosion else 1.1, 0.06, Vector3.ZERO, 0.6, true)
 	if explosion:
 		var light := OmniLight3D.new()
 		light.light_color = Color("ffb359")
 		light.light_energy = 3.5
 		light.omni_range = 14.0
 		particles.back().node.add_child(light)
-		for i in range(4):
-			var a := i * 1.7 + _rng.randf() * 0.6
+		for i in range(3):
+			var a := i * 2.1 + _rng.randf() * 0.6
 			var out := (t * cos(a) + b * sin(a)) * 1.2 + n * 1.5
-			_sprite_effect(origin + out * 0.2, Color(1.0, 0.5, 0.12, 0.85), 2.8, 0.38, out, 1.5, true)
+			_sprite_effect(origin + out * 0.2, Color(1.0, 0.62, 0.3, 0.55), 1.9, 0.26, out, 1.3, true)
 		for i in range(8):
 			var a := i * 0.785 + _rng.randf() * 0.4
 			var out := (t * cos(a) + b * sin(a)) * _rng.randf_range(2.5, 5.0) + n * 1.2
-			_sprite_effect(origin, Color(0.4, 0.34, 0.27, 0.6), 2.6, 1.6, out, 2.6, true, 0.05)
+			_sprite_effect(origin, Color(0.4, 0.36, 0.3, 0.62), 2.8, 1.6, out, 2.6, true, 0.03)
 		for i in range(5):
 			var out := n * _rng.randf_range(2.0, 4.0) + (t * _rng.randf_range(-1, 1) + b * _rng.randf_range(-1, 1))
 			_sprite_effect(origin, Color(0.06, 0.055, 0.05, 0.7), 2.2, 2.0, out, 2.4, true, 0.08)
@@ -276,10 +276,13 @@ func impact(pos: Vector3, normal: Vector3, explosion: bool) -> void:
 		for i in range(2):
 			var out := n * 1.3 + t * _rng.randf_range(-0.6, 0.6) + b * _rng.randf_range(-0.6, 0.6)
 			_sprite_effect(origin, Color(0.3, 0.27, 0.23, 0.45), 0.9, 0.55, out, 2.0, true, 0.03)
-	for i in range(18 if explosion else 8):
-		var cone := t * _rng.randf_range(-0.7, 0.7) + b * _rng.randf_range(-0.7, 0.7)
-		var speed := _rng.randf_range(10.0, 22.0) if explosion else _rng.randf_range(6.0, 13.0)
-		_streak(origin, (n + cone).normalized() * speed, _rng.randf_range(0.18, 0.4))
+	for i in range(24 if explosion else 14):
+		# Wide random fan around the normal; slow outliers and fast leaders for natural scatter.
+		var ang := _rng.randf() * TAU
+		var spread := _rng.randf_range(0.1, 1.5)
+		var cone := (t * cos(ang) + b * sin(ang)) * spread
+		var speed := _rng.randf_range(8.0, 26.0) if explosion else _rng.randf_range(5.0, 16.0)
+		_streak(origin, (n + cone).normalized() * speed, _rng.randf_range(0.07, 0.22))
 	for i in range(8 if explosion else 3):
 		var cone := t * _rng.randf_range(-1.0, 1.0) + b * _rng.randf_range(-1.0, 1.0)
 		var speed := _rng.randf_range(5.0, 12.0) if explosion else _rng.randf_range(3.0, 7.0)
@@ -296,30 +299,37 @@ func _track(entry: Dictionary) -> void:
 func _streak(pos: Vector3, velocity: Vector3, life: float) -> void:
 	var node := MeshInstance3D.new()
 	var mesh := BoxMesh.new()
-	mesh.size = Vector3(0.035, 0.035, 0.45)
+	var width := _rng.randf_range(0.008, 0.016)
+	mesh.size = Vector3(width, width, _rng.randf_range(0.1, 0.26))
 	node.mesh = mesh
 	var material := StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	material.albedo_color = Color(1.0, 0.72, 0.3)
+	var hot := Color(1.0, 0.8, 0.45).lerp(Color(1.0, 0.95, 0.8), _rng.randf())
+	material.albedo_color = hot
 	node.material_override = material
 	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(node)
 	node.position = pos
-	_track({"node": node, "material": material, "start_color": Color(1.0, 0.78, 0.38),
-		"end_color": Color(0.9, 0.22, 0.04, 0.0), "life": life, "duration": life, "velocity": velocity,
-		"growth": 0.0, "gravity": true, "orient": true})
+	# Negative growth shrinks the streak as it cools so it tapers to a point.
+	_track({"node": node, "material": material, "start_color": hot,
+		"end_color": Color(0.85, 0.25, 0.05, 0.0), "life": life, "duration": life, "velocity": velocity,
+		"growth": -0.85, "gravity": true, "orient": true})
 
 
 func _debris(pos: Vector3, velocity: Vector3) -> void:
 	var node := MeshInstance3D.new()
-	var mesh := BoxMesh.new()
-	mesh.size = Vector3(_rng.randf_range(0.08, 0.2), _rng.randf_range(0.05, 0.12), _rng.randf_range(0.08, 0.18))
+	# Thin irregular triangular shards, lit so edges catch light as they tumble.
+	var mesh := PrismMesh.new()
+	mesh.left_to_right = _rng.randf_range(0.1, 0.9)
+	mesh.size = Vector3(_rng.randf_range(0.08, 0.22), _rng.randf_range(0.04, 0.14), _rng.randf_range(0.008, 0.02))
 	node.mesh = mesh
 	var material := StandardMaterial3D.new()
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.roughness = 0.9
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.roughness = 0.45
+	material.metallic_specular = 0.7
 	var shade := _rng.randf_range(0.03, 0.12)
 	var color := Color(shade, shade * 0.95, shade * 0.9)
 	material.albedo_color = color
