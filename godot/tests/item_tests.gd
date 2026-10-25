@@ -475,23 +475,24 @@ func _test_vfx_refinement() -> void:
 	var oil_material := items.art.streams[0]["oil"].material_override as StandardMaterial3D
 	_check("oil spray is near black and glossy", oil_material != null and oil_material.albedo_color.get_luminance() < 0.025
 		and oil_material.roughness < 0.3 and not oil_material.emission_enabled)
-	for normal in [Vector3.UP, Vector3.RIGHT, Vector3.BACK]:
-		items.art.clear()
-		items.art.impact(Vector3(1100, 10, 1100), normal, false)
-		var lit_fragments := 0
-		var directed_sparks := 0
-		var rings := 0
-		for effect: Dictionary in items.art.particles:
-			var mesh := effect["node"] as MeshInstance3D
-			if mesh == null:
-				continue
-			rings += int(mesh.mesh is TorusMesh)
-			var material := mesh.material_override as StandardMaterial3D
-			if material == null or not effect.get("gravity", false):
-				continue
-			if material.shading_mode != BaseMaterial3D.SHADING_MODE_UNSHADED and material.albedo_color.get_luminance() < 0.2:
-				lit_fragments += 1
-			elif material.albedo_color.r > material.albedo_color.b and Vector3(effect["velocity"]).dot(normal) > 0.5:
-				directed_sparks += 1
-		_check("impact ejects dark lit fragments and warm sparks along the surface normal", lit_fragments > 0 and directed_sparks > 0 and rings == 0)
+	for explosive in [false, true]:
+		for normal in [Vector3.UP, Vector3.RIGHT, Vector3.BACK]:
+			items.art.clear()
+			items.art.impact(Vector3(1100, 10, 1100), normal, explosive)
+			var lit_fragments := 0
+			var directed_sparks := 0
+			var rings := 0
+			for effect: Dictionary in items.art.particles:
+				var mesh := effect["node"] as MeshInstance3D
+				if mesh == null:
+					continue
+				rings += int(mesh.mesh is TorusMesh)
+				var material := mesh.material_override as StandardMaterial3D
+				if material == null or not effect.get("gravity", false):
+					continue
+				if material.shading_mode != BaseMaterial3D.SHADING_MODE_UNSHADED and material.albedo_color.get_luminance() < 0.2:
+					lit_fragments += 1
+				elif material.albedo_color.r > material.albedo_color.b and Vector3(effect["velocity"]).dot(normal) > 0.5:
+					directed_sparks += 1
+			_check("impact ejects dark fragments and directed sparks (explosive=%s)" % explosive, lit_fragments > 0 and directed_sparks > 0 and rings == 0)
 	items.art.clear()

@@ -191,7 +191,7 @@ func _smoke_views(camera: Camera3D) -> void:
 			cloud.queue_free()
 			await get_tree().process_frame
 		_check("owner plume stays visibly present on end " + end, changes[0].y > 0.005)
-		_check("owner sightline stays clearer than dense rival smoke on end " + end, changes[0].x < changes[1].x * 0.8)
+		_check("owner sightline stays clearer than dense rival smoke on end " + end, changes[1].x > 0.02 and changes[0].x < changes[1].x * 0.8)
 	for hazard: Dictionary in scene.items.hazards:
 		hazard["visual"].show()
 	for pair: Dictionary in scene.items.art.streams:
@@ -210,6 +210,7 @@ func _smoke_views(camera: Camera3D) -> void:
 
 
 func _image_change(a: Image, b: Image, rect: Rect2i) -> float:
+	rect = rect.intersection(Rect2i(Vector2i.ZERO, a.get_size())).intersection(Rect2i(Vector2i.ZERO, b.get_size()))
 	var total := 0.0
 	var count := 0
 	for y in range(rect.position.y, rect.end.y, 8):
@@ -222,6 +223,7 @@ func _image_change(a: Image, b: Image, rect: Rect2i) -> float:
 
 
 func _impact_views(camera: Camera3D) -> void:
+	var original_fov := camera.fov
 	scene.items.reset()
 	scene.race.state = RaceDirector.State.RACING
 	var pos: Vector3 = scene.car.global_position + Vector3(0, -0.85, -7)
@@ -240,3 +242,4 @@ func _impact_views(camera: Camera3D) -> void:
 			await RenderingServer.frame_post_draw
 			_check(id + " impact sequence screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("impact-%s-%03d.png" % [id, int(age * 1000)])) == OK)
 	scene.items.art.clear()
+	camera.fov = original_fov
