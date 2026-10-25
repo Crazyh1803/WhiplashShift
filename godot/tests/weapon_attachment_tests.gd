@@ -194,7 +194,7 @@ func _test_projectile_origins(index: int) -> void:
 					if other_index != index:
 						items.cars[other_index].global_position = car.global_position + Vector3(70 + other_index * 10, 0, 0)
 				await get_tree().physics_frame
-			items.grant_item(index, weapon)
+			_equip(index, weapon)
 			_check(label + " fires", items.fire(index) and items.shots.size() == 1)
 			var mount: Node3D = items._gun_mounts[index][end]
 			var model: Node3D = mount.get_node("Gun" if weapon == "machine_guns" else "Launcher")
@@ -243,6 +243,7 @@ func _test_inventory_display() -> void:
 			items.reset_racer(0)
 			items.grant_item(0, weapon)
 			items.tick(0.01)
+			_advance(0)
 			var shown := String(expectations[weapon])
 			var mount: Node3D = items._gun_mounts[0][end]
 			_check("%s held %s on end %s displays %s" % [id, weapon, end, shown if not shown.is_empty() else "nothing"],
@@ -256,24 +257,28 @@ func _test_inventory_display() -> void:
 	items.reset_racer(0)
 	items.grant_item(0, "rockets")
 	items.tick(0.01)
+	_advance(0)
 	items.cars[0].swap_ends()
 	items.tick(0.01)
+	_advance(0)
 	_check("%s swapping ends moves the launcher" % id, items.cars[0].active_end == "B"
 		and items._gun_mounts[0]["B"].visible and not items._gun_mounts[0]["A"].visible)
 	items.cars[0].active_end = "A"
 	# Final burst round keeps the gun visible, then it disappears with the empty inventory.
 	items.reset_racer(0)
-	items.grant_item(0, "machine_guns")
+	_equip(0, "machine_guns")
 	items.ammo[0] = 3
 	items.fire(0)
 	items.tick(0.01)
 	_check("%s gun stays shown while the last burst is pending" % id, items.ammo[0] == 0 and items._gun_mounts[0]["A"].visible)
 	items._tick_weapon(0, 1.0)
 	items.tick(0.01)
+	_advance(0)
 	_check("%s gun hides once the final burst finishes" % id, items.held[0].is_empty() and not items._gun_mounts[0]["A"].visible)
 	# Switching items replaces rather than accumulates: collect-style regrant after expiry.
 	items.grant_item(0, "grenades")
 	items.tick(0.01)
+	_advance(0)
 	var mount: Node3D = items._gun_mounts[0]["A"]
 	_check("%s regranting a different weapon swaps the displayed model" % id, mount.get_node("Launcher").visible and not mount.get_node("Gun").visible)
 
@@ -290,7 +295,7 @@ func _test_wall_blocking() -> void:
 		var lane := car.forward_vector()
 		_place_rival_in_line_with_launcher(end, lane)
 		await get_tree().physics_frame
-		items.grant_item(0, "rockets")
+		_equip(0, "rockets")
 		items.fire(0)
 		items._tick_shots(0.6)
 		_check("%s end %s control rocket reaches the rival" % [id, end], items.protection[1] > 0.0)
@@ -303,7 +308,7 @@ func _test_wall_blocking() -> void:
 		var reach := (marker.global_position - car.global_position).dot(lane)
 		var wall := _wall(car.global_position + lane * (reach + 0.3))
 		await get_tree().physics_frame
-		items.grant_item(0, "machine_guns")
+		_equip(0, "machine_guns")
 		items.fire(0)
 		_check("%s end %s wall at the muzzle prevents a tracer" % [id, end], items.shots.is_empty())
 		wall.queue_free()
@@ -315,7 +320,7 @@ func _test_wall_blocking() -> void:
 		_place_rival_in_line_with_launcher(end, lane)
 		wall = _wall(car.global_position + lane * 17.0)
 		await get_tree().physics_frame
-		items.grant_item(0, "rockets")
+		_equip(0, "rockets")
 		items.fire(0)
 		items._tick_shots(0.6)
 		# Car 2 sits off to one side and may legitimately be targetable from the B end.
@@ -354,11 +359,13 @@ func _test_resets() -> void:
 	await _fixture()
 	items.grant_item(0, "rockets")
 	items.tick(0.01)
+	_advance(0)
 	_check("%s precondition: launcher shown" % id, items._gun_mounts[0]["A"].visible)
 	items.reset_racer(0)
 	_check("%s recovery hides the launcher" % id, not items._gun_mounts[0]["A"].visible and not items._gun_mounts[0]["B"].visible)
-	items.grant_item(0, "machine_guns")
+	_equip(0, "machine_guns")
 	items.fire(0)
+	_check("%s precondition: a burst is pending" % id, items.burst_left[0] > 0 and items._gun_mounts[0]["A"].visible)
 	race.entrants[0]["finish_time"] = 5.0
 	items.tick(0.01)
 	_check("%s finishing hides the gun and drops the burst" % id, not items._gun_mounts[0]["A"].visible and items.burst_left[0] == 0)
@@ -484,6 +491,17 @@ func _test_smoke_ownership() -> void:
 
 
 # ---------------------------------------------------------------- shared
+
+## Grants an item and runs the deploy animation to completion so the weapon can fire at once.
+func _equip(index: int, id: String) -> void:
+	items.grant_item(index, id)
+	_advance(index)
+
+
+## Lets the fold rig finish whatever retract/deploy the last request started.
+func _advance(index: int) -> void:
+	ItemWeaponMounts.tick(items._gun_mounts[index], 2.0)
+
 
 func _fixture() -> void:
 	items.reset()

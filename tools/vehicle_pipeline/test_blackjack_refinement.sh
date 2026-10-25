@@ -9,7 +9,7 @@ if grep -Eq '(^ERROR:|SCRIPT ERROR:|Parse Error:)' "$import_log"; then
   exit 1
 fi
 result=0
-for scene in test_main viscera_response_tests rubble_response_tests armor_response_tests coolant_response_tests effluent_response_tests ichor_response_tests track_visual_tests item_tests weapon_attachment_tests racecraft_tests cpu_main race_tests course_cues_tests camera_tests corner_tests blackjack_refined_tests blackjack_blueprint_tests consolidation_tests nightshift_blueprint_tests ramjet_blueprint_tests boilerfang_blueprint_tests helix_blueprint_tests knifeedge_blueprint_tests; do
+for scene in test_main viscera_response_tests rubble_response_tests armor_response_tests coolant_response_tests effluent_response_tests ichor_response_tests track_visual_tests item_tests weapon_attachment_tests deployment_oil_tests racecraft_tests cpu_main race_tests course_cues_tests camera_tests corner_tests blackjack_refined_tests blackjack_blueprint_tests consolidation_tests nightshift_blueprint_tests ramjet_blueprint_tests boilerfang_blueprint_tests helix_blueprint_tests knifeedge_blueprint_tests; do
   # CPU coverage runs all difficulty tiers; race coverage drives three laps and a retry.
   scene_timeout=120
   case "$scene" in cpu_main|race_tests) scene_timeout=360 ;; esac
