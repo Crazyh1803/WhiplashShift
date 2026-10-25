@@ -35,12 +35,39 @@ Racers plan braking distance instead of adopting a distant corner's speed for th
 whole approach. They prepare end swaps before the boundary and keep the maneuver
 committed until they reach the new surface. Difficulty changes requested pace,
 cornering confidence, braking and overtaking decisions.
-Gold pickup boxes grant one random item. Press **E** once to activate it: machine
-guns, rockets and grenades fire automatically for a short timer; shields protect
-for their full timer; smoke and oil deploy behind the active end. The **1% rare homing
-missile** locks a visible racer ahead and fires once. Swapping redirects subsequent
-shots and drops. CPU racers use the same item odds and rules. No second player or
-copilot is required.
+All three crates in every row independently roll from the full seven-item catalog.
+Each floating armored box conceals its rolled item behind the same gold question
+mark and mystery label, then rerolls after its six-second respawn. Collection
+reveals the item and quantity in the HUD. The shared odds apply to every lane and CPU racer; homing
+missiles retain their one-percent rarity. See `godot/scripts/item_catalog.gd` for
+ammo counts and odds.
+
+| Pickup | Supply | E action |
+|---|---|---|
+| Machine guns | 30 rounds | One three-round burst, spaced at 65 ms per round |
+| Rockets | 4 rockets | Fire one |
+| Grenades | 5 grenades | Throw one |
+| Homing missile | 1 missile | Fire one at a visible target; no lock preserves it |
+| Shield | 5 seconds | Activate protection |
+| Smoke screen | 5 seconds | Start a continuous rearward stream |
+| Oil slick | 5 seconds | Start a continuous rearward stream |
+
+Weapons retain ammunition until spent. Holding E does not repeat; each fresh press
+fires once after the weapon cooldown. The HUD shows rounds/shots remaining. CPUs
+use the same finite supply and cooldowns. Recovery, retry and race exit clear held
+ammo and pending burst rounds. Swapping redirects subsequent shots and the outlet.
+Smoke/oil use continuous nozzle particles and overlapping surface/cloud deposits;
+stationary emitters refresh a single deposit rather than stacking hazards.
+
+Gun tracers emerge from alternating barrels as warm amber streaks with solid bullet tips,
+slight spread, brief flame-shaped muzzle flashes and ejected casings. Rockets and grenades retain metal
+models and textured explosions. The pulsing hex shield flashes when blocking hits.
+Audio uses CC0 recorded contact layers plus broadband cracks, low-frequency noise
+and debris tails for impacts and explosions, rather than pitched hit beeps. Positional
+playback, continuous smoke/oil and shield loops use a bounded, limited effects bus.
+Sound credits: `godot/assets/audio/items/ATTRIBUTION.md`. Particle texture credits:
+`godot/assets/vfx/ATTRIBUTION.md`.
+
 The HUD shows the held item or active timer, lap, position and race time; finishing opens results with **RACE AGAIN**
 (`Enter`) or **BACK TO GARAGE**. Retry keeps the same vehicles. `R` recovers only
 the player to the last checkpoint; `Esc` returns to the garage.
@@ -285,3 +312,16 @@ independent of frame rate.
 ## Not in this pass
 
 Co-op split-screen, more tracks, vehicle progression, enemy weak-point targeting, gamepad support.
+
+
+Item presentation checks:
+
+```sh
+godot --headless --fixed-fps 120 --path godot res://tests/item_tests.tscn
+godot --path godot res://tests/item_presentation_qa.tscn
+```
+
+The rendered check activates every item through the game, verifies positional
+audio and sustain loops, captures the new materials/effects, and checks audio
+voice limits and cleanup. Captures and sample WAVs go to
+`.ai/captures/item-effects/`. A `Dummy` audio driver can verify routing without speakers.

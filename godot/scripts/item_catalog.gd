@@ -1,16 +1,16 @@
-## Shared item odds and timing. No position-based bonuses or CPU-only items.
+## Shared item odds, ammunition and timed utilities. No position-based bonuses or CPU-only items.
 class_name ItemCatalog
 extends RefCounted
 
 const IDS := ["shield", "machine_guns", "rockets", "grenades", "smoke", "oil", "homing"]
 const DATA := {
 	"shield": {"name": "SHIELD", "weight": 20, "duration": 5.0, "interval": 0.0, "color": "64cfff"},
-	"machine_guns": {"name": "MACHINE GUNS", "weight": 24, "duration": 6.0, "interval": 0.15, "speed": 180.0, "life": 0.8, "loss": 0.06, "cap": 1.8, "color": "ffe577"},
-	"rockets": {"name": "ROCKETS", "weight": 18, "duration": 5.0, "interval": 1.0, "speed": 105.0, "life": 1.4, "loss": 0.25, "cap": 8.0, "radius": 5.0, "color": "ff7547"},
-	"grenades": {"name": "GRENADES", "weight": 12, "duration": 6.0, "interval": 1.2, "speed": 48.0, "life": 1.5, "loss": 0.25, "cap": 8.0, "radius": 8.0, "color": "9be364"},
-	"smoke": {"name": "SMOKE SCREEN", "weight": 13, "duration": 5.0, "interval": 0.5, "color": "7e8595"},
-	"oil": {"name": "OIL SLICK", "weight": 12, "duration": 5.0, "interval": 0.65, "color": "9e7bd4"},
-	"homing": {"name": "HOMING MISSILE", "weight": 1, "duration": 0.0, "interval": 0.0, "speed": 85.0, "life": 3.5, "loss": 0.3, "cap": 10.0, "radius": 5.0, "color": "ff68c1"},
+	"machine_guns": {"name": "MACHINE GUNS", "weight": 24, "duration": 0.0, "interval": 0.065, "ammo": 30, "cost": 3, "cooldown": 0.28, "speed": 300.0, "life": 0.45, "loss": 0.06, "cap": 1.8, "color": "ffe577"},
+	"rockets": {"name": "ROCKETS", "weight": 18, "duration": 0.0, "interval": 0.0, "ammo": 4, "cost": 1, "cooldown": 0.5, "speed": 105.0, "life": 1.4, "loss": 0.25, "cap": 8.0, "radius": 5.0, "color": "ff7547"},
+	"grenades": {"name": "GRENADES", "weight": 12, "duration": 0.0, "interval": 0.0, "ammo": 5, "cost": 1, "cooldown": 0.6, "speed": 48.0, "life": 1.5, "loss": 0.25, "cap": 8.0, "radius": 8.0, "color": "9be364"},
+	"smoke": {"name": "SMOKE SCREEN", "weight": 13, "duration": 5.0, "interval": 0.0, "color": "7e8595"},
+	"oil": {"name": "OIL SLICK", "weight": 12, "duration": 5.0, "interval": 0.0, "color": "9e7bd4"},
+	"homing": {"name": "HOMING MISSILE", "weight": 1, "duration": 0.0, "interval": 0.0, "ammo": 1, "cost": 1, "cooldown": 0.5, "speed": 85.0, "life": 3.5, "loss": 0.3, "cap": 10.0, "radius": 5.0, "color": "ff68c1"},
 }
 
 
@@ -25,3 +25,15 @@ static func roll(unit_roll: float) -> String:
 
 static func label(id: String) -> String:
 	return String(DATA[id]["name"]) if DATA.has(id) else "EMPTY"
+
+
+static func is_ammo(id: String) -> bool:
+	return DATA.has(id) and DATA[id].has("ammo")
+
+
+static func supply_label(id: String) -> String:
+	if not is_ammo(id):
+		return "%s · %.0fs" % [label(id), DATA[id]["duration"]]
+	var amount := int(DATA[id]["ammo"])
+	var unit := "ROUNDS" if id == "machine_guns" else ("SHOT" if amount == 1 else "SHOTS")
+	return "%s · %d %s" % [label(id), amount, unit]
