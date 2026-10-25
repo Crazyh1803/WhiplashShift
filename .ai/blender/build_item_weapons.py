@@ -244,7 +244,7 @@ def build_helix():
             b.lathe("Bone", [(0.0, -0.03), (r * 0.8, -0.03), (r, -0.01), (r, 0.01), (r * 0.8, 0.03), (0.0, 0.03)],
                     c=(x, y, BARREL_Z), seg=10)
         # inner core barrel with recessed bore
-        b.lathe("Sinew", barrel_profile(0.058, 0.04, 0.15, 0.80, 0.0), c=c, seg=12)
+        b.lathe("Sinew", barrel_profile(0.058, 0.04, 0.15, 0.80, 0.07), c=c, seg=12)
         b.lathe("Bone", barrel_profile(0.07, 0.042, 0.78, MUZZLE_Y, 0.15), c=c, seg=12)
         # glowing bore floor
         b.lathe("Glow", [(0.0, 0.0), (0.034, 0.0), (0.034, 0.006), (0.0, 0.006)],
@@ -397,6 +397,10 @@ def process(key):
               "launcher": ["Muzzle"]}[key]:
         if n not in [m.name for m in markers]:
             errors.append(f"missing marker {n}")
+
+    if errors:
+        report(asset=stem, errors=errors)
+        raise RuntimeError(f"{stem} validation failed: {errors}")
 
     blend = repo_path(f"{BLEND_DIR}/{stem}.blend")
     bpy.ops.wm.save_as_mainfile(filepath=blend)
