@@ -521,7 +521,7 @@ func _impact(shot: Dictionary, pos: Vector3, normal: Vector3, collider: Object) 
 			if not sight.is_empty() and sight["collider"] != cars[i]:
 				continue
 		_apply_hit(i, owner, id)
-	art.burst(pos, Color(data["color"]), 12 if radius > 0 else 4, radius > 0)
+	art.impact(pos, normal, radius > 0)
 	audio.play("explosion" if radius > 0 else "impact", pos)
 
 

@@ -252,7 +252,7 @@ func _run() -> void:
 	items.tick(0.01)
 	_check("finish cancels active shield", items.active[2].is_empty() and not items._shields[2].visible)
 	for i in range(12):
-		items.art.burst(Vector3.ZERO, Color.ORANGE, 12, true)
+		items.art.impact(Vector3.ZERO, Vector3.UP, true)
 	_check("race explosions use bounded textured effects", items.art.particles.size() <= 240 and not items.art.particles.is_empty())
 	for i in range(300):
 		items.art.tick(1.0 / 60.0)
@@ -271,6 +271,7 @@ func _run() -> void:
 	_check("repeat setup does not duplicate pickup rows", items.pickups.size() % 3 == 0 and items.pickups.size() < 40)
 	await _test_crate_pool()
 	await _test_streams()
+	await _test_vfx_refinement()
 	await _test_presentation()
 	if OS.get_cmdline_user_args().has("--capture-items"):
 		await _capture()
@@ -444,3 +445,52 @@ func _check(label: String, condition: bool) -> void:
 	else:
 		_fail += 1
 		push_error("FAIL: " + label)
+
+
+func _test_vfx_refinement() -> void:
+	await _fixture()
+	scene.rig.cam.current = true
+	items.art.sync_streams(items.cars, items.active)
+	items.art.tick(0.0)
+	var stream: CPUParticles3D = items.art.streams[0]["smoke"]
+	var smoke_material := stream.material_override as ShaderMaterial
+	_check("owner smoke is rendered at full spray quantity", stream.amount >= 32 and (stream.layers & scene.rig.cam.cull_mask) != 0)
+	_check("owner particles use the protected smoke shader", smoke_material != null and float(smoke_material.get_shader_parameter("protect")) > 0.99)
+	items.art.clear()
+	scene.rig.cam.global_position += Vector3(3, 0, 0)
+	items.art.tick(0.0)
+	_check("countdown transient cleanup preserves live smoke view updates", smoke_material != null
+		and Vector3(smoke_material.get_shader_parameter("eye")).is_equal_approx(scene.rig.cam.global_position))
+	items.grant_item(0, "smoke")
+	items.fire(0)
+	items.art.tick(0.0)
+	var owner_puff: MeshInstance3D = items.hazards[0]["visual"].get_child(0)
+	_check("owner cloud protects the sightline while remaining visible", (owner_puff.layers & scene.rig.cam.cull_mask) != 0
+		and float(owner_puff.material_override.get_shader_parameter("protect")) > 0.99)
+	items.grant_item(1, "smoke")
+	items.fire(1)
+	var rival_puff: MeshInstance3D = items.hazards.back()["visual"].get_child(0)
+	_check("rival cloud has no driver clearance applied", float(rival_puff.material_override.get_shader_parameter("protect")) < 0.01)
+	var oil_material := items.art.streams[0]["oil"].material_override as StandardMaterial3D
+	_check("oil spray is near black and glossy", oil_material != null and oil_material.albedo_color.get_luminance() < 0.025
+		and oil_material.roughness < 0.3 and not oil_material.emission_enabled)
+	for normal in [Vector3.UP, Vector3.RIGHT, Vector3.BACK]:
+		items.art.clear()
+		items.art.impact(Vector3(1100, 10, 1100), normal, false)
+		var lit_fragments := 0
+		var directed_sparks := 0
+		var rings := 0
+		for effect: Dictionary in items.art.particles:
+			var mesh := effect["node"] as MeshInstance3D
+			if mesh == null:
+				continue
+			rings += int(mesh.mesh is TorusMesh)
+			var material := mesh.material_override as StandardMaterial3D
+			if material == null or not effect.get("gravity", false):
+				continue
+			if material.shading_mode != BaseMaterial3D.SHADING_MODE_UNSHADED and material.albedo_color.get_luminance() < 0.2:
+				lit_fragments += 1
+			elif material.albedo_color.r > material.albedo_color.b and Vector3(effect["velocity"]).dot(normal) > 0.5:
+				directed_sparks += 1
+		_check("impact ejects dark lit fragments and warm sparks along the surface normal", lit_fragments > 0 and directed_sparks > 0 and rings == 0)
+	items.art.clear()

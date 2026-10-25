@@ -395,8 +395,8 @@ func _test_resets() -> void:
 func _test_smoke_ownership() -> void:
 	var layer := RaceItemArt.PLAYER_SMOKE_LAYER
 	var cull: int = scene.rig.cam.cull_mask
-	_check("chase camera culls the player's smoke layer but still renders the world", cull & layer == 0 and cull & 1 == 1)
-	# Own cloud: renders on the player-only layer, never masks or obscures its owner.
+	_check("chase camera renders owner smoke and the world", cull & 1 == 1)
+	# Own smoke is rendered; its shader preserves the driver's sightline.
 	await _fixture()
 	items.grant_item(0, "smoke")
 	items.fire(0)
@@ -406,11 +406,11 @@ func _test_smoke_ownership() -> void:
 	var puffs: Array = own["visual"].get_children()
 	var all_private := not puffs.is_empty()
 	for puff: MeshInstance3D in puffs:
-		all_private = all_private and puff.layers == layer
-	_check("every puff of the player's cloud sits on the player-only layer", all_private)
-	_check("player smoke stream is camera-culled, rival stream is not",
-		items.art.streams[0]["smoke"].layers == layer and items.art.streams[1]["smoke"].layers & layer == 0
-		and items.art.streams[1]["smoke"].layers & 1 == 1)
+		all_private = all_private and (puff.layers & cull) != 0
+	_check("every puff of the player's cloud is camera-visible", all_private)
+	_check("both owner and rival smoke streams are camera-visible",
+		(items.art.streams[0]["smoke"].layers & cull) != 0 and (items.art.streams[1]["smoke"].layers & cull) != 0)
+	_check("owner smoke retains the broad spray quantity", items.art.streams[0]["smoke"].amount >= 32)
 	_check("player smoke is behind the active end", Vector3(own["pos"]).z > items.cars[0].global_position.z)
 	items.cars[0].active_end = "B"
 	items.cars[1].global_position = items.cars[0].global_position + Vector3.BACK * 25.0

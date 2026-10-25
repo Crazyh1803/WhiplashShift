@@ -100,6 +100,7 @@ func _ready() -> void:
 		_check(id + " screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join(id + ".png")) == OK)
 		if id == "smoke":
 			await _smoke_views(camera)
+	await _impact_views(camera)
 	for end in ["A", "B"]:
 		for id in ["machine_guns", "rockets"]:
 			scene.items.reset()
@@ -159,19 +160,83 @@ func _check(label: String, ok: bool) -> void:
 func _smoke_views(camera: Camera3D) -> void:
 	var original_mask := camera.cull_mask
 	camera.cull_mask = scene.rig.cam.cull_mask
-	_check("owner stream is excluded from chase view", (scene.items.art.streams[0]["smoke"].layers & camera.cull_mask) == 0)
-	_check("rival stream stays in chase view", (scene.items.art.streams[1]["smoke"].layers & camera.cull_mask) != 0)
-	camera.global_position = scene.car.global_position + Vector3(0, 4.2, 9)
-	camera.look_at(scene.car.global_position + Vector3.UP * 0.75)
-	for owner_index in [0, 1]:
-		var cloud: Node3D = scene.items.art.hazard(scene.car.global_position + Vector3(0, 2, 4), "smoke", Vector3.UP, owner_index)
-		for frame in 4:
+	_check("owner stream is visible to the chase camera", (scene.items.art.streams[0]["smoke"].layers & camera.cull_mask) != 0)
+	_check("rival stream stays visible to the chase camera", (scene.items.art.streams[1]["smoke"].layers & camera.cull_mask) != 0)
+	for hazard: Dictionary in scene.items.hazards:
+		hazard["visual"].hide()
+	for pair: Dictionary in scene.items.art.streams:
+		for emitter: CPUParticles3D in pair.values():
+			emitter.hide()
+	for end in ["A", "B"]:
+		scene.car.active_end = end
+		var rear := Vector3.BACK if end == "A" else Vector3.FORWARD
+		camera.global_position = scene.car.global_position + rear * 9 + Vector3.UP * 4.2
+		camera.look_at(scene.car.global_position + Vector3.UP * 0.75)
+		for frame in 3:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
-		var label := "smoke-owner-view" if owner_index == 0 else "smoke-rival-view"
-		_check(label + " screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join(label + ".png")) == OK)
-		var visible_to_camera: bool = cloud.get_children().any(func(puff: MeshInstance3D) -> bool: return (puff.layers & camera.cull_mask) != 0)
-		_check(label + " applies the ownership mask", visible_to_camera == (owner_index != 0))
-		cloud.queue_free()
+		var baseline: Image = get_viewport().get_texture().get_image()
+		var changes: Array[Vector2] = []
+		for owner_index in [0, 1]:
+			var cloud: Node3D = scene.items.art.hazard(scene.car.global_position + rear * 4 + Vector3.UP * 2, "smoke", Vector3.UP, owner_index)
+			scene.items.art.tick(0.0)
+			for frame in 4:
+				await get_tree().process_frame
+			await RenderingServer.frame_post_draw
+			var sample: Image = get_viewport().get_texture().get_image()
+			var label := "smoke-owner-view-" if owner_index == 0 else "smoke-rival-view-"
+			_check(label + end + " screenshot saves", sample.save_png(output.path_join(label + end + ".png")) == OK)
+			changes.append(Vector2(_image_change(baseline, sample, Rect2i(480, 250, 320, 270)), _image_change(baseline, sample, Rect2i(80, 120, 1120, 520))))
+			_check(label + end + " is actually rendered", cloud.get_children().any(func(puff: MeshInstance3D) -> bool: return (puff.layers & camera.cull_mask) != 0))
+			cloud.queue_free()
+			await get_tree().process_frame
+		_check("owner plume stays visibly present on end " + end, changes[0].y > 0.005)
+		_check("owner sightline stays clearer than dense rival smoke on end " + end, changes[0].x < changes[1].x * 0.8)
+	for hazard: Dictionary in scene.items.hazards:
+		hazard["visual"].show()
+	for pair: Dictionary in scene.items.art.streams:
+		for emitter: CPUParticles3D in pair.values():
+			emitter.show()
+	scene.car.active_end = "A"
+	scene.items.art.sync_streams(scene.items.cars, scene.items.active)
+	camera.global_position = scene.car.global_position + Vector3(7, 3.5, 8)
+	camera.look_at(scene.car.global_position + Vector3.BACK * 4)
+	for frame in 12:
+		scene.items.art.tick(0.0)
 		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_check("full smoke spray screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("smoke-full-spray.png")) == OK)
 	camera.cull_mask = original_mask
+
+
+func _image_change(a: Image, b: Image, rect: Rect2i) -> float:
+	var total := 0.0
+	var count := 0
+	for y in range(rect.position.y, rect.end.y, 8):
+		for x in range(rect.position.x, rect.end.x, 8):
+			var ca := a.get_pixel(x, y)
+			var cb := b.get_pixel(x, y)
+			total += (absf(ca.r - cb.r) + absf(ca.g - cb.g) + absf(ca.b - cb.b)) / 3.0
+			count += 1
+	return total / maxf(1, count)
+
+
+func _impact_views(camera: Camera3D) -> void:
+	scene.items.reset()
+	scene.race.state = RaceDirector.State.RACING
+	var pos: Vector3 = scene.car.global_position + Vector3(0, -0.85, -7)
+	camera.fov = 60
+	for id in ["machine_guns", "rockets"]:
+		scene.items.art.clear()
+		camera.global_position = pos + Vector3(5.5, 3, 7)
+		camera.look_at(pos + Vector3.UP * 0.5)
+		scene.items._impact({"id": id, "owner": 0}, pos, Vector3.UP, null)
+		var elapsed := 0.0
+		for age in [0.025, 0.12, 0.5]:
+			scene.items.art.tick(age - elapsed)
+			elapsed = age
+			for frame in 3:
+				await get_tree().process_frame
+			await RenderingServer.frame_post_draw
+			_check(id + " impact sequence screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("impact-%s-%03d.png" % [id, int(age * 1000)])) == OK)
+	scene.items.art.clear()
