@@ -36,9 +36,9 @@ whole approach. They prepare end swaps before the boundary and keep the maneuver
 committed until they reach the new surface. Difficulty changes requested pace,
 cornering confidence, braking and overtaking decisions.
 All three crates in every row independently roll from the full seven-item catalog.
-Each floating armored box conceals its rolled item behind the same gold question
-mark and mystery label, then rerolls after its six-second respawn. Collection
-reveals the item and quantity in the HUD. The shared odds apply to every lane and CPU racer; homing
+Each floating industrial armored crate conceals its rolled item without world-space
+text. A segmented light ring shows its six-second recharge, then it rerolls.
+Collection reveals the item and quantity in the HUD. The shared odds apply to every lane and CPU racer; homing
 missiles retain their one-percent rarity. See `godot/scripts/item_catalog.gd` for
 ammo counts and odds.
 
@@ -55,9 +55,15 @@ ammo counts and odds.
 Weapons retain ammunition until spent. Holding E does not repeat; each fresh press
 fires once after the weapon cooldown. The HUD shows rounds/shots remaining. CPUs
 use the same finite supply and cooldowns. Recovery, retry and race exit clear held
-ammo and pending burst rounds. Swapping redirects subsequent shots and the outlet.
+ammo and pending burst rounds. Weapons hinge and lift out of deck hatches and fold
+away when empty. On a swap the old mount retracts before the opposite mount opens.
+A press during deployment queues one shot without spending ammunition early;
+burst rounds pause while the opposite mount deploys. Swapping also redirects the outlet.
 Smoke/oil use continuous nozzle particles and overlapping surface/cloud deposits;
-stationary emitters refresh a single deposit rather than stacking hazards.
+stationary emitters reuse a single deposit rather than stacking hazards. Oil remains
+until a racer crosses it; shields consume it safely. Recovery or the owner leaving
+does not remove it, while retry and race exit clear the course. The dispenser is
+immune to its own oil only while actively dispensing.
 
 Gun tracers emerge from alternating barrels as warm amber streaks with solid bullet tips,
 slight spread, brief flame-shaped muzzle flashes and ejected casings. Rockets and grenades retain metal

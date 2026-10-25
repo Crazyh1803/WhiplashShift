@@ -1,0 +1,4 @@
+VERDICT: CHANGES_REQUESTED
+FINDINGS:
+- [HIGH] godot/scripts/race_item_art.gd:99 — `supply()` removes the label and holographic display, but `RaceItems._collect()` still accesses both every tick. The missing node causes a runtime error before pickup collection completes; `update_supply()` is never called. — Replace the old animation and label accesses in `_collect()` with `update_supply(pickup, cooldown / PICKUP_RESPAWN, delta)` and add a pickup collection/respawn regression test.
+- [HIGH] godot/scripts/item_weapon_mounts.gd:66 — `show_weapon()` now only sets metadata, but no caller invokes the new `tick()`. Mounts therefore remain folded and hidden while firing still consumes ammunition and emits projectiles. — Integrate `tick()` into the race update, gate firing with `ready()`, use the state-aware reset path, and test deployment, end switching, and retraction.

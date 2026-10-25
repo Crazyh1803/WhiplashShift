@@ -285,6 +285,9 @@ func _equip(index: int, id: String) -> void:
 
 func _deployment_views(camera: Camera3D) -> void:
 	var old_fov := camera.fov
+	var body_states: Array[Dictionary] = []
+	for car: Vehicle in scene.items.cars:
+		body_states.append({"car": car, "freeze": car.freeze, "gravity": car.gravity_scale})
 	camera.fov = 52
 	scene.items.reset()
 	scene.race.state = RaceDirector.State.RACING
@@ -322,6 +325,7 @@ func _deployment_views(camera: Camera3D) -> void:
 		if result != OK:
 			_check("deployment frame saves", false)
 	_check("empty weapon rigs finish retracting", not scene.items._gun_mounts[0]["A"].visible and not scene.items._gun_mounts[0]["B"].visible)
-	for car: Vehicle in scene.items.cars:
-		car.freeze = true
+	for state: Dictionary in body_states:
+		state["car"].freeze = state["freeze"]
+		state["car"].gravity_scale = state["gravity"]
 	camera.fov = old_fov

@@ -444,7 +444,8 @@ func _tick_hazards(delta: float) -> void:
 			if float(hazard["life"]) <= 0.0 or not available(int(hazard["owner"])):
 				_remove(hazards, h)
 				continue
-		art.animate_hazard(hazard)
+		if not is_oil:
+			art.animate_hazard(hazard)
 		for i in cars.size():
 			if not available(i):
 				continue
