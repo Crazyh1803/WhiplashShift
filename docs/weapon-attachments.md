@@ -22,10 +22,11 @@ Rendered QA: use `ak-test` with `TEST_CMD` selecting the `item_presentation_qa.t
 
 ## Validation (2026-10-25)
 
+- Windows publisher: nine workflow tests pass, including exact manifest tree paths and LF-only Git stdin. Its UTF-8 byte transport fixes native Windows CRLF conversion; independent review is APPROVE with no findings.
 - Standard `ak-test`: 24 suites, 6,399 passed, 0 failed; no Godot parse/script/engine errors. Includes the three-lap race/retry, all CPU difficulty tiers, surface responses, racecraft, camera, all vehicle adapters, 181 item checks and 860 attachment checks.
 - Rendered/audio QA: Helix 42 passed, 0 failed, covering both gun/launcher ends, smoke mesh/particle ownership masks, stereo pickup audio and effect teardown. Blackjack also rendered successfully with both attachment ends. Owner and rival smoke views were inspected visually.
 - Blender numeric QA: all three assemblies report zero errors (standard gun 3,452 triangles; Helix gun 4,852; launcher 2,520). A forced-invalid build exits 1 before touching outputs.
 - Independent asset and test reviews: APPROVE, no findings in final reports. Runtime review findings are resolved, with HIGH findings fixed and applicability explanations recorded in `.ai/reviews/rebuttal.md`; no additional approval is claimed after the two-round limit.
 - Physics, handling tuning, collider geometry, pickup odds, item ammunition and recent stereo/audio changes are preserved. Blind rockets use the bounded launch correction described above.
 
-Delegated: Claude authored the Blender models and independent attachment/smoke tests, supplied smoke/physics diagnoses, and fixed asset review findings. Codex reviewed the asset/test changes independently and integrated runtime changes. Qwen was asked to draft the routine log summary; the authoritative results above are computed directly from the suite summaries.
+Delegated: Claude authored the Blender models and independent attachment/smoke tests, supplied smoke/physics diagnoses, and fixed asset review findings. Codex reviewed the asset/test changes independently and integrated runtime changes. Qwen drafted the routine log summary and it was checked against the results; the authoritative results above are computed directly from the suite summaries.
