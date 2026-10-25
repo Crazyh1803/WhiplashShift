@@ -49,11 +49,15 @@ static func muzzle(mounts: Dictionary, end: String, id: String, barrel: int) -> 
 	var model: Node3D = mounts[end].get_node("Gun" if id == "machine_guns" else "Launcher")
 	var marker_name := ("MuzzleLeft" if barrel % 2 == 0 else "MuzzleRight") if id == "machine_guns" else "Muzzle"
 	var marker := model.find_child(marker_name, true, false) as Node3D
+	if marker == null:
+		push_error("Weapon GLB is missing muzzle socket: " + marker_name)
+		return mounts[end].global_position
 	return marker.global_position
 
 
 static func _skin_helix(model: Node3D) -> void:
 	var palette := {"M_Olive": Color(0.34, 0.07, 0.13), "M_Steel": Color(0.78, 0.73, 0.60), "M_Warn": Color(0.15, 1.0, 0.72)}
+	var recolored := 0
 	for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 		for surface in mesh.mesh.get_surface_count():
 			var source := mesh.mesh.surface_get_material(surface) as StandardMaterial3D
@@ -61,3 +65,5 @@ static func _skin_helix(model: Node3D) -> void:
 				var material := source.duplicate() as StandardMaterial3D
 				material.albedo_color = palette[source.resource_name]
 				mesh.set_surface_override_material(surface, material)
+				recolored += 1
+	assert(recolored > 0, "Helix launcher GLB has no recognized palette materials")

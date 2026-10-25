@@ -305,7 +305,7 @@ func conceal_supply(pickup: Dictionary) -> void:
 	pickup["icon"].modulate = Color("ffe49b")
 
 
-func prepare_streams(car: Vehicle) -> void:
+func prepare_streams(car: Vehicle, owner := -1) -> void:
 	var pair := {}
 	for id in ["smoke", "oil"]:
 		var emitter := CPUParticles3D.new()
@@ -313,7 +313,7 @@ func prepare_streams(car: Vehicle) -> void:
 		emitter.emitting = false
 		emitter.local_coords = false
 		emitter.amount = 32 if id == "smoke" else 24
-		if id == "smoke" and streams.is_empty():
+		if id == "smoke" and owner == 0:
 			emitter.layers = PLAYER_SMOKE_LAYER
 		emitter.lifetime = 0.8 if id == "smoke" else 0.28
 		emitter.direction = Vector3(0, 0.2 if id == "smoke" else -0.2, -1)

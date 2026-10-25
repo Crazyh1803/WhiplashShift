@@ -117,7 +117,7 @@ func reset() -> void:
 		shield.hide()
 		_shields.append(shield)
 		_gun_mounts.append(art.gun_mounts(car))
-		art.prepare_streams(car)
+		art.prepare_streams(car, cars.find(car))
 	for pickup: Dictionary in pickups:
 		pickup["cooldown"] = 0.0
 		_roll_pickup(pickup)
@@ -340,6 +340,8 @@ func _emit(index: int, id: String) -> void:
 	if id in ["smoke", "oil"]:
 		_drop(index, id, direction)
 		return
+	if id not in ["machine_guns", "rockets", "homing", "grenades"]:
+		return
 	var data: Dictionary = ItemCatalog.DATA[id]
 	var blocker := {}
 	ItemWeaponMounts.show_weapon(_gun_mounts[index], cars[index].active_end, id)
@@ -409,7 +411,8 @@ func _tick_hazards(delta: float) -> void:
 			if near.distance_to(pos) > float(hazard["radius"]):
 				continue
 			if hazard["id"] == "smoke":
-				obscured[i] = i != int(hazard["owner"]) or obscured[i]
+				if i != int(hazard["owner"]):
+					obscured[i] = true
 			elif active[i] != "shield":
 				oil_time[i] = 1.2
 
