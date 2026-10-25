@@ -98,6 +98,8 @@ func _ready() -> void:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		_check(id + " screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join(id + ".png")) == OK)
+		if id == "smoke":
+			await _smoke_views(camera)
 	for end in ["A", "B"]:
 		for id in ["machine_guns", "rockets"]:
 			scene.items.reset()
@@ -152,3 +154,19 @@ func _check(label: String, ok: bool) -> void:
 	else:
 		_fail += 1
 		push_error("FAIL: " + label)
+
+
+func _smoke_views(camera: Camera3D) -> void:
+	camera.cull_mask = scene.rig.cam.cull_mask
+	camera.global_position = scene.car.global_position + Vector3(0, 4.2, 9)
+	camera.look_at(scene.car.global_position + Vector3.UP * 0.75)
+	for owner in [0, 1]:
+		var cloud := scene.items.art.hazard(scene.car.global_position + Vector3(0, 2, 4), "smoke", Vector3.UP, owner)
+		for frame in 4:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		var label := "smoke-owner-view" if owner == 0 else "smoke-rival-view"
+		_check(label + " screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join(label + ".png")) == OK)
+		cloud.queue_free()
+		await get_tree().process_frame
+	camera.cull_mask = (1 << 20) - 1
