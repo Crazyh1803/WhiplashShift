@@ -19,6 +19,8 @@ func _ready() -> void:
 	cam.rotation = Vector3(deg_to_rad(-13.0), 0.0, 0.0)
 	cam.fov = 72.0
 	cam.current = true
+	# Layer 11 carries only this solo player's smoke, including stream particles.
+	cam.cull_mask &= ~RaceItemArt.PLAYER_SMOKE_LAYER
 	add_child(cam)
 	if target:
 		reset_follow()

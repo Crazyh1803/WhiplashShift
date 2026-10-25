@@ -14,7 +14,10 @@ func _ready() -> void:
 		return
 	get_window().size = Vector2i(1280, 720)
 	DirAccess.make_dir_recursive_absolute(output)
-	GameSession.configure("ITEM FX QA", "blackjack", ["ramjet", "boilerfang"])
+	var vehicle_id := "helix" if "--helix" in OS.get_cmdline_user_args() else "blackjack"
+	output = output.path_join(vehicle_id)
+	DirAccess.make_dir_recursive_absolute(output)
+	GameSession.configure("ITEM FX QA", vehicle_id, ["ramjet", "boilerfang"])
 	scene = load("res://scenes/proving_ground.tscn").instantiate()
 	add_child(scene)
 	scene.set_physics_process(false)
@@ -92,6 +95,20 @@ func _ready() -> void:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		_check(id + " screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join(id + ".png")) == OK)
+	for end in ["A", "B"]:
+		for id in ["machine_guns", "rockets"]:
+			scene.items.reset()
+			scene.race.state = RaceDirector.State.RACING
+			scene.car.active_end = end
+			scene.items.grant_item(0, id)
+			ItemWeaponMounts.show_weapon(scene.items._gun_mounts[0], end, id)
+			camera.global_position = scene.car.global_position + Vector3(4.2, 2.6, -5.0 if end == "A" else 5.0)
+			camera.look_at(scene.car.global_position + Vector3.UP * 0.2)
+			camera.fov = 46
+			for frame in 4:
+				await get_tree().process_frame
+			await RenderingServer.frame_post_draw
+			_check("attachment " + end + " " + id + " screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("mount-" + end + "-" + id + ".png")) == OK)
 	scene.items.reset()
 	var left: Vector3 = scene.items.pickups[0].pos
 	var center: Vector3 = scene.items.pickups[1].pos

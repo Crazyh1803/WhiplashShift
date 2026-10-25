@@ -255,8 +255,8 @@ func tick(delta: float) -> void:
 	for i in cars.size():
 		cars[i].item_grip_multiplier = OIL_GRIP if oil_time[i] > 0.0 else 1.0
 		art.update_shield(_shields[i], cars[i].global_position, delta)
-		for end: String in _gun_mounts[i]:
-			_gun_mounts[i][end].visible = (held[i] == "machine_guns" or burst_left[i] > 0) and cars[i].active_end == end
+		var displayed := "machine_guns" if burst_left[i] > 0 else held[i]
+		ItemWeaponMounts.show_weapon(_gun_mounts[i], cars[i].active_end, displayed)
 	art.sync_streams(cars, active)
 	audio.sync(cars, active)
 	for i in range(effects.size() - 1, -1, -1):
@@ -342,12 +342,12 @@ func _emit(index: int, id: String) -> void:
 		return
 	var data: Dictionary = ItemCatalog.DATA[id]
 	var blocker := {}
+	ItemWeaponMounts.show_weapon(_gun_mounts[index], cars[index].active_end, id)
+	var nozzle := ItemWeaponMounts.muzzle(_gun_mounts[index], cars[index].active_end, id, _barrel[index])
+	blocker = _ray(origin, nozzle, index)
+	origin = nozzle
 	if id == "machine_guns":
-		var nozzle := cars[index].global_position + Vector3.UP * 0.74 + direction * (cars[index].tuning.body_length * 0.45 + 0.9)
-		nozzle += cars[index].global_basis.x * (-0.22 if _barrel[index] % 2 == 0 else 0.22)
 		_barrel[index] += 1
-		blocker = _ray(origin, nozzle, index)
-		origin = nozzle
 		direction = (direction + cars[index].global_basis.x * rng.randf_range(-0.003, 0.003) + Vector3.UP * rng.randf_range(-0.001, 0.001)).normalized()
 	var velocity := direction * float(data["speed"])
 	if id == "grenades":
@@ -357,7 +357,7 @@ func _emit(index: int, id: String) -> void:
 		art.casing(origin - direction * 0.8, cars[index].linear_velocity * 0.5 + cars[index].global_basis.x * 2 + Vector3.UP * 2)
 		_gun_mounts[index][cars[index].active_end].show()
 	else:
-		art.muzzle(origin + direction * cars[index].tuning.body_length * 0.5, true, direction)
+		art.muzzle(origin, true, direction)
 	audio.play(id, origin)
 	if not blocker.is_empty():
 		_impact({"owner": index, "id": id}, blocker["position"], blocker["normal"], blocker["collider"])
@@ -377,7 +377,7 @@ func _drop(index: int, id: String, direction: Vector3, audible := true) -> void:
 	if ground.is_empty() or ground["collider"] is Vehicle:
 		return
 	var pos: Vector3 = ground["position"] + Vector3.UP * (3.0 if id == "smoke" else 0.06)
-	var visual := art.hazard(pos, id, ground["normal"])
+	var visual := art.hazard(pos, id, ground["normal"], index)
 	if audible:
 		audio.play(id, pos)
 	if hazards.size() >= MAX_HAZARDS:
@@ -409,7 +409,7 @@ func _tick_hazards(delta: float) -> void:
 			if near.distance_to(pos) > float(hazard["radius"]):
 				continue
 			if hazard["id"] == "smoke":
-				obscured[i] = true
+				obscured[i] = i != int(hazard["owner"]) or obscured[i]
 			elif active[i] != "shield":
 				oil_time[i] = 1.2
 
@@ -431,7 +431,7 @@ func _target(index: int, straight: bool = false) -> int:
 			var prediction := offset + cars[other].linear_velocity * (distance / 105.0)
 			if (prediction - forward * prediction.dot(forward)).length() > 2.0:
 				continue
-		if _smoke_blocks(origin, end):
+		if _smoke_blocks(origin, end, index):
 			continue
 		var hit := _ray(origin, end, index)
 		if not hit.is_empty() and hit["collider"] == cars[other]:
@@ -456,7 +456,7 @@ func _tick_shots(delta: float) -> void:
 			if target >= 0 and available(target) and _same_section(owner, target):
 				var end_pos := cars[target].global_position + Vector3.UP * 0.35
 				var sight := _ray(start, end_pos, owner)
-				if not _smoke_blocks(start, end_pos) and not sight.is_empty() and sight["collider"] == cars[target]:
+				if not _smoke_blocks(start, end_pos, owner) and not sight.is_empty() and sight["collider"] == cars[target]:
 					velocity = velocity.normalized().slerp((end_pos - start).normalized(), minf(1.0, step * 2.5)) * float(ItemCatalog.DATA[id]["speed"])
 		if id == "grenades":
 			velocity.y -= 12.0 * step
@@ -520,9 +520,9 @@ func _apply_hit(victim: int, owner: int, id: String) -> void:
 		audio.play("hit", cars[0].global_position)
 
 
-func _smoke_blocks(start: Vector3, end: Vector3) -> bool:
+func _smoke_blocks(start: Vector3, end: Vector3, except_owner := -1) -> bool:
 	for hazard: Dictionary in hazards:
-		if hazard["id"] != "smoke":
+		if hazard["id"] != "smoke" or int(hazard["owner"]) == except_owner:
 			continue
 		var near := Geometry3D.get_closest_point_to_segment(hazard["pos"], start, end)
 		if near.distance_to(hazard["pos"]) <= float(hazard["radius"]):

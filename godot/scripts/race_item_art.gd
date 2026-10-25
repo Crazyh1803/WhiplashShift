@@ -3,6 +3,7 @@ class_name RaceItemArt
 extends Node3D
 
 const TRACER = preload("res://shaders/item_tracer.gdshader")
+const PLAYER_SMOKE_LAYER := 1 << 10
 var streams: Array[Dictionary] = []
 
 const SHIELD = preload("res://shaders/item_shield.gdshader")
@@ -237,15 +238,7 @@ func shield_hit(visual: MeshInstance3D) -> void:
 
 
 func gun_mounts(car: Vehicle) -> Dictionary:
-	var mounts := {}
-	for end in ["A", "B"]:
-		var node := Node3D.new()
-		node.name = "ItemGun" + end
-		car.add_child(node)
-		CombatVisuals.gun(node, car.tuning.body_length * (-0.45 if end == "A" else 0.45))
-		node.hide()
-		mounts[end] = node
-	return mounts
+	return ItemWeaponMounts.create(car)
 
 
 func casing(pos: Vector3, velocity: Vector3) -> void:
@@ -264,7 +257,7 @@ func casing(pos: Vector3, velocity: Vector3) -> void:
 		"growth": 0.0, "gravity": true})
 
 
-func hazard(pos: Vector3, id: String, normal: Vector3) -> Node3D:
+func hazard(pos: Vector3, id: String, normal: Vector3, owner := -1) -> Node3D:
 	var root := Node3D.new()
 	add_child(root)
 	root.global_position = pos
@@ -273,6 +266,8 @@ func hazard(pos: Vector3, id: String, normal: Vector3) -> Node3D:
 			var offset := Vector3(sin(i * 2.4) * 1.7, float(i % 3) * 0.7 - 0.5, cos(i * 2.4) * 1.7)
 			var puff := CombatVisuals.billboard(root, offset, Color(0.48, 0.5, 0.53, 0.92), 6.0, true)
 			puff.set_meta("origin", offset)
+			if owner == 0:
+				puff.layers = PLAYER_SMOKE_LAYER
 	else:
 		var slick := MeshInstance3D.new()
 		var plane := PlaneMesh.new()
@@ -318,6 +313,8 @@ func prepare_streams(car: Vehicle) -> void:
 		emitter.emitting = false
 		emitter.local_coords = false
 		emitter.amount = 32 if id == "smoke" else 24
+		if id == "smoke" and streams.is_empty():
+			emitter.layers = PLAYER_SMOKE_LAYER
 		emitter.lifetime = 0.8 if id == "smoke" else 0.28
 		emitter.direction = Vector3(0, 0.2 if id == "smoke" else -0.2, -1)
 		emitter.spread = 16 if id == "smoke" else 6
