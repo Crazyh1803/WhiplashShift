@@ -161,7 +161,7 @@ func _smoke_views(camera: Camera3D) -> void:
 	camera.global_position = scene.car.global_position + Vector3(0, 4.2, 9)
 	camera.look_at(scene.car.global_position + Vector3.UP * 0.75)
 	for owner in [0, 1]:
-		var cloud := scene.items.art.hazard(scene.car.global_position + Vector3(0, 2, 4), "smoke", Vector3.UP, owner)
+		var cloud: Node3D = scene.items.art.hazard(scene.car.global_position + Vector3(0, 2, 4), "smoke", Vector3.UP, owner)
 		for frame in 4:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
