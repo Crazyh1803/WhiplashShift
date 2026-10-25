@@ -11,6 +11,10 @@ const OIL = preload("res://shaders/item_oil.gdshader")
 
 var particles: Array[Dictionary] = []
 var clock := 0.0
+# Owner smoke (hazard puffs + stream emitters) fades inside the camera->car sight corridor.
+var owner_car: Vehicle
+var owner_smoke: Array[Node] = []
+var _rng := RandomNumberGenerator.new()
 
 
 func tick(delta: float) -> void:
@@ -29,6 +33,12 @@ func tick(delta: float) -> void:
 		var fraction: float = effect.life / effect.duration
 		effect.node.position += effect.velocity * dt
 		effect.node.scale = Vector3.ONE * (1.0 + (1.0 - fraction) * effect.growth)
+		if effect.has("spin"):
+			effect.node.rotate(effect.spin.normalized(), effect.spin.length() * dt)
+		elif effect.get("orient", false) and effect.velocity.length_squared() > 0.01:
+			var heading: Vector3 = effect.velocity.normalized()
+			var up := Vector3.UP if absf(heading.y) < 0.95 else Vector3.RIGHT
+			effect.node.look_at(effect.node.global_position + heading, up)
 		if effect.has("material"):
 			var color: Color = effect.start_color.lerp(effect.end_color, 1.0 - fraction)
 			color.a *= minf(1.0, fraction * 3.0)
@@ -40,12 +50,37 @@ func tick(delta: float) -> void:
 			effect.node.transparency = 1.0 - fraction
 		if effect.get("gravity", false):
 			effect.velocity.y -= dt * 12.0
+	_update_owner_smoke()
 
 
 func clear() -> void:
 	for particle in particles:
 		particle.node.queue_free()
 	particles.clear()
+	owner_smoke.clear()
+
+
+func _update_owner_smoke() -> void:
+	var camera: Camera3D = null
+	if is_inside_tree() and get_viewport().has_method("get_camera_3D"):
+		camera = get_viewport().call("get_camera_3D")
+	var live := camera != null and is_instance_valid(owner_car) and owner_car.is_inside_tree()
+	var eye := Vector3.ZERO
+	var focus := Vector3.ZERO
+	if live:
+		eye = camera.global_position
+		focus = owner_car.get_global_transform_interpolated().origin + Vector3.UP * 0.75
+	for i in range(owner_smoke.size() - 1, -1, -1):
+		var node := owner_smoke[i]
+		if not is_instance_valid(node) or node.is_queued_for_deletion():
+			owner_smoke.remove_at(i)
+			continue
+		var material := node.get("material_override") as ShaderMaterial
+		if material == null:
+			continue
+		material.set_shader_parameter("protect", 1.0 if live else 0.0)
+		material.set_shader_parameter("eye", eye)
+		material.set_shader_parameter("focus", focus)
 
 
 func supply(pos: Vector3) -> Dictionary:
@@ -208,6 +243,94 @@ func burst(pos: Vector3, color: Color, count: int, explosion: bool) -> void:
 		particles.back()["gravity"] = true
 
 
+## Weapon hit/explosion feedback for RaceItems._impact (pickup feedback stays in burst()).
+## `normal` is the surface normal (UP when unknown); sparks and debris leave along it.
+func impact(pos: Vector3, normal: Vector3, explosion: bool) -> void:
+	var n := normal.normalized() if normal.length_squared() > 0.001 else Vector3.UP
+	var t := n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
+	var b := n.cross(t)
+	var origin := pos + n * 0.08
+	# Short hot flash, then textured blast/dust/soot.
+	_sprite_effect(origin, Color(1.0, 0.82, 0.5, 0.9), 5.0 if explosion else 1.3, 0.08, Vector3.ZERO, 0.6, false)
+	if explosion:
+		var light := OmniLight3D.new()
+		light.light_color = Color("ffb359")
+		light.light_energy = 3.5
+		light.omni_range = 14.0
+		particles.back().node.add_child(light)
+		for i in range(4):
+			var a := i * 1.7 + _rng.randf() * 0.6
+			var out := (t * cos(a) + b * sin(a)) * 1.2 + n * 1.5
+			_sprite_effect(origin + out * 0.2, Color(1.0, 0.5, 0.12, 0.85), 2.8, 0.38, out, 1.5, true)
+		for i in range(8):
+			var a := i * 0.785 + _rng.randf() * 0.4
+			var out := (t * cos(a) + b * sin(a)) * _rng.randf_range(2.5, 5.0) + n * 1.2
+			_sprite_effect(origin, Color(0.4, 0.34, 0.27, 0.6), 2.6, 1.6, out, 2.6, true, 0.05)
+		for i in range(5):
+			var out := n * _rng.randf_range(2.0, 4.0) + (t * _rng.randf_range(-1, 1) + b * _rng.randf_range(-1, 1))
+			_sprite_effect(origin, Color(0.06, 0.055, 0.05, 0.7), 2.2, 2.0, out, 2.4, true, 0.08)
+	else:
+		for i in range(2):
+			var out := n * 1.3 + t * _rng.randf_range(-0.6, 0.6) + b * _rng.randf_range(-0.6, 0.6)
+			_sprite_effect(origin, Color(0.3, 0.27, 0.23, 0.45), 0.9, 0.55, out, 2.0, true, 0.03)
+	for i in range(18 if explosion else 8):
+		var cone := t * _rng.randf_range(-0.7, 0.7) + b * _rng.randf_range(-0.7, 0.7)
+		var speed := _rng.randf_range(10.0, 22.0) if explosion else _rng.randf_range(6.0, 13.0)
+		_streak(origin, (n + cone).normalized() * speed, _rng.randf_range(0.18, 0.4))
+	for i in range(8 if explosion else 3):
+		var cone := t * _rng.randf_range(-1.0, 1.0) + b * _rng.randf_range(-1.0, 1.0)
+		var speed := _rng.randf_range(5.0, 12.0) if explosion else _rng.randf_range(3.0, 7.0)
+		_debris(origin, (n * 1.2 + cone).normalized() * speed)
+
+
+func _track(entry: Dictionary) -> void:
+	while particles.size() >= 240:
+		var oldest: Dictionary = particles.pop_front()
+		oldest.node.queue_free()
+	particles.append(entry)
+
+
+func _streak(pos: Vector3, velocity: Vector3, life: float) -> void:
+	var node := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(0.035, 0.035, 0.45)
+	node.mesh = mesh
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.albedo_color = Color(1.0, 0.72, 0.3)
+	node.material_override = material
+	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(node)
+	node.position = pos
+	_track({"node": node, "material": material, "start_color": Color(1.0, 0.78, 0.38),
+		"end_color": Color(0.9, 0.22, 0.04, 0.0), "life": life, "duration": life, "velocity": velocity,
+		"growth": 0.0, "gravity": true, "orient": true})
+
+
+func _debris(pos: Vector3, velocity: Vector3) -> void:
+	var node := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(_rng.randf_range(0.08, 0.2), _rng.randf_range(0.05, 0.12), _rng.randf_range(0.08, 0.18))
+	node.mesh = mesh
+	var material := StandardMaterial3D.new()
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.roughness = 0.9
+	var shade := _rng.randf_range(0.03, 0.12)
+	var color := Color(shade, shade * 0.95, shade * 0.9)
+	material.albedo_color = color
+	node.material_override = material
+	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(node)
+	node.position = pos
+	var life := _rng.randf_range(0.6, 1.0)
+	_track({"node": node, "material": material, "start_color": color, "end_color": color, "life": life,
+		"duration": life, "velocity": velocity, "growth": 0.0, "gravity": true,
+		"spin": Vector3(_rng.randf_range(-1, 1), _rng.randf_range(-1, 1), _rng.randf_range(-1, 1)).normalized()
+			* _rng.randf_range(6.0, 16.0)})
+
+
 func shield(pos: Vector3, radius: float) -> MeshInstance3D:
 	var visual := MeshInstance3D.new()
 	var sphere := SphereMesh.new()
@@ -267,7 +390,7 @@ func hazard(pos: Vector3, id: String, normal: Vector3, owner_index := -1) -> Nod
 			var puff := CombatVisuals.billboard(root, offset, Color(0.48, 0.5, 0.53, 0.92), 6.0, true)
 			puff.set_meta("origin", offset)
 			if owner_index == 0:
-				puff.layers = PLAYER_SMOKE_LAYER
+				owner_smoke.append(puff)
 	else:
 		var slick := MeshInstance3D.new()
 		var plane := PlaneMesh.new()
@@ -313,40 +436,51 @@ func prepare_streams(car: Vehicle, owner_index := -1) -> void:
 		emitter.emitting = false
 		emitter.local_coords = false
 		emitter.amount = 32 if id == "smoke" else 24
-		if id == "smoke" and owner_index == 0:
-			emitter.layers = PLAYER_SMOKE_LAYER
 		emitter.lifetime = 0.8 if id == "smoke" else 0.28
 		emitter.direction = Vector3(0, 0.2 if id == "smoke" else -0.2, -1)
 		emitter.spread = 16 if id == "smoke" else 6
 		emitter.initial_velocity_min = 2.0
 		emitter.initial_velocity_max = 4.0
 		emitter.gravity = Vector3(0, 0.8 if id == "smoke" else -14.0, 0)
-		var material := StandardMaterial3D.new()
-		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		material.vertex_color_use_as_albedo = true
+		var material: Material
 		if id == "smoke":
 			var quad := QuadMesh.new()
 			quad.size = Vector2(1.5, 1.5)
 			emitter.mesh = quad
-			material.albedo_texture = CombatVisuals.SMOKE
-			material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
-			material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			# Same cloud shader as hazard puffs so the owner's copy shares the sight corridor.
+			var cloud := ShaderMaterial.new()
+			cloud.shader = CombatVisuals.CLOUD
+			cloud.set_shader_parameter("cloud", CombatVisuals.SMOKE)
+			material = cloud
 			emitter.scale_amount_min = 0.5
 			emitter.scale_amount_max = 1.5
+			if owner_index == 0:
+				owner_car = car
+				owner_smoke.append(emitter)
 		else:
+			var standard := StandardMaterial3D.new()
+			standard.vertex_color_use_as_albedo = true
+			standard.albedo_color = Color(0.012, 0.012, 0.015)
+			standard.metallic_specular = 0.9
+			standard.roughness = 0.08
+			material = standard
+			# Thick, slightly stretched droplets.
 			var drop := SphereMesh.new()
-			drop.radius = 0.055
-			drop.height = 0.11
+			drop.radius = 0.07
+			drop.height = 0.15
 			drop.radial_segments = 8
 			drop.rings = 4
 			emitter.mesh = drop
-			material.albedo_color = Color("12131a")
-			material.metallic = 0.7
-			material.roughness = 0.16
+			emitter.scale_amount_min = 0.7
+			emitter.scale_amount_max = 1.6
 		emitter.material_override = material
 		var ramp := Gradient.new()
-		ramp.set_color(0, Color(0.7, 0.72, 0.75, 0.9) if id == "smoke" else Color.WHITE)
-		ramp.set_color(1, Color(0.4, 0.42, 0.45, 0.0))
+		if id == "smoke":
+			ramp.set_color(0, Color(0.7, 0.72, 0.75, 0.9))
+			ramp.set_color(1, Color(0.4, 0.42, 0.45, 0.0))
+		else:
+			ramp.set_color(0, Color(0.02, 0.02, 0.025))
+			ramp.set_color(1, Color(0.02, 0.02, 0.025))
 		emitter.color_ramp = ramp
 		emitter.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		car.add_child(emitter)
@@ -372,6 +506,8 @@ func stop_stream(index: int) -> void:
 
 
 func clear_streams() -> void:
+	owner_smoke.clear()
+	owner_car = null
 	for pair in streams:
 		for emitter: CPUParticles3D in pair.values():
 			if is_instance_valid(emitter):
