@@ -349,9 +349,11 @@ func _emit(index: int, id: String) -> void:
 	blocker = _ray(origin, nozzle, index)
 	origin = nozzle
 	# Elevated deck mounts converge on a visible racer in the existing firing lane.
-	var aim_target := _target(index, id != "homing")
-	if aim_target >= 0 and id != "grenades":
-		direction = (cars[aim_target].global_position + Vector3.UP * 0.35 - origin).normalized()
+	var aim_target := _target(index, true) if id in ["machine_guns", "rockets"] else -1
+	if aim_target >= 0:
+		var aim_point := cars[aim_target].global_position + Vector3.UP * 0.35
+		aim_point += cars[aim_target].linear_velocity * (aim_point.distance_to(origin) / float(data["speed"]))
+		direction = (aim_point - origin).normalized()
 	if id == "machine_guns":
 		_barrel[index] += 1
 		direction = (direction + cars[index].global_basis.x * rng.randf_range(-0.003, 0.003) + Vector3.UP * rng.randf_range(-0.001, 0.001)).normalized()
