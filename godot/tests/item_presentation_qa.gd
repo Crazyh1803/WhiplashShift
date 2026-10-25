@@ -15,6 +15,9 @@ func _ready() -> void:
 	get_window().size = Vector2i(1280, 720)
 	DirAccess.make_dir_recursive_absolute(output)
 	var vehicle_id := "helix" if "--helix" in OS.get_cmdline_user_args() else "blackjack"
+	for argument in OS.get_cmdline_user_args():
+		if argument.begins_with("--vehicle="):
+			vehicle_id = argument.trim_prefix("--vehicle=")
 	output = output.path_join(vehicle_id)
 	DirAccess.make_dir_recursive_absolute(output)
 	GameSession.configure("ITEM FX QA", vehicle_id, ["ramjet", "boilerfang"])
