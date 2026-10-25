@@ -23,6 +23,7 @@ var fire_cooldown: Array[float] = []
 var burst_left: Array[int] = []
 var burst_delay: Array[float] = []
 var _barrel: Array[int] = []
+var _queued_fire: Array[bool] = []
 var _stream_tail: Array[Dictionary] = []
 var protection: Array[float] = []
 var oil_time: Array[float] = []
@@ -91,6 +92,7 @@ func reset() -> void:
 	burst_left.clear()
 	burst_delay.clear()
 	_barrel.clear()
+	_queued_fire.clear()
 	_stream_tail.clear()
 	protection.clear()
 	oil_time.clear()
@@ -106,6 +108,7 @@ func reset() -> void:
 		burst_left.append(0)
 		burst_delay.append(0.0)
 		_barrel.append(0)
+		_queued_fire.append(false)
 		_stream_tail.append({})
 		protection.append(0.0)
 		oil_time.append(0.0)
@@ -142,7 +145,7 @@ func reset_racer(index: int) -> void:
 		if int(shots[i]["owner"]) == index:
 			_remove(shots, i)
 	for i in range(hazards.size() - 1, -1, -1):
-		if int(hazards[i]["owner"]) == index:
+		if int(hazards[i]["owner"]) == index and hazards[i]["id"] != "oil":
 			_remove(hazards, i)
 
 
@@ -152,7 +155,9 @@ func available(index: int) -> bool:
 
 
 func grant_item(index: int, id: String) -> void:
+	_queued_fire[index] = false
 	held[index] = id
+	ItemWeaponMounts.show_weapon(_gun_mounts[index], cars[index].active_end, id)
 	ammo[index] = int(ItemCatalog.DATA[id].get("ammo", 0))
 	_cpu_wait[index] = 0.8
 
@@ -174,6 +179,14 @@ func fire(index: int) -> bool:
 			if index == 0:
 				_message("NO MISSILE LOCK â€” ITEM SAVED")
 			return false
+		if not ItemWeaponMounts.ready(_gun_mounts[index], cars[index].active_end, id):
+			if _queued_fire[index]:
+				return false
+			_queued_fire[index] = true
+			if index == 0:
+				_message("DEPLOYING — SHOT QUEUED")
+			return true
+		_queued_fire[index] = false
 		ammo[index] -= int(ItemCatalog.DATA[id]["cost"])
 		fire_cooldown[index] = float(ItemCatalog.DATA[id]["cooldown"])
 		_emit(index, id)
@@ -206,6 +219,8 @@ func fire(index: int) -> bool:
 func _tick_weapon(index: int, delta: float) -> void:
 	fire_cooldown[index] = maxf(0, fire_cooldown[index] - delta)
 	if burst_left[index] <= 0:
+		return
+	if not ItemWeaponMounts.ready(_gun_mounts[index], cars[index].active_end, "machine_guns"):
 		return
 	burst_delay[index] -= delta
 	while burst_left[index] > 0 and burst_delay[index] <= 0:
@@ -241,6 +256,7 @@ func tick(delta: float) -> void:
 			oil_time[i] = 0.0
 			cars[i].item_grip_multiplier = 1.0
 			continue
+		_tick_mounts(i, delta)
 		_tick_weapon(i, delta)
 		_tick_active(i, delta)
 	_collect(delta)
@@ -267,6 +283,15 @@ func tick(delta: float) -> void:
 			_remove(effects, i)
 
 
+func _tick_mounts(index: int, delta: float) -> void:
+	var displayed := "machine_guns" if burst_left[index] > 0 else held[index]
+	ItemWeaponMounts.show_weapon(_gun_mounts[index], cars[index].active_end, displayed)
+	ItemWeaponMounts.tick(_gun_mounts[index], delta)
+	if _queued_fire[index] and not held[index].is_empty() and ItemWeaponMounts.ready(_gun_mounts[index], cars[index].active_end, held[index]):
+		_queued_fire[index] = false
+		fire(index)
+
+
 func _tick_active(index: int, delta: float) -> void:
 	if active[index].is_empty():
 		return
@@ -280,8 +305,9 @@ func _tick_active(index: int, delta: float) -> void:
 		# Spatially overlapping deposits form a continuous trail, not timed blobs.
 		var tail := _stream_tail[index]
 		var spacing := 3.0 if id == "smoke" else 1.75
-		if not tail.is_empty() and float(tail["life"]) > 0 and cars[index].global_position.distance_to(tail["emitter"]) < spacing:
-			tail["life"] = 5.0 if id == "smoke" else 7.0
+		if not tail.is_empty() and not tail.get("consumed", false) and float(tail["life"]) > 0 and cars[index].global_position.distance_to(tail["emitter"]) < spacing:
+			if id == "smoke":
+				tail["life"] = 5.0
 		else:
 			_drop(index, id, _fire_direction(index), false)
 
@@ -289,8 +315,8 @@ func _tick_active(index: int, delta: float) -> void:
 func _stop(index: int) -> void:
 	if active[index] == "shield" and remaining[index] <= 0.0 and race.state == RaceDirector.State.RACING:
 		audio.play("shield_off", cars[index].global_position)
-	for mount: Node3D in _gun_mounts[index].values():
-		mount.hide()
+	ItemWeaponMounts.hide(_gun_mounts[index], true)
+	_queued_fire[index] = false
 	burst_left[index] = 0
 	_stream_tail[index] = {}
 	art.stop_stream(index)
@@ -307,11 +333,7 @@ func _collect(delta: float) -> void:
 			_roll_pickup(pickup)
 		var visual: Node3D = pickup["model"]
 		visual.visible = float(pickup["cooldown"]) <= 0.0
-		visual.rotate_y(delta * 0.45)
-		visual.position.y = sin(art.clock * 3.0) * 0.15
-		visual.get_node("HolographicDisplay").rotate_y(-delta)
-		var label: Label3D = pickup["label"]
-		label.text = "MYSTERY ITEM" if visual.visible else "RESPAWN %.0fs" % ceilf(float(pickup["cooldown"]))
+		art.update_supply(pickup, float(pickup["cooldown"]) / PICKUP_RESPAWN, delta)
 		if not visual.visible:
 			continue
 		for i in cars.size():
@@ -346,6 +368,9 @@ func _emit(index: int, id: String) -> void:
 	var data: Dictionary = ItemCatalog.DATA[id]
 	var blocker := {}
 	ItemWeaponMounts.show_weapon(_gun_mounts[index], cars[index].active_end, id)
+	if not ItemWeaponMounts.ready(_gun_mounts[index], cars[index].active_end, id):
+		push_error("Attempted to fire an undeployed weapon")
+		return
 	var nozzle := ItemWeaponMounts.muzzle(_gun_mounts[index], cars[index].active_end, id, _barrel[index])
 	blocker = _ray(origin, nozzle, index)
 	var plane_y := origin.y
@@ -367,7 +392,6 @@ func _emit(index: int, id: String) -> void:
 	if id == "machine_guns":
 		art.muzzle(origin, false, direction)
 		art.casing(origin - direction * 0.8, cars[index].linear_velocity * 0.5 + cars[index].global_basis.x * 2 + Vector3.UP * 2)
-		_gun_mounts[index][cars[index].active_end].show()
 	else:
 		art.muzzle(origin, true, direction)
 	audio.play(id, origin)
@@ -394,39 +418,70 @@ func _drop(index: int, id: String, direction: Vector3, audible := true) -> void:
 	var visual := art.hazard(pos, id, ground["normal"], index)
 	if audible:
 		audio.play(id, pos)
-	if hazards.size() >= MAX_HAZARDS:
-		_remove(hazards, 0)
-	hazards.append({"id": id, "owner": index, "pos": pos, "life": 5.0 if id == "smoke" else 7.0,
-		"radius": 5.0 if id == "smoke" else 3.5, "visual": visual, "emitter": cars[index].global_position})
+	if id == "smoke":
+		var smoke_count := 0
+		var oldest_smoke := -1
+		for h in hazards.size():
+			if hazards[h]["id"] == "smoke":
+				smoke_count += 1
+				if oldest_smoke < 0:
+					oldest_smoke = h
+		if smoke_count >= MAX_HAZARDS:
+			_remove(hazards, oldest_smoke)
+	hazards.append({"id": id, "owner": index, "pos": pos, "life": 5.0 if id == "smoke" else 1.0,
+		"radius": 5.0 if id == "smoke" else 3.5, "visual": visual, "emitter": cars[index].global_position,
+		"route": race.entrants[index]["progress"].route_distance, "consumed": false})
 	_stream_tail[index] = hazards.back()
 
 
 func _tick_hazards(delta: float) -> void:
 	for h in range(hazards.size() - 1, -1, -1):
 		var hazard := hazards[h]
-		hazard["life"] = float(hazard["life"]) - delta
-		if float(hazard["life"]) <= 0.0 or not available(int(hazard["owner"])):
-			_remove(hazards, h)
-			continue
+		var is_oil: bool = hazard["id"] == "oil"
+		if not is_oil:
+			hazard["life"] = float(hazard["life"]) - delta
+			if float(hazard["life"]) <= 0.0 or not available(int(hazard["owner"])):
+				_remove(hazards, h)
+				continue
 		art.animate_hazard(hazard)
 		for i in cars.size():
-			if not available(i) or not _same_section(i, int(hazard["owner"])):
+			if not available(i):
 				continue
 			var start := previous_positions[i]
 			var end := cars[i].global_position
+			if is_oil:
+				if start.distance_to(end) > 12.0 or not _oil_contact(hazard, i, start, end):
+					continue
+				if active[i] != "shield":
+					oil_time[i] = 1.2
+				hazard["consumed"] = true
+				hazard["life"] = 0.0
+				_remove(hazards, h)
+				break
+			if not _same_section(i, int(hazard["owner"])):
+				continue
 			if start.distance_to(end) > 12.0:
 				start = end
-			var pos: Vector3 = hazard["pos"]
-			if hazard["id"] == "oil":
-				pos.y = end.y
-			var near := Geometry3D.get_closest_point_to_segment(pos, start, end)
-			if near.distance_to(pos) > float(hazard["radius"]):
-				continue
-			if hazard["id"] == "smoke":
-				if i != int(hazard["owner"]):
-					obscured[i] = true
-			elif active[i] != "shield":
-				oil_time[i] = 1.2
+			var near := Geometry3D.get_closest_point_to_segment(hazard["pos"], start, end)
+			if near.distance_to(hazard["pos"]) <= float(hazard["radius"]) and i != int(hazard["owner"]):
+				obscured[i] = true
+
+
+func _oil_contact(hazard: Dictionary, index: int, start: Vector3, end: Vector3) -> bool:
+	var length := maxf(race.course.total_length, 1.0)
+	var route: float = race.entrants[index]["progress"].route_distance
+	var gap := fposmod(absf(route - float(hazard["route"])), length)
+	if minf(gap, length - gap) > 40.0:
+		return false
+	var pos: Vector3 = hazard["pos"]
+	var offset := Vector2(end.x - start.x, end.z - start.z)
+	var fraction := 0.0
+	if offset.length_squared() > 0.000001:
+		fraction = clampf(Vector2(pos.x - start.x, pos.z - start.z).dot(offset) / offset.length_squared(), 0.0, 1.0)
+	var near := start.lerp(end, fraction)
+	if Vector2(near.x - pos.x, near.z - pos.z).length() > float(hazard["radius"]):
+		return false
+	return near.y >= pos.y and near.y - pos.y <= 2.5
 
 
 func _target(index: int, straight: bool = false) -> int:
