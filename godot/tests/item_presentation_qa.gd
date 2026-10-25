@@ -100,6 +100,8 @@ func _ready() -> void:
 		_check(id + " screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join(id + ".png")) == OK)
 		if id == "smoke":
 			await _smoke_views(camera)
+		elif id == "oil":
+			await _oil_views(camera)
 	await _impact_views(camera)
 	for end in ["A", "B"]:
 		for id in ["machine_guns", "rockets"]:
@@ -243,3 +245,17 @@ func _impact_views(camera: Camera3D) -> void:
 			_check(id + " impact sequence screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("impact-%s-%03d.png" % [id, int(age * 1000)])) == OK)
 	scene.items.art.clear()
 	camera.fov = original_fov
+
+
+func _oil_views(camera: Camera3D) -> void:
+	var old_fov := camera.fov
+	camera.fov = 52
+	var target: Vector3 = scene.items.hazards[scene.items.hazards.size() / 2]["pos"]
+	var offsets: Array[Vector3] = [Vector3(3.8, 1.3, 4.7), Vector3(-3.8, 1.5, -4.7)]
+	for angle in offsets.size():
+		camera.global_position = target + offsets[angle]
+		camera.look_at(target)
+		await get_tree().create_timer(0.2).timeout
+		await RenderingServer.frame_post_draw
+		_check("viscous oil glancing view screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("oil-close-%d.png" % angle)) == OK)
+	camera.fov = old_fov
