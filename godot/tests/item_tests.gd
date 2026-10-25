@@ -194,14 +194,19 @@ func _run() -> void:
 	items._tick_active(0, 0.01)
 	_check("moving smoke leaves overlapping deposits", items.hazards.size() == 2 and Vector3(items.hazards[0].pos).distance_to(items.hazards[1].pos) < 10.0)
 	var cloud: Vector3 = items.hazards[0]["pos"]
-	_check("smoke obstructs targeting", items._smoke_blocks(cloud - Vector3.FORWARD * 10, cloud + Vector3.FORWARD * 10))
+	_check("smoke obstructs rival targeting but never its owner", items._smoke_blocks(cloud - Vector3.FORWARD * 10, cloud + Vector3.FORWARD * 10, 1)
+		and not items._smoke_blocks(cloud - Vector3.FORWARD * 10, cloud + Vector3.FORWARD * 10, 0))
 	items.cars[1].global_position = cloud
 	items._tick_hazards(0.01)
 	_check("car inside smoke has obscured status", items.obscured[1])
 	items.cars[0].active_end = "B"
 	items.cars[1].global_position = items.cars[0].global_position + Vector3.BACK * 25.0
 	await get_tree().physics_frame
-	_check("smoke prevents an otherwise visible missile lock", items._target(0) < 0)
+	_check("owner keeps a missile lock through its own smoke", items._target(0) == 1)
+	# Re-label the cloud as an opponent's so the original blocking behaviour is preserved.
+	for hazard: Dictionary in items.hazards:
+		hazard["owner"] = 2
+	_check("opponent smoke prevents an otherwise visible missile lock", items._target(0) < 0)
 	items._tick_hazards(10.0)
 	_check("missile lock returns after smoke expires", items._target(0) == 1)
 	_check("deployed smoke expires", items.hazards.is_empty())
