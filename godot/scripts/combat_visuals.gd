@@ -7,6 +7,7 @@ const SPARK = preload("res://assets/vfx/spark.png")
 const METAL = preload("res://shaders/crate_metal.gdshader")
 const CLOUD = preload("res://shaders/particle_smoke.gdshader")
 const HOLOGRAM = preload("res://shaders/hologram.gdshader")
+const CRATE_GLB := "res://assets/items/crate/item_supply_crate.glb"
 
 
 static func metal(color: Color) -> ShaderMaterial:
@@ -72,49 +73,37 @@ static func ring(parent: Node3D, pos: Vector3, radius: float, thickness: float, 
 	return node
 
 
-static func crate(parent: Node3D, color: Color, title: String) -> Node3D:
-	var armor := metal(Color("343d48"))
-	var steel := metal(Color("89939c"))
-	var dark := metal(Color("111a22"))
-	var luminous := glow(color)
-	box(parent, Vector3.ZERO, Vector3(1.75, 1.25, 1.55), armor)
-	box(parent, Vector3(0, 0.65, 0), Vector3(1.85, 0.12, 1.65), steel)
-	box(parent, Vector3(0, -0.65, 0), Vector3(1.85, 0.12, 1.65), dark)
-	for x in [-1.0, 1.0]:
-		for z in [-1.0, 1.0]:
-			# Armored corners and bright inlaid status strips.
-			box(parent, Vector3(x * 0.82, 0, z * 0.72), Vector3(0.28, 1.4, 0.28), steel)
-			box(parent, Vector3(x * 0.83, 0.0, z * 0.875), Vector3(0.11, 0.85, 0.035), luminous)
-	for z in [-1.0, 1.0]:
-		box(parent, Vector3(0, 0, z * 0.79), Vector3(1.22, 0.93, 0.06), dark)
-		for i in range(5):
-			box(parent, Vector3(-0.46 + i * 0.23, -0.34, z * 0.83), Vector3(0.13, 0.07, 0.02), luminous)
-		var label := Label3D.new()
-		label.text = title + "\nWS / SUPPLY"
-		label.font_size = 40
-		label.pixel_size = 0.005
-		label.modulate = color.lightened(0.35)
-		label.position = Vector3(0, 0.1, z * 0.85)
-		if z < 0:
-			label.rotation.y = PI
-		parent.add_child(label)
-	for x in [-1.0, 1.0]:
-		box(parent, Vector3(x * 0.9, 0, 0), Vector3(0.05, 0.85, 1.05), dark)
-		for i in range(4):
-			box(parent, Vector3(x * 0.94, -0.22 + i * 0.15, 0), Vector3(0.035, 0.045, 0.7), steel)
-	cylinder(parent, Vector3(0, 0.76, 0), 0.55, 0.13, dark)
-	ring(parent, Vector3(0, 0.84, 0), 0.57, 0.07, luminous)
-	# The projector has a translucent cone and a counter-rotating halo.
-	var holo := hologram(Color(color.r, color.g, color.b, 0.3))
-	cylinder(parent, Vector3(0, 1.35, 0), 0.35, 1.0, holo, 0.72)
-	var display := Node3D.new()
-	parent.add_child(display)
-	display.position.y = 1.8
-	display.name = "HolographicDisplay"
-	ring(parent, Vector3(0, -0.92, 0), 1.2, 0.025, luminous)
-	for x in [-0.5, 0.5]:
-		cylinder(parent, Vector3(x, -0.78, 0), 0.17, 0.15, luminous)
-	return display
+static func crate(parent: Node3D) -> Node3D:
+	## Text-free industrial supply crate (Blender-authored); plain armored box if the GLB is missing.
+	var packed := load(CRATE_GLB) as PackedScene
+	var model: Node3D
+	if packed != null:
+		model = packed.instantiate() as Node3D
+	else:
+		push_error("Supply crate GLB missing: " + CRATE_GLB)
+		model = Node3D.new()
+		box(model, Vector3.ZERO, Vector3(1.8, 1.3, 1.6), metal(Color("343d48")))
+	model.name = "SupplyCrate"
+	parent.add_child(model)
+	return model
+
+
+## Non-text respawn hardware: a dark pad with a ring of segments the caller fills as cooldown drains.
+static func charge_pad(parent: Node3D, y: float, segments := 12, radius := 1.45) -> Array[MeshInstance3D]:
+	var pad := Node3D.new()
+	pad.name = "ChargePad"
+	pad.position.y = y
+	parent.add_child(pad)
+	cylinder(pad, Vector3.ZERO, radius + 0.18, 0.08, metal(Color("1a222b")))
+	ring(pad, Vector3(0, 0.05, 0), radius + 0.15, 0.04, metal(Color("89939c")))
+	var cells: Array[MeshInstance3D] = []
+	for i in segments:
+		var angle := TAU * i / segments
+		var cell := box(pad, Vector3(sin(angle), 0.07, cos(angle)) * radius, Vector3(0.3, 0.05, 0.62), glow(Color("ffa53d")))
+		cell.rotation.y = angle
+		cell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		cells.append(cell)
+	return cells
 
 
 static func rocket(parent: Node3D, accent: Color) -> void:

@@ -91,23 +91,33 @@ func supply(pos: Vector3) -> Dictionary:
 	root.global_position = pos
 	var model := Node3D.new()
 	root.add_child(model)
-	var display := CombatVisuals.crate(model, Color("ffc34d"), "RANDOM ITEM")
-	var icon := Label3D.new()
-	icon.text = "?"
-	icon.font_size = 110
-	icon.pixel_size = 0.009
-	icon.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	icon.modulate = Color("ffe49b")
-	display.add_child(icon)
-	CombatVisuals.ring(root, Vector3(0, -1.35, 0), 1.55, 0.045, CombatVisuals.glow(Color("ffc34d")))
-	var label := Label3D.new()
-	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label.position.y = 2.85
-	label.font_size = 38
-	label.pixel_size = 0.009
-	label.modulate = Color("ffe49b")
-	root.add_child(label)
-	return {"visual": root, "model": model, "label": label, "icon": icon}
+	CombatVisuals.crate(model)
+	# Respawn hardware stays put while the crate bobs: a segmented, text-free charge pad.
+	var cells := CombatVisuals.charge_pad(root, -1.3)
+	root.set_meta("cells", cells)
+	root.set_meta("phase", fmod(pos.x * 0.37 + pos.z * 0.61, TAU))
+	return {"visual": root, "model": model, "pad": cells[0].get_parent()}
+
+
+## `cooldown_fraction`: 0 = crate ready, 1 = just collected. Drives bob/spin and the charge pad.
+func update_supply(pickup: Dictionary, cooldown_fraction: float, delta: float) -> void:
+	var root: Node3D = pickup["visual"]
+	var model: Node3D = pickup["model"]
+	var ready := cooldown_fraction <= 0.0
+	model.visible = ready
+	if ready:
+		model.rotate_y(delta * 0.45)
+		model.position.y = sin(clock * 3.0 + float(root.get_meta("phase", 0.0))) * 0.15
+	var cells: Array = root.get_meta("cells", [])
+	var charge := 1.0 - clampf(cooldown_fraction, 0.0, 1.0)
+	for i in cells.size():
+		var cell: MeshInstance3D = cells[i]
+		var fill := clampf(charge * cells.size() - i, 0.0, 1.0)
+		var material := cell.material_override as StandardMaterial3D
+		var color := Color("ffa53d") if ready else Color("37d6ff").lerp(Color("ffa53d"), fill)
+		material.albedo_color = color
+		material.emission = color
+		material.emission_energy_multiplier = 1.4 + 0.4 * sin(clock * 3.0) if ready else 0.15 + 2.0 * fill
 
 
 func projectile(pos: Vector3, direction: Vector3, id: String) -> Node3D:
@@ -434,11 +444,10 @@ func animate_hazard(entry: Dictionary) -> void:
 
 
 func conceal_supply(pickup: Dictionary) -> void:
-	# All items share the same public presentation until collection.
-	pickup["label"].text = "MYSTERY ITEM"
-	pickup["label"].modulate = Color("ffe49b")
-	pickup["icon"].text = "?"
-	pickup["icon"].modulate = Color("ffe49b")
+	# Contents are never shown on the crate; every roll looks identical until collection.
+	var model: Node3D = pickup["model"]
+	model.visible = true
+	model.position.y = 0.0
 
 
 func prepare_streams(car: Vehicle, owner_index := -1) -> void:
