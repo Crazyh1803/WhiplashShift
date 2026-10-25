@@ -16,9 +16,12 @@ PREVIEW = "desktop-preview"
 
 def git(repo, *args, text=None, check=True):
     result = subprocess.run(
-        ["git", "-C", str(repo), *args], input=text, text=True,
+        ["git", "-C", str(repo), *args],
+        input=None if text is None else text.encode("utf-8"),
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     )
+    result.stdout = result.stdout.decode("utf-8", "replace")
+    result.stderr = result.stderr.decode("utf-8", "replace")
     if check and result.returncode:
         raise RuntimeError(result.stderr.strip() or result.stdout.strip())
     return result.stdout.strip() if check else result

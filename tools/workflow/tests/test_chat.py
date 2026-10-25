@@ -66,6 +66,28 @@ class ChatWorkflowTests(unittest.TestCase):
         self.assertEqual(workflow.git(self.repo, "ls-tree", "-r", "--name-only", preview),
                          "tools/launcher/windows-release.json")
 
+    def test_published_tree_names_have_no_carriage_returns(self):
+        task = self.begin()
+        self.change(task["worktree"])
+        workflow.publish(task["worktree"])
+        preview = workflow.remote_head(self.repo, workflow.PREVIEW)
+        raw = subprocess.run(["git", "-C", str(self.repo), "ls-tree", "-r", "-z", "--name-only", preview],
+                             check=True, capture_output=True).stdout
+        self.assertEqual(raw, b"tools/launcher/windows-release.json\0")
+        top = subprocess.run(["git", "-C", str(self.repo), "ls-tree", "-z", "--name-only", preview],
+                             check=True, capture_output=True).stdout
+        self.assertEqual(top, b"tools\0")
+        blob = subprocess.run(["git", "-C", str(self.repo), "cat-file", "blob",
+                               preview + ":tools/launcher/windows-release.json"],
+                              check=True, capture_output=True).stdout
+        self.assertEqual(json.loads(blob)["source_branch"], task["branch"])
+
+    def test_git_helper_passes_lf_stdin_unchanged(self):
+        blob = workflow.git(self.repo, "hash-object", "-w", "--stdin", text="a\nb\n")
+        data = subprocess.run(["git", "-C", str(self.repo), "cat-file", "blob", blob],
+                              check=True, capture_output=True).stdout
+        self.assertEqual(data, b"a\nb\n")
+
     def test_preview_switches_between_branches_and_main(self):
         one, two = self.begin(), self.begin("chat-two", "Second feature")
         for task in (one, two):
