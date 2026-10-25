@@ -69,7 +69,7 @@ func _ready() -> void:
 			progress.route_distance = i * 35
 		await get_tree().physics_frame
 		await get_tree().physics_frame
-		scene.items.grant_item(0, id)
+		_equip(0, id)
 		_check(id + " activates through RaceItems.fire", scene.items.fire(0))
 		_check(id + " starts a positional audio voice", scene.items.audio._voices.any(func(voice: AudioStreamPlayer3D) -> bool: return voice.playing))
 		scene.items.audio.sync(scene.items.cars, scene.items.active)
@@ -103,12 +103,13 @@ func _ready() -> void:
 		elif id == "oil":
 			await _oil_views(camera)
 	await _impact_views(camera)
+	await _deployment_views(camera)
 	for end in ["A", "B"]:
 		for id in ["machine_guns", "rockets"]:
 			scene.items.reset()
 			scene.race.state = RaceDirector.State.RACING
 			scene.car.active_end = end
-			scene.items.grant_item(0, id)
+			_equip(0, id)
 			ItemWeaponMounts.show_weapon(scene.items._gun_mounts[0], end, id)
 			camera.global_position = scene.car.global_position + Vector3(4.2, 2.6, -5.0 if end == "A" else 5.0)
 			camera.look_at(scene.car.global_position + Vector3.UP * 0.2)
@@ -127,7 +128,16 @@ func _ready() -> void:
 	for frame in range(4):
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
-	_check("mystery crate screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("mystery-crates.png")) == OK)
+	_check("industrial crate has no floating text", scene.items.pickups.all(func(pickup: Dictionary) -> bool: return pickup["visual"].find_children("*", "Label3D", true, false).is_empty()))
+	_check("industrial crate screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("industrial-crates.png")) == OK)
+	var supply: Dictionary = scene.items.pickups[1]
+	for fraction in [1.0, 0.5]:
+		scene.items.art.update_supply(supply, fraction, 0.0)
+		for frame in 3:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		_check("non-text respawn charge screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("crate-respawn-%d.png" % int(fraction * 100))) == OK)
+	scene.items.art.update_supply(supply, 0.0, 0.0)
 	_check("item bus has a limiter", AudioServer.get_bus_effect_count(AudioServer.get_bus_index("ItemFX")) == 1)
 	for i in range(32):
 		scene.items.audio.play("machine_guns", scene.car.global_position)
@@ -265,4 +275,53 @@ func _oil_views(camera: Camera3D) -> void:
 		await get_tree().create_timer(0.2).timeout
 		await RenderingServer.frame_post_draw
 		_check("viscous oil glancing view screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("oil-close-%d.png" % angle)) == OK)
+	camera.fov = old_fov
+
+
+func _equip(index: int, id: String) -> void:
+	scene.items.grant_item(index, id)
+	ItemWeaponMounts.tick(scene.items._gun_mounts[index], 2.0)
+
+
+func _deployment_views(camera: Camera3D) -> void:
+	var old_fov := camera.fov
+	camera.fov = 52
+	scene.items.reset()
+	scene.race.state = RaceDirector.State.RACING
+	scene.car.active_end = "A"
+	for car: Vehicle in scene.items.cars:
+		car.freeze = false
+		car.gravity_scale = 0
+		car.linear_velocity = Vector3.ZERO
+		car.angular_velocity = Vector3.ZERO
+	camera.global_position = scene.car.global_position + Vector3(6, 3.5, 3)
+	camera.look_at(scene.car.global_position + Vector3.UP * 0.2)
+	var frames_dir := output.path_join("deployment-frames")
+	DirAccess.make_dir_recursive_absolute(frames_dir)
+	for frame in 120:
+		if frame == 0:
+			scene.items.grant_item(0, "machine_guns")
+			scene.items.ammo[0] = 3
+			_check("deployment accepts one buffered trigger", scene.items.fire(0) and scene.items.shots.is_empty() and scene.items.ammo[0] == 3)
+		elif frame == 42:
+			scene.items.grant_item(0, "rockets")
+		elif frame == 66:
+			scene.car.active_end = "B"
+		elif frame == 96:
+			scene.items.ammo[0] = 1
+			_check("deployed opposite-end launcher fires its last round", scene.items.fire(0))
+		scene.items._tick_mounts(0, 1.0 / 30.0)
+		scene.items._tick_weapon(0, 1.0 / 30.0)
+		scene.items._tick_shots(1.0 / 30.0)
+		scene.items.art.tick(1.0 / 30.0)
+		var shown: String = "machine_guns" if scene.items.burst_left[0] > 0 else scene.items.held[0]
+		ItemWeaponMounts.show_weapon(scene.items._gun_mounts[0], scene.car.active_end, shown)
+		await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		var result := get_viewport().get_texture().get_image().save_png(frames_dir.path_join("frame-%04d.png" % frame))
+		if result != OK:
+			_check("deployment frame saves", false)
+	_check("empty weapon rigs finish retracting", not scene.items._gun_mounts[0]["A"].visible and not scene.items._gun_mounts[0]["B"].visible)
+	for car: Vehicle in scene.items.cars:
+		car.freeze = true
 	camera.fov = old_fov

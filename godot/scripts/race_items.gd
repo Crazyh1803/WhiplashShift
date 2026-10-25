@@ -184,7 +184,7 @@ func fire(index: int) -> bool:
 				return false
 			_queued_fire[index] = true
 			if index == 0:
-				_message("DEPLOYING — SHOT QUEUED")
+				_message("DEPLOYING - SHOT QUEUED")
 			return true
 		_queued_fire[index] = false
 		ammo[index] -= int(ItemCatalog.DATA[id]["cost"])
@@ -428,6 +428,7 @@ func _drop(index: int, id: String, direction: Vector3, audible := true) -> void:
 					oldest_smoke = h
 		if smoke_count >= MAX_HAZARDS:
 			_remove(hazards, oldest_smoke)
+	# Oil life=1 is a full-opacity sentinel, not an expiry timer.
 	hazards.append({"id": id, "owner": index, "pos": pos, "life": 5.0 if id == "smoke" else 1.0,
 		"radius": 5.0 if id == "smoke" else 3.5, "visual": visual, "emitter": cars[index].global_position,
 		"route": race.entrants[index]["progress"].route_distance, "consumed": false})
@@ -450,6 +451,8 @@ func _tick_hazards(delta: float) -> void:
 			var start := previous_positions[i]
 			var end := cars[i].global_position
 			if is_oil:
+				if i == int(hazard["owner"]) and active[i] == "oil":
+					continue
 				if start.distance_to(end) > 12.0 or not _oil_contact(hazard, i, start, end):
 					continue
 				if active[i] != "shield":
