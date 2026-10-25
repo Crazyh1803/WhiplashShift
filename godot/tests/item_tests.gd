@@ -56,16 +56,23 @@ func _run() -> void:
 	items.cars[0].global_position = pickup["pos"]
 	items.previous_positions[0] = pickup["pos"]
 	items.tick(0.01)
+	var ready_cell: MeshInstance3D = pickup["visual"].get_meta("cells")[0]
+	var ready_color: Color = (ready_cell.material_override as StandardMaterial3D).albedo_color
 	_check("pickup grants a random valid item", ItemCatalog.IDS.has(items.held[0]) and float(pickup["cooldown"]) > 0.0)
-	_check("collected crate hides its model but retains respawn pad", not pickup["model"].visible and pickup["visual"].visible)
+	_check("collected crate hides its model but retains respawn pad", not pickup["model"].visible and pickup["visual"].visible
+		and pickup["pad"].visible and pickup["pad"].is_visible_in_tree())
 	items._collect(0.01)
-	_check("empty crate shows a respawn countdown", String(pickup["label"].text).begins_with("RESPAWN"))
+	_check("crates and pads carry no Label3D, TextMesh or holographic text", _text_nodes(pickup["visual"]).is_empty()
+		and not pickup.has("label") and not pickup.has("icon"))
+	_check("empty crate shows a visible non-text respawn pad that leaves the ready colour",
+		pickup["pad"].visible and pickup["visual"].get_meta("cells").size() >= 6
+		and (ready_cell.material_override as StandardMaterial3D).albedo_color != ready_color)
 	var second: Dictionary = items.pickups[1]
 	items.cars[0].global_position = second["pos"]
 	items.previous_positions[0] = second["pos"]
 	items.tick(0.01)
 	_check("held slot leaves other pickups untouched", float(second["cooldown"]) == 0.0)
-	items.grant_item(0, "machine_guns")
+	_equip(0, "machine_guns")
 	_check("gun crate grants thirty rounds", items.ammo[0] == 30)
 	_check("E spends three rounds and starts one burst", items.fire(0) and items.ammo[0] == 27 and items.shots.size() == 1 and items.active[0].is_empty())
 	scene.hud._process(0.0)
@@ -87,7 +94,7 @@ func _run() -> void:
 	_check("ten presses exhaust thirty rounds with no free final burst", items.ammo[0] == 0 and items.shots.size() == 30 and items.held[0].is_empty() and not items.fire(0))
 	for id: String in ["rockets", "grenades"]:
 		await _fixture()
-		items.grant_item(0, id)
+		_equip(0, id)
 		var count := items.ammo[0]
 		items.fire(0)
 		_check(id + " press spends exactly one shot", items.ammo[0] == count - 1 and items.shots.size() == 1)
@@ -101,7 +108,7 @@ func _run() -> void:
 			items.fire(0)
 		_check(id + " crate has a finite count", items.shots.size() == count and items.ammo[0] == 0 and items.held[0].is_empty())
 	await _fixture()
-	items.grant_item(0, "rockets")
+	_equip(0, "rockets")
 	items.fire(0)
 	items.cars[1].linear_velocity = Vector3(0, 0, -20)
 	await get_tree().physics_frame
@@ -111,7 +118,7 @@ func _run() -> void:
 	_check("weapon hit reduces real speed", items.cars[1].linear_velocity.length() < 18.0 and items.cars[1].linear_velocity.length() > 10.0)
 	items.cars[0].active_end = "B"
 	items.reset_racer(0)
-	items.grant_item(0, "rockets")
+	_equip(0, "rockets")
 	items.fire(0)
 	_check("swap redirects the next shot to active end", Vector3(items.shots[0]["velocity"]).z > 0.0)
 	await _fixture()
@@ -126,7 +133,7 @@ func _run() -> void:
 	items._apply_hit(1, 0, "rockets")
 	_check("expired shield no longer blocks", items.active[1].is_empty() and not items._shields[1].visible and items.protection[1] > 0.0)
 	await _fixture()
-	items.grant_item(0, "machine_guns")
+	_equip(0, "machine_guns")
 	var echo := InputEventKey.new()
 	echo.keycode = KEY_E
 	echo.pressed = true
@@ -151,25 +158,25 @@ func _run() -> void:
 	add_child(wall)
 	wall.position = Vector3(1100, 10, 1098)
 	await get_tree().physics_frame
-	items.grant_item(0, "machine_guns")
+	_equip(0, "machine_guns")
 	items.fire(0)
 	_check("barrel relocation cannot spawn a tracer through a nearby wall", items.shots.is_empty())
 	items.reset_racer(0)
 	wall.position.z = 1083
 	await get_tree().physics_frame
-	items.grant_item(0, "rockets")
+	_equip(0, "rockets")
 	items.fire(0)
 	items._tick_shots(0.3)
 	_check("wall blocks projectiles and splash", items.shots.is_empty() and items.protection[1] == 0.0 and items._target(0) < 0)
 	wall.queue_free()
 	await _fixture()
-	items.grant_item(0, "grenades")
+	_equip(0, "grenades")
 	items.fire(0)
 	var shot := items.shots[0]
 	items._impact(shot, items.cars[1].global_position + Vector3.RIGHT * 4.0, Vector3.UP, null)
 	_check("grenade blast hits nearby car without direct collision", items.protection[1] > 0.0)
 	await _fixture()
-	items.grant_item(0, "homing")
+	_equip(0, "homing")
 	items.cars[1].global_position.x += 10.0
 	await get_tree().physics_frame
 	_check("homing locks a visible target", items.fire(0))
@@ -231,7 +238,7 @@ func _run() -> void:
 	_check("grip returns after leaving oil", items.cars[1].item_grip_multiplier == 1.0)
 	await _fixture()
 	items.cars[1].active_end = "B"
-	items.grant_item(1, "rockets")
+	_equip(1, "rockets")
 	items._cpu_wait[1] = 0
 	items.tick(0.01)
 	_check("CPU fires one round under the same ammo rules", items.held[1] == "rockets" and items.ammo[1] == 3 and items.active[1].is_empty())
@@ -296,7 +303,8 @@ func _test_crate_pool() -> void:
 				seed_value += 1
 			items.rng.seed = seed_value
 			items._roll_pickup(pickup)
-			_check("lane %d conceals %s before collection" % [lane + 1, id], pickup.label.text == "MYSTERY ITEM" and pickup.icon.text == "?" and pickup.label.modulate == Color("ffe49b") and pickup.icon.modulate == Color("ffe49b"))
+			_check("lane %d conceals %s before collection" % [lane + 1, id], pickup.model.visible and _text_nodes(pickup.visual).is_empty()
+				and pickup.model.get_child_count() > 0)
 			items.held[0] = ""
 			items.ammo[0] = 0
 			items.active[0] = ""
@@ -306,7 +314,7 @@ func _test_crate_pool() -> void:
 			items._collect(0.001)
 			_check("lane %d reveals %s and its quantity only on collection" % [lane + 1, id], items.held[0] == id and items.ammo[0] == int(ItemCatalog.DATA[id].get("ammo", 0)) and items.feedback.contains(ItemCatalog.supply_label(id)))
 			items._collect(6.1)
-			_check("lane %d respawn rerolls while keeping contents concealed" % [lane + 1], ItemCatalog.IDS.has(pickup.item) and pickup.label.text == "MYSTERY ITEM" and pickup.icon.text == "?")
+			_check("lane %d respawn rerolls while keeping contents concealed" % [lane + 1], ItemCatalog.IDS.has(pickup.item) and pickup.model.visible and _text_nodes(pickup.visual).is_empty())
 
 
 func _test_streams() -> void:
@@ -348,15 +356,16 @@ func _test_presentation() -> void:
 	_check("pickup PCM contains complete stereo frames", pickup_sound.data.size() == int(float(ItemAudio.DURATIONS["pickup"]) * ItemAudio.RATE) * 4)
 	for id in ["machine_guns", "rockets", "grenades", "homing"]:
 		await _fixture()
-		items.grant_item(0, id)
+		_equip(0, id)
 		_check(id + " activation triggers its distinct sound", items.fire(0) and heard.has(id))
 	await _fixture()
-	items.grant_item(0, "machine_guns")
+	_equip(0, "machine_guns")
 	items.fire(0)
 	_check("machine guns display the driving-end mount and a soft tracer", items._gun_mounts[0]["A"].visible
 		and not items._gun_mounts[0]["B"].visible and items.shots[0].visual.get_child_count() == 3)
 	items.cars[0].active_end = "B"
 	items.tick(0.01)
+	ItemWeaponMounts.tick(items._gun_mounts[0], 2.0)
 	_check("swapping moves the visible gun mount to the active end", items._gun_mounts[0]["B"].visible and not items._gun_mounts[0]["A"].visible)
 	items.reset_racer(0)
 	_check("recovery hides both gun mounts", not items._gun_mounts[0]["A"].visible and not items._gun_mounts[0]["B"].visible)
@@ -384,12 +393,27 @@ func _test_presentation() -> void:
 	await _fixture()
 	items._apply_hit(1, 0, "rockets")
 	_check("player hits have an audible confirmation", heard.has("hit"))
+	_equip(0, "rockets")
 	items._emit(0, "rockets")
 	items._impact(items.shots.back(), items.cars[0].global_position, Vector3.UP, null)
 	_check("explosions trigger a blast sound", heard.has("explosion"))
 	_check("shield and smoke sustain use looped audio", ItemAudio.make_sound("shield_hum").loop_mode == AudioStreamWAV.LOOP_FORWARD
 		and ItemAudio.make_sound("smoke_loop").loop_mode == AudioStreamWAV.LOOP_FORWARD)
 	items.reset()
+
+
+## Grants an item and runs the deploy animation to completion so legacy fixtures can fire at once.
+func _equip(index: int, id: String) -> void:
+	items.grant_item(index, id)
+	ItemWeaponMounts.tick(items._gun_mounts[index], 2.0)
+
+
+func _text_nodes(root: Node) -> Array[Node]:
+	var found: Array[Node] = []
+	for node in root.find_children("*", "", true, false) + [root]:
+		if node is Label3D or (node is MeshInstance3D and node.mesh is TextMesh) or String(node.name).containsn("holo"):
+			found.append(node)
+	return found
 
 
 func _fixture() -> void:
@@ -425,7 +449,7 @@ func _capture() -> void:
 	get_viewport().get_texture().get_image().save_png("res://../.ai/captures/timed-shield.png")
 	for id: String in ["machine_guns", "rockets", "grenades", "smoke", "oil", "homing"]:
 		items.reset_racer(0)
-		items.grant_item(0, id)
+		_equip(0, id)
 		if id == "homing":
 			scene.cpu_cars[0].global_position = scene.car.global_position + items._fire_direction(0) * 30.0
 			scene.cpu_cars[0].freeze = false
