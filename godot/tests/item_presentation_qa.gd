@@ -146,6 +146,7 @@ func _ready() -> void:
 	scene.queue_free()
 	for frame in 3:
 		await get_tree().process_frame
+	await get_tree().create_timer(0.25).timeout
 	print("ITEM PRESENTATION: %d passed, %d failed" % [_pass, _fail])
 	get_tree().quit(1 if _fail else 0)
 
@@ -250,11 +251,17 @@ func _impact_views(camera: Camera3D) -> void:
 func _oil_views(camera: Camera3D) -> void:
 	var old_fov := camera.fov
 	camera.fov = 52
-	var target: Vector3 = scene.items.hazards[scene.items.hazards.size() / 2]["pos"]
+	var oil: Array = scene.items.hazards.filter(func(hazard: Dictionary) -> bool: return hazard["id"] == "oil")
+	_check("glancing views have an oil hazard", not oil.is_empty())
+	if oil.is_empty():
+		camera.fov = old_fov
+		return
+	var target: Vector3 = oil[int(oil.size() / 2)]["pos"]
 	var offsets: Array[Vector3] = [Vector3(3.8, 1.3, 4.7), Vector3(-3.8, 1.5, -4.7)]
 	for angle in offsets.size():
 		camera.global_position = target + offsets[angle]
 		camera.look_at(target)
+		_check("oil surface is inside the glancing view", camera.is_position_in_frustum(target))
 		await get_tree().create_timer(0.2).timeout
 		await RenderingServer.frame_post_draw
 		_check("viscous oil glancing view screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join("oil-close-%d.png" % angle)) == OK)

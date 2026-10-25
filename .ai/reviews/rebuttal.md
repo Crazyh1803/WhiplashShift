@@ -14,3 +14,7 @@ The two routine runtime review rounds were Claude 20261025-102451 (APPROVE with 
 - Independent test review is APPROVE with no findings. Physics escalation confirmed the elevated-muzzle regression and supplied the blind-shot split-trajectory correction applied by the lead. No vehicle tuning or collider was changed.
 
 Validation results are recorded in docs/weapon-attachments.md and the final task report. All review findings are addressed or have a concrete applicability explanation above; no unresolved HIGH remains.
+
+## Subsequent VFX refinement
+
+The owner-layer hiding approach was replaced at the user's request by visible full-volume smoke with a soft owner-only view corridor. Initial VFX review HIGH (incorrect get_camera_3D spelling) and MED (impact call not yet integrated) are fixed. Live owner emitter bindings now survive transient cleanup. Follow-up owner correction and visual polish reviews APPROVE with no findings. Integration/QA reviews APPROVE; capture rectangles are clipped, FOV is restored, explosive normals are covered, rival pixel change has a minimum threshold, and glancing oil captures explicitly select and frame an oil hazard. Focused checks pass 1,128/0. No unresolved finding requires user action.
