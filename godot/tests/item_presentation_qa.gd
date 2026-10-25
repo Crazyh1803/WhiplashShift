@@ -107,10 +107,16 @@ func _ready() -> void:
 	for i in range(32):
 		scene.items.audio.play("machine_guns", scene.car.global_position)
 	_check("rapid effects respect voice limit", scene.items.audio._voices.size() <= ItemAudio.MAX_VOICES)
+	scene.items.audio.play("pickup", scene.car.global_position)
+	var pickup_voice: AudioStreamPlayer = scene.items.audio._pickup_voice
+	_check("pickup plays its stereo stream without positional downmix", pickup_voice.playing and pickup_voice.stream.stereo and pickup_voice.bus == "ItemFX")
+	scene.items.audio.play("pickup", scene.car.global_position)
+	_check("repeat pickup reuses its bounded feedback voice", scene.items.audio._pickup_voice == pickup_voice)
 	scene.items.audio.stop_all()
 	_check("cleanup stops every one-shot and sustain loop", scene.items.audio._voices.all(func(v: AudioStreamPlayer3D) -> bool: return not v.playing)
+		and not pickup_voice.playing
 		and scene.items.audio._loops.values().all(func(v: AudioStreamPlayer3D) -> bool: return not v.playing))
-	for id in ["machine_guns", "impact", "explosion", "shield_hit", "smoke", "oil", "shield_on"]:
+	for id in ["pickup", "hit", "machine_guns", "impact", "explosion", "shield_hit", "smoke", "oil", "shield_on"]:
 		ItemAudio.make_sound(id).save_to_wav(output.path_join(id + ".wav"))
 	scene.queue_free()
 	for frame in 3:

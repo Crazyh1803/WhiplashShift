@@ -11,12 +11,13 @@ const RATE := 22050
 const MAX_VOICES := 16
 const DURATIONS := {"machine_guns": 0.13, "rockets": 0.48, "homing": 0.55,
 	"grenades": 0.22, "explosion": 1.25, "impact": 0.55, "hit": 0.22,
-	"pickup": 0.42, "oil": 0.28, "smoke": 0.35, "shield_on": 0.55,
+	"pickup": 0.78, "oil": 0.28, "smoke": 0.35, "shield_on": 0.55,
 	"shield_hit": 0.45, "shield_off": 0.35, "shield_hum": 1.0, "smoke_loop": 1.0, "oil_loop": 1.0}
 var _cache: Dictionary = {}
 var _voices: Array[AudioStreamPlayer3D] = []
 var _loops: Dictionary = {}
 var _cursor := 0
+var _pickup_voice: AudioStreamPlayer
 
 
 func _ready() -> void:
@@ -29,6 +30,17 @@ func _ready() -> void:
 func play(id: String, pos: Vector3) -> void:
 	cue.emit(id)
 	if DisplayServer.get_name() == "headless":
+		return
+	# Local collection feedback preserves authored stereo instead of 3D downmix/panning.
+	if id == "pickup":
+		if not is_instance_valid(_pickup_voice):
+			_ensure_bus()
+			_pickup_voice = AudioStreamPlayer.new()
+			_pickup_voice.bus = "ItemFX"
+			_pickup_voice.volume_db = -6.0
+			add_child(_pickup_voice)
+		_pickup_voice.stream = sound(id)
+		_pickup_voice.play()
 		return
 	var voice: AudioStreamPlayer3D
 	for candidate in _voices:
@@ -77,13 +89,15 @@ func sync(cars: Array[Vehicle], active: Array[String]) -> void:
 
 
 func stop_all() -> void:
+	if is_instance_valid(_pickup_voice):
+		_pickup_voice.stop()
 	for voice in _voices:
 		voice.stop()
 	for voice: AudioStreamPlayer3D in _loops.values():
 		voice.stop()
 
 
-func _player() -> AudioStreamPlayer3D:
+func _ensure_bus() -> void:
 	if AudioServer.get_bus_index("ItemFX") < 0:
 		AudioServer.add_bus()
 		var index := AudioServer.bus_count - 1
@@ -92,6 +106,10 @@ func _player() -> AudioStreamPlayer3D:
 		limiter.ceiling_db = -2.0
 		limiter.threshold_db = -4.0
 		AudioServer.add_bus_effect(index, limiter)
+
+
+func _player() -> AudioStreamPlayer3D:
+	_ensure_bus()
 	var voice := AudioStreamPlayer3D.new()
 	voice.bus = "ItemFX"
 	voice.unit_size = 20.0
@@ -111,6 +129,8 @@ func _exit_tree() -> void:
 
 
 static func make_sound(id: String) -> AudioStreamWAV:
+	if id == "pickup":
+		return _make_pickup()
 	var duration: float = DURATIONS.get(id, 0.2)
 	var count := int(duration * RATE)
 	var bytes := PackedByteArray()
@@ -138,11 +158,15 @@ static func make_sound(id: String) -> AudioStreamWAV:
 				sample = _contact(CONTACT_HEAVY, t) * 0.9 + low * 2.0 * exp(-t * 3.5)
 				sample += noise * 0.45 * exp(-t * 26)
 			"impact", "hit":
-				sample = _contact(CONTACT_SMALL, t * (1.3 if id == "hit" else 1.0)) * 0.9
-				sample += (noise - low) * 0.22 * exp(-t * 60)
-			"pickup":
-				var note := mini(2, int(t / 0.11))
-				sample = sin(TAU * [740, 988, 1480][note] * t) * 0.45 * exp(-fmod(t, 0.11) * 13)
+				# Dry broadband crack, irregular recorded body and short debris tail.
+				# Avoid a dominant ringing contact that reads as an electronic chirp.
+				sample = (noise - low) * 0.72 * exp(-t * 110)
+				sample += _contact(CONTACT_HEAVY, t * 2.2) * 0.68 * exp(-t * 13)
+				sample += low * 1.7 * exp(-t * 28)
+				var debris := maxf(0.0, noise - 0.35) * rng.randf_range(-1.0, 1.0)
+				sample += debris * 0.32 * exp(-t * 17)
+				if id == "hit":
+					sample *= 0.65
 			"oil":
 				sample = (sin(TAU * 125 * t + sin(TAU * 32 * t) * 5) * 0.6 + low) * exp(-t * 9)
 			"smoke":
@@ -176,3 +200,45 @@ static func _contact(wav: AudioStreamWAV, time: float) -> float:
 	if offset + 1 >= wav.data.size():
 		return 0.0
 	return float(wav.data.decode_s16(offset)) / 32768.0
+
+
+## Original arcade pickup: bright FM lift, moving dry image and crossed delay taps.
+## Synthesized locally; no sampled audio from R-Type.
+static func _make_pickup() -> AudioStreamWAV:
+	var count := int(float(DURATIONS["pickup"]) * RATE)
+	var dry := PackedFloat32Array()
+	dry.resize(count)
+	var phase := 0.0
+	for i in count:
+		var t := float(i) / RATE
+		if t >= 0.43:
+			continue
+		var rise := clampf(t / 0.36, 0.0, 1.0)
+		var frequency := 380.0 * pow(3.7, rise)
+		phase += TAU * frequency / RATE
+		var attack := minf(t / 0.006, 1.0)
+		var release := clampf((0.43 - t) / 0.12, 0.0, 1.0)
+		var shimmer := sin(phase + sin(phase * 2.0) * (1.4 - rise))
+		dry[i] = (shimmer * 0.34 + sin(phase * 1.5) * 0.12) * attack * release
+	var bytes := PackedByteArray()
+	bytes.resize(count * 4)
+	for i in count:
+		var t := float(i) / RATE
+		var pan := lerpf(-0.65, 0.65, clampf(t / 0.43, 0.0, 1.0))
+		var left := dry[i] * sqrt((1.0 - pan) * 0.5)
+		var right := dry[i] * sqrt((1.0 + pan) * 0.5)
+		for tap in range(1, 4):
+			var delayed := i - int((0.085 * tap) * RATE)
+			if delayed >= 0:
+				var echo := dry[delayed] * pow(0.43, tap)
+				left += echo * (0.9 if tap % 2 else 0.2)
+				right += echo * (0.2 if tap % 2 else 0.9)
+		var fade := minf(1.0, (float(DURATIONS["pickup"]) - t) * 100.0)
+		bytes.encode_s16(i * 4, int(clampf(left * fade, -0.9, 0.9) * 32767))
+		bytes.encode_s16(i * 4 + 2, int(clampf(right * fade, -0.9, 0.9) * 32767))
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = RATE
+	wav.stereo = true
+	wav.data = bytes
+	return wav

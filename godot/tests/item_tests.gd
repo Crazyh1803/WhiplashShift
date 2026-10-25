@@ -330,6 +330,16 @@ func _test_presentation() -> void:
 		for i in range(0, wav.data.size(), 62):
 			peak = maxi(peak, absi(wav.data.decode_s16(i)))
 		_check(id + " audio has non-silent bounded PCM", wav.mix_rate == 22050 and peak > 500 and peak <= 29492)
+	var pickup_sound := ItemAudio.make_sound("pickup")
+	var stereo_difference := 0.0
+	var mono_energy := 0.0
+	for offset in range(0, pickup_sound.data.size(), 4):
+		var left := float(pickup_sound.data.decode_s16(offset)) / 32768.0
+		var right := float(pickup_sound.data.decode_s16(offset + 2)) / 32768.0
+		stereo_difference += absf(left - right)
+		mono_energy += absf((left + right) * 0.5)
+	_check("pickup has distinct stereo channels and remains audible in mono", pickup_sound.stereo and stereo_difference > 100.0 and mono_energy > 100.0)
+	_check("pickup PCM contains complete stereo frames", pickup_sound.data.size() == int(float(ItemAudio.DURATIONS["pickup"]) * ItemAudio.RATE) * 4)
 	for id in ["machine_guns", "rockets", "grenades", "homing"]:
 		await _fixture()
 		items.grant_item(0, id)
