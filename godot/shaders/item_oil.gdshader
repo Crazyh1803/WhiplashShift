@@ -19,11 +19,19 @@ void fragment() {
 	vec2 grad = vec2(pool_height(p + vec2(e, 0.0)) - pool_height(p - vec2(e, 0.0)),
 		pool_height(p + vec2(0.0, e)) - pool_height(p - vec2(0.0, e))) / (2.0 * e);
 	// Thicker, flatter rim: ripples calm toward the edge where oil bunches up.
-	NORMAL_MAP = vec3(0.5 + grad * 0.012 * (1.0 - rim * 0.7), 1.0);
+	// Meniscus: a raised lip tilts the normal outward then back across the edge band,
+	// so glancing light catches a thin bright curve around the puddle.
+	float lip = smoothstep(boundary - 0.28, boundary - 0.1, r) * (1.0 - smoothstep(boundary - 0.1, boundary, r));
+	vec2 radial = p / max(r, 0.001);
+	vec2 tilt = grad * 0.02 * (1.0 - rim * 0.6) + radial * lip * 0.3;
+	NORMAL_MAP = vec3(0.5 + tilt, 1.0);
 	NORMAL_MAP_DEPTH = 1.0;
 	ALBEDO = vec3(0.004, 0.004, 0.005);
 	METALLIC = 0.0;
-	SPECULAR = 0.9;
-	ROUGHNESS = mix(0.05, 0.12, rim);
+	SPECULAR = 1.0;
+	ROUGHNESS = mix(0.04, 0.09, rim);
+	// Glassy wet coat over the black body; reflection only, no tint or emission.
+	CLEARCOAT = 1.0;
+	CLEARCOAT_ROUGHNESS = 0.03;
 	ALPHA = edge * opacity * 0.97;
 }
