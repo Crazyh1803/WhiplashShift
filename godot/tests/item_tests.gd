@@ -379,7 +379,7 @@ func _test_presentation() -> void:
 		if id == "smoke":
 			_check("smoke screen uses textured billboards", root.get_child_count() >= 3 and root.get_child(0).mesh is QuadMesh)
 		else:
-			_check("oil uses a surface plane and iridescent material", root.get_child(0).mesh is PlaneMesh and root.get_child(0).material_override is ShaderMaterial)
+			_check("oil uses a surface plane and wet pooled material", root.get_child(0).mesh is PlaneMesh and root.get_child(0).material_override is ShaderMaterial)
 		items.tick(0.01)
 	await _fixture()
 	items._apply_hit(1, 0, "rockets")
@@ -470,7 +470,8 @@ func _test_vfx_refinement() -> void:
 	items.grant_item(1, "smoke")
 	items.fire(1)
 	var rival_puff: MeshInstance3D = items.hazards.back()["visual"].get_child(0)
-	_check("rival cloud has no driver clearance applied", float(rival_puff.material_override.get_shader_parameter("protect")) < 0.01)
+	var rival_protect: Variant = rival_puff.material_override.get_shader_parameter("protect")
+	_check("rival cloud has no driver clearance applied", rival_protect == null or float(rival_protect) < 0.01)
 	var oil_material := items.art.streams[0]["oil"].material_override as StandardMaterial3D
 	_check("oil spray is near black and glossy", oil_material != null and oil_material.albedo_color.get_luminance() < 0.025
 		and oil_material.roughness < 0.3 and not oil_material.emission_enabled)

@@ -404,10 +404,10 @@ func _test_smoke_ownership() -> void:
 	var own: Dictionary = items.hazards[0]
 	_check("player cloud is owned by the player", own["owner"] == 0)
 	var puffs: Array = own["visual"].get_children()
-	var all_private := not puffs.is_empty()
+	var all_visible := not puffs.is_empty()
 	for puff: MeshInstance3D in puffs:
-		all_private = all_private and (puff.layers & cull) != 0
-	_check("every puff of the player's cloud is camera-visible", all_private)
+		all_visible = all_visible and (puff.layers & cull) != 0
+	_check("every puff of the player's cloud is camera-visible", all_visible)
 	_check("both owner and rival smoke streams are camera-visible",
 		(items.art.streams[0]["smoke"].layers & cull) != 0 and (items.art.streams[1]["smoke"].layers & cull) != 0)
 	_check("owner smoke retains the broad spray quantity", items.art.streams[0]["smoke"].amount >= 32)
