@@ -257,7 +257,7 @@ func casing(pos: Vector3, velocity: Vector3) -> void:
 		"growth": 0.0, "gravity": true})
 
 
-func hazard(pos: Vector3, id: String, normal: Vector3, owner := -1) -> Node3D:
+func hazard(pos: Vector3, id: String, normal: Vector3, owner_index := -1) -> Node3D:
 	var root := Node3D.new()
 	add_child(root)
 	root.global_position = pos
@@ -266,7 +266,7 @@ func hazard(pos: Vector3, id: String, normal: Vector3, owner := -1) -> Node3D:
 			var offset := Vector3(sin(i * 2.4) * 1.7, float(i % 3) * 0.7 - 0.5, cos(i * 2.4) * 1.7)
 			var puff := CombatVisuals.billboard(root, offset, Color(0.48, 0.5, 0.53, 0.92), 6.0, true)
 			puff.set_meta("origin", offset)
-			if owner == 0:
+			if owner_index == 0:
 				puff.layers = PLAYER_SMOKE_LAYER
 	else:
 		var slick := MeshInstance3D.new()
@@ -305,7 +305,7 @@ func conceal_supply(pickup: Dictionary) -> void:
 	pickup["icon"].modulate = Color("ffe49b")
 
 
-func prepare_streams(car: Vehicle, owner := -1) -> void:
+func prepare_streams(car: Vehicle, owner_index := -1) -> void:
 	var pair := {}
 	for id in ["smoke", "oil"]:
 		var emitter := CPUParticles3D.new()
@@ -313,7 +313,7 @@ func prepare_streams(car: Vehicle, owner := -1) -> void:
 		emitter.emitting = false
 		emitter.local_coords = false
 		emitter.amount = 32 if id == "smoke" else 24
-		if id == "smoke" and owner == 0:
+		if id == "smoke" and owner_index == 0:
 			emitter.layers = PLAYER_SMOKE_LAYER
 		emitter.lifetime = 0.8 if id == "smoke" else 0.28
 		emitter.direction = Vector3(0, 0.2 if id == "smoke" else -0.2, -1)

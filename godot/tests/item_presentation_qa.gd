@@ -157,16 +157,21 @@ func _check(label: String, ok: bool) -> void:
 
 
 func _smoke_views(camera: Camera3D) -> void:
+	var original_mask := camera.cull_mask
 	camera.cull_mask = scene.rig.cam.cull_mask
+	_check("owner stream is excluded from chase view", (scene.items.art.streams[0]["smoke"].layers & camera.cull_mask) == 0)
+	_check("rival stream stays in chase view", (scene.items.art.streams[1]["smoke"].layers & camera.cull_mask) != 0)
 	camera.global_position = scene.car.global_position + Vector3(0, 4.2, 9)
 	camera.look_at(scene.car.global_position + Vector3.UP * 0.75)
-	for owner in [0, 1]:
-		var cloud: Node3D = scene.items.art.hazard(scene.car.global_position + Vector3(0, 2, 4), "smoke", Vector3.UP, owner)
+	for owner_index in [0, 1]:
+		var cloud: Node3D = scene.items.art.hazard(scene.car.global_position + Vector3(0, 2, 4), "smoke", Vector3.UP, owner_index)
 		for frame in 4:
 			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
-		var label := "smoke-owner-view" if owner == 0 else "smoke-rival-view"
+		var label := "smoke-owner-view" if owner_index == 0 else "smoke-rival-view"
 		_check(label + " screenshot saves", get_viewport().get_texture().get_image().save_png(output.path_join(label + ".png")) == OK)
+		var visible_to_camera: bool = cloud.get_children().any(func(puff: MeshInstance3D) -> bool: return (puff.layers & camera.cull_mask) != 0)
+		_check(label + " applies the ownership mask", visible_to_camera == (owner_index != 0))
 		cloud.queue_free()
 		await get_tree().process_frame
-	camera.cull_mask = (1 << 20) - 1
+	camera.cull_mask = original_mask

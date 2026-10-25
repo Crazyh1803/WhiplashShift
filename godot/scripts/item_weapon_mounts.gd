@@ -66,4 +66,5 @@ static func _skin_helix(model: Node3D) -> void:
 				material.albedo_color = palette[source.resource_name]
 				mesh.set_surface_override_material(surface, material)
 				recolored += 1
-	assert(recolored > 0, "Helix launcher GLB has no recognized palette materials")
+	if recolored == 0:
+		push_error("Helix launcher GLB has no recognized palette materials")

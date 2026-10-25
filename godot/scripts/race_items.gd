@@ -341,19 +341,23 @@ func _emit(index: int, id: String) -> void:
 		_drop(index, id, direction)
 		return
 	if id not in ["machine_guns", "rockets", "homing", "grenades"]:
+		push_warning("Unsupported emitted item: " + id)
 		return
 	var data: Dictionary = ItemCatalog.DATA[id]
 	var blocker := {}
 	ItemWeaponMounts.show_weapon(_gun_mounts[index], cars[index].active_end, id)
 	var nozzle := ItemWeaponMounts.muzzle(_gun_mounts[index], cars[index].active_end, id, _barrel[index])
 	blocker = _ray(origin, nozzle, index)
+	var plane_y := origin.y
 	origin = nozzle
 	# Elevated deck mounts converge on a visible racer in the existing firing lane.
 	var aim_target := _target(index, true) if id in ["machine_guns", "rockets"] else -1
 	if aim_target >= 0:
 		var aim_point := cars[aim_target].global_position + Vector3.UP * 0.35
-		aim_point += cars[aim_target].linear_velocity * (aim_point.distance_to(origin) / float(data["speed"]))
+		aim_point += cars[aim_target].linear_velocity * (aim_point.distance_to(origin) / maxf(float(data["speed"]), 1.0))
 		direction = (aim_point - origin).normalized()
+	elif id == "rockets" and origin.y > plane_y + 0.05:
+		direction = (direction * 14.0 + Vector3.UP * (plane_y - origin.y)).normalized()
 	if id == "machine_guns":
 		_barrel[index] += 1
 		direction = (direction + cars[index].global_basis.x * rng.randf_range(-0.003, 0.003) + Vector3.UP * rng.randf_range(-0.001, 0.001)).normalized()
@@ -373,6 +377,8 @@ func _emit(index: int, id: String) -> void:
 	var visual := art.projectile(origin, direction, id)
 	shots.append({"owner": index, "id": id, "pos": origin, "velocity": velocity, "travel": 0.0,
 		"life": float(data["life"]), "target": _target(index) if id == "homing" else -1, "visual": visual})
+	if id == "rockets" and aim_target < 0 and origin.y > plane_y + 0.05:
+		shots.back()["settle_y"] = plane_y
 
 
 func _drop(index: int, id: String, direction: Vector3, audible := true) -> void:
@@ -469,9 +475,20 @@ func _tick_shots(delta: float) -> void:
 					velocity = velocity.normalized().slerp((end_pos - start).normalized(), minf(1.0, step * 2.5)) * float(ItemCatalog.DATA[id]["speed"])
 		if id == "grenades":
 			velocity.y -= 12.0 * step
-		shot["velocity"] = velocity
 		var end := start + velocity * step
-		var hit := _ray(start, end, owner)
+		var hit := {}
+		if shot.has("settle_y") and velocity.y < 0.0 and end.y <= float(shot["settle_y"]):
+			var descent := clampf((float(shot["settle_y"]) - start.y) / velocity.y, 0.0, step)
+			var bend := start + velocity * descent
+			velocity = Vector3(velocity.x, 0, velocity.z).normalized() * velocity.length()
+			end = bend + velocity * (step - descent)
+			hit = _ray(start, bend, owner)
+			if hit.is_empty():
+				hit = _ray(bend, end, owner)
+			shot.erase("settle_y")
+		else:
+			hit = _ray(start, end, owner)
+		shot["velocity"] = velocity
 		shot["life"] = float(shot["life"]) - step
 		if not hit.is_empty():
 			_impact(shot, hit["position"], hit["normal"], hit["collider"])
