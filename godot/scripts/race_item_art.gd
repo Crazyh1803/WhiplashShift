@@ -57,13 +57,15 @@ func clear() -> void:
 	for particle in particles:
 		particle.node.queue_free()
 	particles.clear()
-	owner_smoke.clear()
+	# Live stream emitters outlive transient clears; only drop deleted nodes (clear_streams resets all).
+	for i in range(owner_smoke.size() - 1, -1, -1):
+		var node := owner_smoke[i]
+		if not is_instance_valid(node) or node.is_queued_for_deletion():
+			owner_smoke.remove_at(i)
 
 
 func _update_owner_smoke() -> void:
-	var camera: Camera3D = null
-	if is_inside_tree() and get_viewport().has_method("get_camera_3D"):
-		camera = get_viewport().call("get_camera_3D")
+	var camera: Camera3D = get_viewport().get_camera_3d() if is_inside_tree() else null
 	var live := camera != null and is_instance_valid(owner_car) and owner_car.is_inside_tree()
 	var eye := Vector3.ZERO
 	var focus := Vector3.ZERO
@@ -251,7 +253,8 @@ func impact(pos: Vector3, normal: Vector3, explosion: bool) -> void:
 	var b := n.cross(t)
 	var origin := pos + n * 0.08
 	# Short hot flash, then textured blast/dust/soot.
-	_sprite_effect(origin, Color(1.0, 0.82, 0.5, 0.9), 5.0 if explosion else 1.3, 0.08, Vector3.ZERO, 0.6, false)
+	# Soft cloud texture (not the SPARK star) so the flash reads as a glow.
+	_sprite_effect(origin, Color(1.0, 0.82, 0.5, 0.9), 5.0 if explosion else 1.3, 0.08, Vector3.ZERO, 0.6, true)
 	if explosion:
 		var light := OmniLight3D.new()
 		light.light_color = Color("ffb359")
