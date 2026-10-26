@@ -12,8 +12,12 @@ var _space: PhysicsDirectSpaceState3D
 
 
 func _ready() -> void:
+	if "--refusal-probe" in OS.get_cmdline_user_args():
+		_refusal_probe()
+		return
 	_test_default_baseline()
 	_test_canonical_configs()
+	_test_track_build()
 	_test_invalid_configs()
 	_test_rejections()
 	_test_propagation()
@@ -206,8 +210,12 @@ func _test_rejections() -> void:
 	var pad := [4, Surfaces.Id.TARMAC, {}, 26.0]
 	_check("full 1.5 m ramp on 26 m road is accepted", TrackRelief.validation(_line([pad, [12, Surfaces.Id.MUD, RAMP_MAX, 26.0], pad])).is_empty())
 	_check("medium default ramp is accepted", TrackRelief.validation(_line([pad, [12, Surfaces.Id.MUD, {"shape": "ramp"}, 26.0], pad])).is_empty())
-	# docs/terrain-authoring.md promises a 24 m road supports 1.5 m; record the actual outcome for the lead.
-	print("TERRAIN_PROFILES: NOTE 24 m road with 1.5 m ramp -> ", _ramp_errors(_line([pad, [12, Surfaces.Id.MUD, RAMP_MAX, 24.0], pad])))
+	# docs/terrain-authoring.md promises a 24 m road supports 1.5 m.
+	_check("24 m road with 1.5 m ramp is accepted", _ramp_errors(_line([pad, [12, Surfaces.Id.MUD, RAMP_MAX, 24.0], pad])).is_empty())
+	var needed := TrackRelief.RAMP_MIN_CREST_WIDTH + 2.0 * TrackRelief.ramp_edge(1.5)
+	_check("1.5 m ramp width threshold is between 23 and 24 m (%.3f)" % needed, needed > 23.0 and needed < 24.0)
+	_check("width just below the threshold is rejected", "wide" in _ramp_errors(_line([pad, [12, Surfaces.Id.MUD, RAMP_MAX, needed - 0.01], pad])))
+	_check("width just above the threshold is accepted", _ramp_errors(_line([pad, [12, Surfaces.Id.MUD, RAMP_MAX, needed + 0.01], pad])).is_empty())
 	_check("steep slope rejected", "slope" in _ramp_errors(_line([pad, [12, Surfaces.Id.MUD, {"shape": "ramp", "height": 1.5, "rise": 5.0, "fall": 5.0}, 26.0], pad])))
 	_check("slope limit is exact at the boundary", TrackRelief.validation(_line([pad, [12, Surfaces.Id.MUD, {"shape": "ramp", "height": 1.5, "rise": 1.5 * PI / 0.5, "fall": 1.5 * PI / 0.5}, 26.0], pad])).is_empty())
 	_check("narrow road rejected", "wide" in _ramp_errors(_line([pad, [12, Surfaces.Id.MUD, {"shape": "ramp"}, 12.0], pad])))
@@ -242,6 +250,62 @@ func _test_propagation() -> void:
 	var plain: Array = []
 	TrackData._straight(plain, 0, 0, 35, 0, 26, Surfaces.Id.MUD)
 	_check("omitting relief adds no key", plain.all(func(n: Dictionary) -> bool: return not n.has("relief")))
+
+
+# ------------------------------------------------------------------ TrackBuilder.build entry point
+func _invalid_authoring_cases() -> Dictionary:
+	var pad := [4, Surfaces.Id.TARMAC, {}, 26.0]
+	return {
+		# A valid boulder run precedes the bad one, so a partial build would leave children behind.
+		"unknown shape late in the track": _line([pad, [12, Surfaces.Id.MUD, HIGH_MUD, 26.0], pad, [12, Surfaces.Id.MUD, {"shape": "cliff"}, 26.0], pad]),
+		"ramp on a narrow road late in the track": _line([pad, [12, Surfaces.Id.MUD, HIGH_MUD, 26.0], pad, [12, Surfaces.Id.MUD, RAMP_MAX, 12.0], pad]),
+	}
+
+
+## Child process entry: prints one line per case. The expected push_error stays in the child's output.
+func _refusal_probe() -> void:
+	var cases := _invalid_authoring_cases()
+	for label: String in cases:
+		var parent := Node3D.new()
+		add_child(parent)
+		var built := TrackBuilder.build(parent, cases[label])
+		print("REFUSAL_PROBE: %s | built=%s children=%d" % [label, built, parent.get_child_count()])
+	get_tree().quit(0)
+
+
+func _test_track_build() -> void:
+	var pad := [4, Surfaces.Id.TARMAC, {}, 26.0]
+	var pts := _line([pad, [18, Surfaces.Id.MUD, HIGH_MUD, 26.0], pad, [12, Surfaces.Id.MUD, RAMP_MAX, 26.0], pad])
+	_check("authoring is valid", TrackRelief.validation(pts).is_empty())
+	var parent := Node3D.new()
+	add_child(parent)
+	var parts := TrackRelief.partition(pts)
+	_check("TrackBuilder.build accepts valid profiles", TrackBuilder.build(parent, pts))
+	_check("build makes one body per partition run (%d)" % parent.get_child_count(), parent.get_child_count() == parts.size())
+	var ramp_body: StaticBody3D = parent.get_child(3)
+	var boulder_body: StaticBody3D = parent.get_child(1)
+	_check("build keeps the ramp surface", ramp_body.get_meta("surface_type") == "mud" and boulder_body.get_meta("surface_type") == "mud")
+	_check("build raises the ramp to 1.5 m", absf(_max_y(_verts(ramp_body)) - 1.5) < 0.0001 and _verts(ramp_body) == _faces(ramp_body))
+	var high := _max_y(_verts(boulder_body))
+	_check("build raises boulders to 0.24..0.30 m (%.3f)" % high, high > 0.24 and high <= 0.3001)
+	var flat := Node3D.new()
+	add_child(flat)
+	_check("relief=false build still succeeds", TrackBuilder.build(flat, pts, false))
+	_check("relief=false build is flat", _max_y(_verts(flat.get_child(3))) < 0.0001)
+	parent.free()
+	flat.free()
+	# Invalid authoring must refuse before building anything. The refusal push_error runs in a child
+	# process so it cannot be mistaken for a failure of this run.
+	var output: Array = []
+	var code := OS.execute(OS.get_executable_path(), ["--headless", "--path", ProjectSettings.globalize_path("res://"),
+		"res://tests/terrain_profile_tests.tscn", "--", "--refusal-probe"], output, true)
+	var text := "" if output.is_empty() else String(output[0])
+	_check("refusal probe exits cleanly", code == 0)
+	_check("refusal reports the expected error", "TrackBuilder refused invalid terrain authoring" in text)
+	for label: String in _invalid_authoring_cases():
+		_check("refuses %s without building" % label, ("REFUSAL_PROBE: %s | built=false children=0" % label) in text)
+	if code != 0:
+		print(text.right(600))
 
 
 # ------------------------------------------------------------------ run splitting
@@ -381,7 +445,10 @@ func _test_built_bodies() -> void:
 			_check(tag + " keeps grip", Surfaces.GRIP[Surfaces.id_from_key(body.get_meta("surface_type"))] == Surfaces.GRIP[sid])
 			_check(tag + " keeps its material", (body.get_node("RoadMesh") as MeshInstance3D).material_override == TrackMaterials.surface(sid, true))
 			_check(tag + " mesh equals collider", _verts(body) == _faces(body) and _verts(body).size() > 0)
-			body.get_parent().queue_free()
+			# Fixtures all overlap z 14..56 and the ray test below must only see `root`: free now, flush below.
+			body.get_parent().free()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
 	var ramp_body: StaticBody3D = root.get_child(3)
 	var boulder_body: StaticBody3D = root.get_child(1)
 	_check("built ramp reaches 1.5 m", absf(_max_y(_verts(ramp_body)) - 1.5) < 0.0001 and absf(_max_y(_faces(ramp_body)) - 1.5) < 0.0001)
@@ -401,18 +468,22 @@ func _test_built_bodies() -> void:
 		rng.seed = 5
 		var worst := 0.0
 		var hits := 0
+		# The builder carries one extra node into the next run, so stay off that overlap.
+		var z_end := z_lo + SPACING + 0.5
 		for _i in 40:
 			var x := rng.randf_range(-12.0, 12.0)
-			var z := rng.randf_range(z_lo + 0.5, z_hi - 0.5)
+			var z := rng.randf_range(z_end, z_hi - 0.5)
 			var expected := _mesh_height(verts, x, z)
 			var query := PhysicsRayQueryParameters3D.create(Vector3(x, 10.0, z), Vector3(x, -5.0, z))
 			var hit := _space.intersect_ray(query)
-			if hit.is_empty() or is_nan(expected):
+			_check("%s expected height exists at (%.1f, %.1f)" % [body.name, x, z], not is_nan(expected))
+			_check("%s ray hits its own collider at (%.1f, %.1f)" % [body.name, x, z], not hit.is_empty() and hit["collider"] == body)
+			if hit.is_empty() or is_nan(expected) or hit["collider"] != body:
 				continue
 			hits += 1
 			# The collider and road mesh are both lifted 0.02 m.
 			worst = maxf(worst, absf(float(hit["position"].y) - (expected + 0.02)))
-		_check(String(body.name) + " rays hit (%d/40)" % hits, hits >= 36)
+		_check(String(body.name) + " every ray hits (%d/40)" % hits, hits == 40)
 		_check(String(body.name) + " ray heights match triangle interpolation (%.5f)" % worst, worst < 0.002)
 	root.queue_free()
 
@@ -473,7 +544,8 @@ func _run_origin_z(body: StaticBody3D) -> float:
 
 
 # ------------------------------------------------------------------ real vehicle traversal
-func _traversal_track(root: Node3D) -> float:
+## Screenshot-only combined track (the traversal tests drive each feature on its own track).
+func _capture_track(root: Node3D) -> float:
 	var pad := [12, Surfaces.Id.TARMAC, {}, 26.0]
 	var pts := _line([pad, [18, Surfaces.Id.MUD, HIGH_MUD, 26.0], [4, Surfaces.Id.TARMAC, {}, 26.0],
 		[12, Surfaces.Id.MUD, RAMP_MAX, 26.0], [20, Surfaces.Id.TARMAC, {}, 26.0]])
@@ -481,39 +553,70 @@ func _traversal_track(root: Node3D) -> float:
 	return SPACING * (12 + 18 + 4 + 12)
 
 
+const RUN_UP := 24
+const EXIT_TARMAC := 48
+const SUPPORT_WINDOW := 2.0
+const SUPPORT_WHEELS := 3
+const SUPPORT_TICKS := 15
+
+
+## One feature between a run-up and a tarmac exit, so neither feature drains speed before the other.
+## Returns {start, end, length} as positive distances down -Z.
+func _feature_track(root: Node3D, cfg: Dictionary, count: int) -> Dictionary:
+	var pts := _line([[RUN_UP, Surfaces.Id.TARMAC, {}, 26.0], [count, Surfaces.Id.MUD, cfg, 26.0], [EXIT_TARMAC, Surfaces.Id.TARMAC, {}, 26.0]])
+	_build_line(root, pts)
+	return {"start": SPACING * RUN_UP, "end": SPACING * (RUN_UP + count), "length": SPACING * pts.size()}
+
+
 func _test_traversal() -> void:
-	var root := Node3D.new()
-	add_child(root)
-	var ramp_end := _traversal_track(root)
-	await get_tree().physics_frame
-	await get_tree().physics_frame
-	_space = get_viewport().world_3d.direct_space_state
-	for speed: float in [15.0, 30.0, 50.0]:
-		for end: String in ["A", "B"]:
-			var r := await _drive(root, speed, end, ramp_end)
-			var tag := "high boulders + 1.5 m ramp End %s @%dm/s" % [end, int(speed)]
-			print("TERRAIN_PROFILES: %s -> finite %s clearance %.2f tilt %.1f lane %.1f reached %s support %s frames %d" % [
-				tag, r["finite"], r["clearance"], r["tilt"], r["lane"], r["reached"], r["support"], r["frames"]])
-			_check(tag + " pose stays finite", r["finite"])
-			_check(tag + " never sinks or tunnels (clearance %.2f)" % r["clearance"], r["clearance"] > 0.05)
-			_check(tag + " tilt stays bounded (%.1f)" % r["tilt"], r["tilt"] < 50.0)
-			_check(tag + " stays on the road (%.1f)" % r["lane"], r["lane"] < 11.5)
-			_check(tag + " clears the ramp", r["reached"])
-			_check(tag + " regains support", r["support"])
-	root.queue_free()
-	await get_tree().process_frame
+	var features := {"high boulders": [HIGH_MUD, 18], "1.5 m ramp": [RAMP_MAX, 12]}
+	for feature: String in features:
+		var root := Node3D.new()
+		add_child(root)
+		var track := _feature_track(root, features[feature][0], features[feature][1])
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		_space = get_viewport().world_3d.direct_space_state
+		for speed: float in [15.0, 30.0, 50.0]:
+			for end: String in ["A", "B"]:
+				var r := await _drive(root, speed, end, track)
+				var tag := "%s End %s @%dm/s" % [feature, end, int(speed)]
+				print("TERRAIN_PROFILES: %s -> entry %.1f m/s, min in feature %.1f, finite %s clearance %.2f tilt %.1f lane %.1f nohit %d reached %s support %s (at %.2fs) frames %d last z %.1f speed %.1f" % [
+					tag, r["entry"], r["min_speed"], r["finite"], r["clearance"], r["tilt"], r["lane"], r["nohit"], r["reached"],
+					r["support"], r["support_time"], r["frames"], r["z"], r["speed"]])
+				_check(tag + " enters at speed (%.1f of %.0f)" % [r["entry"], speed], r["entry"] >= speed * 0.85)
+				_check(tag + " pose stays finite", r["finite"])
+				_check(tag + " ground ray always hits inside the footprint (%d misses)" % r["nohit"], r["nohit"] == 0)
+				_check(tag + " never sinks or tunnels (clearance %.2f)" % r["clearance"], r["clearance"] > 0.05)
+				_check(tag + " tilt stays bounded (%.1f)" % r["tilt"], r["tilt"] < 50.0)
+				_check(tag + " stays on the road (%.1f)" % r["lane"], r["lane"] < 11.5)
+				_check(tag + " clears the feature and the support window", r["reached"])
+				_check(tag + " regains %d wheels of support within %.0f s of the exit" % [SUPPORT_WHEELS, SUPPORT_WINDOW], r["support"])
+		root.free()
+		await get_tree().process_frame
 
 
-func _drive(root: Node3D, speed: float, end: String, ramp_end: float) -> Dictionary:
+## Drives one blackjack end through `track` ({start, end, length}) holding `speed` and the lane centre.
+## Steering is the car's own input (positive = right, i.e. world +x while heading -Z); nothing
+## writes position or velocity after the spawn. Support = SUPPORT_WHEELS wheels in contact for SUPPORT_TICKS
+## consecutive ticks within SUPPORT_WINDOW seconds of leaving the feature.
+func _drive(root: Node3D, speed: float, end: String, track: Dictionary) -> Dictionary:
 	var car := preload("res://scripts/vehicle_factory.gd").create(VehicleCatalog.get_vehicle("blackjack"))
 	car.active_end = end
 	root.add_child(car)
 	car.global_transform = Transform3D(Basis(Vector3.UP, PI if end == "B" else 0.0), Vector3(0, 1.0, -8.0))
 	car.linear_velocity = Vector3(0, 0, -speed)
-	var result := {"finite": true, "clearance": INF, "tilt": 0.0, "lane": 0.0, "reached": false, "support": false, "frames": 0}
+	var result := {"finite": true, "clearance": INF, "tilt": 0.0, "lane": 0.0, "reached": false, "support": false,
+		"support_time": -1.0, "frames": 0, "entry": 0.0, "min_speed": INF, "nohit": 0, "z": 0.0, "speed": 0.0}
+	var ticks := float(Engine.physics_ticks_per_second)
+	var window := int(SUPPORT_WINDOW * ticks)
+	var entered := false
 	var after := -1
-	var limit := 4200
-	for frame in limit:
+	var streak := 0
+	for frame in int(40.0 * ticks):
+		var forward := car.forward_vector()
+		var steer := -(0.04 * car.global_position.x + 1.2 * forward.x) / (1.0 + car.fwd_speed / 25.0)
+		car.steer = clampf(steer, -0.6, 0.6)
 		car.throttle = clampf((speed - car.fwd_speed) * 0.5, 0.0, 1.0)
 		car.brake = 0.0
 		await get_tree().physics_frame
@@ -522,22 +625,40 @@ func _drive(root: Node3D, speed: float, end: String, ramp_end: float) -> Diction
 		if not (car.global_position.is_finite() and chassis.determinant() == chassis.determinant() and car.linear_velocity.is_finite()):
 			result["finite"] = false
 			break
-		var query := PhysicsRayQueryParameters3D.create(car.global_position + Vector3.UP * 4.0, car.global_position + Vector3.DOWN * 8.0, 0xFFFFFFFF, [car.get_rid()])
+		result["z"] = car.global_position.z
+		result["speed"] = car.fwd_speed
+		# Range is far larger than the car can sink, so a miss means it left the ground, not that the ray is short.
+		var query := PhysicsRayQueryParameters3D.create(car.global_position + Vector3.UP * 4.0, car.global_position + Vector3.DOWN * 40.0, 0xFFFFFFFF, [car.get_rid()])
 		var hit := _space.intersect_ray(query)
-		if not hit.is_empty() and car.global_position.z > -ramp_end - 30.0:
+		var inside: bool = car.global_position.z > -float(track["length"]) and car.global_position.z < 0.0
+		if hit.is_empty():
+			if inside:
+				result["nohit"] += 1
+		else:
 			result["clearance"] = minf(result["clearance"], car.global_position.y - float(hit["position"].y))
 		result["tilt"] = maxf(result["tilt"], rad_to_deg(chassis.y.angle_to(Vector3.UP)))
 		result["lane"] = maxf(result["lane"], absf(car.global_position.x))
-		if after < 0 and car.global_position.z < -ramp_end - 6.0:
-			after = frame
+		var z: float = -car.global_position.z
+		if not entered and z >= float(track["start"]):
+			entered = true
+			result["entry"] = car.fwd_speed
+		if entered and after < 0:
+			result["min_speed"] = minf(result["min_speed"], car.fwd_speed)
+			if z >= float(track["end"]):
+				after = frame
 		if after >= 0:
-			if frame >= after + 60:
-				for wheel: Wheel in car.wheels:
-					result["support"] = result["support"] or wheel.contact
-			if frame >= after + 120:
+			var touching := 0
+			for wheel: Wheel in car.wheels:
+				touching += 1 if wheel.contact else 0
+			streak = streak + 1 if touching >= SUPPORT_WHEELS else 0
+			if streak >= SUPPORT_TICKS and not result["support"]:
+				result["support"] = true
+				result["support_time"] = float(frame - after) / ticks
+			if frame >= after + window:
 				result["reached"] = true
 				break
-	car.queue_free()
+	root.remove_child(car)
+	car.free()
 	await get_tree().process_frame
 	return result
 
