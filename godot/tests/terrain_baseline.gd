@@ -12,7 +12,8 @@ func _initialize() -> void:
 	var record := _capture()
 	if "--check" in OS.get_cmdline_user_args():
 		var golden: Variant = JSON.parse_string(FileAccess.get_file_as_string(FIXTURE))
-		var same: bool = golden == record
+		# The fixture is JSON, so ints load as floats; compare both sides in canonical (sorted) JSON text.
+		var same: bool = golden != null and JSON.stringify(golden, "", true) == JSON.stringify(JSON.parse_string(JSON.stringify(record)), "", true)
 		print("TERRAIN_BASELINE: ", "match" if same else "MISMATCH")
 		quit(0 if same else 1)
 		return
