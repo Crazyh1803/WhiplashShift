@@ -165,7 +165,7 @@ func _process(_delta: float) -> void:
 	elif target.boost_cooldown > 0.0:
 		boost_text = "BOOST COOLING  %.1fs" % target.boost_cooldown
 	elif target.boost_charge > 0:
-		boost_text = "BOOST READY  [Q]"
+		boost_text = "BOOST READY  ACCELERATE + [Q]"
 	_boost_status.text = boost_text
 	_boost_status.modulate = Color("4fd2ff") if target.boost_charge > 0 or target.boost_time > 0 else Color("a7adb7")
 	var wl: Dictionary = target.last_whiplash
