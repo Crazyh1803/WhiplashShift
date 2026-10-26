@@ -1,0 +1,6 @@
+# Vehicle effects
+Goal: readable tyre smoke, terrain viscera/chitlin spray, persistent skid marks, boost, damage smoke and swaps in Godot desktop.
+Lead: integrate vehicle state (short boost earned by clean whiplash; Q input), cosmetic hit severity from accepted weapon hits, reset hooks and HUD feedback. Preserve physics tuning and existing terrain response.
+Claude delegate: isolated VehicleEffects node plus integration-independent tests/QA scenes (new module, test files), reuse existing smoke/spark textures and code-native meshes; no new raster assets. Effects read contact/load/slip and active end; bounded world-space smoke/trails, ground-normal marks; signal-driven swap pulse and directional boost plume. Existing VisceraResponse continues terrain chunks.
+Design review: decide minimal boost/damage state compatible with current race and item systems; no health/destruction system. Damage is cosmetic and decays/reset clears it. Boost changes acceleration briefly with cooldown and earned charge; no new dependencies.
+Validation: ak-test import and regression suite plus new effects tests; rendered visual QA for both ends, skid, smoke, swap; independent ak-review, then commit and publish chat preview.
