@@ -597,6 +597,7 @@ func _apply_hit(victim: int, owner: int, id: String) -> void:
 	var car := cars[victim]
 	var flat := Vector3(car.linear_velocity.x, 0.0, car.linear_velocity.z)
 	car.apply_central_impulse(-flat.normalized() * minf(flat.length() * float(data["loss"]), float(data["cap"])) * car.mass)
+	car.apply_cosmetic_damage(clampf(float(data["loss"]) * 2.0, 0.15, 0.65))
 	protection[victim] = HIT_PROTECTION
 	if victim == 0:
 		_message("HIT — SPEED LOST")

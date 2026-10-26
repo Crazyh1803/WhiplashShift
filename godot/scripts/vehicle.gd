@@ -19,6 +19,13 @@ const BLACKJACK_LIVERY_SHADER: Shader = preload("res://assets/vehicles/blackjack
 
 signal swapped(record: Dictionary)
 signal whiplash(record: Dictionary)
+signal boosted(record: Dictionary)
+signal damaged(severity: float)
+
+const BOOST_TIME := 0.9
+const BOOST_COOLDOWN := 3.0
+const BOOST_DRIVE := 0.65
+const DAMAGE_DECAY := 0.05
 
 @export var tuning: TuningProfile
 @export var active_end: String = "A":
@@ -53,6 +60,11 @@ var steer_angle: float = 0.0
 var engage: float = 1.0          ## transmission ramp after a swap, 0..1
 var cooldown: float = 0.0
 var power_cut: float = 0.0
+var boost_charge: int = 0
+var boost_time: float = 0.0
+var boost_cooldown: float = 0.0
+var damage: float = 0.0
+var swap_feedback_time: float = 0.0
 var speed: float = 0.0
 var fwd_speed: float = 0.0       ## speed along the ACTIVE end's forward axis
 var surface_under: int = Surfaces.Id.OFF
@@ -109,12 +121,53 @@ func _build() -> void:
 	response.name = "VisceraResponse"
 	add_child(response)
 	response.setup(self)
+	var effects := preload("res://scripts/vehicle_effects.gd").new()
+	effects.name = "VehicleEffects"
+	add_child(effects)
+	effects.setup(self)
 
 
 func reset_terrain_response() -> void:
 	var response := get_node_or_null("VisceraResponse")
 	if response != null:
 		response.reset_effect()
+
+
+func try_boost() -> bool:
+	if freeze or boost_charge <= 0 or boost_time > 0.0 or boost_cooldown > 0.0:
+		return false
+	if power_cut > 0.0 or engage < 1.0 or throttle <= 0.05 or fwd_speed < 0.0 or brake > 0.05 or handbrake:
+		return false
+	var grounded := false
+	for wheel: Wheel in wheels:
+		if wheel.end == active_end and wheel.contact and wheel.normal_load > 1.0:
+			grounded = true
+	if not grounded:
+		return false
+	boost_charge = 0
+	boost_time = BOOST_TIME
+	boost_cooldown = BOOST_COOLDOWN
+	boosted.emit({"end": active_end, "duration": BOOST_TIME})
+	return true
+
+
+func apply_cosmetic_damage(severity: float) -> void:
+	if not is_finite(severity) or severity <= 0.0:
+		return
+	damage = clampf(damage + severity, 0.0, 1.0)
+	damaged.emit(severity)
+
+
+func reset_effects_state() -> void:
+	boost_charge = 0
+	boost_time = 0.0
+	boost_cooldown = 0.0
+	damage = 0.0
+	swap_feedback_time = 0.0
+	reset_terrain_response()
+	var effects := get_node_or_null("VehicleEffects")
+	if effects != null:
+		effects.reset()
 
 
 func _rebuild_visuals() -> void:
@@ -637,6 +690,8 @@ func swap_ends(reason: String = "manual") -> Dictionary:
 	# --------------------
 
 	engage = 0.0
+	boost_time = 0.0
+	swap_feedback_time = 0.75
 	cooldown = tuning.swap_cooldown
 	steer_angle *= 0.35
 
@@ -732,6 +787,8 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	var taper: float = clampf(1.0 - (fwd_speed * drive_dir) / dir_top, 0.0, 1.0)
 	var gate_open: float = 0.0 if power_cut > 0.0 else engage
 	var drive_per_wheel: float = thr * tuning.drive(active_end) * drive_multiplier * accel_mod * taper * gate_open / 2.0
+	if boost_time > 0.0 and thr > 0.0 and not handbrake and brk <= 0.05:
+		drive_per_wheel *= 1.0 + BOOST_DRIVE
 	dbg["taper"] = taper
 	dbg["top"] = top
 	dbg["accel_mod"] = accel_mod
@@ -857,6 +914,12 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 
 
 func _tick_timers(dt: float) -> void:
+	boost_time = maxf(0.0, boost_time - dt)
+	if throttle <= 0.05 or brake > 0.05 or handbrake or power_cut > 0.0:
+		boost_time = 0.0
+	boost_cooldown = maxf(0.0, boost_cooldown - dt)
+	damage = maxf(0.0, damage - DAMAGE_DECAY * dt)
+	swap_feedback_time = maxf(0.0, swap_feedback_time - dt)
 	cooldown = maxf(0.0, cooldown - dt)
 	power_cut = maxf(0.0, power_cut - dt)
 	engage = 1.0 if tuning.swap_engage <= 0.0 else minf(1.0, engage + dt / tuning.swap_engage)
@@ -894,6 +957,8 @@ func _resolve_whiplash(dt: float, basis: Basis, lv: Vector3) -> void:
 				"age": 0.0,
 			}
 			_pending = {}
+			if float(last_whiplash["retained"]) >= 0.7:
+				boost_charge = 1
 			whiplash.emit(last_whiplash)
 			return
 	if float(_pending["t"]) > tuning.whiplash_window:

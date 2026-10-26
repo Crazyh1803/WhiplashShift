@@ -242,6 +242,7 @@ func _retire(index: int) -> void:
 	entrant.angular_velocity = Vector3.ZERO
 	entrant.speed = 0.0
 	entrant.fwd_speed = 0.0
+	entrant.reset_effects_state()
 	entrant.freeze = true
 	entrant.collision_layer = 0
 	entrant.collision_mask = 0
@@ -290,7 +291,7 @@ func _place_player(transform: Transform3D, end: String) -> void:
 	PhysicsServer3D.body_set_state(car.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, transform)
 	PhysicsServer3D.body_set_state(car.get_rid(), PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY, Vector3.ZERO)
 	PhysicsServer3D.body_set_state(car.get_rid(), PhysicsServer3D.BODY_STATE_ANGULAR_VELOCITY, Vector3.ZERO)
-	car.reset_terrain_response()
+	car.reset_effects_state()
 	car.reset_physics_interpolation()
 	if is_instance_valid(rig):
 		rig.reset_follow()
@@ -304,6 +305,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_SPACE:
 			if race.state == RaceDirector.State.RACING and car.can_swap():
 				car.swap_ends("manual")
+		KEY_Q:
+			if race.state == RaceDirector.State.RACING:
+				car.try_boost()
 		KEY_E:
 			items.fire(0)
 		KEY_R:
