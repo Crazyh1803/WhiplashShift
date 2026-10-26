@@ -281,9 +281,9 @@ static func _build_pool(verts: PackedVector3Array, normals: PackedVector3Array) 
 					var u := float(s + ds) / segs * TAU
 					var wobble := 1.0 + 0.28 * sin(u * 3.0 + 1.3) + 0.14 * sin(u * 5.0 + 0.4)
 					corners.append(Vector3(cos(u) * f * wobble, 0.012 * (1.0 - f * f) - 0.02 * f * f * f, sin(u) * f * wobble))
-			_tri(verts, normals, corners[0], corners[2], corners[1], Vector3.UP, Vector3.UP, Vector3.UP)
 			if r > 0:
-				_tri(verts, normals, corners[1], corners[2], corners[3], Vector3.UP, Vector3.UP, Vector3.UP)
+				_tri(verts, normals, corners[0], corners[2], corners[1], Vector3.UP, Vector3.UP, Vector3.UP)
+			_tri(verts, normals, corners[1], corners[2], corners[3], Vector3.UP, Vector3.UP, Vector3.UP)
 
 
 ## Godot's front face is clockwise, so wind outward-facing triangles accordingly.
