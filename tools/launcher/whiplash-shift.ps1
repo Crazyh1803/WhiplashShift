@@ -19,6 +19,38 @@ function Write-LauncherLog([string]$Message) {
     Write-Host $Message
 }
 
+# Throws unless Path resolves strictly inside Root (never Root itself).
+function Assert-InsideRoot([string]$Path, [string]$Root) {
+    $FullRoot = [IO.Path]::GetFullPath($Root).TrimEnd('\', '/')
+    $FullPath = [IO.Path]::GetFullPath($Path).TrimEnd('\', '/')
+    $Prefixes = @(($FullRoot + [IO.Path]::DirectorySeparatorChar), ($FullRoot + [IO.Path]::AltDirectorySeparatorChar))
+    $Inside = $false
+    foreach ($Prefix in $Prefixes) {
+        if ($FullPath.StartsWith($Prefix, [StringComparison]::OrdinalIgnoreCase)) { $Inside = $true }
+    }
+    if (-not $Inside) { throw "Refusing to touch a path outside the install folder: $FullPath" }
+}
+
+# Runs Godot without -Wait so a hung process can be stopped after TimeoutMs.
+function Invoke-GodotStep([string[]]$Arguments, [string]$OutLog, [string]$ErrLog, [int]$TimeoutMs) {
+    $Process = Start-Process -FilePath $EnginePath -ArgumentList $Arguments -PassThru -WindowStyle Hidden -RedirectStandardOutput $OutLog -RedirectStandardError $ErrLog
+    if (-not $Process.WaitForExit($TimeoutMs)) {
+        try { $Process.Kill() } catch { }
+        return @{ TimedOut = $true; ExitCode = $null }
+    }
+    return @{ TimedOut = $false; ExitCode = $Process.ExitCode }
+}
+
+# True when any existing log holds a fatal marker, even if the process exited 0.
+function Test-FatalLog([string[]]$Paths) {
+    foreach ($Path in $Paths) {
+        if (-not (Test-Path -LiteralPath $Path)) { continue }
+        $Text = Get-Content -LiteralPath $Path -Raw
+        if ($Text -and $Text -match '(?m)^\s*(SCRIPT ERROR|SHADER ERROR|Parse Error|ERROR:)') { return $true }
+    }
+    return $false
+}
+
 # Reuse the engine from the existing Windows installation.
 $EnginePath = Join-Path $InstallRoot 'f3c1b36/Engine/Godot_v4.7.2-stable_win64.exe'
 if (-not (Test-Path -LiteralPath $EnginePath)) {
@@ -85,22 +117,30 @@ try {
             $Failure = ''
             for ($Attempt = 1; $Attempt -le $MaxAttempts -and -not $Validated; $Attempt++) {
                 Write-LauncherLog "Importing game assets with your installed Godot engine (attempt $Attempt of $MaxAttempts)..."
-                $ImportProcess = Start-Process -FilePath $EnginePath -ArgumentList @('--headless', '--editor', '--path', ('"{0}"' -f $ImportedProject), '--import') -Wait -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Staging "import-$Attempt.log") -RedirectStandardError (Join-Path $Staging "import-errors-$Attempt.log")
-                if ($ImportProcess.ExitCode -ne 0) {
-                    $Failure = "Asset import failed (exit $($ImportProcess.ExitCode))."
-                    Write-LauncherLog "$Failure Attempt $Attempt of $MaxAttempts."
-                    continue
-                }
-                Write-LauncherLog 'Import finished. Checking that the imported game starts...'
-                $SmokeErrors = Join-Path $Staging "smoke-errors-$Attempt.log"
-                $SmokeProcess = Start-Process -FilePath $EnginePath -ArgumentList @('--headless', '--path', ('"{0}"' -f $ImportedProject), '--quit-after', '120') -Wait -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Staging "smoke-$Attempt.log") -RedirectStandardError $SmokeErrors
-                if ($SmokeProcess.ExitCode -ne 0) {
-                    $Failure = "Startup check failed (exit $($SmokeProcess.ExitCode))."
-                } elseif ((Test-Path -LiteralPath $SmokeErrors) -and (Select-String -LiteralPath $SmokeErrors -Pattern '^(SCRIPT ERROR|Parse Error)' -Quiet)) {
-                    $Failure = 'Startup check reported script errors.'
+                $ImportOut = Join-Path $Staging "import-$Attempt.log"
+                $ImportErr = Join-Path $Staging "import-errors-$Attempt.log"
+                $Import = Invoke-GodotStep @('--headless', '--editor', '--path', ('"{0}"' -f $ImportedProject), '--import', '--quit') $ImportOut $ImportErr 180000
+                if ($Import.TimedOut) {
+                    $Failure = 'Asset import timed out.'
+                } elseif ($Import.ExitCode -ne 0) {
+                    $Failure = "Asset import failed (exit $($Import.ExitCode))."
+                } elseif (Test-FatalLog @($ImportOut, $ImportErr)) {
+                    $Failure = 'Asset import reported fatal errors.'
                 } else {
-                    $Validated = $true
-                    continue
+                    Write-LauncherLog 'Import finished. Checking that the imported game starts...'
+                    $SmokeOut = Join-Path $Staging "smoke-$Attempt.log"
+                    $SmokeErr = Join-Path $Staging "smoke-errors-$Attempt.log"
+                    $Smoke = Invoke-GodotStep @('--headless', '--path', ('"{0}"' -f $ImportedProject), '--quit-after', '120') $SmokeOut $SmokeErr 60000
+                    if ($Smoke.TimedOut) {
+                        $Failure = 'Startup check timed out.'
+                    } elseif ($Smoke.ExitCode -ne 0) {
+                        $Failure = "Startup check failed (exit $($Smoke.ExitCode))."
+                    } elseif (Test-FatalLog @($SmokeOut, $SmokeErr)) {
+                        $Failure = 'Startup check reported fatal errors.'
+                    } else {
+                        $Validated = $true
+                        continue
+                    }
                 }
                 Write-LauncherLog "$Failure Attempt $Attempt of $MaxAttempts."
             }
@@ -108,6 +148,8 @@ try {
             # Activate only a complete, imported and validated version. Existing versions stay intact.
             $VersionPath = Join-Path $InstallRoot ('Versions/' + $Latest + '-' + [Guid]::NewGuid().ToString('N').Substring(0, 8))
             New-Item -ItemType Directory -Path (Split-Path $VersionPath -Parent) -Force | Out-Null
+            Assert-InsideRoot $GameRoot $InstallRoot
+            Assert-InsideRoot $VersionPath $InstallRoot
             Move-Item -LiteralPath $GameRoot -Destination $VersionPath
             $NewProject = Join-Path $VersionPath 'godot'
             $NewState = @{ revision = $Latest; project_path = $NewProject; channel = $Channel; source_branch = $SourceBranch }
@@ -118,7 +160,10 @@ try {
             $ActiveBranch = $SourceBranch
             Write-LauncherLog "Updated to $SourceBranch at $($Latest.Substring(0, 8))."
         } finally {
-            if (Test-Path -LiteralPath $Staging) { Remove-Item -LiteralPath $Staging -Recurse -Force }
+            if (Test-Path -LiteralPath $Staging) {
+                Assert-InsideRoot $Staging $InstallRoot
+                Remove-Item -LiteralPath $Staging -Recurse -Force
+            }
         }
     }
 } catch {

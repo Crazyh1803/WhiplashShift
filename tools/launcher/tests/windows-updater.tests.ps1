@@ -10,6 +10,9 @@ $global:WhiplashTestImportExit = 0
 $global:WhiplashTestImportExits = @()
 $global:WhiplashTestSmokeExit = 0
 $global:WhiplashTestStyles = @()
+$global:WhiplashTestScripts = @()
+$global:WhiplashTestWaits = @()
+$global:WhiplashTestKills = 0
 $global:WhiplashTestLatest = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 $global:WhiplashTestReleaseUri = ''
 
@@ -29,13 +32,32 @@ function Start-Process {
     $global:WhiplashTestStyles += ,$WindowStyle
     if (-not $PassThru) { return }
     $Exit = $global:WhiplashTestImportExit
+    $Kind = 'import'
     if ($ArgumentList -contains '--quit-after') {
+        $Kind = 'smoke'
         $Exit = $global:WhiplashTestSmokeExit
     } elseif ($global:WhiplashTestImportExits.Count -gt 0) {
         $Exit = $global:WhiplashTestImportExits[0]
         $global:WhiplashTestImportExits = @($global:WhiplashTestImportExits | Select-Object -Skip 1)
     }
-    return @{ ExitCode = $Exit }
+    # Optional per-call scripted behaviour: @{ kind; out; err; hang }, consumed in order per kind.
+    $Script = $null
+    $Match = @($global:WhiplashTestScripts | Where-Object { $_.kind -eq $Kind })
+    if ($Match.Count -gt 0) {
+        $Script = $Match[0]
+        $global:WhiplashTestScripts = @($global:WhiplashTestScripts | Where-Object { -not [object]::ReferenceEquals($_, $Script) })
+    }
+    if ($Script -and $Script.out -and $RedirectStandardOutput) { Set-Content -LiteralPath $RedirectStandardOutput -Value $Script.out }
+    if ($Script -and $Script.err -and $RedirectStandardError) { Set-Content -LiteralPath $RedirectStandardError -Value $Script.err }
+    $Hang = [bool]($Script -and $Script.hang)
+    $Process = [pscustomobject]@{ ExitCode = $Exit; Hang = $Hang }
+    $Process | Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {
+        param($Milliseconds)
+        $global:WhiplashTestWaits += ,$Milliseconds
+        return (-not $this.Hang)
+    }
+    $Process | Add-Member -MemberType ScriptMethod -Name Kill -Value { $global:WhiplashTestKills++ }
+    return $Process
 }
 function Assert-True([bool]$Condition, [string]$Label) {
     if (-not $Condition) { throw "FAIL: $Label" }
@@ -102,6 +124,47 @@ try {
     Assert-True ($Kept.revision -eq 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb') 'A failed startup check never activates the revision'
     Assert-True (@($global:WhiplashTestCalls | Where-Object { $_ -contains '--quit-after' }).Count -eq 3) 'A failed startup check is retried up to three times'
     $global:WhiplashTestSmokeExit = 0
+
+    # Exit 0 with a fatal marker on stdout during import is retried cleanly in the same staged project.
+    $global:WhiplashTestLatest = 'dddddddddddddddddddddddddddddddddddddddd'
+    $global:WhiplashTestCalls = @()
+    $global:WhiplashTestScripts = @(@{ kind = 'import'; out = "Importing`nSCRIPT ERROR: Parse Error: bad" })
+    & $Launcher -NoLaunch -InstallRoot $Installed
+    $After = Get-Content -LiteralPath (Join-Path $Installed 'current.json') -Raw | ConvertFrom-Json
+    $Staged = @($global:WhiplashTestCalls | Where-Object { $_ -contains '--import' } | ForEach-Object { $_[3] } | Select-Object -Unique)
+    Assert-True ($After.revision -eq $global:WhiplashTestLatest -and @($global:WhiplashTestCalls | Where-Object { $_ -contains '--import' }).Count -eq 2 -and $Staged.Count -eq 1) 'Exit 0 with fatal stdout never activates; the retry reuses the staged project'
+    Assert-True ($global:WhiplashTestCalls[0] -contains '--quit') 'Headless editor import quits explicitly'
+
+    # Fatal stderr on a successful-exit startup check is retried.
+    $global:WhiplashTestLatest = 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+    $global:WhiplashTestCalls = @()
+    $global:WhiplashTestScripts = @(@{ kind = 'smoke'; err = 'SHADER ERROR: broken' })
+    & $Launcher -NoLaunch -InstallRoot $Installed
+    $After = Get-Content -LiteralPath (Join-Path $Installed 'current.json') -Raw | ConvertFrom-Json
+    Assert-True ($After.revision -eq $global:WhiplashTestLatest -and @($global:WhiplashTestCalls | Where-Object { $_ -contains '--quit-after' }).Count -eq 2) 'Fatal stderr from startup blocks that attempt, then a clean retry activates'
+
+    # Persistent fatal output and hung startup never activate; hung processes are stopped and waits are bounded.
+    $global:WhiplashTestLatest = 'ffffffffffffffffffffffffffffffffffffffff'
+    $global:WhiplashTestCalls = @()
+    $global:WhiplashTestWaits = @()
+    $global:WhiplashTestKills = 0
+    $global:WhiplashTestScripts = @(@{ kind = 'smoke'; hang = $true }, @{ kind = 'smoke'; hang = $true }, @{ kind = 'smoke'; hang = $true })
+    & $Launcher -NoLaunch -InstallRoot $Installed
+    $Kept = Get-Content -LiteralPath (Join-Path $Installed 'current.json') -Raw | ConvertFrom-Json
+    Assert-True ($Kept.revision -eq 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') 'A hung startup check never activates the revision'
+    Assert-True ($global:WhiplashTestKills -eq 3 -and @($global:WhiplashTestWaits | Where-Object { $_ -eq 60000 }).Count -eq 3 -and @($global:WhiplashTestWaits | Where-Object { $_ -eq 180000 }).Count -eq 3) 'Hung processes are stopped after bounded waits and retried'
+    Assert-True (@(Get-ChildItem -LiteralPath $Installed -Filter '.update-*').Count -eq 0) 'Staging is cleaned up after a timeout'
+    $global:WhiplashTestScripts = @()
+
+    # The path guard refuses anything outside, or equal to, the install root.
+    $GuardAst = [Management.Automation.Language.Parser]::ParseFile((Resolve-Path $Launcher).Path, [ref]$null, [ref]$null)
+    $GuardText = $GuardAst.Find({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq 'Assert-InsideRoot' }, $true).Extent.Text
+    . ([scriptblock]::Create($GuardText))
+    function Test-Guard($Path) { try { Assert-InsideRoot $Path $Installed; $true } catch { $false } }
+    Assert-True (Test-Guard (Join-Path $Installed 'Versions/x')) 'The guard allows a path inside the install root'
+    Assert-True (-not (Test-Guard $Installed)) 'The guard refuses the install root itself'
+    Assert-True (-not (Test-Guard (Join-Path $Installed '../elsewhere'))) 'The guard refuses a path that escapes via ..'
+    Assert-True (-not (Test-Guard ($Installed + '-sibling/x'))) 'The guard refuses a sibling with a shared prefix'
 
     $global:WhiplashTestOffline = $true
     $global:WhiplashTestCalls = @()
