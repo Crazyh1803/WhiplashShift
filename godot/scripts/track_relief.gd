@@ -21,7 +21,7 @@ const RAMP_MAX_HEIGHT := 1.5
 const RAMP_MIN_TABLETOP := 4.0
 const RAMP_MIN_CREST_WIDTH := 8.0
 const RAMP_MAX_GRADE := 0.25
-const RAMP_LATERAL_GRADE := 0.28
+const RAMP_LATERAL_GRADE := 0.30
 const RAMP_MAX_TURN_DEG := 8.0
 const _KEYS_BY_SHAPE := {"boulders": ["shape", "preset", "seed"], "ramp": ["shape", "height", "rise", "fall"],
 	"none": ["shape"], "flatten": ["shape"]}
