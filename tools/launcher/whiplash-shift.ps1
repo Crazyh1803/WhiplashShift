@@ -35,10 +35,14 @@ function Assert-InsideRoot([string]$Path, [string]$Root) {
 function Invoke-GodotStep([string[]]$Arguments, [string]$OutLog, [string]$ErrLog, [int]$TimeoutMs) {
     $Process = Start-Process -FilePath $EnginePath -ArgumentList $Arguments -PassThru -WindowStyle Hidden -RedirectStandardOutput $OutLog -RedirectStandardError $ErrLog
     if (-not $Process.WaitForExit($TimeoutMs)) {
-        try { $Process.Kill() } catch { }
-        return @{ TimedOut = $true; ExitCode = $null }
+        # Kill is asynchronous: confirm the process is gone before anyone retries in the same project.
+        $KillFailed = $false
+        try { $Process.Kill() } catch { $KillFailed = $true }
+        $Gone = $false
+        if (-not $KillFailed) { $Gone = $Process.WaitForExit(10000) }
+        return @{ TimedOut = $true; ExitCode = $null; Unkillable = (-not $Gone) }
     }
-    return @{ TimedOut = $false; ExitCode = $Process.ExitCode }
+    return @{ TimedOut = $false; ExitCode = $Process.ExitCode; Unkillable = $false }
 }
 
 # True when any existing log holds a fatal marker, even if the process exited 0.
@@ -120,6 +124,7 @@ try {
                 $ImportOut = Join-Path $Staging "import-$Attempt.log"
                 $ImportErr = Join-Path $Staging "import-errors-$Attempt.log"
                 $Import = Invoke-GodotStep @('--headless', '--editor', '--path', ('"{0}"' -f $ImportedProject), '--import', '--quit') $ImportOut $ImportErr 180000
+                if ($Import.Unkillable) { throw 'Godot did not stop after the import timed out. Aborting without retry.' }
                 if ($Import.TimedOut) {
                     $Failure = 'Asset import timed out.'
                 } elseif ($Import.ExitCode -ne 0) {
@@ -131,6 +136,7 @@ try {
                     $SmokeOut = Join-Path $Staging "smoke-$Attempt.log"
                     $SmokeErr = Join-Path $Staging "smoke-errors-$Attempt.log"
                     $Smoke = Invoke-GodotStep @('--headless', '--path', ('"{0}"' -f $ImportedProject), '--quit-after', '120') $SmokeOut $SmokeErr 60000
+                    if ($Smoke.Unkillable) { throw 'Godot did not stop after the startup check timed out. Aborting without retry.' }
                     if ($Smoke.TimedOut) {
                         $Failure = 'Startup check timed out.'
                     } elseif ($Smoke.ExitCode -ne 0) {

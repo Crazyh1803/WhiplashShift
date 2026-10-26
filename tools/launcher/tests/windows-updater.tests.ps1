@@ -50,13 +50,20 @@ function Start-Process {
     if ($Script -and $Script.out -and $RedirectStandardOutput) { Set-Content -LiteralPath $RedirectStandardOutput -Value $Script.out }
     if ($Script -and $Script.err -and $RedirectStandardError) { Set-Content -LiteralPath $RedirectStandardError -Value $Script.err }
     $Hang = [bool]($Script -and $Script.hang)
-    $Process = [pscustomobject]@{ ExitCode = $Exit; Hang = $Hang }
+    # hang: stops responding until Kill is called (termination is delayed, observed by the next wait).
+    # stuck: never exits, even after Kill. killfail: Kill throws.
+    $Process = [pscustomobject]@{ ExitCode = $Exit; Hang = $Hang; Stuck = [bool]($Script -and $Script.stuck); KillFail = [bool]($Script -and $Script.killfail); Killed = $false }
     $Process | Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {
         param($Milliseconds)
         $global:WhiplashTestWaits += ,$Milliseconds
-        return (-not $this.Hang)
+        if ($this.Stuck -or ($this.Hang -and -not $this.Killed)) { return $false }
+        return $true
     }
-    $Process | Add-Member -MemberType ScriptMethod -Name Kill -Value { $global:WhiplashTestKills++ }
+    $Process | Add-Member -MemberType ScriptMethod -Name Kill -Value {
+        $global:WhiplashTestKills++
+        if ($this.KillFail) { throw 'Access denied' }
+        $this.Killed = $true
+    }
     return $Process
 }
 function Assert-True([bool]$Condition, [string]$Label) {
@@ -74,7 +81,19 @@ try {
     Set-Content -LiteralPath (Join-Path $Source 'project.godot') -Value 'updated project'
     Set-Content -LiteralPath (Join-Path $Fixture 'source/repository/not-game.txt') -Value 'excluded'
     Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $Fixture 'source'), (Join-Path $Fixture 'source.zip'))
+    # Built explicitly: Windows PowerShell 5.1 CreateFromDirectory writes backslash entry names, unlike GitHub.
+    $ZipStream = [IO.File]::Open((Join-Path $Fixture 'source.zip'), [IO.FileMode]::Create)
+    $Zip = New-Object IO.Compression.ZipArchive($ZipStream, [IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach ($Item in @(@('repository/', ''), @('repository/godot/', ''), @('repository/godot/project.godot', 'updated project'), @('repository/not-game.txt', 'excluded'))) {
+            $ZipEntry = $Zip.CreateEntry($Item[0])
+            if (-not $Item[0].EndsWith('/')) {
+                $Writer = New-Object IO.StreamWriter($ZipEntry.Open())
+                $Writer.Write($Item[1] + "`n")
+                $Writer.Dispose()
+            }
+        }
+    } finally { $Zip.Dispose(); $ZipStream.Dispose() }
 
     & $Launcher -NoLaunch -InstallRoot $Installed
     $State = Get-Content -LiteralPath (Join-Path $Installed 'current.json') -Raw | ConvertFrom-Json
@@ -153,7 +172,24 @@ try {
     $Kept = Get-Content -LiteralPath (Join-Path $Installed 'current.json') -Raw | ConvertFrom-Json
     Assert-True ($Kept.revision -eq 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') 'A hung startup check never activates the revision'
     Assert-True ($global:WhiplashTestKills -eq 3 -and @($global:WhiplashTestWaits | Where-Object { $_ -eq 60000 }).Count -eq 3 -and @($global:WhiplashTestWaits | Where-Object { $_ -eq 180000 }).Count -eq 3) 'Hung processes are stopped after bounded waits and retried'
+    Assert-True (@($global:WhiplashTestWaits | Where-Object { $_ -eq 10000 }).Count -eq 3) 'Delayed termination is confirmed by a bounded wait after each Kill'
     Assert-True (@(Get-ChildItem -LiteralPath $Installed -Filter '.update-*').Count -eq 0) 'Staging is cleaned up after a timeout'
+    $global:WhiplashTestScripts = @()
+
+    # Delayed termination is confirmed by a bounded wait; a process that survives Kill or refuses it aborts without retry.
+    foreach ($Case in @(@{ Name = 'does not exit after Kill'; Script = @{ kind = 'smoke'; hang = $true; stuck = $true } }, @{ Name = 'cannot be killed'; Script = @{ kind = 'smoke'; hang = $true; killfail = $true } })) {
+        $global:WhiplashTestLatest = ('1' * 40)
+        $global:WhiplashTestCalls = @()
+        $global:WhiplashTestWaits = @()
+        $global:WhiplashTestKills = 0
+        $global:WhiplashTestScripts = @($Case.Script)
+        & $Launcher -NoLaunch -InstallRoot $Installed
+        $Kept = Get-Content -LiteralPath (Join-Path $Installed 'current.json') -Raw | ConvertFrom-Json
+        Assert-True ($Kept.revision -eq 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') "A process that $($Case.Name) never activates"
+        Assert-True (@($global:WhiplashTestCalls | Where-Object { $_ -contains '--quit-after' }).Count -eq 1 -and @($global:WhiplashTestCalls | Where-Object { $_ -contains '--import' }).Count -eq 1) "A process that $($Case.Name) aborts instead of retrying"
+        Assert-True ($global:WhiplashTestKills -eq 1) "Kill is attempted once when the process $($Case.Name)"
+    }
+    Assert-True (@($global:WhiplashTestWaits | Where-Object { $_ -eq 10000 }).Count -eq 0) 'No post-kill wait is made when Kill itself fails'
     $global:WhiplashTestScripts = @()
 
     # The path guard refuses anything outside, or equal to, the install root.
