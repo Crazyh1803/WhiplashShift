@@ -52,7 +52,7 @@ function Start-Process {
     $Hang = [bool]($Script -and $Script.hang)
     # hang: stops responding until Kill is called (termination is delayed, observed by the next wait).
     # stuck: never exits, even after Kill. killfail: Kill throws.
-    $Process = [pscustomobject]@{ ExitCode = $Exit; Hang = $Hang; Stuck = [bool]($Script -and $Script.stuck); KillFail = [bool]($Script -and $Script.killfail); Killed = $false }
+    $Process = [pscustomobject]@{ ExitCode = $Exit; Hang = $Hang; Stuck = [bool]($Script -and $Script.stuck); KillFail = [bool]($Script -and $Script.killfail); Killed = $false; Id = 4242 }
     $Process | Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {
         param($Milliseconds)
         $global:WhiplashTestWaits += ,$Milliseconds
@@ -189,9 +189,33 @@ try {
         Assert-True ($Kept.revision -eq 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') "A process that $($Case.Name) never activates"
         Assert-True (@($global:WhiplashTestCalls | Where-Object { $_ -contains '--quit-after' }).Count -eq 1 -and @($global:WhiplashTestCalls | Where-Object { $_ -contains '--import' }).Count -eq 1) "A process that $($Case.Name) aborts instead of retrying"
         Assert-True ($global:WhiplashTestKills -eq 1) "Kill is attempted once when the process $($Case.Name)"
+        $Preserved = @(Get-ChildItem -LiteralPath $Installed -Filter '.update-*')
+        Assert-True ($Preserved.Count -eq 1 -and (Test-Path -LiteralPath (Join-Path $Preserved[0].FullName 'Game/godot/project.godot'))) "Staging is preserved, not removed, when the process $($Case.Name)"
+        $CaseLog = Get-Content -LiteralPath (Join-Path $Installed 'launcher.log') -Raw
+        Assert-True ($CaseLog.Contains('PID 4242') -and $CaseLog.Contains($Preserved[0].FullName)) "The PID and preserved staging path are logged when the process $($Case.Name)"
+        Remove-Item -LiteralPath $Preserved[0].FullName -Recurse -Force
     }
     Assert-True (@($global:WhiplashTestWaits | Where-Object { $_ -eq 10000 }).Count -eq 0) 'No post-kill wait is made when Kill itself fails'
     $global:WhiplashTestScripts = @()
+
+    # Native regression: real redirected processes must report real exit codes under Windows PowerShell 5.1.
+    $StepAst = [Management.Automation.Language.Parser]::ParseFile((Resolve-Path $Launcher).Path, [ref]$null, [ref]$null)
+    $StepText = $StepAst.Find({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq 'Invoke-GodotStep' }, $true).Extent.Text
+    $WinPs = Join-Path $env:SystemRoot 'System32/WindowsPowerShell/v1.0/powershell.exe'
+    $Cmd = Join-Path $env:SystemRoot 'System32/cmd.exe'
+    if ((Test-Path -LiteralPath $WinPs) -and (Test-Path -LiteralPath $Cmd)) {
+        $NativeDir = Join-Path $Fixture 'native'
+        New-Item -ItemType Directory -Path $NativeDir | Out-Null
+        $NativeScript = Join-Path $NativeDir 'native.ps1'
+        Set-Content -LiteralPath $NativeScript -Value @(
+            "`$EnginePath = '$Cmd'", $StepText,
+            "foreach (`$Code in 0, 3) { `$R = Invoke-GodotStep @('/c', ('exit ' + `$Code)) '$NativeDir/o.log' '$NativeDir/e.log' 30000; Write-Output ('EXIT=' + `$R.ExitCode + ' TIMEDOUT=' + `$R.TimedOut) }"
+        )
+        $Native = @(& $WinPs -NoProfile -ExecutionPolicy Bypass -File $NativeScript) -join ' '
+        Assert-True ($Native -eq 'EXIT=0 TIMEDOUT=False EXIT=3 TIMEDOUT=False') "Windows PowerShell reports real exit codes 0 and 3 from redirected native processes (got: $Native)"
+    } else {
+        Write-Host 'SKIP: Windows PowerShell or cmd.exe not found for the native exit-code regression'
+    }
 
     # The path guard refuses anything outside, or equal to, the install root.
     $GuardAst = [Management.Automation.Language.Parser]::ParseFile((Resolve-Path $Launcher).Path, [ref]$null, [ref]$null)
