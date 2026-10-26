@@ -3,7 +3,7 @@ class_name TrackRelief
 extends RefCounted
 
 const MAX_HEIGHTS := {Surfaces.Id.GRAVEL: 0.03, Surfaces.Id.MUD: 0.05,
-	Surfaces.Id.BOULDER: 0.09, Surfaces.Id.WATER: 0.02}
+	Surfaces.Id.BOULDER: 0.20, Surfaces.Id.WATER: 0.02}
 const END_FADE := 3.5
 const EDGE_FADE := 3.0
 
@@ -31,8 +31,8 @@ static func height(sid: int, s: float, across: float, width: float, length: floa
 
 
 static func _boulders(s: float, across: float, width: float, length: float, seed: int) -> float:
-	var cell_size := Vector2(12.0, 7.0)
-	var radii := Vector2(6.0, 4.8)
+	var cell_size := Vector2(18.0, 7.0)
+	var radii := Vector2(9.0, 6.0)
 	var cell := Vector2i(floori(s / cell_size.x), floori(across / cell_size.y))
 	var search := Vector2i(ceili(radii.x / cell_size.x) + 1, ceili(radii.y / cell_size.y) + 1)
 	var peak := 0.0
@@ -41,22 +41,20 @@ static func _boulders(s: float, across: float, width: float, length: float, seed
 			var pair := lane if lane >= 0 else -lane - 1
 			var side := 1.0 if lane >= 0 else -1.0
 			var id := posmod(row * 73856093 ^ pair * 19349663 ^ seed * 83492791, 104729)
-			if id % 11 < 4:
-				continue
 			var jitter := float(id % 101) / 100.0
-			var center_s := (float(row) + 0.25 + 0.5 * jitter) * cell_size.x + side * (1.0 if posmod(row, 2) == 0 else -1.0) * 0.25
+			var center_s := (float(row) + 0.25 + 0.5 * jitter) * cell_size.x
 			var center_u := side * (float(pair) * cell_size.y + 2.2 + jitter * 0.6)
 			if center_s - radii.x < END_FADE or center_s + radii.x > length - END_FADE:
 				continue
 			if absf(center_u) + radii.y > width * 0.5 - EDGE_FADE:
 				continue
 			var delta := Vector2((s - center_s) / radii.x, (across - center_u) / radii.y)
-			var angle := atan2(absf(delta.y), delta.x)
-			var radius := delta.length() / (0.97 + 0.03 * cos(angle * 3.0 + jitter * TAU))
+			var footprint := delta.abs()
+			var radius := maxf(maxf(footprint.x, footprint.y), (footprint.x + footprint.y) * (0.70 + jitter * 0.04))
 			if radius < 1.0:
 				var crown_radius := maxf(0.0, (radius - 0.12) / 0.88)
 				var dome := 0.5 + 0.5 * cos(PI * crown_radius)
-				peak = maxf(peak, (0.07 + 0.02 * jitter) * dome * dome)
+				peak = maxf(peak, (0.16 + 0.04 * jitter) * dome * dome)
 	return peak
 
 

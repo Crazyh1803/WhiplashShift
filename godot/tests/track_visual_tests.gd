@@ -229,6 +229,7 @@ func _test_relief_driving() -> void:
 			var max_pitch := -10.0
 			var max_yaw_rate := 0.0
 			var max_airborne := 0
+			var min_contacts := 4
 			var airborne := 0
 			var max_drift := 0.0
 			for frame in 240:
@@ -242,11 +243,16 @@ func _test_relief_driving() -> void:
 				max_yaw_rate = maxf(max_yaw_rate, absf(car.angular_velocity.y))
 				airborne = airborne + 1 if car.wheels.all(func(wheel): return not wheel.contact) else 0
 				max_airborne = maxi(max_airborne, airborne)
+				min_contacts = mini(min_contacts, car.wheels.filter(func(wheel): return wheel.contact).size())
 				max_drift = maxf(max_drift, absf(car.position.x))
-			_check("%s on %s stays supported at 50m/s entry" % [end, Surfaces.KEYS[sid]], max_gap <= 2
-				and max_roll < deg_to_rad(5) and max_drift < 0.3 and car.position.z < start_z - 15.0)
+			# Taller rocks may unload one axle; the chassis must retain two-wheel support.
+			var supported := max_gap <= 2
+			if sid == Surfaces.Id.BOULDER:
+				supported = min_contacts >= 2 and max_airborne == 0 and float(max_gap) / Engine.physics_ticks_per_second <= 0.3
+			_check("%s on %s stays supported at 50m/s entry" % [end, Surfaces.KEYS[sid]], supported
+				and max_yaw_rate < 0.3 and max_roll < deg_to_rad(5) and max_drift < 0.3 and car.position.z < start_z - 15.0)
 			print("  RELIEF_DRIVE %s %s gap=%d roll=%.3f drift=%.3f travel=%.1f" % [end, Surfaces.KEYS[sid], max_gap, rad_to_deg(max_roll), max_drift, start_z - car.position.z])
-			print("  RELIEF_MOTION pitch_range=%.3f yaw_rate=%.4f all_airborne=%d" % [rad_to_deg(max_pitch - min_pitch), max_yaw_rate, max_airborne])
+			print("  RELIEF_MOTION pitch_range=%.3f yaw_rate=%.4f all_airborne=%d min_contacts=%d" % [rad_to_deg(max_pitch - min_pitch), max_yaw_rate, max_airborne, min_contacts])
 			car.free()
 		root.free()
 		await get_tree().physics_frame

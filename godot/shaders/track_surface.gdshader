@@ -174,7 +174,7 @@ void fragment() {
 		stone *= 0.82 + mid * 0.24 + grain * 0.12;
 		stone = mix(stone, vec3(0.82, 0.79, 0.69), rim * 0.35);
 		stone *= 1.0 - scratch * 0.24;
-		color = mix(vec3(0.028, 0.023, 0.03) * (0.7 + grain * 0.6), stone, flank);
+		color = mix(vec3(0.085, 0.075, 0.08) * (0.7 + grain * 0.6), stone, flank);
 		relief = rock_height * 0.3;
 		rough = 0.76 + grain * 0.18;
 		metal = 0.05;

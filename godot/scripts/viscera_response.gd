@@ -477,6 +477,7 @@ func _update_pose() -> void:
 func _rock_contact_pose(dt: float, wheels: Array, end: String, speed: float, body_basis: Basis) -> void:
 	var target := Vector3.ZERO
 	var contacts := 0
+	var contact_gain := 0.0
 	var tuning: TuningProfile = _car.get("tuning") if is_instance_valid(_car) else null
 	if tuning != null and speed > 0.25:
 		for wheel: Wheel in wheels:
@@ -484,6 +485,7 @@ func _rock_contact_pose(dt: float, wheels: Array, end: String, speed: float, bod
 			if not wheel.contact or weight == 0.0:
 				continue
 			contacts += 1
+			contact_gain = maxf(contact_gain, weight)
 			var axle := 1.0 if wheel.end == "A" else -1.0
 			var normal := body_basis.inverse() * wheel.contact_normal
 			target.x += weight * axle * wheel.compression / maxf(tuning.half_base * 4.0, 0.1)
@@ -496,7 +498,7 @@ func _rock_contact_pose(dt: float, wheels: Array, end: String, speed: float, bod
 	_rock_slow = _rock_slow.lerp(target, 1.0 - exp(-1.5 * dt))
 	var gain := (1.0 if end == "A" else 0.55) * minf(speed / 8.0, 1.0)
 	var pose := (target - _rock_slow) * gain
-	pose = pose.clamp(Vector3(-0.052, -0.021, -0.044), Vector3(0.052, 0.021, 0.044))
+	pose = pose.clamp(Vector3(-0.052, -0.021, -0.044) * contact_gain, Vector3(0.052, 0.021, 0.044) * contact_gain)
 	_rock_pose = _rock_pose.lerp(pose, 1.0 - exp(-12.0 * dt))
 
 
