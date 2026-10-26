@@ -13,27 +13,27 @@ static func _material(sid: int) -> ShaderMaterial:
 	return TrackMaterials.surface(sid)
 
 
-static func build(parent: Node3D, pts: Array, relief: bool = true) -> void:
-	var n := pts.size()
-	var i := 0
-	var run_index := 0
+## Returns false, building nothing, when any point's `relief` authoring is invalid.
+static func build(parent: Node3D, pts: Array, relief: bool = true) -> bool:
+	var errors := TrackRelief.validation(pts)
+	if not errors.is_empty():
+		push_error("TrackBuilder refused invalid terrain authoring: " + "; ".join(errors))
+		return false
 	var distance := 0.0
-	while i < n:
-		var sid: int = pts[i]["s"]
-		var j := i
-		while j + 1 < n and pts[j + 1]["s"] == sid:
-			j += 1
+	# Runs split by surface and normalized relief profile; `index` stays the per-surface-run seed.
+	for part: Dictionary in TrackRelief.partition(pts):
+		var i: int = part["first"]
+		var j: int = part["last"]
 		# carry one node into the next run so the seam has no gap
 		var run: Array = []
-		for k in range(i, mini(j + 2, n)):
+		for k in range(i, mini(j + 2, pts.size())):
 			run.append(pts[k])
-		if j + 1 >= n:
+		if j + 1 >= pts.size():
 			run.append(pts[0])
-		_build_run(parent, run, sid, run_index, distance, relief)
+		_build_run(parent, run, int(part["sid"]), int(part["index"]), distance, relief, part["profile"], int(part["piece"]))
 		for k in range(i, j + 1):
 			distance += float(pts[k]["dist"])
-		run_index += 1
-		i = j + 1
+	return true
 
 
 ## A single collision body follows both edges of the circuit. Keeping the whole
@@ -168,9 +168,12 @@ static func _warning_clearance(position: Vector3, points: Array) -> bool:
 	return true
 
 
-static func _build_run(parent: Node3D, run: Array, sid: int, index: int, start_distance: float = 0.0, relief: bool = true) -> void:
+static func _build_run(parent: Node3D, run: Array, sid: int, index: int, start_distance: float = 0.0,
+		relief: bool = true, prof: Dictionary = {}, piece: int = 0) -> void:
 	if run.size() < 2:
 		return
+	if prof.is_empty():
+		prof = TrackRelief.profile(sid)
 	var verts := PackedVector3Array()
 	var normals := PackedVector3Array()
 	var uvs := PackedVector2Array()
@@ -183,8 +186,8 @@ static func _build_run(parent: Node3D, run: Array, sid: int, index: int, start_d
 	for k in range(run.size() - 1):
 		var a: Dictionary = run[k]
 		var b: Dictionary = run[k + 1]
-		if relief and TrackRelief.enabled(sid):
-			TrackRelief.append_quad(verts, normals, uvs, uv2s, a, b, sid, distance, start_distance, run_length, index)
+		if relief and TrackRelief.active(prof):
+			TrackRelief.append_quad(verts, normals, uvs, uv2s, a, b, sid, distance, start_distance, run_length, index, prof)
 			distance += float(a["dist"])
 			continue
 		var an: Vector3 = Vector3(-a["dir"].z, 0.0, a["dir"].x) * (a["w"] * 0.5)
@@ -216,7 +219,8 @@ static func _build_run(parent: Node3D, run: Array, sid: int, index: int, start_d
 
 	var body := StaticBody3D.new()
 	# unique, or add_child quietly swaps it for "@StaticBody3D@31" on collision
-	body.name = "Run_%02d_%s" % [index, Surfaces.KEYS[sid]]
+	body.name = "Run_%02d_%s" % [index, Surfaces.KEYS[sid]] if piece == 0 \
+		else "Run_%02d_p%d_%s" % [index, piece, Surfaces.KEYS[sid]]
 	body.set_meta("surface_type", Surfaces.KEYS[sid])
 
 	var mi := MeshInstance3D.new()
@@ -236,6 +240,9 @@ static func _build_run(parent: Node3D, run: Array, sid: int, index: int, start_d
 	shape.shape = concave
 	shape.position = Vector3(0.0, 0.02, 0.0)
 	body.add_child(shape)
+	if relief:
+		# Visual-only, parented below the road mesh so body children stay mesh + collider.
+		TrackViscera.attach(mi, run, sid, index, run_length, prof)
 
 	parent.add_child(body, true)
 

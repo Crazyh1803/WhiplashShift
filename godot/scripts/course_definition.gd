@@ -63,6 +63,7 @@ func validate() -> PackedStringArray:
 		for key: String in ["pos", "dir", "w", "s", "dist"]:
 			if not point.has(key):
 				errors.append("point %d is missing %s" % [i, key])
+	errors.append_array(TrackRelief.validation(points))
 	return errors
 
 

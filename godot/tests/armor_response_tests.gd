@@ -51,17 +51,13 @@ func _test_armor() -> void:
 	var collider: Node3D = car.get_child(0)
 	var collision_transform := collider.transform
 	var seen := 0
-	var peak := 0.0
-	var max_step := 0.0
-	var previous := 0.0
-	var quiet_frames := 0
+	var flat_changes := 0
+	var previous := visual.basis
 	for frame in 360:
 		fx.advance(1.0 / 60, wheels, "A", Vector3(0, 0, -10), 1, Basis.IDENTITY)
-		peak = maxf(peak, visual.position.y)
-		max_step = maxf(max_step, absf(visual.position.y - previous))
-		previous = visual.position.y
-		if absf(visual.position.y) < 0.003:
-			quiet_frames += 1
+		if frame >= 120 and not visual.basis.is_equal_approx(previous):
+			flat_changes += 1
+		previous = visual.basis
 		var total := 0
 		for kind in VisceraResponse.FRAGMENT_NAMES.size():
 			var count: int = fx.get_node(VisceraResponse.FRAGMENT_NAMES[kind]).multimesh.visible_instance_count
@@ -70,7 +66,22 @@ func _test_armor() -> void:
 				seen |= 1 << kind
 		assert(total == fx.active_count and total <= VisceraResponse.CAPACITY)
 	_check("armor emits plates and broken ribs exclusively within shared capacity", seen == 192)
-	_check("heavy impacts have bounded lift and quiet gaps", peak > 0.035 and peak < 0.066 and quiet_frames > 100 and max_step < 0.025)
+	_check("flat equal settled boulder contacts stop changing pose and never lift", flat_changes == 0 and visual.position.is_zero_approx())
+	var uneven := _armor_wheels()
+	uneven[0].compression = 0.04
+	uneven[3].compression = 0.01
+	var uneven_changes := 0
+	for frame in 30:
+		fx.advance(1.0 / 60, uneven, "A", Vector3(0, 0, -10), 1, Basis.IDENTITY)
+		if not visual.basis.is_equal_approx(previous):
+			uneven_changes += 1
+		previous = visual.basis
+	_check("real unequal boulder contacts move the pose", uneven_changes > 10 and not visual.basis.is_equal_approx(Basis.IDENTITY))
+	for wheel: Wheel in uneven:
+		wheel.free()
+	for frame in 360:
+		fx.advance(1.0 / 60, wheels, "A", Vector3(0, 0, -10), 1, Basis.IDENTITY)
+	_check("pose settles again once contacts equalize", visual.basis.is_equal_approx(Basis.IDENTITY))
 	var untouched := car.transform == body_transform and collider.transform == collision_transform
 	for index in car.wheels.size():
 		untouched = untouched and car.wheels[index].transform == mounts[index]

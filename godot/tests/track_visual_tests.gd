@@ -1,6 +1,8 @@
 ## Geometry invariants run headless; --capture also exercises the Vulkan shader.
 extends Node3D
 
+const END_MARGIN_TEST := 4.0
+
 var _pass := 0
 var _fail := 0
 
@@ -8,6 +10,7 @@ var _fail := 0
 func _ready() -> void:
 	_test_geometry()
 	await _test_relief_contacts()
+	_test_boulder_coverage()
 	if DisplayServer.get_name() == "headless":
 		await _test_relief_driving()
 	if "--capture" in OS.get_cmdline_user_args():
@@ -26,6 +29,11 @@ func _test_geometry() -> void:
 	var golden: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/track_collision.json"))
 	_check("same surface-run count as original renderer", root.get_child_count() == golden.size())
 	var previous_end := 0.0
+	var road_distances: Array[float] = [0.0]
+	for point: Dictionary in course.points:
+		road_distances.append(road_distances[-1] + float(point["dist"]))
+	var graded_points: Array = [{"pos": Vector3(0, 1, 0), "dist": 4.0}, {"pos": Vector3(0, 3, -4), "dist": 4.0}]
+	_check("material height reference preserves authored road elevation", is_equal_approx(_base_road_height(2.0, graded_points, [0.0, 4.0, 8.0]), 2.0))
 	for body: StaticBody3D in root.get_children():
 		var visual: MeshInstance3D = body.get_node("RoadMesh")
 		var collision: CollisionShape3D = body.get_child(1)
@@ -59,6 +67,14 @@ func _test_geometry() -> void:
 		_check(String(body.name) + " metre UVs continue across runs", is_equal_approx(uvs[0].y, previous_end) and uvs[-1].y > uvs[0].y)
 		previous_end = uvs[-1].y
 		_check(String(body.name) + " carries road width for paint", widths.size() == faces.size() and widths[0].x >= 20.0)
+		var height_map_matches := true
+		for vertex in faces.size():
+			var normalized_height := widths[vertex].y
+			height_map_matches = height_map_matches and normalized_height >= 0.0 and normalized_height <= 1.0
+			var maximum: float = TrackRelief.MAX_HEIGHTS.get(sid, 0.0)
+			var base_y := _base_road_height(uvs[vertex].y, course.points, road_distances)
+			height_map_matches = height_map_matches and absf(faces[vertex].y - base_y - normalized_height * maximum) < 0.00001
+		_check(String(body.name) + " material elevation matches visible and collision heights", height_map_matches)
 	_check("UV distance covers full closed course", is_equal_approx(previous_end, course.total_length))
 	var flat_control := Node3D.new()
 	root.add_child(flat_control)
@@ -152,10 +168,27 @@ func _test_geometry() -> void:
 	root.free()
 
 
+func _base_road_height(distance: float, points: Array, distances: Array[float]) -> float:
+	var segment := clampi(distances.bsearch(distance) - 1, 0, points.size() - 1)
+	var t := clampf((distance - distances[segment]) / maxf(float(points[segment]["dist"]), 0.00001), 0.0, 1.0)
+	return lerpf(points[segment]["pos"].y, points[(segment + 1) % points.size()]["pos"].y, t)
+
+
 func _test_relief_contacts() -> void:
 	var root := Node3D.new()
 	add_child(root)
 	var profiles_valid := true
+	for width: float in [20.0, 22.0, 24.0]:
+		for length: float in [3.5, 12.0, 24.0, 60.0]:
+			for seed in range(4):
+				var peak := 0.0
+				var bounded := true
+				for step in range(1, 50):
+					for lane in range(-4, 5):
+						var h := TrackRelief.height(Surfaces.Id.BOULDER, length * float(step) / 50.0, width * float(lane) / 8.0, width, length, seed)
+						peak = maxf(peak, h)
+						bounded = bounded and h >= 0.0 and h <= TrackRelief.MAX_HEIGHTS[Surfaces.Id.BOULDER]
+				_check("boulders retain bounded crowns at width %.0f length %.1f seed %d" % [width, length, seed], peak > 0.0 and bounded)
 	for sid: int in TrackRelief.MAX_HEIGHTS:
 		for step in 600:
 			var s := float(step) * 0.1
@@ -196,6 +229,151 @@ func _test_relief_contacts() -> void:
 	root.free()
 
 
+func _tyre_relief(s: float, x: float, width: float, length: float, seed: int) -> float:
+	return maxf(TrackRelief.height(Surfaces.Id.BOULDER, s, x - 0.9, width, length, seed),
+		TrackRelief.height(Surfaces.Id.BOULDER, s, x + 0.9, width, length, seed))
+
+
+func _test_boulder_coverage() -> void:
+	var sid := Surfaces.Id.BOULDER
+	var different := 0.0
+	var identical := true
+	for step in 400:
+		var s := 4.0 + float(step) * 0.14
+		var u := float(step % 23) - 11.0
+		identical = identical and TrackRelief.height(sid, s, u, 24.0, 60.0, 5) == TrackRelief.height(sid, s, u, 24.0, 60.0, 5)
+		different += absf(TrackRelief.height(sid, s, u, 24.0, 60.0, 5) - TrackRelief.height(sid, s, u, 24.0, 60.0, 6))
+	_check("boulder placement is reproducible per seed and differs between seeds", identical and different > 0.5)
+	# Actual course BOULDER run (straight 140 m + 100 m radius quarter arc, 24 m wide, seed = run index 4), then fixtures.
+	for case: Array in [[24.0, 297.0, 4], [24.0, 297.0, 0], [20.0, 160.0, 1], [22.0, 160.0, 3], [24.0, 160.0, 4]]:
+		_check_boulder_distribution(case[0], case[1], case[2])
+	for width: float in [20.0, 22.0, 24.0]:
+		var half := width * 0.5
+		for length: float in [12.0, 24.0, 60.0, 160.0]:
+			for seed in range(3):
+				var lanes_hit := true
+				var longest_gap := 0.0
+				var lane_report := ""
+				for x: float in [0.0, 1.5, -3.0, 5.0, -7.0, half - 3.0, -(half - 3.0), half - 1.2, -(half - 1.2)]:
+					var lane_gap := 0.0
+					var peak := 0.0
+					var gap := 0.0
+					var s := END_MARGIN_TEST
+					while s < length - END_MARGIN_TEST + 0.001:
+						var h := _tyre_relief(s, x, width, length, seed)
+						peak = maxf(peak, h)
+						gap = 0.0 if h >= 0.02 else gap + 0.25
+						lane_gap = maxf(lane_gap, gap)
+						if length >= 24.0:
+							longest_gap = maxf(longest_gap, gap)
+						s += 0.25
+					var lane_ok := peak >= (0.04 if length >= 24.0 else 0.015)
+					lanes_hit = lanes_hit and lane_ok
+					if not lane_ok or (length >= 24.0 and lane_gap > 14.0):
+						lane_report += " [x=%.1f peak=%.3f gap=%.1f]" % [x, peak, lane_gap]
+				_check("fixed car lanes meet bumps at width %.0f length %.0f seed %d%s" % [width, length, seed, lane_report], lanes_hit and longest_gap <= 14.0)
+		for length: float in [60.0, 160.0]:
+			for seed in range(3):
+				var tallest := 0.0
+				for step in int(length * 4.0):
+					for lateral in range(-20, 21):
+						tallest = maxf(tallest, TrackRelief.height(sid, float(step) * 0.25, float(lateral) * 0.25, width, length, seed))
+				_check("full-sized boulder crowns reach 0.16 m at width %.0f length %.0f seed %d (%.3f)" % [width, length, seed, tallest], tallest >= 0.16 and tallest <= 0.2)
+		for length: float in [60.0, 160.0]:
+			for seed in range(2):
+				_check("no steerable flat corridor at width %.0f length %.0f seed %d" % [width, length, seed], not _flat_corridor(width, length, seed))
+	var bounded := true
+	var steepest := 0.0
+	for seed in range(3):
+		for step in 600:
+			var s := float(step) * 0.27
+			for lateral in range(-60, 61):
+				var u := float(lateral) * 0.2
+				var h := TrackRelief.height(sid, s, u, 24.0, 160.0, seed)
+				var ds := (TrackRelief.height(sid, s + 0.01, u, 24.0, 160.0, seed) - h) / 0.01
+				var du := (TrackRelief.height(sid, s, u + 0.01, 24.0, 160.0, seed) - h) / 0.01
+				steepest = maxf(steepest, Vector2(ds, du).length())
+				bounded = bounded and h >= 0.0 and h <= 0.2
+	_check("randomized boulders keep height and gradient bounds (%.3f)" % steepest, bounded and steepest <= 0.08)
+
+
+## High crowns must be asymmetric and spread over the full width, with no permanent central band.
+func _check_boulder_distribution(width: float, length: float, seed: int) -> void:
+	var sid := Surfaces.Id.BOULDER
+	var tag := "width %.0f length %.0f seed %d" % [width, length, seed]
+	var half := width * 0.5
+	var mirror_diff := 0.0
+	var mirror_n := 0
+	var high := 0
+	var central := 0
+	var left := 0
+	var right := 0
+	var window := 10.0
+	var window_sum: Array[float] = []
+	var window_n: Array[int] = []
+	for i in int(length / window) + 1:
+		window_sum.append(0.0)
+		window_n.append(0)
+	for step in int(length * 2.0):
+		var s := float(step) * 0.5
+		for lateral in range(0, int(half * 2.0)):
+			var u := float(lateral) * 0.5
+			var h := TrackRelief.height(sid, s, u, width, length, seed)
+			var m := TrackRelief.height(sid, s, -u, width, length, seed)
+			mirror_diff += absf(h - m)
+			mirror_n += 1
+			for sample: Array in [[h, u], [m, -u]]:
+				if sample[0] >= 0.12:
+					high += 1
+					central += int(absf(sample[1]) < width / 6.0)
+					left += int(sample[1] < -width / 6.0)
+					right += int(sample[1] > width / 6.0)
+					var w := int(s / window)
+					window_sum[w] += sample[1]
+					window_n[w] += 1
+	var lo := 1000.0
+	var hi := -1000.0
+	for w in window_sum.size():
+		if window_n[w] >= 10:
+			var c: float = window_sum[w] / float(window_n[w])
+			lo = minf(lo, c)
+			hi = maxf(hi, c)
+	var total := float(maxi(high, 1))
+	var report := " (mirror %.4f central %.2f left %.2f right %.2f centroid range %.1f)" % [
+		mirror_diff / float(mirror_n), central / total, left / total, right / total, hi - lo]
+	print("BOULDER_DIST: ", tag, report)
+	_check("boulder mirror samples differ, " + tag + report, mirror_diff / float(mirror_n) > 0.012)
+	_check("high crowns sit off-centre on both halves, " + tag + report, left / total >= 0.22 and right / total >= 0.22)
+	_check("no permanent central high band, " + tag + report, central / total <= 0.52)
+	_check("high-crown centroid shifts along the run, " + tag + report, hi - lo >= 1.5)
+
+
+## Flood fill of cells whose tyres both stay flat; steering changes at most one cell per step.
+func _flat_corridor(width: float, length: float, seed: int) -> bool:
+	var cell := 0.3
+	var half_cells := int((width * 0.5 - 1.2) / cell)
+	var rows := int((length - 2.0 * END_MARGIN_TEST) / 0.5)
+	var reachable: Array = []
+	for row in rows + 1:
+		var s := END_MARGIN_TEST + float(row) * 0.5
+		var flat: Array[bool] = []
+		for lane in range(-half_cells, half_cells + 1):
+			flat.append(_tyre_relief(s, float(lane) * cell, width, length, seed) < 0.02)
+		var now: Array[bool] = []
+		for lane in flat.size():
+			var open: bool = flat[lane]
+			if open and row > 0:
+				open = false
+				for step in range(-1, 2):
+					var from := lane + step
+					open = open or (from >= 0 and from < flat.size() and reachable[row - 1][from])
+			now.append(open)
+		reachable.append(now)
+		if row > 0 and not now.has(true):
+			return false
+	return reachable[rows].has(true)
+
+
 func _test_relief_driving() -> void:
 	for sid: int in TrackRelief.MAX_HEIGHTS:
 		var root := Node3D.new()
@@ -218,6 +396,12 @@ func _test_relief_driving() -> void:
 			var gaps: Array[int] = [0, 0, 0, 0]
 			var max_gap := 0
 			var max_roll := 0.0
+			var min_pitch := 10.0
+			var max_pitch := -10.0
+			var max_yaw_rate := 0.0
+			var max_airborne := 0
+			var min_contacts := 4
+			var airborne := 0
 			var max_drift := 0.0
 			for frame in 240:
 				await get_tree().physics_frame
@@ -225,10 +409,21 @@ func _test_relief_driving() -> void:
 					gaps[wheel] = 0 if car.wheels[wheel].contact else gaps[wheel] + 1
 					max_gap = maxi(max_gap, gaps[wheel])
 				max_roll = maxf(max_roll, absf(car.rotation.z))
+				min_pitch = minf(min_pitch, car.rotation.x)
+				max_pitch = maxf(max_pitch, car.rotation.x)
+				max_yaw_rate = maxf(max_yaw_rate, absf(car.angular_velocity.y))
+				airborne = airborne + 1 if car.wheels.all(func(wheel): return not wheel.contact) else 0
+				max_airborne = maxi(max_airborne, airborne)
+				min_contacts = mini(min_contacts, car.wheels.filter(func(wheel): return wheel.contact).size())
 				max_drift = maxf(max_drift, absf(car.position.x))
-			_check("%s on %s stays supported at 50m/s entry" % [end, Surfaces.KEYS[sid]], max_gap <= 2
-				and max_roll < deg_to_rad(5) and max_drift < 0.3 and car.position.z < start_z - 15.0)
+			# Taller rocks may unload one axle; the chassis must retain two-wheel support.
+			var supported := max_gap <= 2
+			if sid == Surfaces.Id.BOULDER:
+				supported = min_contacts >= 2 and max_airborne == 0 and float(max_gap) / Engine.physics_ticks_per_second <= 0.3
+			_check("%s on %s stays supported at 50m/s entry" % [end, Surfaces.KEYS[sid]], supported
+				and max_yaw_rate < 0.3 and max_roll < deg_to_rad(5) and max_drift < 0.3 and car.position.z < start_z - 15.0)
 			print("  RELIEF_DRIVE %s %s gap=%d roll=%.3f drift=%.3f travel=%.1f" % [end, Surfaces.KEYS[sid], max_gap, rad_to_deg(max_roll), max_drift, start_z - car.position.z])
+			print("  RELIEF_MOTION pitch_range=%.3f yaw_rate=%.4f all_airborne=%d min_contacts=%d" % [rad_to_deg(max_pitch - min_pitch), max_yaw_rate, max_airborne, min_contacts])
 			car.free()
 		root.free()
 		await get_tree().physics_frame
@@ -267,6 +462,12 @@ func _captures() -> void:
 		for index in scene.course.points.size():
 			if int(scene.course.points[index]["s"]) == surface:
 				views[Surfaces.KEYS[surface] + "-depth"] = index + 8
+				if surface == Surfaces.Id.BOULDER:
+					var finish: int = int(index)
+					while finish + 1 < scene.course.points.size() and int(scene.course.points[finish + 1]["s"]) == surface:
+						finish += 1
+					views["boulder-middle"] = (int(index) + finish) >> 1
+					views["boulder-exit"] = mini(finish, maxi(index + 8, finish - 8))
 				break
 	for label: String in views:
 		var index := int(views[label])
