@@ -149,6 +149,7 @@ func _test_skids() -> void:
 		var strip: Transform3D = fx.skid_transform(seg.slot)
 		planar = planar and absf(strip.basis.y.normalized().dot(tilt)) > 0.999 \
 			and absf(strip.basis.x.normalized().dot(tilt)) < 0.001 \
+			and absf(strip.basis.z.normalized().dot(tilt)) < 0.001 \
 			and strip.origin.is_equal_approx((seg.a + seg.b) * 0.5 + tilt * VehicleEffects.SKID_LIFT)
 	_check("strip transforms lie in the ground plane", planar)
 	_check("strips are ordered oldest to newest", _births_ascend(segments))

@@ -28,7 +28,7 @@ const END_COLORS := {"A": Color("4fd2ff"), "B": Color("ff8a2a")}
 
 static var _quad_mesh: QuadMesh
 static var _plane_mesh: PlaneMesh
-static var _ring_mesh: TorusMesh
+const PULSE_SHADER := preload("res://shaders/pulse_ring.gdshader")
 static var _smoke_material: ShaderMaterial
 static var _spark_material: StandardMaterial3D
 static var _skid_material: StandardMaterial3D
@@ -257,7 +257,7 @@ func _ready() -> void:
 	add_child(_skid_node)
 	_pulse = MeshInstance3D.new()
 	_pulse.name = "SwapPulse"
-	_pulse.mesh = _ring_mesh
+	_pulse.mesh = _quad_mesh
 	_pulse.material_override = _pulse_material()
 	_pulse.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_pulse.visible = false
@@ -271,14 +271,10 @@ static func _build_shared() -> void:
 	_quad_mesh.size = Vector2.ONE
 	_plane_mesh = PlaneMesh.new()
 	_plane_mesh.size = Vector2.ONE
-	_ring_mesh = TorusMesh.new()
-	_ring_mesh.inner_radius = 0.46
-	_ring_mesh.outer_radius = 0.5
-	_ring_mesh.rings = 24
-	_ring_mesh.ring_segments = 4
 	_smoke_material = ShaderMaterial.new()
 	_smoke_material.shader = CLOUD_SHADER
 	_smoke_material.set_shader_parameter("cloud", SMOKE_TEXTURE)
+	_smoke_material.set_shader_parameter("luminance_mask", true)
 	_spark_material = StandardMaterial3D.new()
 	_spark_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_spark_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
@@ -296,13 +292,10 @@ static func _build_shared() -> void:
 	_skid_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 
 
-static func _pulse_material() -> StandardMaterial3D:
-	var material := StandardMaterial3D.new()
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.albedo_color = Color.WHITE
+static func _pulse_material() -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = PULSE_SHADER
+	material.set_shader_parameter("tint", Color.WHITE)
 	return material
 
 
@@ -451,10 +444,11 @@ func _extend_skid(index: int, wheel: Wheel) -> void:
 
 ## CPU-side strip transform: a unit plane laid on the ground normal between the two ends.
 func skid_transform(slot: int) -> Transform3D:
-	var along := _skid_b[slot] - _skid_a[slot]
+	var normal := _skid_n[slot].normalized()
+	var along := (_skid_b[slot] - _skid_a[slot]).slide(normal)
 	var length := along.length()
-	var normal := _skid_n[slot]
-	var dir := (along / length) if length > 0.0001 else Vector3.FORWARD
+	var fallback := normal.cross(Vector3.RIGHT if absf(normal.x) < 0.9 else Vector3.FORWARD).normalized()
+	var dir := (along / length) if length > 0.0001 else fallback
 	var side := dir.cross(normal).normalized()
 	var basis := Basis(side * _skid_width[slot], normal, dir * (length + 0.04))
 	var center := (_skid_a[slot] + _skid_b[slot]) * 0.5 + normal * SKID_LIFT
@@ -532,7 +526,7 @@ func _on_swapped(record: Dictionary) -> void:
 	pulse_age = 0.0
 	swap_pulses += 1
 	_pulse.visible = true
-	(_pulse.material_override as StandardMaterial3D).albedo_color = end_color(pulse_end)
+	(_pulse.material_override as ShaderMaterial).set_shader_parameter("tint", end_color(pulse_end))
 	_update_pulse(0.0)
 
 
@@ -560,11 +554,11 @@ func _update_pulse(dt: float) -> void:
 		return
 	var t := pulse_age / PULSE_TIME
 	var xform := _car.global_transform
-	var ring := Basis(Vector3.RIGHT, PI * 0.5) * Basis.from_scale(Vector3.ONE * lerpf(0.8, 3.2, t))
+	var ring := Basis.from_scale(Vector3.ONE * lerpf(0.8, 3.2, t))
 	_pulse.global_transform = Transform3D(xform.basis * ring, xform * end_offset(pulse_end, _half_base(), 0.4, 0.5))
 	var color := end_color(pulse_end)
 	color.a = (1.0 - t) * 0.9
-	(_pulse.material_override as StandardMaterial3D).albedo_color = color
+	(_pulse.material_override as ShaderMaterial).set_shader_parameter("tint", color)
 
 
 # ------------------------------------------------------------------ inspection (tests, QA)

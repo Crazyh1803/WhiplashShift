@@ -957,6 +957,7 @@ func _resolve_whiplash(dt: float, basis: Basis, lv: Vector3) -> void:
 				"age": 0.0,
 			}
 			_pending = {}
+			# CPU charges are intentionally inert while its speed planner assumes normal drive.
 			if float(last_whiplash["retained"]) >= 0.7:
 				boost_charge = 1
 			whiplash.emit(last_whiplash)

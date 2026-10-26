@@ -1,6 +1,7 @@
 ## Rendered QA for VehicleEffects. Frozen production car, synthetic wheel contact: tyre smoke and
-## skids, boost plume on each end, damage smoke, swap pulse both ways, and the real VisceraResponse
-## spray on mud. Pass `-- --capture` to write PNGs to .ai/captures/vehicle-effects.
+## skids, boost plume on each end, damage smoke, swap pulse both ways, and real viscera spray.
+## Smoke silhouettes and alpha borders are judged by eye in the saved PNGs.
+## Pass `-- --capture` to write PNGs to .ai/captures/vehicle-effects.
 extends Node3D
 
 const DT := 1.0 / 60.0
@@ -30,7 +31,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	_fx = _car.get_node("VehicleEffects")
 	_fx.set_physics_process(false)
-	_car.get_node("VisceraResponse").set_physics_process(false)
+	_car.get_node("VisceraResponse").set_process(false)
 	await _skid_and_smoke()
 	await _boost()
 	await _damage()
@@ -159,7 +160,7 @@ func _swap() -> void:
 
 func _spray() -> void:
 	_reset_car()
-	_car.get_node("VisceraResponse").set_physics_process(false)
+	_car.get_node("VisceraResponse").set_process(false)
 	var response := _car.get_node("VisceraResponse") as VisceraResponse
 	var before := response.emitted_total
 	var smoke_before := _fx.tyre_smoke_emitted
@@ -172,5 +173,5 @@ func _spray() -> void:
 		await get_tree().process_frame
 		if frame == 60:
 			await _shot("viscera-spray")
-	_check("existing viscera spray still emits", response.emitted_total > before)
+	_check("existing viscera spray still emits", response.emitted_total > before and response.active_count > 0)
 	_check("effects add no tyre smoke on soft terrain", _fx.tyre_smoke_emitted == smoke_before)

@@ -4,6 +4,7 @@ uniform sampler2D cloud : source_color, filter_linear_mipmap;
 uniform vec4 tint : source_color = vec4(1.0);
 // Owner-only sight corridor: 0 leaves rival smoke fully dense.
 uniform float protect = 0.0;
+uniform bool luminance_mask = false;
 uniform vec3 eye = vec3(0.0);
 uniform vec3 focus = vec3(0.0);
 uniform float corridor_near = 2.1;
@@ -26,7 +27,9 @@ void fragment() {
 	vec4 col = tint * COLOR;
 	float heat = smoothstep(0.7, 1.0, col.r) * (1.0 - col.b);
 	ALBEDO = mix(col.rgb * (0.6 + tex.r * 0.8), vec3(1.8, 1.3, 0.55), tex.r * heat * 0.6);
-	float a = pow(tex.a, 0.65) * col.a;
+	float mask = tex.a * (luminance_mask ? tex.r : 1.0);
+	if (luminance_mask) mask *= 1.0 - smoothstep(0.25, 0.5, length(UV - vec2(0.5)));
+	float a = pow(mask, 0.65) * col.a;
 	if (protect > 0.0) {
 		// Per-pixel distance to the camera->car line, narrowing toward the car
 		// so the plume still visibly leaves the bumper; plus a near-lens clear.

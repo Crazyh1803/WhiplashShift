@@ -173,7 +173,7 @@ func _process(_delta: float) -> void:
 		_banner.text = ""
 	else:
 		_banner.text = "%s   %d%% MOMENTUM RETAINED" % [wl["kind"], roundi(float(wl["retained"]) * 100.0)]
-	if target.swap_feedback_time > 0.0:
+	if target.swap_feedback_time > 0.0 and _banner.text.is_empty():
 		_banner.text = "END %s ENGAGED" % target.active_end
 		_banner.modulate = Color("4fd2ff") if target.active_end == "A" else Color("ffa63d")
 	else:
