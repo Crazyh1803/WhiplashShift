@@ -127,6 +127,12 @@ func _inspect(body: StaticBody3D, pit: Node3D, points: Array) -> Array:
 		_check(String(body.name) + " " + String(child.name) + " stays in budget", multi.instance_count > 20
 			and multi.instance_count <= 500)
 		var verts: PackedVector3Array = multi.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+		var valid_faces := true
+		for triangle in range(0, verts.size(), 3):
+			valid_faces = valid_faces and (verts[triangle + 1] - verts[triangle]).cross(verts[triangle + 2] - verts[triangle]).length_squared() > 0.00000001
+		_check(String(child.name) + " has no degenerate mesh faces", valid_faces)
+		if String(child.name) == "Pools":
+			_check("blood pool mesh covers its centre", verts.has(Vector3(0, 0.012, 0)))
 		var tops: Array[float] = []
 		var yaws := {}
 		var scales := {}
@@ -200,8 +206,9 @@ func _quad_margin(point: Vector3, points: Array) -> float:
 	var at := Vector2(point.x, point.z)
 	var best := -INF
 	# Neighbouring probes land in the same or adjacent quad, so start from the last hit.
+	var start_quad := _last_quad
 	for n in _quads.size():
-		var slot := (_last_quad + n) % _quads.size()
+		var slot := (start_quad + n) % _quads.size()
 		var quad: Dictionary = _quads[slot]
 		if at.distance_squared_to(quad["centre"]) > 1600.0:
 			continue
