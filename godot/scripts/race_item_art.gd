@@ -440,7 +440,6 @@ func hazard(pos: Vector3, id: String, normal: Vector3, owner_index := -1) -> Nod
 
 func animate_hazard(entry: Dictionary) -> void:
 	var root: Node3D = entry.visual
-	var fade := minf(1, float(entry.life))
 	if entry.id == "smoke":
 		var age := maxf(0.0, clock - float(root.get_meta("born")))
 		for i in root.get_child_count():
@@ -456,7 +455,7 @@ func animate_hazard(entry: Dictionary) -> void:
 			opacity *= minf(1.0, age * 7.0)
 			puff.material_override.set_shader_parameter("tint", Color(0.48, 0.5, 0.53, 0.9 * opacity))
 	else:
-		root.get_child(0).material_override.set_shader_parameter("opacity", fade)
+		root.get_child(0).material_override.set_shader_parameter("opacity", minf(1, float(entry.life)))
 
 
 func conceal_supply(pickup: Dictionary) -> void:

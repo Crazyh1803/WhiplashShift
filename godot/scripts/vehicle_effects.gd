@@ -440,6 +440,9 @@ func _extend_skid(index: int, wheel: Wheel) -> void:
 	_skid_birth[slot] = _time
 	_skid_width[slot] = 0.32 if wheel.end == "A" else 0.48
 	_skid_wheel[slot] = index
+	_skid_node.multimesh.set_instance_transform(slot, skid_transform(slot))
+	_skid_node.multimesh.set_instance_color(slot, Color(1.0, 1.0, 1.0, 0.9))
+	_skid_node.multimesh.visible_instance_count = _skid_high
 	_chain_point[index] = point
 	skid_emitted += 1
 
@@ -468,7 +471,6 @@ func _refresh_skids() -> void:
 			_skid_birth[slot] = -1.0
 			multimesh.set_instance_transform(slot, Transform3D(Basis.from_scale(Vector3.ONE * 0.0001), Vector3(0.0, -1000.0, 0.0)))
 			continue
-		multimesh.set_instance_transform(slot, skid_transform(slot))
 		var fade := 1.0 - smoothstep(0.3, 1.0, age / SKID_LIFETIME)
 		multimesh.set_instance_color(slot, Color(1.0, 1.0, 1.0, 0.9 * fade))
 	multimesh.visible_instance_count = _skid_high
