@@ -4,7 +4,6 @@ extends Node3D
 ## on the proving ground (actual Wheel.cast contacts, no mocked wheel state).
 ## The static helpers at the bottom are shared with vehicle_feedback_visual_qa.gd.
 
-const EFFECTS_SCRIPT := preload("res://scripts/vehicle_effects.gd")
 const DT := 1.0 / 60.0
 const FAR_PARK := Vector3(3000.0, 40.0, 3000.0)
 
@@ -43,6 +42,7 @@ func _car(at := Vector3(0, 1, 0)) -> Vehicle:
 
 func _effects(car: Vehicle) -> VehicleEffects:
 	var fx := car.get_node("VehicleEffects") as VehicleEffects
+	assert(fx != null, "Vehicle must be in the tree with its effects built before testing")
 	fx.set_physics_process(false)
 	return fx
 
