@@ -15,6 +15,8 @@ func _ready() -> void:
 	_test_damage_and_pulse()
 	_test_multiple_and_cleanup()
 	await _test_state_api()
+	await _test_boost_force()
+	await _test_integration()
 	print("VEHICLE_EFFECTS: %d passed, %d failed" % [_pass, _fail])
 	get_tree().quit(1 if _fail else 0)
 
@@ -141,8 +143,15 @@ func _test_skids() -> void:
 	_check("strips carry the ground normal", normals_ok)
 	_check("strips are continuous per wheel with no long hops", continuous and short)
 	var strips: MultiMeshInstance3D = fx.get_node("SkidStrips")
-	var first: Transform3D = strips.multimesh.get_instance_transform(0)
-	_check("strip transforms lie in the ground plane", absf(first.basis.y.normalized().dot(tilt)) > 0.999)
+	# The headless renderer does not store MultiMesh data, so read the CPU geometry the multimesh is fed from.
+	var planar := not segments.is_empty()
+	for seg: Dictionary in segments:
+		var strip: Transform3D = fx.skid_transform(seg.slot)
+		planar = planar and absf(strip.basis.y.normalized().dot(tilt)) > 0.999 \
+			and absf(strip.basis.x.normalized().dot(tilt)) < 0.001 \
+			and strip.origin.is_equal_approx((seg.a + seg.b) * 0.5 + tilt * VehicleEffects.SKID_LIFT)
+	_check("strip transforms lie in the ground plane", planar)
+	_check("strips are ordered oldest to newest", _births_ascend(segments))
 	_check("strips are world-space, not parented to the moving car", fx.top_level and strips.global_transform == Transform3D.IDENTITY)
 	# a teleport must not bridge a streak
 	var count_before := fx.skid_count()
@@ -324,6 +333,8 @@ func _test_state_api() -> void:
 		car.engage = 1.0
 		car.throttle = 1.0
 		car.fwd_speed = 12.0
+		car.brake = 0.0
+		car.handbrake = false
 		_ground(car)
 	arm.call()
 	var earned := [0]
@@ -337,6 +348,8 @@ func _test_state_api() -> void:
 		"disengaged": func() -> void: car.engage = 0.3,
 		"frozen": func() -> void: car.freeze = true,
 		"no throttle": func() -> void: car.throttle = 0.0,
+		"braking": func() -> void: car.brake = 0.5,
+		"handbrake": func() -> void: car.handbrake = true,
 		"rolling backwards": func() -> void: car.fwd_speed = -2.0,
 		"airborne": func() -> void: _airborne(car),
 		"unloaded": func() -> void: _unload(car),
@@ -349,13 +362,26 @@ func _test_state_api() -> void:
 	car.reset_effects_state()
 	_check("reset clears boost and damage state", car.boost_charge == 0 and car.boost_time == 0.0 and car.boost_cooldown == 0.0 and car.damage == 0.0)
 	# whiplash earns a charge only when most speed is retained
-	car.whiplash.emit({"kind": "PURE REVERSAL", "retained": 0.4, "time": 0.4, "spun": 0.1, "age": 0.0})
+	var resolve := func(now_speed: float) -> void:
+		car.speed = now_speed
+		car._pending = {"t": 0.2, "entry_speed": 20.0, "entry_basis": Basis.IDENTITY}
+		car._resolve_whiplash(DT, Basis.IDENTITY, Vector3(0, 0, -now_speed))
+	resolve.call(10.0)
 	var poor: int = car.boost_charge
-	car.whiplash.emit({"kind": "PURE REVERSAL", "retained": 0.85, "time": 0.4, "spun": 0.1, "age": 0.0})
-	_check("clean whiplash earns exactly one charge", poor == 0 and car.boost_charge == 1)
+	_check("poorly retained whiplash resolves without a charge", poor == 0 and float(car.last_whiplash["retained"]) < 0.7)
+	resolve.call(13.9)
+	var marginal: int = car.boost_charge
+	resolve.call(15.0)
+	_check("clean whiplash earns exactly one charge", marginal == 0 and car.boost_charge == 1 and float(car.last_whiplash["retained"]) >= 0.7)
 	arm.call()
 	car.boost_charge = 1
 	_check("charged boost fires", car.try_boost() and car.boost_time > 0.0)
+	car.brake = 0.5
+	car._tick_timers(DT)
+	_check("braking cancels the active boost", car.boost_time == 0.0)
+	arm.call()
+	car.boost_charge = 1
+	car.try_boost()
 	car.swap_ends("test")
 	_check("swap cancels the active boost", car.boost_time == 0.0)
 	var severity := [-1.0]
@@ -372,6 +398,129 @@ func _test_state_api() -> void:
 	car.reset_effects_state()
 	_check("damage reset", car.damage == 0.0)
 	car.free()
+
+
+func _births_ascend(segments: Array[Dictionary]) -> bool:
+	for index in range(1, segments.size()):
+		if segments[index].birth < segments[index - 1].birth:
+			return false
+	return not segments.is_empty()
+
+
+## Two identical grounded cars at the same speed; only one is boosted.
+func _test_boost_force() -> void:
+	var road := StaticBody3D.new()
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(400, 2, 400)
+	shape.shape = box
+	road.add_child(shape)
+	add_child(road)
+	road.position = Vector3(3000, -1, 0)
+	var cars: Array[Vehicle] = []
+	for index in 2:
+		var car := Vehicle.new()
+		add_child(car)
+		car.global_position = Vector3(3000 + index * 30, 0.7, 0)
+		car.throttle = 1.0
+		cars.append(car)
+	cars[1].boost_charge = 1
+	for frame in 30:
+		await get_tree().physics_frame
+	for car in cars:
+		car.linear_velocity = Vector3(0, 0, -10)
+	for frame in 3:
+		await get_tree().physics_frame
+	var grounded := true
+	for car in cars:
+		for wheel: Wheel in car.wheels:
+			grounded = grounded and wheel.contact
+	_check("boost comparison cars are grounded and moving", grounded and cars[0].speed > 5.0 and cars[1].speed > 5.0)
+	cars[1].boost_time = 0.0
+	cars[1].try_boost()
+	for frame in 2:
+		await get_tree().physics_frame
+	var base_drive: float = cars[0].dbg["drive_per_wheel"]
+	var boost_drive: float = cars[1].dbg["drive_per_wheel"]
+	_check("boost scales drive force by exactly 1 + BOOST_DRIVE",
+		absf(base_drive) > 100.0 and absf(boost_drive / base_drive - (1.0 + Vehicle.BOOST_DRIVE)) < 0.03)
+	var start_speed: float = cars[1].speed
+	var base_start: float = cars[0].speed
+	for frame in 20:
+		await get_tree().physics_frame
+	_check("boosted car out-accelerates the baseline", cars[1].speed - start_speed > cars[0].speed - base_start)
+	for car in cars:
+		car.free()
+	road.free()
+
+
+## Real proving-ground paths that must reset effects and route hits through the cosmetic API.
+func _test_integration() -> void:
+	var scene: Node3D = load("res://scenes/proving_ground.tscn").instantiate()
+	add_child(scene)
+	await get_tree().physics_frame
+	scene.set_physics_process(false)
+	for driver: CpuDriver in scene.cpu_drivers:
+		driver.set_physics_process(false)
+	var items: RaceItems = scene.items
+	items.reset()
+	scene.race.state = RaceDirector.State.RACING
+	var victim: Vehicle = items.cars[1]
+	var fx_victim := victim.get_node("VehicleEffects") as VehicleEffects
+	fx_victim.set_physics_process(false)
+	victim.linear_velocity = Vector3(0, 0, -20)
+	items.grant_item(1, "shield")
+	items.fire(1)
+	items._apply_hit(1, 0, "rockets")
+	_check("shielded hit causes no damage, effect or protection",
+		victim.damage == 0.0 and fx_victim.damage_events == 0 and items.protection[1] == 0.0)
+	items._tick_active(1, 10.0)
+	items._apply_hit(1, 0, "rockets")
+	var first_damage := victim.damage
+	_check("accepted hit applies cosmetic damage and triggers damage smoke",
+		first_damage >= 0.15 and fx_victim.damage_events == 1 and fx_victim.particle_counts().damage > 0 and items.protection[1] > 0.0)
+	items._apply_hit(1, 0, "rockets")
+	_check("hit protection is immune to further damage", victim.damage == first_damage and fx_victim.damage_events == 1)
+	# player respawn / recovery
+	var car: Vehicle = scene.car
+	var fx := car.get_node("VehicleEffects") as VehicleEffects
+	fx.set_physics_process(false)
+	_prime(car, fx)
+	car.throttle = 1.0
+	car.brake = 0.4
+	car.handbrake = true
+	var destination := Transform3D(Basis(Vector3.UP, 0.4), Vector3(-620.0, 1.4, 80.0))
+	scene._place_player(destination, "A")
+	_check("_place_player clears boost, damage and effects", _is_clean(car, fx))
+	_check("_place_player clears held controls", car.throttle == 0.0 and car.brake == 0.0 and not car.handbrake)
+	# CPU recovery
+	var driver: CpuDriver = scene.cpu_drivers[0]
+	var cpu: Vehicle = driver.target
+	var fx_cpu := cpu.get_node("VehicleEffects") as VehicleEffects
+	fx_cpu.set_physics_process(false)
+	_prime(cpu, fx_cpu)
+	var before := driver.recoveries
+	driver._recover()
+	_check("CPU _recover counts and clears boost, damage and effects", driver.recoveries == before + 1 and _is_clean(cpu, fx_cpu))
+	scene.queue_free()
+	await get_tree().process_frame
+
+
+func _prime(car: Vehicle, fx: VehicleEffects) -> void:
+	car.boost_charge = 1
+	car.boost_time = 0.5
+	car.boost_cooldown = 1.0
+	car.apply_cosmetic_damage(0.6)
+	fx._on_boosted({})
+	fx._on_swapped({"end": "B"})
+	_check("%s effects primed before reset" % car.name,
+		fx.particle_counts().plume > 0 and fx.particle_counts().damage > 0 and fx.pulse_visible())
+
+
+func _is_clean(car: Vehicle, fx: VehicleEffects) -> bool:
+	var counts := fx.particle_counts()
+	return car.boost_charge == 0 and car.boost_time == 0.0 and car.boost_cooldown == 0.0 and car.damage == 0.0 \
+		and counts.plume == 0 and counts.damage == 0 and counts.tyre == 0 and counts.skid == 0 and not fx.pulse_visible()
 
 
 func _airborne(car: Vehicle) -> void:
