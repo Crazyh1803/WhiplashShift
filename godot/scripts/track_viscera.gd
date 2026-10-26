@@ -35,9 +35,12 @@ static func mesh_for(kind: String) -> ArrayMesh:
 
 ## Adds a "VisceraPit" node under `parent` (the road mesh, which already carries the
 ## shared 0.02 m ribbon lift). Positions are sampled inside the ribbon described by `run`.
-static func attach(parent: Node3D, run: Array, sid: int, index: int, run_length: float) -> Node3D:
+## `prof` is the run's normalized TrackRelief profile, so ornaments sit on the same height field as the road.
+static func attach(parent: Node3D, run: Array, sid: int, index: int, run_length: float, prof: Dictionary = {}) -> Node3D:
 	if not enabled(sid) or run.size() < 2 or run_length < END_MARGIN * 4.0:
 		return null
+	if prof.is_empty():
+		prof = TrackRelief.profile(sid)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 90210 + index * 7919
 	var cumulative := PackedFloat32Array([0.0])
@@ -52,7 +55,7 @@ static func attach(parent: Node3D, run: Array, sid: int, index: int, run_length:
 		var transforms: Array[Transform3D] = []
 		var colors: Array[Color] = []
 		for _n in int(counts[kind]):
-			_sample(rng, run, cumulative, run_length, sid, index, kind, transforms, colors)
+			_sample(rng, run, cumulative, run_length, sid, index, kind, transforms, colors, prof)
 		_add_batch(root, kind, transforms, colors)
 	parent.add_child(root)
 	return root
@@ -60,7 +63,7 @@ static func attach(parent: Node3D, run: Array, sid: int, index: int, run_length:
 
 static func _sample(rng: RandomNumberGenerator, run: Array, cumulative: PackedFloat32Array,
 		run_length: float, sid: int, index: int, kind: String,
-		transforms: Array[Transform3D], colors: Array[Color]) -> void:
+		transforms: Array[Transform3D], colors: Array[Color], prof: Dictionary) -> void:
 	# Always consume the same random draws so results never depend on rejection.
 	var s := rng.randf_range(END_MARGIN, run_length - END_MARGIN)
 	var cx_roll := rng.randf()
@@ -88,7 +91,7 @@ static func _sample(rng: RandomNumberGenerator, run: Array, cumulative: PackedFl
 	var bl: Vector3 = b["pos"] + bn
 	var br: Vector3 = b["pos"] - bn
 	var p := al.lerp(ar, cx).lerp(bl.lerp(br, cx), t)
-	p.y += TrackRelief.height(sid, s, (cx - 0.5) * width, width, run_length, index)
+	p.y += TrackRelief.sample(prof, s, (cx - 0.5) * width, width, run_length, index)
 	# Smaller toward both run ends and the ribbon edges, so nothing ends in a seam.
 	var fade := smoothstep(END_MARGIN, TrackRelief.END_FADE + END_MARGIN, minf(s, run_length - s)) \
 		* smoothstep(0.0, TrackRelief.EDGE_FADE, half - absf(across))
@@ -99,7 +102,7 @@ static func _sample(rng: RandomNumberGenerator, run: Array, cumulative: PackedFl
 	var color := Color.WHITE
 	if kind == "Pools":
 		var wide := 0.9 + size_roll * 0.9
-		basis = _surface_tilt(sid, s, across, width, run_length, index, a, b) * basis \
+		basis = _surface_tilt(prof, s, across, width, run_length, index, a, b) * basis \
 			* Basis.from_scale(Vector3(wide * scale, 1.0, wide * scale * (0.55 + stretch * 0.5)))
 		p.y += 0.014
 		color = Color(0.5 + tone * 0.5, 0.45 + tone * 0.4, 0.45 + tone * 0.4)
@@ -119,7 +122,7 @@ static func _sample(rng: RandomNumberGenerator, run: Array, cumulative: PackedFl
 
 ## Rotation taking world up onto the relief plane under a pool, from centred height gradients,
 ## so the lens rests flat on sloped mud instead of burying its uphill rim.
-static func _surface_tilt(sid: int, s: float, across: float, width: float, run_length: float,
+static func _surface_tilt(prof: Dictionary, s: float, across: float, width: float, run_length: float,
 		index: int, a: Dictionary, b: Dictionary) -> Basis:
 	var along: Vector3 = b["pos"] - a["pos"]
 	along.y = 0.0
@@ -127,10 +130,10 @@ static func _surface_tilt(sid: int, s: float, across: float, width: float, run_l
 		return Basis.IDENTITY
 	along = along.normalized()
 	var across_axis := Vector3(along.z, 0.0, -along.x)
-	var grade_s := (TrackRelief.height(sid, s + 1.0, across, width, run_length, index)
-		- TrackRelief.height(sid, s - 1.0, across, width, run_length, index)) * 0.5
-	var grade_c := (TrackRelief.height(sid, s, across + 1.0, width, run_length, index)
-		- TrackRelief.height(sid, s, across - 1.0, width, run_length, index)) * 0.5
+	var grade_s := (TrackRelief.sample(prof, s + 1.0, across, width, run_length, index)
+		- TrackRelief.sample(prof, s - 1.0, across, width, run_length, index)) * 0.5
+	var grade_c := (TrackRelief.sample(prof, s, across + 1.0, width, run_length, index)
+		- TrackRelief.sample(prof, s, across - 1.0, width, run_length, index)) * 0.5
 	var normal := (across_axis + Vector3.UP * grade_c).cross(along + Vector3.UP * grade_s)
 	if normal.y < 0.0:
 		normal = -normal
