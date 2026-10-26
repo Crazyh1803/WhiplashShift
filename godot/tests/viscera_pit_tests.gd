@@ -229,6 +229,7 @@ func _quad_margin(point: Vector3, points: Array) -> float:
 func _pool_gaps(body: StaticBody3D, xf: Transform3D, verts: PackedVector3Array) -> Array:
 	var lowest := INF
 	var centre := INF
+	var coverage := true
 	var probes: Array[Vector3] = [Vector3.ZERO]
 	for v in range(0, verts.size(), 7):
 		probes.append(verts[v])
@@ -239,13 +240,15 @@ func _pool_gaps(body: StaticBody3D, xf: Transform3D, verts: PackedVector3Array) 
 		var hit := _space.intersect_ray(query)
 		# The twin build overlaps this one exactly, so match by run name rather than identity.
 		if hit.is_empty() or (hit["collider"] as Node).name != body.name:
+			coverage = false
 			continue
 		var gap: float = w.y - float(hit["position"].y)
 		if local == Vector3.ZERO:
 			# The lens crown rises 0.012 m above the instance origin.
 			centre = minf(centre, gap + 0.012)
 		lowest = minf(lowest, gap)
-	return [minf(lowest, 0.0) if lowest < INF else 0.0, centre if centre < INF else 1.0]
+	_check("pool centre and rim probes hit their mud collider", coverage and lowest < INF and centre < INF)
+	return [minf(lowest, 0.0), centre if centre < INF else -INF]
 
 
 func _check(label: String, ok: bool) -> void:
