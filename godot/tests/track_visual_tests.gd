@@ -466,8 +466,8 @@ func _captures() -> void:
 					var finish: int = int(index)
 					while finish + 1 < scene.course.points.size() and int(scene.course.points[finish + 1]["s"]) == surface:
 						finish += 1
-					views["boulder-middle"] = (index + finish) / 2
-					views["boulder-exit"] = maxi(index + 8, finish - 8)
+					views["boulder-middle"] = (int(index) + finish) >> 1
+					views["boulder-exit"] = mini(finish, maxi(index + 8, finish - 8))
 				break
 	for label: String in views:
 		var index := int(views[label])
