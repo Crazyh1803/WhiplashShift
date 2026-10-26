@@ -62,7 +62,7 @@ void fragment() {
 	float macro_h = 0.5;
 	float gran = 0.3;
 	float pit_amt = 0.3;
-	float wet = 0.1;
+	float wet = 0.0;
 	float shade_k = 0.8;
 	float relief_gain = 0.0;
 	float fine = texture(surface_noise, p * 3.1).r;
@@ -82,7 +82,10 @@ void fragment() {
 		macro_h = mix(0.05, 0.55, smoothstep(0.03, 0.24, joint)) + lip_band * 0.22 + (mid - 0.5) * 0.2 - wear * 0.08;
 		gran = 0.5;
 		pit_amt = 0.45;
-		wet = 0.2;
+		wet = 0.0;
+		// Relief in metres: ~0.03m bevel into the joint, small chamfer lip, faint crown wear.
+		relief = (smoothstep(0.03, 0.24, joint) - 1.0) * 0.03 + lip_band * 0.006 - wear * 0.002;
+		relief_gain = 0.003;
 		if (road_markings) {
 			float curb = 1.0 - smoothstep(0.65, 0.78, edge);
 			float stripe = step(0.5, fract((UV.y + across) / 2.0));
@@ -92,6 +95,9 @@ void fragment() {
 			color = mix(color, vec3(0.02, 0.04, 0.05), slot);
 			emission = vec3(0.0, 0.941, 1.0) * slot * 0.65;
 			macro_h = mix(macro_h, 0.5, curb * 0.7);
+			// Worn paint: ~8mm raised curb with grain-scale chipping, small but nonzero.
+			relief = mix(relief, 0.008 + (grain - 0.5) * 0.004 + (mid - 0.5) * 0.004, curb);
+			relief_gain = mix(relief_gain, 0.004, curb);
 			gran *= 1.0 - curb * 0.5;
 		}
 		rough = 0.4 + grain * 0.1;
@@ -101,6 +107,7 @@ void fragment() {
 		color = mix(vec3(0.12, 0.13, 0.15), vec3(0.70, 0.68, 0.62), stripe);
 		color *= 0.84 + grain * 0.16;
 		rough = 0.48;
+		relief = 0.006 + (grain - 0.5) * 0.004;
 		gran = 0.2;
 		shade_k = 0.5;
 	} else if (surface_id == 2) {
@@ -135,6 +142,9 @@ void fragment() {
 		spec = 0.7;
 		flesh = 0.65;
 		macro_h = 0.5 + tendon * 0.14 - vessel * 0.3 + scar * 0.1;
+		// Modest ridges: ~1cm ropes, ~1cm vessel grooves, slight scar lift.
+		relief = tendon * 0.01 - vessel * 0.008 + scar * 0.004;
+		relief_gain = 0.003;
 		gran = 0.2;
 		pit_amt = 0.15;
 		wet = 0.7;
@@ -216,7 +226,7 @@ void fragment() {
 		macro_h = 0.2 + 0.4 * smoothstep(0.02, 0.25, debris.y) + chip * 0.4 + (mid - 0.5) * 0.3;
 		gran = 0.8;
 		pit_amt = 0.5;
-		wet = 0.15;
+		wet = 0.0;
 		shade_k = 1.0;
 		relief_gain = 0.01;
 	}
@@ -255,10 +265,12 @@ void fragment() {
 	EMISSION = emission;
 }
 
-// Quantize diffuse response while retaining local light falloff and wet specular.
+// Mostly smooth diffuse so relief normals read under moving lights, plus restrained soft broad bands.
 void light() {
 	float ndl = max(dot(NORMAL, LIGHT), 0.0);
-	float band = floor(ndl * 3.0 + 0.5) / 3.0;
+	float q = ndl * 3.0;
+	float stepped = (floor(q) + smoothstep(0.3, 0.7, fract(q))) / 3.0;
+	float band = mix(ndl, stepped, 0.2);
 	DIFFUSE_LIGHT += ALBEDO * LIGHT_COLOR * ATTENUATION * band / PI;
 	vec3 halfway = normalize(LIGHT + VIEW);
 	float shine = pow(max(dot(NORMAL, halfway), 0.0), mix(96.0, 8.0, ROUGHNESS));
