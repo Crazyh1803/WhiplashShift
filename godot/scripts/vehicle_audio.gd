@@ -18,7 +18,10 @@ signal contact_cue(kind: String, intensity: float)
 var target: Vehicle
 var _car_player: AudioStreamPlayer
 var _car_cooldown := 0.0
-var _pre_velocity := Vector3.ZERO
+## Sibling Vehicle velocities captured together at the start of each physics tick,
+## before the solver reflects them. Keyed by instance id.
+var _pre_velocities := {}
+var _pre_frame := -1000
 
 var _engine_player: AudioStreamPlayer
 var _engine_playback: AudioStreamGeneratorPlayback
@@ -122,8 +125,46 @@ func _on_swapped(_record: Dictionary) -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if target != null:
-		_pre_velocity = target.linear_velocity
+	snapshot_velocities()
+
+
+## Records every Vehicle sharing the target's parent in one pass, so both sides of
+## a later collision come from the same pre-solver tick.
+func snapshot_velocities() -> void:
+	if target == null:
+		return
+	_pre_velocities.clear()
+	_pre_frame = Engine.get_physics_frames()
+	_pre_velocities[target.get_instance_id()] = _velocity_of(target)
+	var parent := target.get_parent()
+	if parent == null:
+		return
+	for sibling in parent.get_children():
+		if sibling is Vehicle:
+			_pre_velocities[sibling.get_instance_id()] = _velocity_of(sibling)
+
+
+## Frozen (parked, teleported or scripted) bodies count as still.
+static func _velocity_of(body: Node) -> Vector3:
+	if body is RigidBody3D and not (body as RigidBody3D).freeze:
+		return (body as RigidBody3D).linear_velocity
+	return Vector3.ZERO
+
+
+## Relative speed of the pair. Both velocities come from the same recent snapshot;
+## if either is missing or stale, both fall back to the live (post-solver) values
+## rather than mixing timing.
+func relative_speed_to(body: Node) -> float:
+	var use_snapshot := Engine.get_physics_frames() - _pre_frame <= 1 \
+			and _pre_velocities.has(target.get_instance_id())
+	var other_id := body.get_instance_id()
+	if body is Vehicle:
+		use_snapshot = use_snapshot and _pre_velocities.has(other_id)
+	var own: Vector3 = _pre_velocities[target.get_instance_id()] if use_snapshot else _velocity_of(target)
+	var other: Vector3 = _velocity_of(body)
+	if use_snapshot and body is Vehicle:
+		other = _pre_velocities[other_id]
+	return (own - other).length()
 
 
 ## Counts cooldowns down. _process calls it; tests may drive it by hand.
@@ -165,15 +206,9 @@ func _on_body_entered(body: Node) -> void:
 	var kind := contact_kind(body)
 	if kind.is_empty():
 		return
-	# The solver has usually reflected the velocity by the time this fires, so
-	# judge the hit by the faster of the pre-step and current motion.
-	var own := target.linear_velocity
-	if _pre_velocity.length() > own.length():
-		own = _pre_velocity
-	var other := Vector3.ZERO
-	if body is RigidBody3D:
-		other = (body as RigidBody3D).linear_velocity
-	var intensity := accept_contact(kind, (own - other).length())
+	# The solver has already reflected live velocities by the time this fires, so
+	# judge the hit from the pre-solver snapshot.
+	var intensity := accept_contact(kind, relative_speed_to(body))
 	if intensity < 0.0:
 		return
 	contact_cue.emit(kind, intensity)
@@ -205,15 +240,15 @@ func _make_swap_sound() -> AudioStreamWAV:
 ## Gritty industrial impacts: broadband crunch, low body thump, short scrape.
 ## Recorded heavy contact is lowpassed and layered underneath so nothing rings.
 static func make_rail_sound() -> AudioStreamWAV:
-	return _make_impact(0.30, 0xBA221E2, 52.0, 24.0, 0.45, 0.6, 15.0)
+	return _make_impact(0.30, 0xBA221E2, 52.0, 24.0, 0.45, 0.6, 15.0, 0.75)
 
 
 static func make_car_sound() -> AudioStreamWAV:
-	return _make_impact(0.40, 0xCA2B0D7, 40.0, 17.0, 0.7, 0.9, 11.0)
+	return _make_impact(0.40, 0xCA2B0D7, 40.0, 17.0, 0.7, 0.65, 11.0)
 
 
 static func _make_impact(duration: float, seed_value: int, thump_hz: float, thump_decay: float,
-		scrape_gain: float, crunch_gain: float, tail_decay: float) -> AudioStreamWAV:
+		scrape_gain: float, crunch_gain: float, tail_decay: float, thump_gain := 0.85) -> AudioStreamWAV:
 	var count := int(MIX_RATE * duration)
 	var samples := PackedFloat32Array()
 	samples.resize(count)
@@ -225,7 +260,6 @@ static func _make_impact(duration: float, seed_value: int, thump_hz: float, thum
 	var phase := 0.0
 	var gate := 0.0
 	var gate_target := 0.0
-	var heavy_rate := float(CONTACT_HEAVY.mix_rate)
 	for i in count:
 		var t := float(i) / MIX_RATE
 		var n := rng.randf_range(-1.0, 1.0)
@@ -237,12 +271,9 @@ static func _make_impact(duration: float, seed_value: int, thump_hz: float, thum
 		gate = lerpf(gate, gate_target, 0.02)
 		var crack := (n - slow) * exp(-t * 140.0) * 0.8
 		phase += TAU * (thump_hz + 60.0 * exp(-t * 40.0)) / MIX_RATE
-		var thump := sin(phase) * exp(-t * thump_decay) * 0.85
+		var thump := sin(phase) * exp(-t * thump_decay) * thump_gain
 		var scrape := (mid - slow) * gate * exp(-t * 7.0) * 2.0 * scrape_gain
-		var offset := int(t * 1.8 * heavy_rate) * 2
-		var recorded := 0.0
-		if offset + 1 < CONTACT_HEAVY.data.size():
-			recorded = float(CONTACT_HEAVY.data.decode_s16(offset)) / 32768.0
+		var recorded := ItemAudio.contact_sample(CONTACT_HEAVY, t * 1.8)
 		body = lerpf(body, recorded, 0.35)
 		var crunch := body * exp(-t * tail_decay) * crunch_gain
 		var debris := maxf(0.0, n - 0.5) * rng.randf_range(-1.0, 1.0) * exp(-t * 18.0) * 0.9

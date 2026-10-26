@@ -195,11 +195,21 @@ static func make_sound(id: String) -> AudioStreamWAV:
 	return wav
 
 
+## Reads one recorded sample as PCM. Imported WAVs can be QOA/ADPCM compressed,
+## whose bytes are not PCM, so anything but 16-bit PCM yields silence instead.
 static func _contact(wav: AudioStreamWAV, time: float) -> float:
-	var offset := int(time * wav.mix_rate) * 2
+	if wav == null or wav.format != AudioStreamWAV.FORMAT_16_BITS:
+		return 0.0
+	var step := 4 if wav.stereo else 2
+	var offset := int(time * wav.mix_rate) * step
 	if offset + 1 >= wav.data.size():
 		return 0.0
 	return float(wav.data.decode_s16(offset)) / 32768.0
+
+
+## Public wrapper so other audio generators share the same PCM-safe read.
+static func contact_sample(wav: AudioStreamWAV, time: float) -> float:
+	return _contact(wav, time)
 
 
 ## Industrial pickup: electromechanical latch thud, then a short dirty descending
