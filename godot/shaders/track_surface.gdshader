@@ -40,6 +40,9 @@ vec3 shards(vec2 position) {
 }
 
 void fragment() {
+	// Flat ribbons can be back-facing; road lighting must use the authored upper side.
+	vec3 road_up = (VIEW_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz;
+	NORMAL *= dot(NORMAL, road_up) < 0.0 ? -1.0 : 1.0;
 	vec2 p = world_position.xz;
 	float broad = texture(surface_noise, p * 0.006).r;
 	float mid = texture(surface_noise, p * 0.065).r;
