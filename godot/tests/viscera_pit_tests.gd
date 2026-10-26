@@ -3,12 +3,21 @@ extends Node3D
 
 var _pass := 0
 var _fail := 0
+var _space: PhysicsDirectSpaceState3D
+var _rendered := false
+var _quads: Array = []
+var _last_quad := 0
 
 
 func _ready() -> void:
 	var course := TrackData.build_course()
 	var first := _build(course)
 	var second := _build(course)
+	# Static colliders enter the physics space on the first step; pool ray checks need them.
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	_space = get_viewport().world_3d.direct_space_state
+	_rendered = DisplayServer.get_name() != "headless"
 	var mud := 0
 	var instances := 0
 	var triangles := 0
@@ -63,13 +72,40 @@ func _collision_free(node: Node) -> bool:
 	return true
 
 
+## The headless renderer returns identity transforms and an empty buffer, so hash the CPU copy.
 func _digest(pit: Node) -> String:
+	var floats := PackedFloat32Array()
+	for child in pit.get_children():
+		for xf: Transform3D in _cpu_transforms(child):
+			floats.append_array([xf.basis.x.x, xf.basis.x.y, xf.basis.x.z, xf.basis.y.x, xf.basis.y.y,
+				xf.basis.y.z, xf.basis.z.x, xf.basis.z.y, xf.basis.z.z, xf.origin.x, xf.origin.y, xf.origin.z])
+		for color: Color in _cpu_colors(child):
+			floats.append_array([color.r, color.g, color.b, color.a])
 	var context := HashingContext.new()
 	context.start(HashingContext.HASH_SHA256)
-	for child in pit.get_children():
-		var multi: MultiMesh = child.multimesh
-		context.update(multi.buffer.to_byte_array())
+	context.update(floats.to_byte_array())
 	return context.finish().hex_encode()
+
+
+func _cpu_transforms(batch: Node) -> Array:
+	return batch.get_meta("cpu_transforms", [])
+
+
+func _cpu_colors(batch: Node) -> Array:
+	return batch.get_meta("cpu_colors", [])
+
+
+## With a real renderer the MultiMesh data must match the CPU copy it was built from.
+func _check_gpu_readback(label: String, batch: MultiMeshInstance3D) -> void:
+	var multi := batch.multimesh
+	var transforms := _cpu_transforms(batch)
+	var colors := _cpu_colors(batch)
+	var same := transforms.size() == multi.instance_count and colors.size() == multi.instance_count
+	for i in mini(multi.instance_count, transforms.size()):
+		var xf: Transform3D = transforms[i]
+		same = same and multi.get_instance_transform(i).is_equal_approx(xf) \
+			and multi.get_instance_color(i).is_equal_approx(colors[i])
+	_check(label + " GPU readback matches CPU transforms and colours", same)
 
 
 ## Returns [instance count, triangle count] after validating shape, bounds and variety.
@@ -81,6 +117,11 @@ func _inspect(body: StaticBody3D, pit: Node3D, points: Array) -> Array:
 		names[String(child.name)] = true
 		var multi := child.multimesh
 		var mesh_tris := TrackViscera.triangles(String(child.name))
+		var transforms := _cpu_transforms(child)
+		_check(String(body.name) + " " + String(child.name) + " keeps CPU transforms and colours",
+			transforms.size() == multi.instance_count and _cpu_colors(child).size() == multi.instance_count)
+		if _rendered:
+			_check_gpu_readback(String(body.name) + " " + String(child.name), child)
 		count += multi.instance_count
 		tris += multi.instance_count * mesh_tris
 		_check(String(body.name) + " " + String(child.name) + " stays in budget", multi.instance_count > 20
@@ -92,8 +133,10 @@ func _inspect(body: StaticBody3D, pit: Node3D, points: Array) -> Array:
 		var inside := true
 		var low := true
 		var tall := 0.0
-		for i in multi.instance_count:
-			var xf := multi.get_instance_transform(i)
+		var buried := 0.0
+		var centre_gap := INF
+		for i in mini(multi.instance_count, transforms.size()):
+			var xf: Transform3D = transforms[i]
 			yaws[snappedf(xf.basis.orthonormalized().get_euler().y, 0.05)] = true
 			scales[snappedf(xf.basis.get_scale().x, 0.05)] = true
 			var top := -INF
@@ -103,7 +146,12 @@ func _inspect(body: StaticBody3D, pit: Node3D, points: Array) -> Array:
 				top = maxf(top, w.y)
 				bottom = minf(bottom, w.y)
 				if i % 6 == 0:
-					inside = inside and _lateral_margin(w + Vector3(0, 0.02, 0), points) > 0.0
+					inside = inside and _quad_margin(w, points) > 0.0
+			if String(child.name) == "Pools" and i % 3 == 0:
+				# Compare against the real collision mesh, which is the rendered road surface.
+				var gaps := _pool_gaps(body, xf, verts)
+				buried = minf(buried, gaps[0])
+				centre_gap = minf(centre_gap, gaps[1])
 			tops.append(top)
 			low = low and top <= TrackRelief.MAX_HEIGHTS[Surfaces.Id.MUD] + MAX_TISSUE and bottom >= -0.04
 			tall = maxf(tall, top)
@@ -114,6 +162,8 @@ func _inspect(body: StaticBody3D, pit: Node3D, points: Array) -> Array:
 			_check(String(body.name) + " " + String(child.name) + " really protrudes", tall >= 0.1 and _spread(tops) > 0.01)
 		else:
 			_check(String(body.name) + " pools are thin blood beds", tall > 0.005 and tall < 0.08)
+			_check(String(body.name) + " pools clear the road at their centres (%.3f)" % centre_gap, centre_gap > 0.012)
+			_check(String(body.name) + " pool rims are not buried in sloped relief (%.3f)" % buried, buried > -0.045)
 	_check(String(body.name) + " has all three batches", names.size() == 3)
 	return [count, tris]
 
@@ -130,24 +180,65 @@ func _spread(values: Array[float]) -> float:
 	return hi - lo
 
 
-## Positive when the XZ point lies within the ribbon of some centreline segment.
-func _lateral_margin(point: Vector3, points: Array) -> float:
+## Largest inward XZ distance from `point` to the edges of any rendered ribbon quad
+## (the exact left/right/end edges TrackBuilder extrudes); positive means inside one.
+## Projecting onto centreline segments misjudges the wedge-shaped gaps on curves.
+func _quad_margin(point: Vector3, points: Array) -> float:
+	if _quads.is_empty():
+		for i in points.size():
+			var a: Dictionary = points[i]
+			var b: Dictionary = points[(i + 1) % points.size()]
+			var an: Vector3 = Vector3(-a["dir"].z, 0.0, a["dir"].x) * (float(a["w"]) * 0.5)
+			var bn: Vector3 = Vector3(-b["dir"].z, 0.0, b["dir"].x) * (float(b["w"]) * 0.5)
+			var corners: Array[Vector2] = []
+			for p: Vector3 in [a["pos"] + an, b["pos"] + bn, b["pos"] - bn, a["pos"] - an]:
+				corners.append(Vector2(p.x, p.z))
+			var area := 0.0
+			for k in 4:
+				area += corners[k].cross(corners[(k + 1) % 4])
+			_quads.append({"corners": corners, "sign": 1.0 if area >= 0.0 else -1.0, "centre": corners[0].lerp(corners[2], 0.5)})
+	var at := Vector2(point.x, point.z)
 	var best := -INF
-	for i in points.size():
-		var a: Dictionary = points[i]
-		var b: Dictionary = points[(i + 1) % points.size()]
-		if absf(point.x - a["pos"].x) > 40.0 or absf(point.z - a["pos"].z) > 40.0:
+	# Neighbouring probes land in the same or adjacent quad, so start from the last hit.
+	for n in _quads.size():
+		var slot := (_last_quad + n) % _quads.size()
+		var quad: Dictionary = _quads[slot]
+		if at.distance_squared_to(quad["centre"]) > 1600.0:
 			continue
-		var seg: Vector3 = b["pos"] - a["pos"]
-		seg.y = 0.0
-		var rel: Vector3 = point - a["pos"]
-		var t := rel.dot(seg) / maxf(seg.length_squared(), 0.0001)
-		if t < 0.0 or t > 1.0:
-			continue
-		var side := Vector3(-seg.z, 0.0, seg.x).normalized()
-		var half := lerpf(float(a["w"]), float(b["w"]), t) * 0.5
-		best = maxf(best, half - absf(rel.dot(side)))
+		var corners: Array[Vector2] = quad["corners"]
+		var margin := INF
+		for k in 4:
+			var edge := corners[(k + 1) % 4] - corners[k]
+			margin = minf(margin, float(quad["sign"]) * edge.cross(at - corners[k]) / maxf(edge.length(), 0.0001))
+		if margin > best:
+			best = margin
+			_last_quad = slot
+		if best > 0.0:
+			break
 	return best
+
+
+## [lowest vertex height above the collision road, centre height above it] for one pool.
+func _pool_gaps(body: StaticBody3D, xf: Transform3D, verts: PackedVector3Array) -> Array:
+	var lowest := INF
+	var centre := INF
+	var probes: Array[Vector3] = [Vector3.ZERO]
+	for v in range(0, verts.size(), 7):
+		probes.append(verts[v])
+	for local: Vector3 in probes:
+		# Pit sits under the road mesh, which is lifted 0.02 m like its collider.
+		var w := xf * local + Vector3(0.0, 0.02, 0.0)
+		var query := PhysicsRayQueryParameters3D.create(w + Vector3(0, 4, 0), w - Vector3(0, 4, 0))
+		var hit := _space.intersect_ray(query)
+		# The twin build overlaps this one exactly, so match by run name rather than identity.
+		if hit.is_empty() or (hit["collider"] as Node).name != body.name:
+			continue
+		var gap: float = w.y - float(hit["position"].y)
+		if local == Vector3.ZERO:
+			# The lens crown rises 0.012 m above the instance origin.
+			centre = minf(centre, gap + 0.012)
+		lowest = minf(lowest, gap)
+	return [minf(lowest, 0.0) if lowest < INF else 0.0, centre if centre < INF else 1.0]
 
 
 func _check(label: String, ok: bool) -> void:
