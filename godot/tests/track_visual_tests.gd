@@ -463,7 +463,7 @@ func _captures() -> void:
 			if int(scene.course.points[index]["s"]) == surface:
 				views[Surfaces.KEYS[surface] + "-depth"] = index + 8
 				if surface == Surfaces.Id.BOULDER:
-					var finish := index
+					var finish: int = int(index)
 					while finish + 1 < scene.course.points.size() and int(scene.course.points[finish + 1]["s"]) == surface:
 						finish += 1
 					views["boulder-middle"] = (index + finish) / 2
