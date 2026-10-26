@@ -165,12 +165,12 @@ void fragment() {
 		// Vertex height is shared with the collider: crowns and flanks mark real rocks.
 		float rock_height = clamp(UV2.y, 0.0, 1.0);
 		float rock_aa = max(fwidth(rock_height), 0.008);
-		float flank = smoothstep(0.015, 0.08 + rock_aa, rock_height);
+		float flank = smoothstep(0.08 - rock_aa, 0.08 + rock_aa, rock_height);
 		float crown = smoothstep(0.65, 0.92, rock_height);
-		float rim = smoothstep(0.12, 0.25, rock_height) * (1.0 - smoothstep(0.25, 0.42, rock_height));
+		float rim = (1.0 - smoothstep(0.08, 0.16, rock_height)) * flank;
 		vec3 cracks = shards(p * 2.6);
 		float scratch = (1.0 - smoothstep(0.012, 0.012 + max(fwidth(cracks.y), 0.012), cracks.y)) * crown;
-		vec3 stone = mix(vec3(0.38, 0.37, 0.34), vec3(0.63, 0.60, 0.51), crown);
+		vec3 stone = mix(vec3(0.42, 0.40, 0.35), vec3(0.55, 0.52, 0.45), crown);
 		stone *= 0.82 + mid * 0.24 + grain * 0.12;
 		stone = mix(stone, vec3(0.82, 0.79, 0.69), rim * 0.35);
 		stone *= 1.0 - scratch * 0.24;
@@ -181,7 +181,7 @@ void fragment() {
 		macro_h = rock_height;
 		gran = 0.35 * flank;
 		pit_amt = 0.25;
-		shade_k = 0.6;
+		shade_k = 0.2;
 		relief_gain = 0.002 * flank;
 	} else if (surface_id == 5) {
 		// Vitrified coolant: dark glass, trapped pale fractures and cyan capillaries.
