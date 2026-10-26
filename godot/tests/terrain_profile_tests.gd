@@ -667,7 +667,7 @@ func _drive(root: Node3D, speed: float, end: String, track: Dictionary) -> Dicti
 func _captures() -> void:
 	var root := Node3D.new()
 	add_child(root)
-	var ramp_end := _traversal_track(root)
+	var ramp_end := _capture_track(root)
 	var light := DirectionalLight3D.new()
 	light.rotation_degrees = Vector3(-50, 30, 0)
 	root.add_child(light)
