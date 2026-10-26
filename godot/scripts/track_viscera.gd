@@ -99,6 +99,10 @@ static func _sample(rng: RandomNumberGenerator, run: Array, cumulative: PackedFl
 		return
 	var scale := 0.6 + fade * 0.4
 	var basis := Basis(Vector3.UP, yaw)
+	# Explicit relief profiles tilt every ornament onto the surface; default dressing keeps its original look.
+	var tilt := Basis.IDENTITY
+	if kind != "Pools" and String(prof.get("shape", "default")) != "default":
+		tilt = _surface_tilt(prof, s, across, width, run_length, index, a, b)
 	var color := Color.WHITE
 	if kind == "Pools":
 		var wide := 0.9 + size_roll * 0.9
@@ -108,12 +112,12 @@ static func _sample(rng: RandomNumberGenerator, run: Array, cumulative: PackedFl
 		color = Color(0.5 + tone * 0.5, 0.45 + tone * 0.4, 0.45 + tone * 0.4)
 	elif kind == "Coils":
 		var big := 0.7 + size_roll * 0.6
-		basis = basis * Basis.from_scale(Vector3(big * scale, (0.8 + stretch * 0.5) * (0.7 + scale * 0.3), big * scale))
+		basis = tilt * basis * Basis.from_scale(Vector3(big * scale, (0.8 + stretch * 0.5) * (0.7 + scale * 0.3), big * scale))
 		p.y -= 0.01
 		color = Color(0.78 + tone * 0.22, 0.6 + tone * 0.4, 0.55 + tone * 0.35)
 	else:
 		var big := 0.7 + size_roll * 0.9
-		basis = basis * Basis.from_scale(Vector3(big * scale, (0.7 + stretch * 0.7) * (0.7 + scale * 0.3), big * scale * (0.7 + tone * 0.5)))
+		basis = tilt * basis * Basis.from_scale(Vector3(big * scale, (0.7 + stretch * 0.7) * (0.7 + scale * 0.3), big * scale * (0.7 + tone * 0.5)))
 		p.y -= 0.015
 		color = Color(0.45 + tone * 0.55, 0.3 + tone * 0.5, 0.3 + tone * 0.5)
 	transforms.append(Transform3D(basis, p))
