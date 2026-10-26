@@ -5,6 +5,7 @@ uniform vec4 tint : source_color = vec4(1.0);
 // Owner-only sight corridor: 0 leaves rival smoke fully dense.
 uniform float protect = 0.0;
 uniform bool luminance_mask = false;
+uniform float cloud_rotation = 0.0;
 uniform vec3 eye = vec3(0.0);
 uniform vec3 focus = vec3(0.0);
 uniform float corridor_near = 2.1;
@@ -21,7 +22,11 @@ void vertex() {
 	world_pos = (INV_VIEW_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
 void fragment() {
-	vec4 tex = texture(cloud, UV);
+	vec2 centered = UV - vec2(0.5);
+	float c = cos(cloud_rotation);
+	float s = sin(cloud_rotation);
+	vec2 cloud_uv = vec2(c * centered.x - s * centered.y, s * centered.x + c * centered.y) + vec2(0.5);
+	vec4 tex = texture(cloud, cloud_uv);
 	// The source contains both grey RGB and an opacity mask. Use opacity once,
 	// preserving the cloud detail instead of multiplying it into darkness twice.
 	vec4 col = tint * COLOR;

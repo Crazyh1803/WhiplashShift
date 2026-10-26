@@ -11,19 +11,19 @@ const CLOUD_SHADER: Shader = preload("res://shaders/particle_smoke.gdshader")
 const TYRE_SMOKE_CAPACITY := 160
 const DAMAGE_SMOKE_CAPACITY := 64
 const PLUME_CAPACITY := 96
-const SKID_CAPACITY := 192
-const SKID_LIFETIME := 10.0
-const SKID_MIN_SEGMENT := 0.25
+const SKID_CAPACITY := 2048
+const SKID_LIFETIME := 12.0
+const SKID_MIN_SEGMENT := 0.6
 const SKID_MAX_GAP := 3.0          ## a longer hop is a teleport or lost contact, never a streak
 const TELEPORT_DISTANCE := 5.0
 const SKID_LIFT := 0.025           ## offset along the ground normal against z-fighting
 const MIN_SLIDE_LOAD := 200.0      ## newtons; lighter than this is airborne or skimming
-const SMOKE_THRESHOLD := 0.25
-const SKID_START := 0.35
-const SKID_KEEP := 0.2
+const SMOKE_THRESHOLD := 0.16
+const SKID_START := 0.22
+const SKID_KEEP := 0.14
 const PULSE_TIME := 0.5
 const BOOST_RATE := 110.0
-const TYRE_SMOKE_RATE := 34.0
+const TYRE_SMOKE_RATE := 44.0
 const END_COLORS := {"A": Color("4fd2ff"), "B": Color("ff8a2a")}
 
 static var _quad_mesh: QuadMesh
@@ -31,7 +31,8 @@ static var _plane_mesh: PlaneMesh
 const PULSE_SHADER := preload("res://shaders/pulse_ring.gdshader")
 static var _smoke_material: ShaderMaterial
 static var _spark_material: StandardMaterial3D
-static var _skid_material: StandardMaterial3D
+static var _skid_material: ShaderMaterial
+const SKID_SHADER := preload("res://shaders/tyre_skid.gdshader")
 
 ## Test and QA hook: values here replace what the vehicle reports (boost_time, damage, ...).
 var state_override: Dictionary = {}
@@ -59,6 +60,7 @@ var _skid_n := PackedVector3Array()
 var _skid_birth := PackedFloat32Array()
 var _skid_width := PackedFloat32Array()
 var _skid_wheel := PackedInt32Array()
+var _skid_refresh := 0.0
 var _skid_cursor := 0
 var _skid_high := 0
 var _chain_point: Array[Vector3] = [Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO]
@@ -186,12 +188,12 @@ static func slide_intensity(
 ) -> float:
 	if not contact or load < MIN_SLIDE_LOAD or not is_hard_surface(surface_id):
 		return 0.0
-	var amount := smoothstep(2.0, 6.0, absf(lateral_speed))
+	var amount := smoothstep(0.8, 3.5, absf(lateral_speed)) * smoothstep(0.35, 0.85, slip)
 	if slip >= 0.9 and spin > 0.3:
 		amount = maxf(amount, clampf(spin, 0.0, 1.0) * 0.9)
-	if locked and speed > 4.0:
+	if locked and speed > 2.5:
 		amount = maxf(amount, 0.85)
-	if braking and slip >= 0.95 and speed > 8.0:
+	if braking and slip >= 0.85 and speed > 6.0:
 		amount = maxf(amount, 0.55)
 	return clampf(amount, 0.0, 1.0)
 
@@ -284,12 +286,8 @@ static func _build_shared() -> void:
 	_spark_material.vertex_color_use_as_albedo = true
 	_spark_material.albedo_texture = SPARK_TEXTURE
 	_spark_material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	_skid_material = StandardMaterial3D.new()
-	_skid_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_skid_material.vertex_color_use_as_albedo = true
-	_skid_material.albedo_color = Color(0.02, 0.02, 0.025)
-	_skid_material.roughness = 1.0
-	_skid_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_skid_material = ShaderMaterial.new()
+	_skid_material.shader = SKID_SHADER
 
 
 static func _pulse_material() -> ShaderMaterial:
@@ -307,6 +305,7 @@ func reset() -> void:
 		pool.clear()
 	_skid_birth.fill(-1.0)
 	_skid_cursor = 0
+	_skid_refresh = 0.0
 	_skid_high = 0
 	_skid_node.multimesh.visible_instance_count = 0
 	_cut_chains()
@@ -369,7 +368,10 @@ func advance(dt: float, emit: bool = true, motion: Dictionary = {}) -> void:
 	_tyre.step(dt)
 	_damage_pool.step(dt)
 	_plume.step(dt)
-	_refresh_skids()
+	_skid_refresh += dt
+	if _skid_refresh >= 0.05:
+		_skid_refresh = fmod(_skid_refresh, 0.05)
+		_refresh_skids()
 	_update_pulse(dt)
 
 
@@ -401,11 +403,11 @@ func _emit_tyre(dt: float, lin_vel: Vector3, ang_vel: Vector3) -> void:
 			_smoke_carry[index] += TYRE_SMOKE_RATE * amount * dt
 			while _smoke_carry[index] >= 1.0:
 				_smoke_carry[index] -= 1.0
-				var p := wheel.contact_point + wheel.contact_normal * 0.12
+				var p := wheel.contact_point + wheel.contact_normal * 0.18
 				var drift := Vector3(_rng.randf_range(-0.6, 0.6), _rng.randf_range(0.6, 1.4), _rng.randf_range(-0.6, 0.6))
-				var grey := _rng.randf_range(0.62, 0.82)
-				_tyre.emit(p, lin_vel * 0.25 + drift, _rng.randf_range(0.9, 1.5),
-					0.5, 1.7 + amount, Color(grey, grey, grey * 1.03, 0.5 * amount),
+				var grey := _rng.randf_range(0.78, 0.94)
+				_tyre.emit(p, lin_vel * 0.15 + drift, _rng.randf_range(1.2, 1.9),
+					0.65, 2.0 + amount, Color(grey, grey, grey, 0.7 * amount),
 					Color(grey * 0.8, grey * 0.8, grey * 0.84, 0.0), 1.8)
 			tyre_smoke_emitted = _tyre.emitted
 		else:
@@ -436,7 +438,7 @@ func _extend_skid(index: int, wheel: Wheel) -> void:
 	_skid_b[slot] = point
 	_skid_n[slot] = wheel.contact_normal
 	_skid_birth[slot] = _time
-	_skid_width[slot] = 0.26 if wheel.end == "A" else 0.42
+	_skid_width[slot] = 0.32 if wheel.end == "A" else 0.48
 	_skid_wheel[slot] = index
 	_chain_point[index] = point
 	skid_emitted += 1
@@ -467,8 +469,8 @@ func _refresh_skids() -> void:
 			multimesh.set_instance_transform(slot, Transform3D(Basis.from_scale(Vector3.ONE * 0.0001), Vector3(0.0, -1000.0, 0.0)))
 			continue
 		multimesh.set_instance_transform(slot, skid_transform(slot))
-		var fade := 1.0 - smoothstep(0.55, 1.0, age / SKID_LIFETIME)
-		multimesh.set_instance_color(slot, Color(1.0, 1.0, 1.0, 0.6 * fade))
+		var fade := 1.0 - smoothstep(0.3, 1.0, age / SKID_LIFETIME)
+		multimesh.set_instance_color(slot, Color(1.0, 1.0, 1.0, 0.9 * fade))
 	multimesh.visible_instance_count = _skid_high
 
 
