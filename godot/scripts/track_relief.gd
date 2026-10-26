@@ -8,6 +8,7 @@ const END_FADE := 3.5
 const EDGE_FADE := 3.0
 const ROCK_ROW := 5.0
 const ROCK_LANE := 3.9
+const LARGE_ROCK_CHANCE := 0.4
 
 
 static func enabled(sid: int) -> bool:
@@ -36,56 +37,50 @@ static func _rand(state: int) -> int:
 	return (state * 48271) % 2147483647
 
 
-## Mirrored left/right rocks keep aggregate lateral loading symmetric; rows, lanes, sizes and phases are seeded.
+## Every rock has its own seeded signed lateral centre and longitudinal offset; slots only stratify the full width.
 ## Rock heights scale with footprint so gradients stay bounded, and taper near ends/edges so the fades stay safe.
 static func _boulders(s: float, across: float, width: float, length: float, seed: int) -> float:
 	var half := width * 0.5
-	var lateral := absf(across)
+	var slots := maxi(3, roundi(width / ROCK_LANE))
+	var slot_width := width / float(slots)
 	var end_taper := lerpf(0.5, 1.0, smoothstep(END_FADE, END_FADE + 5.0, minf(s, length - s)))
-	var edge_taper := lerpf(0.5, 1.0, smoothstep(EDGE_FADE, EDGE_FADE + 5.0, half - lateral))
+	var edge_taper := lerpf(0.68, 1.0, smoothstep(EDGE_FADE, EDGE_FADE + 4.5, half - absf(across)))
 	var base_row := floori(s / ROCK_ROW)
 	var peak := 0.0
 	for row in range(base_row - 3, base_row + 4):
-		for pair in range(0, 7):
-			var state := posmod(row * 73856093 ^ pair * 19349663 ^ seed * 83492791, 2147483646) + 1
-			state = _rand(state)
+		for slot in range(0, slots):
+			var state := posmod(row * 73856093 ^ slot * 19349663 ^ seed * 83492791, 2147483646) + 1
+			state = _rand(_rand(state))
 			var center_s := (float(row) + 0.5 + (float(state) / 2147483647.0 - 0.5) * 1.1) * ROCK_ROW
 			if absf(s - center_s) > 10.0:
 				continue
-			# Pair 6 is a shoulder rock tucked just inside the edge fade so outer car lanes still meet bumps.
-			var shoulder := pair == 6
 			state = _rand(state)
-			var center_u := (float(pair) + 0.5 + (float(state) / 2147483647.0 - 0.5) * 0.9) * ROCK_LANE
-			if shoulder:
-				center_u = half - 2.6 + (float(state) / 2147483647.0 - 0.5)
-			if center_u > half - 0.5:
-				continue
+			var center_u := -half + (float(slot) + 0.5 + (float(state) / 2147483647.0 - 0.5) * 0.95) * slot_width
+			center_u = clampf(center_u, -half + 3.4, half - 3.4)
 			state = _rand(state)
 			var radius_s := 4.2 + 2.8 * float(state) / 2147483647.0
 			state = _rand(state)
-			var radius_u := 3.4 + 1.8 * float(state) / 2147483647.0
+			var radius_u := 4.6 + 2.4 * float(state) / 2147483647.0
 			state = _rand(state)
 			var variation := float(state) / 2147483647.0
 			state = _rand(state)
 			var diamond := 0.70 + 0.04 * float(state) / 2147483647.0
 			# Full-sized rocks use a wider footprint (not steeper slopes) to reach the accepted 0.16-0.20 m crowns.
 			var slope := 0.026
-			if shoulder or pair == posmod(row + seed, 3):
+			state = _rand(state)
+			if float(state) / 2147483647.0 < LARGE_ROCK_CHANCE:
 				radius_s = 8.0 + 1.5 * (radius_s - 4.2) / 2.8
-				radius_u = 8.0 + 1.5 * (radius_u - 3.4) / 1.8
+				radius_u = 10.5 + 1.5 * (radius_u - 4.6) / 2.4
 				variation = 0.9 + 0.1 * variation
 				slope = 0.0245
 			var crown := minf(0.2 * (0.6 + 0.4 * variation), slope * minf(radius_s, radius_u))
 			var dx := absf(s - center_s) / radius_s
-			if dx >= 1.0:
-				continue
-			for side in [-1.0, 1.0]:
-				var dy := absf(lateral - side * center_u) / radius_u
-				var footprint := maxf(maxf(dx, dy), (dx + dy) * diamond)
-				if footprint < 1.0:
-					var crown_radius := maxf(0.0, (footprint - 0.12) / 0.88)
-					var dome := 0.5 + 0.5 * cos(PI * crown_radius)
-					peak = maxf(peak, crown * dome * dome)
+			var dy := absf(across - center_u) / radius_u
+			var footprint := maxf(maxf(dx, dy), (dx + dy) * diamond)
+			if footprint < 1.0:
+				var crown_radius := maxf(0.0, (footprint - 0.12) / 0.88)
+				var dome := 0.5 + 0.5 * cos(PI * crown_radius)
+				peak = maxf(peak, crown * dome * dome)
 	return peak * end_taper * edge_taper
 
 

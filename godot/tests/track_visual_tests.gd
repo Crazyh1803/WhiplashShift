@@ -244,12 +244,9 @@ func _test_boulder_coverage() -> void:
 		identical = identical and TrackRelief.height(sid, s, u, 24.0, 60.0, 5) == TrackRelief.height(sid, s, u, 24.0, 60.0, 5)
 		different += absf(TrackRelief.height(sid, s, u, 24.0, 60.0, 5) - TrackRelief.height(sid, s, u, 24.0, 60.0, 6))
 	_check("boulder placement is reproducible per seed and differs between seeds", identical and different > 0.5)
-	var symmetric := true
-	for step in 200:
-		var s := 5.0 + float(step) * 0.27
-		var u := float(step % 19) * 0.6
-		symmetric = symmetric and is_equal_approx(TrackRelief.height(sid, s, u, 22.0, 60.0, 3), TrackRelief.height(sid, s, -u, 22.0, 60.0, 3))
-	_check("boulder field keeps symmetric lateral loading", symmetric)
+	# Actual course BOULDER run (straight 140 m + 100 m radius quarter arc, 24 m wide, seed = run index 4), then fixtures.
+	for case: Array in [[24.0, 297.0, 4], [24.0, 297.0, 0], [20.0, 160.0, 1], [22.0, 160.0, 3], [24.0, 160.0, 4]]:
+		_check_boulder_distribution(case[0], case[1], case[2])
 	for width: float in [20.0, 22.0, 24.0]:
 		var half := width * 0.5
 		for length: float in [12.0, 24.0, 60.0, 160.0]:
@@ -298,6 +295,57 @@ func _test_boulder_coverage() -> void:
 				steepest = maxf(steepest, Vector2(ds, du).length())
 				bounded = bounded and h >= 0.0 and h <= 0.2
 	_check("randomized boulders keep height and gradient bounds (%.3f)" % steepest, bounded and steepest <= 0.08)
+
+
+## High crowns must be asymmetric and spread over the full width, with no permanent central band.
+func _check_boulder_distribution(width: float, length: float, seed: int) -> void:
+	var sid := Surfaces.Id.BOULDER
+	var tag := "width %.0f length %.0f seed %d" % [width, length, seed]
+	var half := width * 0.5
+	var mirror_diff := 0.0
+	var mirror_n := 0
+	var high := 0
+	var central := 0
+	var left := 0
+	var right := 0
+	var window := 10.0
+	var window_sum: Array[float] = []
+	var window_n: Array[int] = []
+	for i in int(length / window) + 1:
+		window_sum.append(0.0)
+		window_n.append(0)
+	for step in int(length * 2.0):
+		var s := float(step) * 0.5
+		for lateral in range(0, int(half * 2.0)):
+			var u := float(lateral) * 0.5
+			var h := TrackRelief.height(sid, s, u, width, length, seed)
+			var m := TrackRelief.height(sid, s, -u, width, length, seed)
+			mirror_diff += absf(h - m)
+			mirror_n += 1
+			for sample: Array in [[h, u], [m, -u]]:
+				if sample[0] >= 0.12:
+					high += 1
+					central += int(absf(sample[1]) < width / 6.0)
+					left += int(sample[1] < -width / 6.0)
+					right += int(sample[1] > width / 6.0)
+					var w := int(s / window)
+					window_sum[w] += sample[1]
+					window_n[w] += 1
+	var lo := 1000.0
+	var hi := -1000.0
+	for w in window_sum.size():
+		if window_n[w] >= 10:
+			var c: float = window_sum[w] / float(window_n[w])
+			lo = minf(lo, c)
+			hi = maxf(hi, c)
+	var total := float(maxi(high, 1))
+	var report := " (mirror %.4f central %.2f left %.2f right %.2f centroid range %.1f)" % [
+		mirror_diff / float(mirror_n), central / total, left / total, right / total, hi - lo]
+	print("BOULDER_DIST: ", tag, report)
+	_check("boulder mirror samples differ, " + tag + report, mirror_diff / float(mirror_n) > 0.012)
+	_check("high crowns sit off-centre on both halves, " + tag + report, left / total >= 0.22 and right / total >= 0.22)
+	_check("no permanent central high band, " + tag + report, central / total <= 0.52)
+	_check("high-crown centroid shifts along the run, " + tag + report, hi - lo >= 1.5)
 
 
 ## Flood fill of cells whose tyres both stay flat; steering changes at most one cell per step.
