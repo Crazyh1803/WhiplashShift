@@ -127,27 +127,39 @@ void fragment() {
 		shade_k = 1.0;
 		relief_gain = 0.012;
 	} else if (surface_id == 3) {
-		// Living viscera: wet muscle ropes, dark vessels and creamy scar tissue.
-		vec2 sinew_uv = p * vec2(0.17, 0.11);
-		vec3 mapped = texture(sinew_normal, sinew_uv).rgb * 2.0 - 1.0;
-		float tendon = sin(across * 3.2 + sin(UV.y * 0.65) * 1.8 + mid * 2.0);
-		float vessel = 1.0 - smoothstep(0.045, 0.16, abs(tendon));
-		float scar = smoothstep(0.72, 0.82, broad + mid * 0.3) * smoothstep(0.45, 0.75, tendon);
-		color = mix(vec3(0.608, 0.133, 0.149), vec3(0.886, 0.427, 0.361), mid);
-		color *= 0.72 + (mapped.z * 0.5 + 0.5) * 0.28;
-		color = mix(color, vec3(0.15, 0.024, 0.045), vessel * 0.8);
-		color = mix(color, vec3(0.66, 0.59, 0.46), scar * 0.7);
-		NORMAL = normalize(NORMAL + (VIEW_MATRIX * vec4(mapped.x * 0.5, 0.0, mapped.y * 0.5, 0.0)).xyz);
-		rough = texture(sinew_roughness, sinew_uv).r;
-		spec = 0.7;
-		flesh = 0.65;
-		macro_h = 0.5 + tendon * 0.14 - vessel * 0.3 + scar * 0.1;
-		// Modest ridges: ~1cm ropes, ~1cm vessel grooves, slight scar lift.
-		relief = tendon * 0.01 - vessel * 0.008 + scar * 0.004;
+		// Blood bed: irregular crimson/maroon pools, pale fatty patches, wet lobes and veins.
+		vec2 warp = vec2(texture(surface_noise, p * 0.05 + vec2(0.31, 0.77)).r,
+			texture(surface_noise, p * 0.05 + vec2(0.63, 0.18)).r) - 0.5;
+		vec2 wp = p + warp * 5.0;
+		float pool_field = texture(surface_noise, wp * 0.085).r * 0.65 + texture(surface_noise, wp * 0.21).r * 0.35;
+		float pool = smoothstep(0.44, 0.58, pool_field);
+		float deep = smoothstep(0.58, 0.72, pool_field);
+		float fat_field = texture(surface_noise, wp * 0.13 + vec2(0.5, 0.2)).r;
+		float fat = smoothstep(0.6, 0.72, fat_field) * (1.0 - deep);
+		vec3 lobe = shards(wp * 1.25);
+		vec3 vein = shards(wp * 3.4 + 7.0);
+		float lobe_edge = 1.0 - smoothstep(0.03, 0.2, lobe.y);
+		float vein_line = (1.0 - smoothstep(0.012, 0.05, vein.y)) * step(0.35, vein.z) * (1.0 - deep * 0.6);
+		vec3 mapped = texture(sinew_normal, wp * 0.21).rgb * 2.0 - 1.0;
+		color = mix(vec3(0.34, 0.045, 0.06), vec3(0.19, 0.02, 0.04), lobe.z);
+		color = mix(color, vec3(0.43, 0.09, 0.08), (1.0 - lobe_edge) * 0.35 * mid);
+		color = mix(color, vec3(0.07, 0.008, 0.016), pool * 0.75);
+		color = mix(color, vec3(0.035, 0.004, 0.01), deep);
+		color = mix(color, vec3(0.64, 0.5, 0.34), fat * 0.55);
+		color = mix(color, vec3(0.1, 0.012, 0.035), lobe_edge * 0.6);
+		color = mix(color, vec3(0.28, 0.04, 0.12), vein_line * 0.7);
+		NORMAL = normalize(NORMAL + (VIEW_MATRIX * vec4(mapped.x * 0.12, 0.0, mapped.y * 0.12, 0.0)).xyz);
+		rough = mix(0.26, 0.07, pool);
+		rough = mix(rough, 0.34, fat * 0.7);
+		spec = 0.8;
+		flesh = 0.3 * (1.0 - pool);
+		macro_h = 0.55 + smoothstep(0.02, 0.35, lobe.y) * 0.3 - pool * 0.3 - deep * 0.1 + vein_line * 0.1 + fat * 0.1;
+		// Lobes swell about 1.5cm, veins sit proud ~5mm, pools settle ~1cm.
+		relief = smoothstep(0.02, 0.35, lobe.y) * 0.015 + vein_line * 0.005 - pool * 0.01 - deep * 0.004;
 		relief_gain = 0.003;
 		gran = 0.2;
-		pit_amt = 0.15;
-		wet = 0.7;
+		pit_amt = 0.1;
+		wet = 0.95;
 		shade_k = 0.7;
 	} else if (surface_id == 4) {
 		// Fractured spinal armor: large interlocking plates, deep black cavities.

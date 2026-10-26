@@ -236,6 +236,9 @@ static func _build_run(parent: Node3D, run: Array, sid: int, index: int, start_d
 	shape.shape = concave
 	shape.position = Vector3(0.0, 0.02, 0.0)
 	body.add_child(shape)
+	if relief:
+		# Visual-only, parented below the road mesh so body children stay mesh + collider.
+		TrackViscera.attach(mi, run, sid, index, run_length)
 
 	parent.add_child(body, true)
 
