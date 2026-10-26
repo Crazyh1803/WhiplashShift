@@ -39,6 +39,7 @@ static func _boulders(s: float, across: float, width: float, length: float, seed
 	var cell := Vector2i(floori((s - origin_s) / cell_size.x), floori(across / cell_size.y))
 	var search := Vector2i(ceili(radii.x / cell_size.x) + 1, ceili(radii.y / cell_size.y) + 1)
 	var height_scale := minf(pow(radii.x / 9.0, 2.0), pow(radii.y / 6.0, 2.0))
+	var shift := minf(cell_size.x * 0.25, length - 2.0 * margin_s - 2.0 * radii.x)
 	var peak := 0.0
 	for row in range(cell.x - search.x, cell.x + search.x + 1):
 		for lane in range(cell.y - search.y, cell.y + search.y + 1):
@@ -46,7 +47,6 @@ static func _boulders(s: float, across: float, width: float, length: float, seed
 			var side := 1.0 if lane >= 0 else -1.0
 			var id := posmod(row * 73856093 ^ pair * 19349663 ^ seed * 83492791, 104729)
 			var jitter := float(id % 101) / 100.0
-			var shift := minf(cell_size.x * 0.25, length - 2.0 * margin_s - 2.0 * radii.x)
 			var center_s := origin_s + float(row) * cell_size.x + jitter * shift
 			var center_u := side * (float(pair) * cell_size.y + radii.y * (2.2 / 6.0 + jitter * 0.1))
 			if center_s - radii.x < margin_s - 0.00001 or center_s + radii.x > length - margin_s + 0.00001:

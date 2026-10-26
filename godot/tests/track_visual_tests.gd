@@ -179,9 +179,13 @@ func _test_relief_contacts() -> void:
 		for length: float in [3.5, 12.0, 24.0, 60.0]:
 			for seed in range(4):
 				var peak := 0.0
+				var bounded := true
 				for step in range(1, 50):
-					peak = maxf(peak, TrackRelief.height(Surfaces.Id.BOULDER, length * float(step) / 50.0, 0.9, width, length, seed))
-				_check("boulders retain real crowns at width %.0f length %.1f seed %d" % [width, length, seed], peak > 0.0)
+					for lane in range(-4, 5):
+						var h := TrackRelief.height(Surfaces.Id.BOULDER, length * float(step) / 50.0, width * float(lane) / 8.0, width, length, seed)
+						peak = maxf(peak, h)
+						bounded = bounded and h >= 0.0 and h <= TrackRelief.MAX_HEIGHTS[Surfaces.Id.BOULDER]
+				_check("boulders retain bounded crowns at width %.0f length %.1f seed %d" % [width, length, seed], peak > 0.0 and bounded)
 	for sid: int in TrackRelief.MAX_HEIGHTS:
 		for step in 600:
 			var s := float(step) * 0.1

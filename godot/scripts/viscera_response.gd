@@ -485,7 +485,7 @@ func _rock_contact_pose(dt: float, wheels: Array, end: String, speed: float, bod
 			if not wheel.contact or weight == 0.0:
 				continue
 			contacts += 1
-			contact_gain = maxf(contact_gain, weight)
+			contact_gain = clampf(maxf(contact_gain, weight), 0.0, 1.0)
 			var axle := 1.0 if wheel.end == "A" else -1.0
 			var normal := body_basis.inverse() * wheel.contact_normal
 			target.x += weight * axle * wheel.compression / maxf(tuning.half_base * 4.0, 0.1)
