@@ -26,6 +26,11 @@ func _test_geometry() -> void:
 	var golden: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/track_collision.json"))
 	_check("same surface-run count as original renderer", root.get_child_count() == golden.size())
 	var previous_end := 0.0
+	var road_distances: Array[float] = [0.0]
+	for point: Dictionary in course.points:
+		road_distances.append(road_distances[-1] + float(point["dist"]))
+	var graded_points: Array = [{"pos": Vector3(0, 1, 0), "dist": 4.0}, {"pos": Vector3(0, 3, -4), "dist": 4.0}]
+	_check("material height reference preserves authored road elevation", is_equal_approx(_base_road_height(2.0, graded_points, [0.0, 4.0, 8.0]), 2.0))
 	for body: StaticBody3D in root.get_children():
 		var visual: MeshInstance3D = body.get_node("RoadMesh")
 		var collision: CollisionShape3D = body.get_child(1)
@@ -64,7 +69,8 @@ func _test_geometry() -> void:
 			var normalized_height := widths[vertex].y
 			height_map_matches = height_map_matches and normalized_height >= 0.0 and normalized_height <= 1.0
 			var maximum: float = TrackRelief.MAX_HEIGHTS.get(sid, 0.0)
-			height_map_matches = height_map_matches and is_equal_approx(faces[vertex].y, normalized_height * maximum)
+			var base_y := _base_road_height(uvs[vertex].y, course.points, road_distances)
+			height_map_matches = height_map_matches and absf(faces[vertex].y - base_y - normalized_height * maximum) < 0.00001
 		_check(String(body.name) + " material elevation matches visible and collision heights", height_map_matches)
 	_check("UV distance covers full closed course", is_equal_approx(previous_end, course.total_length))
 	var flat_control := Node3D.new()
@@ -159,10 +165,23 @@ func _test_geometry() -> void:
 	root.free()
 
 
+func _base_road_height(distance: float, points: Array, distances: Array[float]) -> float:
+	var segment := clampi(distances.bsearch(distance) - 1, 0, points.size() - 1)
+	var t := clampf((distance - distances[segment]) / maxf(float(points[segment]["dist"]), 0.00001), 0.0, 1.0)
+	return lerpf(points[segment]["pos"].y, points[(segment + 1) % points.size()]["pos"].y, t)
+
+
 func _test_relief_contacts() -> void:
 	var root := Node3D.new()
 	add_child(root)
 	var profiles_valid := true
+	for width: float in [20.0, 22.0, 24.0]:
+		for length: float in [3.5, 12.0, 24.0, 60.0]:
+			for seed in range(4):
+				var peak := 0.0
+				for step in range(1, 50):
+					peak = maxf(peak, TrackRelief.height(Surfaces.Id.BOULDER, length * float(step) / 50.0, 0.9, width, length, seed))
+				_check("boulders retain real crowns at width %.0f length %.1f seed %d" % [width, length, seed], peak > 0.0)
 	for sid: int in TrackRelief.MAX_HEIGHTS:
 		for step in 600:
 			var s := float(step) * 0.1

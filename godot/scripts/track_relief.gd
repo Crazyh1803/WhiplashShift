@@ -31,10 +31,14 @@ static func height(sid: int, s: float, across: float, width: float, length: floa
 
 
 static func _boulders(s: float, across: float, width: float, length: float, seed: int) -> float:
-	var cell_size := Vector2(18.0, 7.0)
-	var radii := Vector2(9.0, 6.0)
-	var cell := Vector2i(floori(s / cell_size.x), floori(across / cell_size.y))
+	var margin_s := minf(END_FADE, length * 0.15)
+	var margin_u := minf(EDGE_FADE, width * 0.15)
+	var radii := Vector2(minf(9.0, (length - 2.0 * margin_s) * 0.35), minf(6.0, (width * 0.5 - margin_u) / 1.5))
+	var cell_size := Vector2(radii.x * 2.0, radii.y * 7.0 / 6.0)
+	var origin_s := margin_s + radii.x
+	var cell := Vector2i(floori((s - origin_s) / cell_size.x), floori(across / cell_size.y))
 	var search := Vector2i(ceili(radii.x / cell_size.x) + 1, ceili(radii.y / cell_size.y) + 1)
+	var height_scale := minf(pow(radii.x / 9.0, 2.0), pow(radii.y / 6.0, 2.0))
 	var peak := 0.0
 	for row in range(cell.x - search.x, cell.x + search.x + 1):
 		for lane in range(cell.y - search.y, cell.y + search.y + 1):
@@ -42,11 +46,12 @@ static func _boulders(s: float, across: float, width: float, length: float, seed
 			var side := 1.0 if lane >= 0 else -1.0
 			var id := posmod(row * 73856093 ^ pair * 19349663 ^ seed * 83492791, 104729)
 			var jitter := float(id % 101) / 100.0
-			var center_s := (float(row) + 0.25 + 0.5 * jitter) * cell_size.x
-			var center_u := side * (float(pair) * cell_size.y + 2.2 + jitter * 0.6)
-			if center_s - radii.x < END_FADE or center_s + radii.x > length - END_FADE:
+			var shift := minf(cell_size.x * 0.25, length - 2.0 * margin_s - 2.0 * radii.x)
+			var center_s := origin_s + float(row) * cell_size.x + jitter * shift
+			var center_u := side * (float(pair) * cell_size.y + radii.y * (2.2 / 6.0 + jitter * 0.1))
+			if center_s - radii.x < margin_s - 0.00001 or center_s + radii.x > length - margin_s + 0.00001:
 				continue
-			if absf(center_u) + radii.y > width * 0.5 - EDGE_FADE:
+			if absf(center_u) + radii.y > width * 0.5 - margin_u:
 				continue
 			var delta := Vector2((s - center_s) / radii.x, (across - center_u) / radii.y)
 			var footprint := delta.abs()
@@ -54,7 +59,7 @@ static func _boulders(s: float, across: float, width: float, length: float, seed
 			if radius < 1.0:
 				var crown_radius := maxf(0.0, (radius - 0.12) / 0.88)
 				var dome := 0.5 + 0.5 * cos(PI * crown_radius)
-				peak = maxf(peak, (0.16 + 0.04 * jitter) * dome * dome)
+				peak = maxf(peak, (0.16 + 0.04 * jitter) * height_scale * dome * dome)
 	return peak
 
 
@@ -88,7 +93,7 @@ static func append_quad(verts: PackedVector3Array, normals: PackedVector3Array,
 				var h := height(sid, s - run_start, across, width, run_length, seed)
 				p.y += h
 				positions.append(p)
-				heights.append(h / float(MAX_HEIGHTS[sid]))
+				heights.append(h / float(MAX_HEIGHTS.get(sid, 1.0)))
 			for tri: Array in [[0, 1, 2], [2, 1, 3]]:
 				# Godot's front-face winding is opposite the geometric cross product.
 				var normal: Vector3 = (positions[tri[2]] - positions[tri[0]]).cross(positions[tri[1]] - positions[tri[0]]).normalized()
