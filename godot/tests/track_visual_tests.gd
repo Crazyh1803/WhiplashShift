@@ -1,6 +1,8 @@
 ## Geometry invariants run headless; --capture also exercises the Vulkan shader.
 extends Node3D
 
+const END_MARGIN_TEST := 4.0
+
 var _pass := 0
 var _fail := 0
 
@@ -8,6 +10,7 @@ var _fail := 0
 func _ready() -> void:
 	_test_geometry()
 	await _test_relief_contacts()
+	_test_boulder_coverage()
 	if DisplayServer.get_name() == "headless":
 		await _test_relief_driving()
 	if "--capture" in OS.get_cmdline_user_args():
@@ -224,6 +227,90 @@ func _test_relief_contacts() -> void:
 			hits = hits and hit["collider"].get_meta("surface_type") == "boulder"
 	_check("downward contacts cross relief without holes and retain surface ID", hits and raised)
 	root.free()
+
+
+func _tyre_relief(s: float, x: float, width: float, length: float, seed: int) -> float:
+	return maxf(TrackRelief.height(Surfaces.Id.BOULDER, s, x - 0.9, width, length, seed),
+		TrackRelief.height(Surfaces.Id.BOULDER, s, x + 0.9, width, length, seed))
+
+
+func _test_boulder_coverage() -> void:
+	var sid := Surfaces.Id.BOULDER
+	var different := 0.0
+	var identical := true
+	for step in 400:
+		var s := 4.0 + float(step) * 0.14
+		var u := float(step % 23) - 11.0
+		identical = identical and TrackRelief.height(sid, s, u, 24.0, 60.0, 5) == TrackRelief.height(sid, s, u, 24.0, 60.0, 5)
+		different += absf(TrackRelief.height(sid, s, u, 24.0, 60.0, 5) - TrackRelief.height(sid, s, u, 24.0, 60.0, 6))
+	_check("boulder placement is reproducible per seed and differs between seeds", identical and different > 0.5)
+	var symmetric := true
+	for step in 200:
+		var s := 5.0 + float(step) * 0.27
+		var u := float(step % 19) * 0.6
+		symmetric = symmetric and is_equal_approx(TrackRelief.height(sid, s, u, 22.0, 60.0, 3), TrackRelief.height(sid, s, -u, 22.0, 60.0, 3))
+	_check("boulder field keeps symmetric lateral loading", symmetric)
+	for width: float in [20.0, 22.0, 24.0]:
+		var half := width * 0.5
+		for length: float in [12.0, 24.0, 60.0, 160.0]:
+			for seed in range(3):
+				var lanes_hit := true
+				var longest_gap := 0.0
+				for x: float in [0.0, 1.5, -3.0, 5.0, -7.0, half - 3.0, -(half - 3.0), half - 1.8, -(half - 1.8)]:
+					var peak := 0.0
+					var gap := 0.0
+					var s := END_MARGIN_TEST
+					while s < length - END_MARGIN_TEST + 0.001:
+						var h := _tyre_relief(s, x, width, length, seed)
+						peak = maxf(peak, h)
+						gap = 0.0 if h >= 0.02 else gap + 0.25
+						if length >= 24.0:
+							longest_gap = maxf(longest_gap, gap)
+						s += 0.25
+					lanes_hit = lanes_hit and peak >= (0.04 if length >= 24.0 else 0.015)
+				_check("fixed car lanes meet bumps at width %.0f length %.0f seed %d" % [width, length, seed], lanes_hit and longest_gap <= 14.0)
+		for length: float in [60.0, 160.0]:
+			for seed in range(2):
+				_check("no steerable flat corridor at width %.0f length %.0f seed %d" % [width, length, seed], not _flat_corridor(width, length, seed))
+	var bounded := true
+	var steepest := 0.0
+	for seed in range(3):
+		for step in 600:
+			var s := float(step) * 0.27
+			for lateral in range(-60, 61):
+				var u := float(lateral) * 0.2
+				var h := TrackRelief.height(sid, s, u, 24.0, 160.0, seed)
+				var ds := (TrackRelief.height(sid, s + 0.01, u, 24.0, 160.0, seed) - h) / 0.01
+				var du := (TrackRelief.height(sid, s, u + 0.01, 24.0, 160.0, seed) - h) / 0.01
+				steepest = maxf(steepest, Vector2(ds, du).length())
+				bounded = bounded and h >= 0.0 and h <= 0.2
+	_check("randomized boulders keep height and gradient bounds (%.3f)" % steepest, bounded and steepest <= 0.08)
+
+
+## Flood fill of cells whose tyres both stay flat; steering changes at most one cell per step.
+func _flat_corridor(width: float, length: float, seed: int) -> bool:
+	var cell := 0.3
+	var half_cells := int((width * 0.5 - 1.5) / cell)
+	var rows := int((length - 2.0 * END_MARGIN_TEST) / 0.5)
+	var reachable: Array = []
+	for row in rows + 1:
+		var s := END_MARGIN_TEST + float(row) * 0.5
+		var flat: Array[bool] = []
+		for lane in range(-half_cells, half_cells + 1):
+			flat.append(_tyre_relief(s, float(lane) * cell, width, length, seed) < 0.02)
+		var now: Array[bool] = []
+		for lane in flat.size():
+			var open: bool = flat[lane]
+			if open and row > 0:
+				open = false
+				for step in range(-1, 2):
+					var from := lane + step
+					open = open or (from >= 0 and from < flat.size() and reachable[row - 1][from])
+			now.append(open)
+		reachable.append(now)
+		if row > 0 and not now.has(true):
+			return false
+	return reachable[rows].has(true)
 
 
 func _test_relief_driving() -> void:
