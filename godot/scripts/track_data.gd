@@ -19,22 +19,30 @@ static func build_course() -> CourseDefinition:
 		author(),
 	)
 
-static func _straight(out: Array, x0: float, y0: float, x1: float, y1: float, w: float, s: int) -> void:
+## `config` is an optional TrackRelief authoring dictionary, e.g. {"shape": "boulders", "preset": "high"}.
+static func _straight(out: Array, x0: float, y0: float, x1: float, y1: float, w: float, s: int, config: Dictionary = {}) -> void:
 	var d := Vector2(x1 - x0, y1 - y0)
 	var n := maxi(1, int(round(d.length() / STEP)))
 	var start := 1 if out.size() > 0 else 0
 	for i in range(start, n + 1):
 		var t := float(i) / float(n)
-		out.append({"p": Vector2(x0, y0) + d * t, "w": w, "s": s})
+		out.append(_node(Vector2(x0, y0) + d * t, w, s, config))
 
 
-static func _arc(out: Array, cx: float, cy: float, r: float, a0: float, a1: float, w: float, s: int) -> void:
+static func _arc(out: Array, cx: float, cy: float, r: float, a0: float, a1: float, w: float, s: int, config: Dictionary = {}) -> void:
 	var sweep := a1 - a0
 	var n := maxi(2, int(round(absf(sweep) * r / STEP)))
 	var start := 1 if out.size() > 0 else 0
 	for i in range(start, n + 1):
 		var a := a0 + sweep * (float(i) / float(n))
-		out.append({"p": Vector2(cx + cos(a) * r, cy + sin(a) * r), "w": w, "s": s})
+		out.append(_node(Vector2(cx + cos(a) * r, cy + sin(a) * r), w, s, config))
+
+
+static func _node(p: Vector2, w: float, s: int, config: Dictionary) -> Dictionary:
+	var node := {"p": p, "w": w, "s": s}
+	if not config.is_empty():
+		node["relief"] = config.duplicate(true)
+	return node
 
 
 ## Ordered, closed centreline. Each entry: pos (Vector3), w, s, dir (Vector3), dist.
@@ -67,11 +75,14 @@ static func author() -> Array:
 		var nxt: Vector2 = p[(i + 1) % n]["p"] - CENTRE
 		var prv: Vector2 = p[(i - 1 + n) % n]["p"] - CENTRE
 		var tangent := (nxt - prv).normalized()
-		out.append({
+		var point := {
 			"pos": Vector3(here.x, 0.0, here.y),
 			"dir": Vector3(tangent.x, 0.0, tangent.y),
 			"w": p[i]["w"],
 			"s": p[i]["s"],
 			"dist": here.distance_to(nxt),
-		})
+		}
+		if p[i].has("relief"):
+			point["relief"] = p[i]["relief"]
+		out.append(point)
 	return out
