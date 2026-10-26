@@ -4,8 +4,24 @@ class_name VehicleAudio
 extends Node
 
 const MIX_RATE := 22050.0
+const RAIL_MIN_SPEED := 1.5
+const CAR_MIN_SPEED := 2.5
+const RAIL_COOLDOWN := 0.18
+const CAR_COOLDOWN := 0.25
+const FULL_INTENSITY_SPEED := 28.0
+const CONTACT_HEAVY = preload("res://assets/audio/items/contact_heavy.wav")
+
+## Emitted for each contact allowed to sound, with or without audio hardware.
+## kind is "rail" or "car"; intensity is 0..1.
+signal contact_cue(kind: String, intensity: float)
 
 var target: Vehicle
+var _car_player: AudioStreamPlayer
+var _car_cooldown := 0.0
+## Sibling Vehicle velocities captured together at the start of each physics tick,
+## before the solver reflects them. Keyed by instance id.
+var _pre_velocities := {}
+var _pre_frame := -1000
 
 var _engine_player: AudioStreamPlayer
 var _engine_playback: AudioStreamGeneratorPlayback
@@ -32,7 +48,6 @@ func _ready() -> void:
 	# AudioServer is deliberately skipped by headless test runs. The contact
 	# wiring above still happens, so scene assembly remains testable.
 	if DisplayServer.get_name() == "headless":
-		set_process(false)
 		return
 
 	var generator := AudioStreamGenerator.new()
@@ -54,12 +69,17 @@ func _ready() -> void:
 
 	_rail_player = AudioStreamPlayer.new()
 	_rail_player.name = "RailImpact"
-	_rail_player.stream = _make_rail_sound()
+	_rail_player.stream = make_rail_sound()
 	add_child(_rail_player)
+
+	_car_player = AudioStreamPlayer.new()
+	_car_player.name = "CarImpact"
+	_car_player.stream = make_car_sound()
+	add_child(_car_player)
 
 
 func _process(delta: float) -> void:
-	_rail_cooldown = maxf(0.0, _rail_cooldown - delta)
+	advance(delta)
 	if _engine_playback == null or target == null:
 		return
 
@@ -104,17 +124,99 @@ func _on_swapped(_record: Dictionary) -> void:
 		_swap_player.play()
 
 
+func _physics_process(_delta: float) -> void:
+	snapshot_velocities()
+
+
+## Records every Vehicle sharing the target's parent in one pass, so both sides of
+## a later collision come from the same pre-solver tick.
+func snapshot_velocities() -> void:
+	if target == null:
+		return
+	_pre_velocities.clear()
+	_pre_frame = Engine.get_physics_frames()
+	_pre_velocities[target.get_instance_id()] = _velocity_of(target)
+	var parent := target.get_parent()
+	if parent == null:
+		return
+	for sibling in parent.get_children():
+		if sibling is Vehicle:
+			_pre_velocities[sibling.get_instance_id()] = _velocity_of(sibling)
+
+
+## Frozen (parked, teleported or scripted) bodies count as still.
+static func _velocity_of(body: Node) -> Vector3:
+	if body is RigidBody3D and not (body as RigidBody3D).freeze:
+		return (body as RigidBody3D).linear_velocity
+	return Vector3.ZERO
+
+
+## Relative speed of the pair. Both velocities come from the same recent snapshot;
+## if either is missing or stale, both fall back to the live (post-solver) values
+## rather than mixing timing.
+func relative_speed_to(body: Node) -> float:
+	var use_snapshot := Engine.get_physics_frames() - _pre_frame <= 1 \
+			and _pre_velocities.has(target.get_instance_id())
+	var other_id := body.get_instance_id()
+	if body is Vehicle:
+		use_snapshot = use_snapshot and _pre_velocities.has(other_id)
+	var own: Vector3 = _pre_velocities[target.get_instance_id()] if use_snapshot else _velocity_of(target)
+	var other: Vector3 = _velocity_of(body)
+	if use_snapshot and body is Vehicle:
+		other = _pre_velocities[other_id]
+	return (own - other).length()
+
+
+## Counts cooldowns down. _process calls it; tests may drive it by hand.
+func advance(delta: float) -> void:
+	_rail_cooldown = maxf(0.0, _rail_cooldown - delta)
+	_car_cooldown = maxf(0.0, _car_cooldown - delta)
+
+
+## Classifies a touched body: "rail" for guard rails, "car" for another Vehicle,
+## "" for anything else (scenery, ground, the car itself).
+func contact_kind(body: Node) -> String:
+	if body == null or body == target:
+		return ""
+	if body.has_meta("guard_rail") and bool(body.get_meta("guard_rail")):
+		return "rail"
+	if body is Vehicle:
+		return "car"
+	return ""
+
+
+## Applies speed gating and cooldown. Returns the accepted 0..1 intensity, or
+## -1.0 when the contact stays silent. Cosmetic only; never touches physics.
+func accept_contact(kind: String, relative_speed: float) -> float:
+	var min_speed := RAIL_MIN_SPEED if kind == "rail" else CAR_MIN_SPEED
+	if kind.is_empty() or relative_speed < min_speed:
+		return -1.0
+	if kind == "rail":
+		if _rail_cooldown > 0.0:
+			return -1.0
+		_rail_cooldown = RAIL_COOLDOWN
+	else:
+		if _car_cooldown > 0.0:
+			return -1.0
+		_car_cooldown = CAR_COOLDOWN
+	return clampf(relative_speed / FULL_INTENSITY_SPEED, 0.0, 1.0)
+
+
 func _on_body_entered(body: Node) -> void:
-	if not body.has_meta("guard_rail") or not bool(body.get_meta("guard_rail")):
+	var kind := contact_kind(body)
+	if kind.is_empty():
 		return
-	if _rail_cooldown > 0.0 or target.linear_velocity.length() < 1.5:
+	# The solver has already reflected live velocities by the time this fires, so
+	# judge the hit from the pre-solver snapshot.
+	var intensity := accept_contact(kind, relative_speed_to(body))
+	if intensity < 0.0:
 		return
-	_rail_cooldown = 0.18
-	if _rail_player != null:
-		var impact := clampf(target.linear_velocity.length() / 28.0, 0.0, 1.0)
-		_rail_player.volume_db = lerpf(-13.0, -1.5, impact)
-		_rail_player.pitch_scale = lerpf(0.88, 1.08, impact)
-		_rail_player.play()
+	contact_cue.emit(kind, intensity)
+	var player := _car_player if kind == "car" else _rail_player
+	if player != null:
+		player.volume_db = lerpf(-13.0, -1.5, intensity)
+		player.pitch_scale = lerpf(0.9, 1.05, intensity)
+		player.play()
 
 
 func _make_swap_sound() -> AudioStreamWAV:
@@ -135,23 +237,58 @@ func _make_swap_sound() -> AudioStreamWAV:
 	return _wav_from_samples(samples)
 
 
-func _make_rail_sound() -> AudioStreamWAV:
-	var duration := 0.28
+## Gritty industrial impacts: broadband crunch, low body thump, short scrape.
+## Recorded heavy contact is lowpassed and layered underneath so nothing rings.
+static func make_rail_sound() -> AudioStreamWAV:
+	return _make_impact(0.30, 0xBA221E2, 52.0, 24.0, 0.45, 0.6, 15.0, 0.75)
+
+
+static func make_car_sound() -> AudioStreamWAV:
+	return _make_impact(0.40, 0xCA2B0D7, 40.0, 17.0, 0.7, 0.65, 11.0)
+
+
+static func _make_impact(duration: float, seed_value: int, thump_hz: float, thump_decay: float,
+		scrape_gain: float, crunch_gain: float, tail_decay: float, thump_gain := 0.85) -> AudioStreamWAV:
 	var count := int(MIX_RATE * duration)
 	var samples := PackedFloat32Array()
 	samples.resize(count)
 	var rng := RandomNumberGenerator.new()
-	rng.seed = 0xBA221E2
+	rng.seed = seed_value
+	var slow := 0.0
+	var mid := 0.0
+	var body := 0.0
+	var phase := 0.0
+	var gate := 0.0
+	var gate_target := 0.0
 	for i in count:
 		var t := float(i) / MIX_RATE
-		var ring := sin(TAU * 710.0 * t) * 0.38 + sin(TAU * 1127.0 * t) * 0.24
-		ring += sin(TAU * 1643.0 * t) * 0.13
-		var scrape := rng.randf_range(-1.0, 1.0) * 0.32
-		samples[i] = clampf((ring + scrape) * exp(-t * 13.0), -1.0, 1.0)
+		var n := rng.randf_range(-1.0, 1.0)
+		slow = lerpf(slow, n, 0.04)
+		mid = lerpf(mid, n, 0.3)
+		# Irregular scrape: a random gate re-rolled every few milliseconds.
+		if i % 110 == 0:
+			gate_target = maxf(0.0, rng.randf_range(-0.4, 1.0))
+		gate = lerpf(gate, gate_target, 0.02)
+		var crack := (n - slow) * exp(-t * 140.0) * 0.8
+		phase += TAU * (thump_hz + 60.0 * exp(-t * 40.0)) / MIX_RATE
+		var thump := sin(phase) * exp(-t * thump_decay) * thump_gain
+		var scrape := (mid - slow) * gate * exp(-t * 7.0) * 2.0 * scrape_gain
+		var recorded := ItemAudio.contact_sample(CONTACT_HEAVY, t * 1.8)
+		body = lerpf(body, recorded, 0.35)
+		var crunch := body * exp(-t * tail_decay) * crunch_gain
+		var debris := maxf(0.0, n - 0.5) * rng.randf_range(-1.0, 1.0) * exp(-t * 18.0) * 0.9
+		samples[i] = crack + thump + scrape + crunch + debris
+	var peak := 0.0001
+	for s in samples:
+		peak = maxf(peak, absf(s))
+	var fade := int(MIX_RATE * 0.02)
+	for i in count:
+		var edge := minf(float(i) / 12.0, float(count - 1 - i) / fade)
+		samples[i] *= 0.8 / peak * clampf(edge, 0.0, 1.0)
 	return _wav_from_samples(samples)
 
 
-func _wav_from_samples(samples: PackedFloat32Array) -> AudioStreamWAV:
+static func _wav_from_samples(samples: PackedFloat32Array) -> AudioStreamWAV:
 	var bytes := PackedByteArray()
 	bytes.resize(samples.size() * 2)
 	for i in samples.size():

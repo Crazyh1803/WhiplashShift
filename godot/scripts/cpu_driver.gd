@@ -126,6 +126,7 @@ func tick(delta: float) -> void:
 		_turn_time = 0.0
 		_turn_sign = 1.0
 
+	# CPU braking targets assume normal drive; earned boost is reserved for player input.
 	target_speed = _speed_limit()
 	racecraft.tick(delta, peers, lane_offset, target_speed, not _turning and not progress.wrong_way and target.fwd_speed >= 0.0)
 	var ahead: Dictionary = course.points[progress.point_ahead(10.0 + target.speed * 0.7)]
@@ -294,7 +295,7 @@ func _place(index: int) -> void:
 	PhysicsServer3D.body_set_state(target.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, transform)
 	PhysicsServer3D.body_set_state(target.get_rid(), PhysicsServer3D.BODY_STATE_LINEAR_VELOCITY, Vector3.ZERO)
 	PhysicsServer3D.body_set_state(target.get_rid(), PhysicsServer3D.BODY_STATE_ANGULAR_VELOCITY, Vector3.ZERO)
-	target.reset_terrain_response()
+	target.reset_effects_state()
 	target.reset_physics_interpolation()
 	racecraft.reset(lane_offset)
 	_anticipated_end = ""

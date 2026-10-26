@@ -408,10 +408,20 @@ func hazard(pos: Vector3, id: String, normal: Vector3, owner_index := -1) -> Nod
 	add_child(root)
 	root.global_position = pos
 	if id == "smoke":
+		root.set_meta("born", clock)
 		for i in range(7):
-			var offset := Vector3(sin(i * 2.4) * 1.7, float(i % 3) * 0.7 - 0.5, cos(i * 2.4) * 1.7)
-			var puff := CombatVisuals.billboard(root, offset, Color(0.48, 0.5, 0.53, 0.92), 6.0, true)
+			var angle := _rng.randf_range(0.0, TAU)
+			var radius := _rng.randf_range(0.4, 1.8)
+			var offset := Vector3(cos(angle) * radius, _rng.randf_range(-0.8, 0.9), sin(angle) * radius)
+			var puff := CombatVisuals.billboard(root, offset, Color(0.48, 0.5, 0.53, 0.9), _rng.randf_range(4.5, 6.0), true)
 			puff.set_meta("origin", offset)
+			puff.set_meta("drift", Vector3(_rng.randf_range(-0.8, 0.8), _rng.randf_range(0.3, 0.9), _rng.randf_range(-0.6, 0.6)))
+			puff.set_meta("phase", _rng.randf_range(0.0, TAU))
+			puff.set_meta("fade_end", _rng.randf_range(0.0, 0.8))
+			puff.set_meta("fade_span", _rng.randf_range(0.6, 1.8))
+			puff.set_meta("growth", _rng.randf_range(0.1, 0.22))
+			puff.material_override.set_shader_parameter("luminance_mask", true)
+			puff.material_override.set_shader_parameter("cloud_rotation", angle)
 			if owner_index == 0:
 				owner_smoke.append(puff)
 	else:
@@ -430,17 +440,22 @@ func hazard(pos: Vector3, id: String, normal: Vector3, owner_index := -1) -> Nod
 
 func animate_hazard(entry: Dictionary) -> void:
 	var root: Node3D = entry.visual
-	var fade := minf(1, float(entry.life))
 	if entry.id == "smoke":
-		var age := 5.0 - float(entry.life)
+		var age := maxf(0.0, clock - float(root.get_meta("born")))
 		for i in root.get_child_count():
 			var puff := root.get_child(i) as MeshInstance3D
 			var origin: Vector3 = puff.get_meta("origin")
-			puff.position = origin + Vector3(sin(age + i) * 0.2, sin(age * 0.7 + i) * 0.25, cos(age + i) * 0.2)
-			puff.scale = Vector3.ONE * (0.85 + minf(age, 1.5) * 0.12)
-			puff.material_override.set_shader_parameter("tint", Color(0.48, 0.5, 0.53, 0.92 * fade))
+			var phase: float = puff.get_meta("phase")
+			var drift: Vector3 = puff.get_meta("drift")
+			var expansion := 1.0 - exp(-age * 0.55)
+			puff.position = origin + drift * expansion * 2.0 + Vector3(sin(age * 1.1 + phase), sin(age * 0.8 + phase), cos(age * 0.9 + phase)) * 0.3 * expansion
+			puff.scale = Vector3.ONE * (0.75 + expansion * float(puff.get_meta("growth")) * 3.0)
+			var end: float = puff.get_meta("fade_end")
+			var opacity := smoothstep(end, end + float(puff.get_meta("fade_span")), float(entry.life))
+			opacity *= minf(1.0, age * 7.0)
+			puff.material_override.set_shader_parameter("tint", Color(0.48, 0.5, 0.53, 0.9 * opacity))
 	else:
-		root.get_child(0).material_override.set_shader_parameter("opacity", fade)
+		root.get_child(0).material_override.set_shader_parameter("opacity", minf(1, float(entry.life)))
 
 
 func conceal_supply(pickup: Dictionary) -> void:
@@ -458,14 +473,19 @@ func prepare_streams(car: Vehicle, owner_index := -1) -> void:
 		emitter.emitting = false
 		emitter.local_coords = false
 		emitter.amount = 32 if id == "smoke" else 24
-		emitter.lifetime = 0.8 if id == "smoke" else 0.28
+		emitter.lifetime = 1.25 if id == "smoke" else 0.28
 		emitter.direction = Vector3(0, 0.2 if id == "smoke" else -0.2, -1)
-		emitter.spread = 16 if id == "smoke" else 6
+		emitter.spread = 48 if id == "smoke" else 6
 		emitter.initial_velocity_min = 2.0
 		emitter.initial_velocity_max = 4.0
 		emitter.gravity = Vector3(0, 0.8 if id == "smoke" else -14.0, 0)
 		var material: Material
 		if id == "smoke":
+			emitter.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+			emitter.emission_sphere_radius = 0.55
+			emitter.lifetime_randomness = 0.35
+			emitter.initial_velocity_min = 1.5
+			emitter.initial_velocity_max = 6.0
 			var quad := QuadMesh.new()
 			quad.size = Vector2(1.5, 1.5)
 			emitter.mesh = quad
@@ -473,6 +493,7 @@ func prepare_streams(car: Vehicle, owner_index := -1) -> void:
 			var cloud := ShaderMaterial.new()
 			cloud.shader = CombatVisuals.CLOUD
 			cloud.set_shader_parameter("cloud", CombatVisuals.SMOKE)
+			cloud.set_shader_parameter("luminance_mask", true)
 			material = cloud
 			emitter.scale_amount_min = 0.5
 			emitter.scale_amount_max = 1.5

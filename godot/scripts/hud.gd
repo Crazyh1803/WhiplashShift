@@ -18,6 +18,7 @@ var _banner: Label
 var _hint: Label
 var _cpu: Label
 var _race_status: Label
+var _boost_status: Label
 var _results: Control
 var _results_text: Label
 
@@ -34,7 +35,7 @@ func _ready() -> void:
 	_hint.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	_hint.offset_top = -34.0
 	_hint.offset_left = 18.0
-	_hint.text = "W/S throttle-brake  A/D steer  SPACE swap  SHIFT handbrake  E item  R recover  C camera  F1 debug  F2 CPUs"
+	_hint.text = "W/S throttle-brake  A/D steer  SPACE swap  SHIFT handbrake  E item  Q boost  R recover  C camera  F1 debug  F2 CPUs"
 	_hint.modulate = Color(1, 1, 1, 0.45)
 	_cpu = _label(15, Vector2.ZERO)
 	_cpu.set_anchors_preset(Control.PRESET_TOP_RIGHT)
@@ -70,6 +71,8 @@ func _ready() -> void:
 	_item_status = _label(19, Vector2(18, 228))
 	_item_status.name = "HeldItem"
 	_item_status.add_theme_color_override("font_color", Color("ffc34d"))
+	_boost_status = _label(17, Vector2(18, 286))
+	_boost_status.name = "BoostStatus"
 	_build_results()
 
 
@@ -156,11 +159,25 @@ func _process(_delta: float) -> void:
 	])
 	_main.modulate = Color("4fd2ff") if target.active_end == "A" else Color("ffa63d")
 
+	var boost_text := "BOOST: EARN WITH A CLEAN WHIPLASH"
+	if target.boost_time > 0.0:
+		boost_text = "BOOST FIRING  %.1fs" % target.boost_time
+	elif target.boost_cooldown > 0.0:
+		boost_text = "BOOST COOLING  %.1fs" % target.boost_cooldown
+	elif target.boost_charge > 0:
+		boost_text = "BOOST READY  ACCELERATE + [Q]"
+	_boost_status.text = boost_text
+	_boost_status.modulate = Color("4fd2ff") if target.boost_charge > 0 or target.boost_time > 0 else Color("a7adb7")
 	var wl: Dictionary = target.last_whiplash
 	if wl.is_empty() or float(wl.get("age", 99.0)) > 2.2:
 		_banner.text = ""
 	else:
 		_banner.text = "%s   %d%% MOMENTUM RETAINED" % [wl["kind"], roundi(float(wl["retained"]) * 100.0)]
+	if target.swap_feedback_time > 0.0 and _banner.text.is_empty():
+		_banner.text = "END %s ENGAGED" % target.active_end
+		_banner.modulate = Color("4fd2ff") if target.active_end == "A" else Color("ffa63d")
+	else:
+		_banner.modulate = Color.WHITE
 	if items != null:
 		_item_status.visible = race.state == RaceDirector.State.RACING
 		_item_status.text = "ITEM: EMPTY — COLLECT A GOLD BOX"
