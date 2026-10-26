@@ -256,7 +256,9 @@ func _test_boulder_coverage() -> void:
 			for seed in range(3):
 				var lanes_hit := true
 				var longest_gap := 0.0
-				for x: float in [0.0, 1.5, -3.0, 5.0, -7.0, half - 3.0, -(half - 3.0), half - 1.8, -(half - 1.8)]:
+				var lane_report := ""
+				for x: float in [0.0, 1.5, -3.0, 5.0, -7.0, half - 3.0, -(half - 3.0), half - 1.2, -(half - 1.2)]:
+					var lane_gap := 0.0
 					var peak := 0.0
 					var gap := 0.0
 					var s := END_MARGIN_TEST
@@ -264,11 +266,22 @@ func _test_boulder_coverage() -> void:
 						var h := _tyre_relief(s, x, width, length, seed)
 						peak = maxf(peak, h)
 						gap = 0.0 if h >= 0.02 else gap + 0.25
+						lane_gap = maxf(lane_gap, gap)
 						if length >= 24.0:
 							longest_gap = maxf(longest_gap, gap)
 						s += 0.25
-					lanes_hit = lanes_hit and peak >= (0.04 if length >= 24.0 else 0.015)
-				_check("fixed car lanes meet bumps at width %.0f length %.0f seed %d" % [width, length, seed], lanes_hit and longest_gap <= 14.0)
+					var lane_ok := peak >= (0.04 if length >= 24.0 else 0.015)
+					lanes_hit = lanes_hit and lane_ok
+					if not lane_ok or (length >= 24.0 and lane_gap > 14.0):
+						lane_report += " [x=%.1f peak=%.3f gap=%.1f]" % [x, peak, lane_gap]
+				_check("fixed car lanes meet bumps at width %.0f length %.0f seed %d%s" % [width, length, seed, lane_report], lanes_hit and longest_gap <= 14.0)
+		for length: float in [60.0, 160.0]:
+			for seed in range(3):
+				var tallest := 0.0
+				for step in int(length * 4.0):
+					for lateral in range(-20, 21):
+						tallest = maxf(tallest, TrackRelief.height(sid, float(step) * 0.25, float(lateral) * 0.25, width, length, seed))
+				_check("full-sized boulder crowns reach 0.16 m at width %.0f length %.0f seed %d (%.3f)" % [width, length, seed, tallest], tallest >= 0.16 and tallest <= 0.2)
 		for length: float in [60.0, 160.0]:
 			for seed in range(2):
 				_check("no steerable flat corridor at width %.0f length %.0f seed %d" % [width, length, seed], not _flat_corridor(width, length, seed))
@@ -290,7 +303,7 @@ func _test_boulder_coverage() -> void:
 ## Flood fill of cells whose tyres both stay flat; steering changes at most one cell per step.
 func _flat_corridor(width: float, length: float, seed: int) -> bool:
 	var cell := 0.3
-	var half_cells := int((width * 0.5 - 1.5) / cell)
+	var half_cells := int((width * 0.5 - 1.2) / cell)
 	var rows := int((length - 2.0 * END_MARGIN_TEST) / 0.5)
 	var reachable: Array = []
 	for row in rows + 1:
