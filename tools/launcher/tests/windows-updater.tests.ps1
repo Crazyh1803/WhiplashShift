@@ -81,6 +81,7 @@ try {
     Set-Content -LiteralPath (Join-Path $Source 'project.godot') -Value 'updated project'
     Set-Content -LiteralPath (Join-Path $Fixture 'source/repository/not-game.txt') -Value 'excluded'
     Add-Type -AssemblyName System.IO.Compression.FileSystem
+    Add-Type -AssemblyName System.IO.Compression
     # Built explicitly: Windows PowerShell 5.1 CreateFromDirectory writes backslash entry names, unlike GitHub.
     $ZipStream = [IO.File]::Open((Join-Path $Fixture 'source.zip'), [IO.FileMode]::Create)
     $Zip = New-Object IO.Compression.ZipArchive($ZipStream, [IO.Compression.ZipArchiveMode]::Create)
