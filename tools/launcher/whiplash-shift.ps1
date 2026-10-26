@@ -31,11 +31,15 @@ if (-not (Test-Path -LiteralPath $EnginePath)) {
 $OriginalVersion = Split-Path (Split-Path $EnginePath -Parent) -Parent
 $ProjectPath = Join-Path $OriginalVersion 'Game/godot'
 $Revision = ''
+$ActiveBranch = 'unknown'
+$Latest = ''
+$SourceBranch = ''
 if (Test-Path -LiteralPath $StatePath) {
     $State = Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json
     if (Test-Path -LiteralPath (Join-Path $State.project_path 'project.godot')) {
         $ProjectPath = $State.project_path
         $Revision = $State.revision
+        if ($State.source_branch) { $ActiveBranch = [string]$State.source_branch }
     }
 }
 
@@ -75,10 +79,33 @@ try {
             if (-not (Test-Path -LiteralPath (Join-Path $ImportedProject 'project.godot'))) {
                 throw 'The download does not contain the Godot project.'
             }
-            Write-LauncherLog 'Importing game assets with your installed Godot engine...'
-            $ImportProcess = Start-Process -FilePath $EnginePath -ArgumentList @('--headless', '--editor', '--path', ('"{0}"' -f $ImportedProject), '--import') -Wait -PassThru -RedirectStandardOutput (Join-Path $Staging 'import.log') -RedirectStandardError (Join-Path $Staging 'import-errors.log')
-            if ($ImportProcess.ExitCode -ne 0) { throw "Asset import failed (exit $($ImportProcess.ExitCode))." }
-            # Activate only a complete, imported version. Existing versions stay intact.
+            # A cold first import can crash at shutdown; retry in the same staged project so the import cache is kept.
+            $MaxAttempts = 3
+            $Validated = $false
+            $Failure = ''
+            for ($Attempt = 1; $Attempt -le $MaxAttempts -and -not $Validated; $Attempt++) {
+                Write-LauncherLog "Importing game assets with your installed Godot engine (attempt $Attempt of $MaxAttempts)..."
+                $ImportProcess = Start-Process -FilePath $EnginePath -ArgumentList @('--headless', '--editor', '--path', ('"{0}"' -f $ImportedProject), '--import') -Wait -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Staging "import-$Attempt.log") -RedirectStandardError (Join-Path $Staging "import-errors-$Attempt.log")
+                if ($ImportProcess.ExitCode -ne 0) {
+                    $Failure = "Asset import failed (exit $($ImportProcess.ExitCode))."
+                    Write-LauncherLog "$Failure Attempt $Attempt of $MaxAttempts."
+                    continue
+                }
+                Write-LauncherLog 'Import finished. Checking that the imported game starts...'
+                $SmokeErrors = Join-Path $Staging "smoke-errors-$Attempt.log"
+                $SmokeProcess = Start-Process -FilePath $EnginePath -ArgumentList @('--headless', '--path', ('"{0}"' -f $ImportedProject), '--quit-after', '120') -Wait -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $Staging "smoke-$Attempt.log") -RedirectStandardError $SmokeErrors
+                if ($SmokeProcess.ExitCode -ne 0) {
+                    $Failure = "Startup check failed (exit $($SmokeProcess.ExitCode))."
+                } elseif ((Test-Path -LiteralPath $SmokeErrors) -and (Select-String -LiteralPath $SmokeErrors -Pattern '^(SCRIPT ERROR|Parse Error)' -Quiet)) {
+                    $Failure = 'Startup check reported script errors.'
+                } else {
+                    $Validated = $true
+                    continue
+                }
+                Write-LauncherLog "$Failure Attempt $Attempt of $MaxAttempts."
+            }
+            if (-not $Validated) { throw "$Failure Gave up after $MaxAttempts attempts." }
+            # Activate only a complete, imported and validated version. Existing versions stay intact.
             $VersionPath = Join-Path $InstallRoot ('Versions/' + $Latest + '-' + [Guid]::NewGuid().ToString('N').Substring(0, 8))
             New-Item -ItemType Directory -Path (Split-Path $VersionPath -Parent) -Force | Out-Null
             Move-Item -LiteralPath $GameRoot -Destination $VersionPath
@@ -87,13 +114,17 @@ try {
             $NewState | ConvertTo-Json | Set-Content -LiteralPath ($StatePath + '.tmp') -Encoding UTF8
             Move-Item -LiteralPath ($StatePath + '.tmp') -Destination $StatePath -Force
             $ProjectPath = $NewProject
-            Write-LauncherLog "Updated to $($Latest.Substring(0, 8))."
+            $Revision = $Latest
+            $ActiveBranch = $SourceBranch
+            Write-LauncherLog "Updated to $SourceBranch at $($Latest.Substring(0, 8))."
         } finally {
             if (Test-Path -LiteralPath $Staging) { Remove-Item -LiteralPath $Staging -Recurse -Force }
         }
     }
 } catch {
-    Write-LauncherLog "Update unavailable: $($_.Exception.Message) Using the installed version."
+    $ActiveText = if ($Revision) { "$ActiveBranch at $($Revision.Substring(0, [Math]::Min(8, $Revision.Length)))" } else { 'the original installation' }
+    $DesiredText = if ($Latest) { "$SourceBranch at $($Latest.Substring(0, [Math]::Min(8, $Latest.Length)))" } else { 'unknown' }
+    Write-LauncherLog "Update unavailable: $($_.Exception.Message) Desired: $DesiredText. Active: $ActiveText. Launching the fallback, not the latest."
 }
 
 if (-not (Test-Path -LiteralPath (Join-Path $ProjectPath 'project.godot'))) {
@@ -132,6 +163,8 @@ if ($Install) {
 }
 
 if (-not $NoLaunch) {
+    $LaunchRevision = if ($Revision) { $Revision.Substring(0, [Math]::Min(8, $Revision.Length)) } else { 'original' }
+    Write-LauncherLog "Launching $ActiveBranch at $LaunchRevision."
     $LaunchArgs = @('--path', ('"{0}"' -f $ProjectPath))
     if ($Editor) { $LaunchArgs += '--editor' }
     Start-Process -FilePath $EnginePath -ArgumentList $LaunchArgs

@@ -7,6 +7,9 @@ $Original = Join-Path $Installed 'f3c1b36'
 $global:WhiplashTestCalls = @()
 $global:WhiplashTestOffline = $false
 $global:WhiplashTestImportExit = 0
+$global:WhiplashTestImportExits = @()
+$global:WhiplashTestSmokeExit = 0
+$global:WhiplashTestStyles = @()
 $global:WhiplashTestLatest = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 $global:WhiplashTestReleaseUri = ''
 
@@ -21,9 +24,18 @@ function Invoke-WebRequest {
     Copy-Item -LiteralPath (Join-Path $Fixture 'source.zip') -Destination $OutFile
 }
 function Start-Process {
-    param($FilePath, $ArgumentList, [switch]$Wait, [switch]$PassThru, $RedirectStandardOutput, $RedirectStandardError)
+    param($FilePath, $ArgumentList, [switch]$Wait, [switch]$PassThru, $WindowStyle, $RedirectStandardOutput, $RedirectStandardError)
     $global:WhiplashTestCalls += ,@($ArgumentList)
-    if ($PassThru) { return @{ ExitCode = $global:WhiplashTestImportExit } }
+    $global:WhiplashTestStyles += ,$WindowStyle
+    if (-not $PassThru) { return }
+    $Exit = $global:WhiplashTestImportExit
+    if ($ArgumentList -contains '--quit-after') {
+        $Exit = $global:WhiplashTestSmokeExit
+    } elseif ($global:WhiplashTestImportExits.Count -gt 0) {
+        $Exit = $global:WhiplashTestImportExits[0]
+        $global:WhiplashTestImportExits = @($global:WhiplashTestImportExits | Select-Object -Skip 1)
+    }
+    return @{ ExitCode = $Exit }
 }
 function Assert-True([bool]$Condition, [string]$Label) {
     if (-not $Condition) { throw "FAIL: $Label" }
@@ -50,7 +62,9 @@ try {
     Assert-True ((Get-Content -LiteralPath (Join-Path $State.project_path 'project.godot')).Trim() -eq 'updated project') 'The project is extracted to a new version'
     Assert-True (-not (Test-Path -LiteralPath (Join-Path (Split-Path $State.project_path -Parent) 'not-game.txt'))) 'Only game files are extracted'
     Assert-True ((Get-Content -LiteralPath (Join-Path $Original 'Game/godot/project.godot')).Trim() -eq 'original project') 'The original installation is preserved'
-    Assert-True ($global:WhiplashTestCalls.Count -eq 1 -and $global:WhiplashTestCalls[0] -contains '--import') 'Asset import runs before activation'
+    Assert-True ($global:WhiplashTestCalls.Count -eq 2 -and $global:WhiplashTestCalls[0] -contains '--import') 'Asset import runs before activation'
+    Assert-True ($global:WhiplashTestCalls[1] -contains '--quit-after') 'A bounded startup check runs after import'
+    Assert-True (@($global:WhiplashTestStyles | Where-Object { $_ -eq 'Hidden' }).Count -eq 2) 'Background import and startup check windows are hidden'
 
     $global:WhiplashTestCalls = @()
     & $Launcher -InstallRoot $Installed
@@ -66,6 +80,28 @@ try {
     $After = Get-Content -LiteralPath (Join-Path $Installed 'current.json') -Raw | ConvertFrom-Json
     Assert-True ($After.revision -eq $State.revision) 'A failed import keeps the working version active'
     Assert-True (@(Get-ChildItem -LiteralPath $Installed -Filter '.update-*').Count -eq 0) 'Failed staging files are cleaned up'
+    $Imports = @($global:WhiplashTestCalls | Where-Object { $_ -contains '--import' })
+    Assert-True ($Imports.Count -eq 3 -and @($global:WhiplashTestCalls | Where-Object { $_ -contains '--quit-after' }).Count -eq 0)'A permanently failing import is retried then abandoned without a startup check'
+    $Log = Get-Content -LiteralPath (Join-Path $Installed 'launcher.log') -Raw
+    Assert-True ($Log -match 'Desired: chat/test-feature at bbbbbbbb' -and $Log -match 'Active: chat/test-feature at aaaaaaaa') 'A failed update logs desired and active revisions'
+
+    $global:WhiplashTestImportExit = 0
+    $global:WhiplashTestImportExits = @(-1073741819)
+    $global:WhiplashTestCalls = @()
+    & $Launcher -NoLaunch -InstallRoot $Installed
+    $After = Get-Content -LiteralPath (Join-Path $Installed 'current.json') -Raw | ConvertFrom-Json
+    $Staged = @($global:WhiplashTestCalls | Where-Object { $_ -contains '--import' } | ForEach-Object { $_[3] } | Select-Object -Unique)
+    Assert-True ($After.revision -eq $global:WhiplashTestLatest) 'A transient import crash is retried and then activates the revision'
+    Assert-True (@($global:WhiplashTestCalls | Where-Object { $_ -contains '--import' }).Count -eq 2 -and $Staged.Count -eq 1) 'The retry reuses the same staged project'
+
+    $global:WhiplashTestLatest = 'cccccccccccccccccccccccccccccccccccccccc'
+    $global:WhiplashTestSmokeExit = 1
+    $global:WhiplashTestCalls = @()
+    & $Launcher -NoLaunch -InstallRoot $Installed
+    $Kept = Get-Content -LiteralPath (Join-Path $Installed 'current.json') -Raw | ConvertFrom-Json
+    Assert-True ($Kept.revision -eq 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb') 'A failed startup check never activates the revision'
+    Assert-True (@($global:WhiplashTestCalls | Where-Object { $_ -contains '--quit-after' }).Count -eq 3) 'A failed startup check is retried up to three times'
+    $global:WhiplashTestSmokeExit = 0
 
     $global:WhiplashTestOffline = $true
     $global:WhiplashTestCalls = @()
