@@ -3,6 +3,7 @@ class_name VisceraResponse
 extends Node3D
 
 const CAPACITY := 96
+const ROCK_GAINS := {Surfaces.Id.BOULDER: 1.0, Surfaces.Id.MUD: 0.5, Surfaces.Id.GRAVEL: 0.35, Surfaces.Id.WATER: 0.2}
 const FRAGMENT_NAMES := ["ThrownViscera", "ThrownEntrails", "ThrownLimbFragments", "ThrownArmorChips", "ThrownCarbonGrit", "ThrownRubbleChunks", "ThrownSpinalPlates", "ThrownBrokenRibs", "ThrownCoolantFlakes", "ThrownCoolantSplinters", "ThrownEffluentSheets", "ThrownEffluentDroplets", "ThrownIchorStrands", "ThrownIchorDroplets"]
 static var _fragment_meshes: Array[ArrayMesh] = []
 var sink := 0.0
@@ -16,7 +17,6 @@ var wash := 0.0
 var oil_slide := 0.0
 var _oil_yaw := 0.0
 var _skid_yaw := 0.0
-var _impact_phase := 0.0
 var bounced_total := 0
 var _rattle_phase := 0.0
 var _car: RigidBody3D
@@ -248,8 +248,6 @@ func advance(dt: float, wheels: Array, end: String, velocity: Vector3, throttle:
 	wash = lerpf(wash, state["wash"], weight)
 	rattle = lerpf(rattle, state["rattle"], weight)
 	impact = lerpf(impact, state["impact"], weight)
-	# Broad spaced kicks; no discontinuous random pose jumps.
-	_impact_phase += dt * (4.0 + minf(velocity.length(), 25.0) * 0.4)
 	# Keep the mixed-frequency oscillators continuous; recovery resets the phase.
 	_rattle_phase += dt * (14.0 + minf(velocity.length(), 25.0) * 0.6)
 	var sign_end := -1.0 if end == "A" else 1.0
@@ -471,10 +469,6 @@ func _update_pose() -> void:
 		var shake := Vector3(sin(_rattle_phase) * 0.015, 0, sin(_rattle_phase * 1.37) * 0.01) * rattle
 		var lift := sin(_rattle_phase * 1.73) * rattle * 0.022
 		lift += sin(_rattle_phase * 0.21) * wash * 0.006
-		var kick := pow(maxf(sin(_impact_phase), 0.0), 6.0) * impact
-		var rebound := pow(maxf(sin(_impact_phase - 0.65), 0.0), 6.0) * impact
-		lift += kick * 0.065 - rebound * 0.018
-		shake += Vector3(kick * 0.035, 0, kick * sin(_impact_phase * 0.47) * 0.022)
 		shake += Vector3(0, _skid_yaw + _oil_yaw, -skid * 0.012 - oil_slide * 0.018)
 		shake += _rock_pose
 		_visual.transform = _rest * Transform3D(Basis.from_euler(Vector3(_pitch, 0, 0) + shake), Vector3(0, -sink + lift, 0))
@@ -486,14 +480,15 @@ func _rock_contact_pose(dt: float, wheels: Array, end: String, speed: float, bod
 	var tuning: TuningProfile = _car.get("tuning") if is_instance_valid(_car) else null
 	if tuning != null and speed > 0.25:
 		for wheel: Wheel in wheels:
-			if not wheel.contact or wheel.surface_id != Surfaces.Id.BOULDER:
+			var weight: float = ROCK_GAINS.get(wheel.surface_id, 0.0)
+			if not wheel.contact or weight == 0.0:
 				continue
 			contacts += 1
 			var axle := 1.0 if wheel.end == "A" else -1.0
 			var normal := body_basis.inverse() * wheel.contact_normal
-			target.x += axle * wheel.compression / maxf(tuning.half_base * 4.0, 0.1)
-			target.z += float(wheel.side) * wheel.compression / maxf(tuning.half_track * 4.0, 0.1)
-			target.y += axle * normal.x * 0.25
+			target.x += weight * axle * wheel.compression / maxf(tuning.half_base * 4.0, 0.1)
+			target.z += weight * float(wheel.side) * wheel.compression / maxf(tuning.half_track * 4.0, 0.1)
+			target.y += weight * axle * normal.x * 0.25
 	if contacts == 0:
 		_rock_slow = Vector3.ZERO
 		_rock_pose = _rock_pose.lerp(Vector3.ZERO, 1.0 - exp(-12.0 * dt))
@@ -520,7 +515,6 @@ func reset_effect() -> void:
 	oil_slide = 0.0
 	_oil_yaw = 0.0
 	_skid_yaw = 0.0
-	_impact_phase = 0.0
 	_rattle_phase = 0.0
 	_pitch = 0.0
 	_rock_pose = Vector3.ZERO

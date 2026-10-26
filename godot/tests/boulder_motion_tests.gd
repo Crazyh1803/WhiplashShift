@@ -49,6 +49,20 @@ func _test_driven_bodies() -> void:
 			_check(tag + " yaw rate is bounded", rough["yaw"] < 0.3)
 			_check(tag + " lateral drift is bounded", rough["drift"] < 2.0)
 			_check(tag + " keeps support (no long airborne gaps)", rough["gap"] < 0.3)
+			_check(tag + " flat tarmac has no cosmetic rock pose", flat["rock"] == 0.0)
+			var boulder_rock: float = rough["rock"]
+			_check(tag + " boulder cosmetic pose is active and clamped", boulder_rock > 0.001 and boulder_rock < 0.08)
+			if speed == 20.0:
+				await _test_soft_driven(end, speed, boulder_rock)
+
+
+func _test_soft_driven(end: String, speed: float, boulder_rock: float) -> void:
+	for entry: Array in [[Surfaces.Id.MUD, 0.5], [Surfaces.Id.GRAVEL, 0.35], [Surfaces.Id.WATER, 0.2]]:
+		var soft := await _drive(entry[0], speed, end)
+		var tag := "%s end %s @%dm/s" % [Surfaces.KEYS[entry[0]], end, int(speed)]
+		print("BOULDER_MOTION: %s cosmetic rock %.4f vs boulder %.4f" % [tag, soft["rock"], boulder_rock])
+		_check(tag + " cosmetic pose stays gentler than boulder", soft["rock"] < boulder_rock)
+		_check(tag + " cosmetic pose is bounded", soft["rock"] < 0.08)
 
 
 func _run_points(length: float) -> Array:
@@ -80,6 +94,8 @@ func _drive(sid: int, speed: float, end: String) -> Dictionary:
 	var max_tilt := 0.0
 	var gap := 0
 	var longest_gap := 0
+	var rock := 0.0
+	var fx: VisceraResponse = car.get_node("VisceraResponse")
 	for frame in SETTLE_FRAMES + WINDOW_FRAMES:
 		car.throttle = clampf((speed - car.fwd_speed) * 0.5, 0.0, 1.0)
 		car.brake = 0.0
@@ -96,6 +112,7 @@ func _drive(sid: int, speed: float, end: String) -> Dictionary:
 		yaw_sq += car.angular_velocity.y * car.angular_velocity.y
 		speed_sum += car.linear_velocity.length()
 		max_tilt = maxf(max_tilt, rad_to_deg(chassis.y.angle_to(Vector3.UP)))
+		rock = maxf(rock, fx._rock_pose.length())
 		var touching := false
 		for wheel: Wheel in car.wheels:
 			touching = touching or wheel.contact
@@ -103,7 +120,7 @@ func _drive(sid: int, speed: float, end: String) -> Dictionary:
 		longest_gap = maxi(longest_gap, gap)
 	var result := {"pitch": pitch_hi - pitch_lo, "roll": roll_hi - roll_lo,
 		"yaw": sqrt(yaw_sq / WINDOW_FRAMES), "drift": absf(car.global_position.x - start.x),
-		"gap": longest_gap * DT, "speed": speed_sum / WINDOW_FRAMES, "max_tilt": max_tilt}
+		"gap": longest_gap * DT, "speed": speed_sum / WINDOW_FRAMES, "max_tilt": max_tilt, "rock": rock}
 	root.queue_free()
 	await get_tree().process_frame
 	return result
@@ -122,6 +139,13 @@ func _wheels(sid: int = Surfaces.Id.BOULDER, front := 0.0, rear := 0.0, left := 
 		wheel.compression = (front if wheel.end == "A" else rear) + (left if wheel.side < 0 else right)
 		result.append(wheel)
 		_wheels_made.append(wheel)
+	return result
+
+
+func _tilted_boulder(slope: Vector3) -> Array[Wheel]:
+	var result := _wheels()
+	for wheel in result:
+		wheel.contact_normal = slope if wheel.end == "A" else Vector3(-slope.x, slope.y, slope.z)
 	return result
 
 
@@ -194,8 +218,54 @@ func _test_rock_pose_units() -> void:
 
 	_check("stationary car has no rock pose", _pose(_wheels(Surfaces.Id.BOULDER, 0.05), "A", 0.0, 12) == Vector3.ZERO)
 	_check("crawling below the speed gate has no rock pose", _pose(_wheels(Surfaces.Id.BOULDER, 0.05), "A", 0.2, 12) == Vector3.ZERO)
-	for sid: int in [Surfaces.Id.TARMAC, Surfaces.Id.MUD, Surfaces.Id.GRAVEL, Surfaces.Id.ICE, Surfaces.Id.WATER]:
+	for sid: int in [Surfaces.Id.TARMAC, Surfaces.Id.RUMBLE, Surfaces.Id.ICE, Surfaces.Id.OIL, Surfaces.Id.OFF]:
 		_check("%s contacts cause no rock pose" % Surfaces.KEYS[sid], _pose(_wheels(sid, 0.05, 0.03, 0.02, 0.04), "A", 30.0, 12) == Vector3.ZERO)
+
+	# Soft surfaces reuse the boulder filter at a fraction of its gain, identical contacts at both ends.
+	for end: String in ["A", "B"]:
+		var base := _pose(_wheels(Surfaces.Id.BOULDER, 0.02, 0.0, 0.0, 0.02), end)
+		for entry: Array in [[Surfaces.Id.MUD, 0.5], [Surfaces.Id.GRAVEL, 0.35], [Surfaces.Id.WATER, 0.2]]:
+			var soft := _pose(_wheels(entry[0], 0.02, 0.0, 0.0, 0.02), end)
+			var tag := "%s from End %s" % [Surfaces.KEYS[entry[0]], end]
+			_check("%s keeps boulder signs" % tag, soft.x > 0.0 and soft.z > 0.0)
+			_check("%s pose is %.2fx boulder" % [tag, entry[1]], is_equal_approx(soft.x, base.x * entry[1]) and is_equal_approx(soft.z, base.z * entry[1]))
+		var slope := Vector3(0.2, 1.0, 0.0).normalized()
+		var tilted := _wheels(Surfaces.Id.MUD)
+		for wheel in tilted:
+			wheel.contact_normal = slope if wheel.end == "A" else Vector3(-slope.x, slope.y, slope.z)
+		_check("mud slopes yaw + gently from End %s" % end, _pose(tilted, end).y > 0.0
+			and _pose(tilted, end).y < _pose(_tilted_boulder(slope), end).y)
+		# Per-contact weighting: boulder front plus mud rear sums the two contributions.
+		var mixed := _wheels(Surfaces.Id.BOULDER, 0.02, 0.02)
+		for wheel in mixed:
+			if wheel.end == "B":
+				wheel.surface_id = Surfaces.Id.MUD
+		var boulder_front := _pose(_wheels(Surfaces.Id.BOULDER, 0.02, 0.0, 0.0, 0.0), end).x
+		var expected := boulder_front - 0.5 * boulder_front
+		var mixed_pose := _pose(mixed, end)
+		_check("mixed boulder/mud weights each contact from End %s" % end, absf(mixed_pose.x - expected) < absf(expected) * 0.01 + 1e-6)
+		var quiet := _wheels(Surfaces.Id.BOULDER, 0.02, 0.02)
+		for wheel in quiet:
+			if wheel.end == "B":
+				wheel.surface_id = Surfaces.Id.TARMAC
+		var water_mix := _wheels(Surfaces.Id.WATER, 0.02, 0.02)
+		for wheel in water_mix:
+			if wheel.end == "B":
+				wheel.surface_id = Surfaces.Id.OIL
+		_check("quiet partners do not add or damp pose from End %s" % end,
+			is_equal_approx(_pose(quiet, end).x, _pose(_wheels(Surfaces.Id.BOULDER, 0.02), end).x)
+			and is_equal_approx(_pose(water_mix, end).x, _pose(_wheels(Surfaces.Id.WATER, 0.02), end).x))
+
+	# Settling: identical compression stops moving the pose, then recovery returns it to rest.
+	var settle := _fx()
+	_pose(_wheels(Surfaces.Id.MUD, 0.02, 0.02, 0.02, 0.02), "A", 20.0, 600, Basis.IDENTITY, settle)
+	_check("flat equal soft contacts settle to no pose", settle._rock_pose.length() < 0.0005)
+	var rocked := _wheels(Surfaces.Id.MUD, 0.04)
+	_pose(rocked, "A", 20.0, 12, Basis.IDENTITY, settle)
+	_check("unequal soft contacts move the pose", settle._rock_pose.length() > 0.001)
+	_pose(rocked, "A", 20.0, 900, Basis.IDENTITY, settle)
+	_check("held soft contacts settle", settle._rock_pose.length() < 0.0005)
+	settle.free()
 
 	# Mixed terrain: only BOULDER wheels count, however hard the others are compressed.
 	var mixed := _wheels(Surfaces.Id.BOULDER, 0.02)
