@@ -99,7 +99,8 @@ static func _sample(rng: RandomNumberGenerator, run: Array, cumulative: PackedFl
 	var color := Color.WHITE
 	if kind == "Pools":
 		var wide := 0.9 + size_roll * 0.9
-		basis = basis * Basis.from_scale(Vector3(wide * scale, 1.0, wide * scale * (0.55 + stretch * 0.5)))
+		basis = _surface_tilt(sid, s, across, width, run_length, index, a, b) * basis \
+			* Basis.from_scale(Vector3(wide * scale, 1.0, wide * scale * (0.55 + stretch * 0.5)))
 		p.y += 0.014
 		color = Color(0.5 + tone * 0.5, 0.45 + tone * 0.4, 0.45 + tone * 0.4)
 	elif kind == "Coils":
@@ -114,6 +115,26 @@ static func _sample(rng: RandomNumberGenerator, run: Array, cumulative: PackedFl
 		color = Color(0.45 + tone * 0.55, 0.3 + tone * 0.5, 0.3 + tone * 0.5)
 	transforms.append(Transform3D(basis, p))
 	colors.append(color)
+
+
+## Rotation taking world up onto the relief plane under a pool, from centred height gradients,
+## so the lens rests flat on sloped mud instead of burying its uphill rim.
+static func _surface_tilt(sid: int, s: float, across: float, width: float, run_length: float,
+		index: int, a: Dictionary, b: Dictionary) -> Basis:
+	var along: Vector3 = b["pos"] - a["pos"]
+	along.y = 0.0
+	if along.length_squared() < 0.0001:
+		return Basis.IDENTITY
+	along = along.normalized()
+	var across_axis := Vector3(along.z, 0.0, -along.x)
+	var grade_s := (TrackRelief.height(sid, s + 1.0, across, width, run_length, index)
+		- TrackRelief.height(sid, s - 1.0, across, width, run_length, index)) * 0.5
+	var grade_c := (TrackRelief.height(sid, s, across + 1.0, width, run_length, index)
+		- TrackRelief.height(sid, s, across - 1.0, width, run_length, index)) * 0.5
+	var normal := (across_axis + Vector3.UP * grade_c).cross(along + Vector3.UP * grade_s)
+	if normal.y < 0.0:
+		normal = -normal
+	return Basis(Quaternion(Vector3.UP, normal.normalized()))
 
 
 static func _add_batch(root: Node3D, kind: String, transforms: Array[Transform3D], colors: Array[Color]) -> void:
@@ -132,6 +153,9 @@ static func _add_batch(root: Node3D, kind: String, transforms: Array[Transform3D
 	node.multimesh = multi
 	node.material_override = _material(kind)
 	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# The headless renderer stores no MultiMesh data, so tests read this CPU copy instead.
+	node.set_meta("cpu_transforms", transforms)
+	node.set_meta("cpu_colors", colors)
 	root.add_child(node)
 
 
