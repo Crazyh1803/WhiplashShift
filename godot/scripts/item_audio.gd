@@ -11,7 +11,7 @@ const RATE := 22050
 const MAX_VOICES := 16
 const DURATIONS := {"machine_guns": 0.13, "rockets": 0.48, "homing": 0.55,
 	"grenades": 0.22, "explosion": 1.25, "impact": 0.55, "hit": 0.22,
-	"pickup": 0.78, "oil": 0.28, "smoke": 0.35, "shield_on": 0.55,
+	"pickup": 0.5, "oil": 0.28, "smoke": 0.35, "shield_on": 0.55,
 	"shield_hit": 0.45, "shield_off": 0.35, "shield_hum": 1.0, "smoke_loop": 1.0, "oil_loop": 1.0}
 var _cache: Dictionary = {}
 var _voices: Array[AudioStreamPlayer3D] = []
@@ -202,38 +202,45 @@ static func _contact(wav: AudioStreamWAV, time: float) -> float:
 	return float(wav.data.decode_s16(offset)) / 32768.0
 
 
-## Original arcade pickup: bright FM lift, moving dry image and crossed delay taps.
-## Synthesized locally; no sampled audio from R-Type.
+## Industrial pickup: electromechanical latch thud, then a short dirty descending
+## electronic confirmation with decorrelated static per channel. Original synthesis.
 static func _make_pickup() -> AudioStreamWAV:
-	var count := int(float(DURATIONS["pickup"]) * RATE)
-	var dry := PackedFloat32Array()
-	dry.resize(count)
-	var phase := 0.0
-	for i in count:
-		var t := float(i) / RATE
-		if t >= 0.43:
-			continue
-		var rise := clampf(t / 0.36, 0.0, 1.0)
-		var frequency := 380.0 * pow(3.7, rise)
-		phase += TAU * frequency / RATE
-		var attack := minf(t / 0.006, 1.0)
-		var release := clampf((0.43 - t) / 0.12, 0.0, 1.0)
-		var shimmer := sin(phase + sin(phase * 2.0) * (1.4 - rise))
-		dry[i] = (shimmer * 0.34 + sin(phase * 1.5) * 0.12) * attack * release
+	var duration := float(DURATIONS["pickup"])
+	var count := int(duration * RATE)
 	var bytes := PackedByteArray()
 	bytes.resize(count * 4)
+	var rng_l := RandomNumberGenerator.new()
+	var rng_r := RandomNumberGenerator.new()
+	rng_l.seed = 0x1A7C4
+	rng_r.seed = 0x5EED9
+	var thump_phase := 0.0
+	var buzz_phase := 0.0
+	var held := 0.0
+	var slow_l := 0.0
+	var slow_r := 0.0
 	for i in count:
 		var t := float(i) / RATE
-		var pan := lerpf(-0.65, 0.65, clampf(t / 0.43, 0.0, 1.0))
-		var left := dry[i] * sqrt((1.0 - pan) * 0.5)
-		var right := dry[i] * sqrt((1.0 + pan) * 0.5)
-		for tap in range(1, 4):
-			var delayed := i - int((0.085 * tap) * RATE)
-			if delayed >= 0:
-				var echo := dry[delayed] * pow(0.43, tap)
-				left += echo * (0.9 if tap % 2 else 0.2)
-				right += echo * (0.2 if tap % 2 else 0.9)
-		var fade := minf(1.0, (float(DURATIONS["pickup"]) - t) * 100.0)
+		# Latch: low body thud with a pitch drop, plus a short clack of noise.
+		thump_phase += TAU * (46.0 + 70.0 * exp(-t * 38.0)) / RATE
+		var thud := sin(thump_phase) * exp(-t * 20.0) * 0.8
+		var nl := rng_l.randf_range(-1.0, 1.0)
+		var nr := rng_r.randf_range(-1.0, 1.0)
+		slow_l = lerpf(slow_l, nl, 0.12)
+		slow_r = lerpf(slow_r, nr, 0.12)
+		var clack := exp(-t * 170.0) * 0.55
+		# Confirmation: sawtooth falling 300 -> 120 Hz, sample-held (bitcrushed).
+		var u := maxf(0.0, t - 0.08)
+		var env := 0.0
+		if t >= 0.08:
+			env = minf(u / 0.004, 1.0) * clampf((0.36 - t) / 0.12, 0.0, 1.0)
+		buzz_phase += TAU * (120.0 + 180.0 * exp(-u * 8.0)) / RATE
+		if i % 4 == 0:
+			held = fposmod(buzz_phase / TAU, 1.0) * 2.0 - 1.0
+		var buzz := held * env * 0.3
+		var static_gate := env * (0.5 + 0.5 * sin(TAU * 37.0 * t))
+		var left := thud + (nl - slow_l) * clack + buzz + slow_l * static_gate * 0.7
+		var right := thud + (nr - slow_r) * clack + buzz * 0.9 + slow_r * static_gate * 0.7
+		var fade := minf(1.0, (duration - t) * 100.0) * minf(1.0, t * 800.0)
 		bytes.encode_s16(i * 4, int(clampf(left * fade, -0.9, 0.9) * 32767))
 		bytes.encode_s16(i * 4 + 2, int(clampf(right * fade, -0.9, 0.9) * 32767))
 	var wav := AudioStreamWAV.new()
