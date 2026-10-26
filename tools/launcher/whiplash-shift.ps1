@@ -34,15 +34,18 @@ function Assert-InsideRoot([string]$Path, [string]$Root) {
 # Runs Godot without -Wait so a hung process can be stopped after TimeoutMs.
 function Invoke-GodotStep([string[]]$Arguments, [string]$OutLog, [string]$ErrLog, [int]$TimeoutMs) {
     $Process = Start-Process -FilePath $EnginePath -ArgumentList $Arguments -PassThru -WindowStyle Hidden -RedirectStandardOutput $OutLog -RedirectStandardError $ErrLog
+    # Windows PowerShell 5.1: with redirected output, ExitCode can read null after WaitForExit unless the handle was opened right after start.
+    $null = $Process.Handle
+    $ProcessId = $Process.Id
     if (-not $Process.WaitForExit($TimeoutMs)) {
         # Kill is asynchronous: confirm the process is gone before anyone retries in the same project.
         $KillFailed = $false
         try { $Process.Kill() } catch { $KillFailed = $true }
         $Gone = $false
         if (-not $KillFailed) { $Gone = $Process.WaitForExit(10000) }
-        return @{ TimedOut = $true; ExitCode = $null; Unkillable = (-not $Gone) }
+        return @{ TimedOut = $true; ExitCode = $null; Unkillable = (-not $Gone); ProcessId = $ProcessId }
     }
-    return @{ TimedOut = $false; ExitCode = $Process.ExitCode; Unkillable = $false }
+    return @{ TimedOut = $false; ExitCode = $Process.ExitCode; Unkillable = $false; ProcessId = $ProcessId }
 }
 
 # True when any existing log holds a fatal marker, even if the process exited 0.
@@ -88,6 +91,7 @@ try {
     Write-LauncherLog "$Channel channel: $SourceBranch at $($Latest.Substring(0, 8))."
     if ($Latest -ne $Revision) {
         Write-LauncherLog 'Downloading the latest published game. The first update may take a few minutes.'
+        $PreserveStaging = $false
         $Staging = Join-Path $InstallRoot ('.update-' + [Guid]::NewGuid().ToString('N'))
         New-Item -ItemType Directory -Path $Staging | Out-Null
         try {
@@ -124,7 +128,10 @@ try {
                 $ImportOut = Join-Path $Staging "import-$Attempt.log"
                 $ImportErr = Join-Path $Staging "import-errors-$Attempt.log"
                 $Import = Invoke-GodotStep @('--headless', '--editor', '--path', ('"{0}"' -f $ImportedProject), '--import', '--quit') $ImportOut $ImportErr 180000
-                if ($Import.Unkillable) { throw 'Godot did not stop after the import timed out. Aborting without retry.' }
+                if ($Import.Unkillable) {
+                    $PreserveStaging = $true
+                    throw "Godot (PID $($Import.ProcessId)) did not stop after the import timed out. Aborting without retry; staging kept at $Staging."
+                }
                 if ($Import.TimedOut) {
                     $Failure = 'Asset import timed out.'
                 } elseif ($Import.ExitCode -ne 0) {
@@ -136,7 +143,10 @@ try {
                     $SmokeOut = Join-Path $Staging "smoke-$Attempt.log"
                     $SmokeErr = Join-Path $Staging "smoke-errors-$Attempt.log"
                     $Smoke = Invoke-GodotStep @('--headless', '--path', ('"{0}"' -f $ImportedProject), '--quit-after', '120') $SmokeOut $SmokeErr 60000
-                    if ($Smoke.Unkillable) { throw 'Godot did not stop after the startup check timed out. Aborting without retry.' }
+                    if ($Smoke.Unkillable) {
+                        $PreserveStaging = $true
+                        throw "Godot (PID $($Smoke.ProcessId)) did not stop after the startup check timed out. Aborting without retry; staging kept at $Staging."
+                    }
                     if ($Smoke.TimedOut) {
                         $Failure = 'Startup check timed out.'
                     } elseif ($Smoke.ExitCode -ne 0) {
@@ -166,7 +176,8 @@ try {
             $ActiveBranch = $SourceBranch
             Write-LauncherLog "Updated to $SourceBranch at $($Latest.Substring(0, 8))."
         } finally {
-            if (Test-Path -LiteralPath $Staging) {
+            # A process that survived Kill may still hold files here; leave them for manual cleanup.
+            if (-not $PreserveStaging -and (Test-Path -LiteralPath $Staging)) {
                 Assert-InsideRoot $Staging $InstallRoot
                 Remove-Item -LiteralPath $Staging -Recurse -Force
             }
