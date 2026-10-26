@@ -18,7 +18,8 @@ const BOULDER_BASE_CAP := 0.20
 const RAMP_DEFAULTS := {"height": 1.2, "rise": 14.0, "fall": 16.0}
 const RAMP_MIN_HEIGHT := 0.5
 const RAMP_MAX_HEIGHT := 1.5
-const RAMP_MIN_CREST := 8.0
+const RAMP_MIN_TABLETOP := 4.0
+const RAMP_MIN_CREST_WIDTH := 8.0
 const RAMP_MAX_GRADE := 0.25
 const RAMP_LATERAL_GRADE := 0.28
 const RAMP_MAX_TURN_DEG := 8.0
@@ -64,6 +65,8 @@ static func config_errors(relief: Variant) -> PackedStringArray:
 				errors.append("ramp height must be %.1f to %.1f m" % [RAMP_MIN_HEIGHT, RAMP_MAX_HEIGHT])
 			if float(cfg.get("rise", RAMP_DEFAULTS["rise"])) <= 0.0 or float(cfg.get("fall", RAMP_DEFAULTS["fall"])) <= 0.0:
 				errors.append("ramp rise and fall must be positive")
+			elif float(cfg.get("fall", RAMP_DEFAULTS["fall"])) < float(cfg.get("rise", RAMP_DEFAULTS["rise"])):
+				errors.append("ramp fall must be at least rise")
 	return errors
 
 
@@ -110,7 +113,8 @@ static func key(sid: int, relief: Variant = {}) -> String:
 		"boulders":
 			return "%d:boulders:%s:%s" % [sid, p["preset"], str(p["seed"]) if p.has("seed") else "run"]
 		"ramp":
-			return "%d:ramp:%.6f:%.6f:%.6f" % [sid, p["height"], p["rise"], p["fall"]]
+			# Exact float bits, so distinct geometry never aliases.
+			return "%d:ramp:%s" % [sid, var_to_bytes([p["height"], p["rise"], p["fall"]]).hex_encode()]
 	return "%d:%s" % [sid, p["shape"]]
 
 
@@ -159,9 +163,18 @@ static func validation(points: Array) -> PackedStringArray:
 	var errors := PackedStringArray()
 	for i in points.size():
 		if typeof(points[i]) != TYPE_DICTIONARY:
-			return errors
-		if points[i].has("relief"):
-			for message in config_errors(points[i]["relief"]):
+			errors.append("point %d: must be a Dictionary" % i)
+			continue
+		var point: Dictionary = points[i]
+		if point.has("s") and typeof(point["s"]) != TYPE_INT:
+			errors.append("point %d: s must be an int" % i)
+		for field in ["w", "dist"]:
+			if point.has(field) and not _finite_number(point[field]):
+				errors.append("point %d: %s must be a finite number" % [i, field])
+		if point.has("dir") and not (typeof(point["dir"]) == TYPE_VECTOR3 and point["dir"].is_finite()):
+			errors.append("point %d: dir must be a finite Vector3" % i)
+		if point.has("relief"):
+			for message in config_errors(point["relief"]):
 				errors.append("point %d: %s" % [i, message])
 	if not errors.is_empty():
 		return errors
@@ -176,23 +189,26 @@ static func validation(points: Array) -> PackedStringArray:
 		var min_span := h * PI / (2.0 * RAMP_MAX_GRADE)
 		if prof["rise"] < min_span - 0.0001 or prof["fall"] < min_span - 0.0001:
 			errors.append("%s: rise and fall must be at least %.2f m for %.2f m height (slope <= %.2f)" % [label, min_span, h, RAMP_MAX_GRADE])
-		if run["length"] < prof["rise"] + prof["fall"] + RAMP_MIN_CREST:
-			errors.append("%s: run is %.1f m, needs rise + fall + %.0f m flat crest" % [label, run["length"], RAMP_MIN_CREST])
+		if run["length"] < prof["rise"] + prof["fall"] + RAMP_MIN_TABLETOP:
+			errors.append("%s: run is %.1f m, needs rise + fall + %.0f m tabletop" % [label, run["length"], RAMP_MIN_TABLETOP])
 		var min_width := INF
-		var first_dir := Vector3.ZERO
-		var worst_turn := 0.0
-		for k in range(int(run["first"]), int(run["last"]) + 1):
-			var point: Dictionary = points[k]
+		var dirs: Array[Vector3] = []
+		# The builder carries the next point into the run, so its width and heading count too.
+		for k in range(int(run["first"]), int(run["last"]) + 2):
+			var point: Dictionary = points[k % points.size()]
 			min_width = minf(min_width, float(point.get("w", 0.0)))
 			var dir: Vector3 = point.get("dir", Vector3.ZERO)
-			if first_dir == Vector3.ZERO:
-				first_dir = dir
-			elif first_dir.length_squared() > 0.0 and dir.length_squared() > 0.0:
-				worst_turn = maxf(worst_turn, rad_to_deg(first_dir.angle_to(dir)))
-		if min_width < 2.0 * ramp_edge(h):
-			errors.append("%s: road is %.1f m wide, needs %.1f m for lateral slope <= %.2f" % [label, min_width, 2.0 * ramp_edge(h), RAMP_LATERAL_GRADE])
+			if dir.length_squared() > 0.0:
+				dirs.append(dir)
+		var needed_width := RAMP_MIN_CREST_WIDTH + 2.0 * ramp_edge(h)
+		if min_width < needed_width:
+			errors.append("%s: road is %.1f m wide, needs %.1f m (%.0f m flat crest plus lateral slope <= %.2f)" % [label, min_width, needed_width, RAMP_MIN_CREST_WIDTH, RAMP_LATERAL_GRADE])
+		var worst_turn := 0.0
+		for a in dirs.size():
+			for b in range(a + 1, dirs.size()):
+				worst_turn = maxf(worst_turn, rad_to_deg(dirs[a].angle_to(dirs[b])))
 		if worst_turn > RAMP_MAX_TURN_DEG:
-			errors.append("%s: heading changes %.1f degrees, max %.0f (ramps must be straight)" % [label, worst_turn, RAMP_MAX_TURN_DEG])
+			errors.append("%s: heading spread is %.1f degrees, max %.0f (ramps must be straight)" % [label, worst_turn, RAMP_MAX_TURN_DEG])
 	return errors
 
 
