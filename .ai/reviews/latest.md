@@ -1,5 +1,5 @@
 VERDICT: APPROVE
 FINDINGS:
-- [MED] godot/scripts/vehicle_audio.gd:245 — `contact_heavy.wav.import` enables QOA compression (`compress/mode=2`), so `data.decode_s16()` interprets compressed bytes as PCM, corrupting the recorded impact layer. — Use an uncompressed PCM resource or decode the compressed audio before sampling; validate its format.
-- [MED] godot/scripts/vehicle_audio.gd:175 — Relative speed combines the target’s cached velocity with the other car’s post-collision velocity. Solver changes can therefore understate impact intensity or silence contacts near the threshold. — Measure both velocities before collision resolution and add a physical two-car collision test.
-- [MED] godot/tests/vehicle_audio_tests.gd:1 — The new suite is absent from `tools/vehicle_pipeline/test_blackjack_refinement.sh`, the runner configured for `ak-test`, so routine checks never execute these assertions. — Add `vehicle_audio_tests` to the runner’s scene list.
+- [MED] godot/tests/vehicle_feedback_tests.gd:45 — The fixture creates a second VehicleEffects instance although Vehicle._ready() already creates one, doubling effect pools and undermining the three-car cost measurement — Reuse the existing VehicleEffects child and disable its automatic processing.
+- [MED] godot/tests/vehicle_feedback_visual_qa.gd:74 — Any bright scenery makes the visual check pass even when smoke and marks are invisible — Compare effect regions against baseline frames or require explicit screenshot inspection.
+- [MED] godot/tests/vehicle_feedback_visual_qa.gd:126 — If the manoeuvre produces no marks, indexing segments[0] aborts the coroutine before the failure summary and exit — Guard the empty array and return after recording the failure.

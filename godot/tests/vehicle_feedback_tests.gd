@@ -42,10 +42,7 @@ func _car(at := Vector3(0, 1, 0)) -> Vehicle:
 
 
 func _effects(car: Vehicle) -> VehicleEffects:
-	var fx := EFFECTS_SCRIPT.new() as VehicleEffects
-	fx.name = "VehicleEffects"
-	car.add_child(fx)
-	fx.setup(car)
+	var fx := car.get_node("VehicleEffects") as VehicleEffects
 	fx.set_physics_process(false)
 	return fx
 

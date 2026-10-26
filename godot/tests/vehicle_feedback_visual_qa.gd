@@ -2,6 +2,7 @@
 ## environment and the real chase camera: no studio, no added lights. A real handbrake manoeuvre lays
 ## smoke and marks; the marks are then aged (emission frozen, never reset) until they are gone; a real
 ## smoke deployment is watched after the owner stops emitting, from the owner chase view and a rival's.
+## Saved effect regions require manual inspection; the blank-frame check only validates rendering.
 ## Pass `-- --capture` to write PNGs to .ai/captures/vehicle-feedback.
 extends Node3D
 
@@ -123,6 +124,9 @@ func _handbrake_and_marks() -> void:
 	_fx.set_physics_process(false)
 	var emitted := _fx.skid_emitted
 	var segments := _fx.skid_segments()
+	if segments.is_empty():
+		_check("fade QA requires real emitted strips", false)
+		return
 	var slot: int = segments[0]["slot"]
 	var birth: float = segments[0]["birth"]
 	var fresh_alpha := _slot_alpha(slot)
@@ -165,6 +169,7 @@ func _smoke_deployment() -> void:
 	_scene.race.state = RaceDirector.State.RACING
 	items.grant_item(0, "smoke")
 	_car.throttle = 0.7
+	_car.linear_velocity = _car.forward_vector().normalized() * 20.0
 	_check("smoke deploys while driving", items.fire(0))
 	for frame in 100:
 		await get_tree().physics_frame
@@ -200,7 +205,7 @@ func _smoke_deployment() -> void:
 			break
 		var life: float = smokes.map(func(h: Dictionary) -> float: return float(h["life"])).max()
 		if stage == 0 and life <= 4.0 or stage == 1 and life <= 2.2 or stage == 2 and life <= 0.9:
-			var label := ["smoke-fresh", "smoke-eroding", "smoke-thin"][stage]
+			var label: String = ["smoke-fresh", "smoke-eroding", "smoke-thin"][stage]
 			_use_chase()
 			await _shot("%s-owner-chase" % label)
 			_use_observer(centre + Vector3.UP * 1.5, side)
