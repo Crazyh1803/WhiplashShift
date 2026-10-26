@@ -274,8 +274,8 @@ static func _build_shared() -> void:
 	_ring_mesh = TorusMesh.new()
 	_ring_mesh.inner_radius = 0.46
 	_ring_mesh.outer_radius = 0.5
-	_ring_mesh.rings = 32
-	_ring_mesh.ring_segments = 8
+	_ring_mesh.rings = 24
+	_ring_mesh.ring_segments = 4
 	_smoke_material = ShaderMaterial.new()
 	_smoke_material.shader = CLOUD_SHADER
 	_smoke_material.set_shader_parameter("cloud", SMOKE_TEXTURE)
@@ -449,6 +449,18 @@ func _extend_skid(index: int, wheel: Wheel) -> void:
 	skid_emitted += 1
 
 
+## CPU-side strip transform: a unit plane laid on the ground normal between the two ends.
+func skid_transform(slot: int) -> Transform3D:
+	var along := _skid_b[slot] - _skid_a[slot]
+	var length := along.length()
+	var normal := _skid_n[slot]
+	var dir := (along / length) if length > 0.0001 else Vector3.FORWARD
+	var side := dir.cross(normal).normalized()
+	var basis := Basis(side * _skid_width[slot], normal, dir * (length + 0.04))
+	var center := (_skid_a[slot] + _skid_b[slot]) * 0.5 + normal * SKID_LIFT
+	return Transform3D(basis, center)
+
+
 func _refresh_skids() -> void:
 	var multimesh := _skid_node.multimesh
 	for slot in _skid_high:
@@ -460,14 +472,7 @@ func _refresh_skids() -> void:
 			_skid_birth[slot] = -1.0
 			multimesh.set_instance_transform(slot, Transform3D(Basis.from_scale(Vector3.ONE * 0.0001), Vector3(0.0, -1000.0, 0.0)))
 			continue
-		var along := _skid_b[slot] - _skid_a[slot]
-		var length := along.length()
-		var normal := _skid_n[slot]
-		var dir := (along / length) if length > 0.0001 else Vector3.FORWARD
-		var side := dir.cross(normal).normalized()
-		var basis := Basis(side * _skid_width[slot], normal, dir * (length + 0.04))
-		var center := (_skid_a[slot] + _skid_b[slot]) * 0.5 + normal * SKID_LIFT
-		multimesh.set_instance_transform(slot, Transform3D(basis, center))
+		multimesh.set_instance_transform(slot, skid_transform(slot))
 		var fade := 1.0 - smoothstep(0.55, 1.0, age / SKID_LIFETIME)
 		multimesh.set_instance_color(slot, Color(1.0, 1.0, 1.0, 0.6 * fade))
 	multimesh.visible_instance_count = _skid_high
@@ -571,13 +576,15 @@ func skid_count() -> int:
 	return alive
 
 
-## Live strips as {a, b, normal, wheel, birth}, oldest slot first.
+## Live strips as {a, b, normal, wheel, birth, slot}, oldest first (the ring buffer is unwrapped).
 func skid_segments() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	for slot in _skid_high:
+	var start := _skid_cursor if _skid_high >= SKID_CAPACITY else 0
+	for offset in _skid_high:
+		var slot := (start + offset) % SKID_CAPACITY
 		if _skid_birth[slot] >= 0.0:
 			result.append({"a": _skid_a[slot], "b": _skid_b[slot], "normal": _skid_n[slot],
-				"wheel": _skid_wheel[slot], "birth": _skid_birth[slot]})
+				"wheel": _skid_wheel[slot], "birth": _skid_birth[slot], "slot": slot})
 	return result
 
 
