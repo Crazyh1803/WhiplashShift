@@ -32,7 +32,7 @@ static func height(sid: int, s: float, across: float, width: float, length: floa
 
 static func _boulders(s: float, across: float, seed: int) -> float:
 	var cell := Vector2i(floori(s / 3.8), floori(across / 2.6))
-	var height := 0.0
+	var peak := 0.0
 	for row in range(cell.x - 2, cell.x + 2):
 		for lane in range(cell.y - 1, cell.y + 2):
 			var id := posmod(row * 73856093 ^ lane * 19349663 ^ seed * 83492791, 104729)
@@ -44,8 +44,8 @@ static func _boulders(s: float, across: float, seed: int) -> float:
 			var radius := Vector2((s - center_s) / 3.6, (across - center_u) / 2.6).length()
 			if radius < 1.0:
 				var dome := 0.5 + 0.5 * cos(PI * radius)
-				height = maxf(height, (0.045 + 0.015 * jitter) * dome * dome)
-	return height
+				peak = maxf(peak, (0.045 + 0.015 * jitter) * dome * dome)
+	return peak
 
 
 ## Subdivide the original quad, retaining its exact boundary and winding.
