@@ -59,6 +59,13 @@ func _test_geometry() -> void:
 		_check(String(body.name) + " metre UVs continue across runs", is_equal_approx(uvs[0].y, previous_end) and uvs[-1].y > uvs[0].y)
 		previous_end = uvs[-1].y
 		_check(String(body.name) + " carries road width for paint", widths.size() == faces.size() and widths[0].x >= 20.0)
+		var height_map_matches := true
+		for vertex in faces.size():
+			var normalized_height := widths[vertex].y
+			height_map_matches = height_map_matches and normalized_height >= 0.0 and normalized_height <= 1.0
+			var maximum: float = TrackRelief.MAX_HEIGHTS.get(sid, 0.0)
+			height_map_matches = height_map_matches and is_equal_approx(faces[vertex].y, normalized_height * maximum)
+		_check(String(body.name) + " material elevation matches visible and collision heights", height_map_matches)
 	_check("UV distance covers full closed course", is_equal_approx(previous_end, course.total_length))
 	var flat_control := Node3D.new()
 	root.add_child(flat_control)

@@ -162,23 +162,27 @@ void fragment() {
 		wet = 0.95;
 		shade_k = 0.7;
 	} else if (surface_id == 4) {
-		// Fractured spinal armor: large interlocking plates, deep black cavities.
-		vec3 slab = shards(p * 0.38);
-		float aa = max(fwidth(slab.y), 0.008);
-		float cavity = 1.0 - smoothstep(0.035, 0.035 + aa, slab.y);
-		float lip = (1.0 - smoothstep(0.055, 0.13, slab.y)) * (1.0 - cavity);
-		color = mix(vec3(0.23, 0.24, 0.27), vec3(0.70, 0.66, 0.56), step(0.3, slab.z));
-		color *= 0.75 + mid * 0.3;
-		color = mix(color, vec3(0.847, 0.827, 0.769), lip * 0.65);
-		color = mix(color, vec3(0.025, 0.018, 0.025), cavity);
-		relief = (1.0 - cavity) * 0.16 + slab.x * 0.025;
-		rough = 0.65 + grain * 0.22;
-		metal = 0.15;
-		macro_h = 0.1 + 0.6 * smoothstep(0.02, 0.14, slab.y) + lip * 0.2 + (mid - 0.5) * 0.2;
-		gran = 0.5;
-		pit_amt = 0.4;
-		shade_k = 1.1;
-		relief_gain = 0.01;
+		// Vertex height is shared with the collider: crowns and flanks mark real rocks.
+		float rock_height = clamp(UV2.y, 0.0, 1.0);
+		float rock_aa = max(fwidth(rock_height), 0.008);
+		float flank = smoothstep(0.015, 0.08 + rock_aa, rock_height);
+		float crown = smoothstep(0.65, 0.92, rock_height);
+		float rim = smoothstep(0.12, 0.25, rock_height) * (1.0 - smoothstep(0.25, 0.42, rock_height));
+		vec3 cracks = shards(p * 2.6);
+		float scratch = (1.0 - smoothstep(0.012, 0.012 + max(fwidth(cracks.y), 0.012), cracks.y)) * crown;
+		vec3 stone = mix(vec3(0.38, 0.37, 0.34), vec3(0.63, 0.60, 0.51), crown);
+		stone *= 0.82 + mid * 0.24 + grain * 0.12;
+		stone = mix(stone, vec3(0.82, 0.79, 0.69), rim * 0.35);
+		stone *= 1.0 - scratch * 0.24;
+		color = mix(vec3(0.028, 0.023, 0.03) * (0.7 + grain * 0.6), stone, flank);
+		relief = rock_height * 0.3;
+		rough = 0.76 + grain * 0.18;
+		metal = 0.05;
+		macro_h = rock_height;
+		gran = 0.35 * flank;
+		pit_amt = 0.25;
+		shade_k = 0.6;
+		relief_gain = 0.002 * flank;
 	} else if (surface_id == 5) {
 		// Vitrified coolant: dark glass, trapped pale fractures and cyan capillaries.
 		vec3 frost = shards(p * 0.65);

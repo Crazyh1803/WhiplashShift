@@ -3,7 +3,7 @@ class_name TrackRelief
 extends RefCounted
 
 const MAX_HEIGHTS := {Surfaces.Id.GRAVEL: 0.03, Surfaces.Id.MUD: 0.05,
-	Surfaces.Id.BOULDER: 0.06, Surfaces.Id.WATER: 0.02}
+	Surfaces.Id.BOULDER: 0.09, Surfaces.Id.WATER: 0.02}
 const END_FADE := 3.5
 const EDGE_FADE := 3.0
 
@@ -20,7 +20,7 @@ static func height(sid: int, s: float, across: float, width: float, length: floa
 		return 0.0
 	var fade := smoothstep(0.0, END_FADE, minf(s, length - s)) * smoothstep(0.0, EDGE_FADE, edge)
 	if sid == Surfaces.Id.BOULDER:
-		return _boulders(s, across, seed) * fade
+		return _boulders(s, across, width, length, seed) * fade
 	var phase := float(posmod(seed * 17 + sid * 31, 97)) * 0.1
 	var frequency := 0.3 if sid == Surfaces.Id.GRAVEL else 0.2
 	if sid == Surfaces.Id.WATER:
@@ -30,21 +30,33 @@ static func height(sid: int, s: float, across: float, width: float, length: floa
 	return float(MAX_HEIGHTS[sid]) * profile * fade
 
 
-static func _boulders(s: float, across: float, seed: int) -> float:
-	var cell := Vector2i(floori(s / 3.8), floori(across / 2.6))
+static func _boulders(s: float, across: float, width: float, length: float, seed: int) -> float:
+	var cell_size := Vector2(12.0, 7.0)
+	var radii := Vector2(6.0, 4.8)
+	var cell := Vector2i(floori(s / cell_size.x), floori(across / cell_size.y))
+	var search := Vector2i(ceili(radii.x / cell_size.x) + 1, ceili(radii.y / cell_size.y) + 1)
 	var peak := 0.0
-	for row in range(cell.x - 2, cell.x + 2):
-		for lane in range(cell.y - 1, cell.y + 2):
-			var id := posmod(row * 73856093 ^ lane * 19349663 ^ seed * 83492791, 104729)
-			if id % 11 < 3:
+	for row in range(cell.x - search.x, cell.x + search.x + 1):
+		for lane in range(cell.y - search.y, cell.y + search.y + 1):
+			var pair := lane if lane >= 0 else -lane - 1
+			var side := 1.0 if lane >= 0 else -1.0
+			var id := posmod(row * 73856093 ^ pair * 19349663 ^ seed * 83492791, 104729)
+			if id % 11 < 4:
 				continue
 			var jitter := float(id % 101) / 100.0
-			var center_s := (float(row) + 0.25 + 0.5 * jitter) * 3.8 + float(posmod(lane, 2)) * 1.1
-			var center_u := (float(lane) + 0.3 + 0.4 * float(id % 79) / 78.0) * 2.6
-			var radius := Vector2((s - center_s) / 3.6, (across - center_u) / 2.6).length()
+			var center_s := (float(row) + 0.25 + 0.5 * jitter) * cell_size.x + side * (1.0 if posmod(row, 2) == 0 else -1.0) * 0.25
+			var center_u := side * (float(pair) * cell_size.y + 2.2 + jitter * 0.6)
+			if center_s - radii.x < END_FADE or center_s + radii.x > length - END_FADE:
+				continue
+			if absf(center_u) + radii.y > width * 0.5 - EDGE_FADE:
+				continue
+			var delta := Vector2((s - center_s) / radii.x, (across - center_u) / radii.y)
+			var angle := atan2(absf(delta.y), delta.x)
+			var radius := delta.length() / (0.97 + 0.03 * cos(angle * 3.0 + jitter * TAU))
 			if radius < 1.0:
-				var dome := 0.5 + 0.5 * cos(PI * radius)
-				peak = maxf(peak, (0.045 + 0.015 * jitter) * dome * dome)
+				var crown_radius := maxf(0.0, (radius - 0.12) / 0.88)
+				var dome := 0.5 + 0.5 * cos(PI * crown_radius)
+				peak = maxf(peak, (0.07 + 0.02 * jitter) * dome * dome)
 	return peak
 
 
@@ -69,13 +81,16 @@ static func append_quad(verts: PackedVector3Array, normals: PackedVector3Array,
 				Vector2(float(lane) / lanes, float(row + 1) / steps),
 				Vector2(float(lane + 1) / lanes, float(row + 1) / steps)]
 			var positions: Array[Vector3] = []
+			var heights: Array[float] = []
 			for corner in corners:
 				var width := lerpf(a["w"], b["w"], corner.y)
 				var s := distance + float(a["dist"]) * corner.y
 				var across := (corner.x - 0.5) * width
 				var p := al.lerp(ar, corner.x).lerp(bl.lerp(br, corner.x), corner.y)
-				p.y += height(sid, s - run_start, across, width, run_length, seed)
+				var h := height(sid, s - run_start, across, width, run_length, seed)
+				p.y += h
 				positions.append(p)
+				heights.append(h / float(MAX_HEIGHTS[sid]))
 			for tri: Array in [[0, 1, 2], [2, 1, 3]]:
 				# Godot's front-face winding is opposite the geometric cross product.
 				var normal: Vector3 = (positions[tri[2]] - positions[tri[0]]).cross(positions[tri[1]] - positions[tri[0]]).normalized()
@@ -84,4 +99,4 @@ static func append_quad(verts: PackedVector3Array, normals: PackedVector3Array,
 					normals.append(normal)
 					var corner := corners[index]
 					uvs.append(Vector2(corner.x, distance + float(a["dist"]) * corner.y))
-					widths.append(Vector2(lerpf(a["w"], b["w"], corner.y), 0))
+					widths.append(Vector2(lerpf(a["w"], b["w"], corner.y), heights[index]))
