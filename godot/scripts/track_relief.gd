@@ -6,6 +6,8 @@ const MAX_HEIGHTS := {Surfaces.Id.GRAVEL: 0.03, Surfaces.Id.MUD: 0.05,
 	Surfaces.Id.BOULDER: 0.20, Surfaces.Id.WATER: 0.02}
 const END_FADE := 3.5
 const EDGE_FADE := 3.0
+const ROCK_ROW := 5.0
+const ROCK_LANE := 3.9
 
 
 static func enabled(sid: int) -> bool:
@@ -30,37 +32,50 @@ static func height(sid: int, s: float, across: float, width: float, length: floa
 	return float(MAX_HEIGHTS[sid]) * profile * fade
 
 
+static func _rand(state: int) -> int:
+	return (state * 48271) % 2147483647
+
+
+## Mirrored left/right rocks keep aggregate lateral loading symmetric; rows, lanes, sizes and phases are seeded.
+## Rock heights scale with footprint so gradients stay bounded, and taper near ends/edges so the fades stay safe.
 static func _boulders(s: float, across: float, width: float, length: float, seed: int) -> float:
-	var margin_s := minf(END_FADE, length * 0.15)
-	var margin_u := minf(EDGE_FADE, width * 0.15)
-	var radii := Vector2(minf(9.0, (length - 2.0 * margin_s) * 0.35), minf(6.0, (width * 0.5 - margin_u) / 1.5))
-	var cell_size := Vector2(radii.x * 2.0, radii.y * 7.0 / 6.0)
-	var origin_s := margin_s + radii.x
-	var cell := Vector2i(floori((s - origin_s) / cell_size.x), floori(across / cell_size.y))
-	var search := Vector2i(ceili(radii.x / cell_size.x) + 1, ceili(radii.y / cell_size.y) + 1)
-	var height_scale := minf(pow(radii.x / 9.0, 2.0), pow(radii.y / 6.0, 2.0))
-	var shift := minf(cell_size.x * 0.25, length - 2.0 * margin_s - 2.0 * radii.x)
+	var half := width * 0.5
+	var lateral := absf(across)
+	var end_taper := lerpf(0.5, 1.0, smoothstep(END_FADE, END_FADE + 5.0, minf(s, length - s)))
+	var edge_taper := lerpf(0.5, 1.0, smoothstep(EDGE_FADE, EDGE_FADE + 5.0, half - lateral))
+	var base_row := floori(s / ROCK_ROW)
 	var peak := 0.0
-	for row in range(cell.x - search.x, cell.x + search.x + 1):
-		for lane in range(cell.y - search.y, cell.y + search.y + 1):
-			var pair := lane if lane >= 0 else -lane - 1
-			var side := 1.0 if lane >= 0 else -1.0
-			var id := posmod(row * 73856093 ^ pair * 19349663 ^ seed * 83492791, 104729)
-			var jitter := float(id % 101) / 100.0
-			var center_s := origin_s + float(row) * cell_size.x + jitter * shift
-			var center_u := side * (float(pair) * cell_size.y + radii.y * (2.2 / 6.0 + jitter * 0.1))
-			if center_s - radii.x < margin_s - 0.00001 or center_s + radii.x > length - margin_s + 0.00001:
+	for row in range(base_row - 3, base_row + 4):
+		for pair in range(0, 6):
+			var state := posmod(row * 73856093 ^ pair * 19349663 ^ seed * 83492791, 2147483646) + 1
+			state = _rand(state)
+			var center_s := (float(row) + 0.5 + (float(state) / 2147483647.0 - 0.5) * 1.1) * ROCK_ROW
+			if absf(s - center_s) > 7.0:
 				continue
-			if absf(center_u) + radii.y > width * 0.5 - margin_u:
+			state = _rand(state)
+			var center_u := (float(pair) + 0.5 + (float(state) / 2147483647.0 - 0.5) * 0.9) * ROCK_LANE
+			if center_u > half - 0.5:
 				continue
-			var delta := Vector2((s - center_s) / radii.x, (across - center_u) / radii.y)
-			var footprint := delta.abs()
-			var radius := maxf(maxf(footprint.x, footprint.y), (footprint.x + footprint.y) * (0.70 + jitter * 0.04))
-			if radius < 1.0:
-				var crown_radius := maxf(0.0, (radius - 0.12) / 0.88)
-				var dome := 0.5 + 0.5 * cos(PI * crown_radius)
-				peak = maxf(peak, (0.16 + 0.04 * jitter) * height_scale * dome * dome)
-	return peak
+			state = _rand(state)
+			var radius_s := 4.2 + 2.8 * float(state) / 2147483647.0
+			state = _rand(state)
+			var radius_u := 3.4 + 1.8 * float(state) / 2147483647.0
+			state = _rand(state)
+			var variation := float(state) / 2147483647.0
+			state = _rand(state)
+			var diamond := 0.70 + 0.04 * float(state) / 2147483647.0
+			var crown := minf(0.2 * (0.6 + 0.4 * variation), 0.026 * minf(radius_s, radius_u))
+			var dx := absf(s - center_s) / radius_s
+			if dx >= 1.0:
+				continue
+			for side in [-1.0, 1.0]:
+				var dy := absf(lateral - side * center_u) / radius_u
+				var footprint := maxf(maxf(dx, dy), (dx + dy) * diamond)
+				if footprint < 1.0:
+					var crown_radius := maxf(0.0, (footprint - 0.12) / 0.88)
+					var dome := 0.5 + 0.5 * cos(PI * crown_radius)
+					peak = maxf(peak, crown * dome * dome)
+	return peak * end_taper * edge_taper
 
 
 ## Subdivide the original quad, retaining its exact boundary and winding.
