@@ -3,7 +3,7 @@ class_name TrackRelief
 extends RefCounted
 
 const MAX_HEIGHTS := {Surfaces.Id.GRAVEL: 0.03, Surfaces.Id.MUD: 0.05,
-	Surfaces.Id.BOULDER: 0.08, Surfaces.Id.WATER: 0.02}
+	Surfaces.Id.BOULDER: 0.06, Surfaces.Id.WATER: 0.02}
 const END_FADE := 3.5
 const EDGE_FADE := 3.0
 
@@ -19,6 +19,8 @@ static func height(sid: int, s: float, across: float, width: float, length: floa
 	if s <= 0.0 or s >= length or edge <= 0.0:
 		return 0.0
 	var fade := smoothstep(0.0, END_FADE, minf(s, length - s)) * smoothstep(0.0, EDGE_FADE, edge)
+	if sid == Surfaces.Id.BOULDER:
+		return _boulders(s, across, seed) * fade
 	var phase := float(posmod(seed * 17 + sid * 31, 97)) * 0.1
 	var frequency := 0.3 if sid == Surfaces.Id.GRAVEL else 0.2
 	if sid == Surfaces.Id.WATER:
@@ -26,6 +28,24 @@ static func height(sid: int, s: float, across: float, width: float, length: floa
 	# Broad swells avoid exciting the suspension near its natural frequency.
 	var profile := 0.5 + 0.25 * cos(s * frequency + phase) + 0.25 * cos(across * 0.7)
 	return float(MAX_HEIGHTS[sid]) * profile * fade
+
+
+static func _boulders(s: float, across: float, seed: int) -> float:
+	var cell := Vector2i(floori(s / 3.8), floori(across / 2.6))
+	var height := 0.0
+	for row in range(cell.x - 2, cell.x + 2):
+		for lane in range(cell.y - 1, cell.y + 2):
+			var id := posmod(row * 73856093 ^ lane * 19349663 ^ seed * 83492791, 104729)
+			if id % 11 < 3:
+				continue
+			var jitter := float(id % 101) / 100.0
+			var center_s := (float(row) + 0.25 + 0.5 * jitter) * 3.8 + float(posmod(lane, 2)) * 1.1
+			var center_u := (float(lane) + 0.3 + 0.4 * float(id % 79) / 78.0) * 2.6
+			var radius := Vector2((s - center_s) / 3.6, (across - center_u) / 2.6).length()
+			if radius < 1.0:
+				var dome := 0.5 + 0.5 * cos(PI * radius)
+				height = maxf(height, (0.045 + 0.015 * jitter) * dome * dome)
+	return height
 
 
 ## Subdivide the original quad, retaining its exact boundary and winding.
@@ -38,8 +58,10 @@ static func append_quad(verts: PackedVector3Array, normals: PackedVector3Array,
 	var ar: Vector3 = a["pos"] - an
 	var bl: Vector3 = b["pos"] + bn
 	var br: Vector3 = b["pos"] - bn
-	var steps := maxi(1, ceili(float(a["dist"]) / 0.9))
-	var lanes := clampi(ceili(maxf(a["w"], b["w"]) / 2.5), 8, 16)
+	var spacing := 0.6 if sid == Surfaces.Id.BOULDER else 0.9
+	var steps := maxi(1, ceili(float(a["dist"]) / spacing))
+	var lane_width := 0.8 if sid == Surfaces.Id.BOULDER else 2.5
+	var lanes := clampi(ceili(maxf(a["w"], b["w"]) / lane_width), 8, 48 if sid == Surfaces.Id.BOULDER else 16)
 	for row in steps:
 		for lane in lanes:
 			var corners: Array[Vector2] = [Vector2(float(lane) / lanes, float(row) / steps),

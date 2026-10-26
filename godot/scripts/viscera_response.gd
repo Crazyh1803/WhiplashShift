@@ -23,6 +23,8 @@ var _car: RigidBody3D
 var _visual: Node3D
 var _rest := Transform3D.IDENTITY
 var _pitch := 0.0
+var _rock_pose := Vector3.ZERO
+var _rock_slow := Vector3.ZERO
 var _previous := Vector3.ZERO
 var _suppress := 0
 var _cursor := 0
@@ -256,6 +258,7 @@ func advance(dt: float, wheels: Array, end: String, velocity: Vector3, throttle:
 	skid = lerpf(skid, state["skid"], weight)
 	_skid_yaw = lerpf(_skid_yaw, sign_end * float(state["skid"]) * 0.055, weight)
 	_pitch = lerpf(_pitch, sign_end * (float(state["pitch"]) + float(state["water_pitch"])), weight)
+	_rock_contact_pose(dt, wheels, end, velocity.length(), body_basis)
 	_update_pose()
 	for index in mini(wheels.size(), 4):
 		var wheel: Wheel = wheels[index]
@@ -473,7 +476,33 @@ func _update_pose() -> void:
 		lift += kick * 0.065 - rebound * 0.018
 		shake += Vector3(kick * 0.035, 0, kick * sin(_impact_phase * 0.47) * 0.022)
 		shake += Vector3(0, _skid_yaw + _oil_yaw, -skid * 0.012 - oil_slide * 0.018)
+		shake += _rock_pose
 		_visual.transform = _rest * Transform3D(Basis.from_euler(Vector3(_pitch, 0, 0) + shake), Vector3(0, -sink + lift, 0))
+
+
+func _rock_contact_pose(dt: float, wheels: Array, end: String, speed: float, body_basis: Basis) -> void:
+	var target := Vector3.ZERO
+	var contacts := 0
+	var tuning: TuningProfile = _car.get("tuning") if is_instance_valid(_car) else null
+	if tuning != null and speed > 0.25:
+		for wheel: Wheel in wheels:
+			if not wheel.contact or wheel.surface_id != Surfaces.Id.BOULDER:
+				continue
+			contacts += 1
+			var axle := 1.0 if wheel.end == "A" else -1.0
+			var normal := body_basis.inverse() * wheel.contact_normal
+			target.x += axle * wheel.compression / maxf(tuning.half_base * 4.0, 0.1)
+			target.z += float(wheel.side) * wheel.compression / maxf(tuning.half_track * 4.0, 0.1)
+			target.y += axle * normal.x * 0.25
+	if contacts == 0:
+		_rock_slow = Vector3.ZERO
+		_rock_pose = _rock_pose.lerp(Vector3.ZERO, 1.0 - exp(-12.0 * dt))
+		return
+	_rock_slow = _rock_slow.lerp(target, 1.0 - exp(-1.5 * dt))
+	var gain := (1.0 if end == "A" else 0.55) * minf(speed / 8.0, 1.0)
+	var pose := (target - _rock_slow) * gain
+	pose = pose.clamp(Vector3(-0.052, -0.021, -0.044), Vector3(0.052, 0.021, 0.044))
+	_rock_pose = _rock_pose.lerp(pose, 1.0 - exp(-12.0 * dt))
 
 
 func _restore_pose() -> void:
@@ -494,6 +523,8 @@ func reset_effect() -> void:
 	_impact_phase = 0.0
 	_rattle_phase = 0.0
 	_pitch = 0.0
+	_rock_pose = Vector3.ZERO
+	_rock_slow = Vector3.ZERO
 	last_rate = 0.0
 	active_count = 0
 	_life.fill(0.0)

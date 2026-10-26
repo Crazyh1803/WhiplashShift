@@ -218,6 +218,11 @@ func _test_relief_driving() -> void:
 			var gaps: Array[int] = [0, 0, 0, 0]
 			var max_gap := 0
 			var max_roll := 0.0
+			var min_pitch := 10.0
+			var max_pitch := -10.0
+			var max_yaw_rate := 0.0
+			var max_airborne := 0
+			var airborne := 0
 			var max_drift := 0.0
 			for frame in 240:
 				await get_tree().physics_frame
@@ -225,10 +230,16 @@ func _test_relief_driving() -> void:
 					gaps[wheel] = 0 if car.wheels[wheel].contact else gaps[wheel] + 1
 					max_gap = maxi(max_gap, gaps[wheel])
 				max_roll = maxf(max_roll, absf(car.rotation.z))
+				min_pitch = minf(min_pitch, car.rotation.x)
+				max_pitch = maxf(max_pitch, car.rotation.x)
+				max_yaw_rate = maxf(max_yaw_rate, absf(car.angular_velocity.y))
+				airborne = airborne + 1 if car.wheels.all(func(wheel): return not wheel.contact) else 0
+				max_airborne = maxi(max_airborne, airborne)
 				max_drift = maxf(max_drift, absf(car.position.x))
 			_check("%s on %s stays supported at 50m/s entry" % [end, Surfaces.KEYS[sid]], max_gap <= 2
 				and max_roll < deg_to_rad(5) and max_drift < 0.3 and car.position.z < start_z - 15.0)
 			print("  RELIEF_DRIVE %s %s gap=%d roll=%.3f drift=%.3f travel=%.1f" % [end, Surfaces.KEYS[sid], max_gap, rad_to_deg(max_roll), max_drift, start_z - car.position.z])
+			print("  RELIEF_MOTION pitch_range=%.3f yaw_rate=%.4f all_airborne=%d" % [rad_to_deg(max_pitch - min_pitch), max_yaw_rate, max_airborne])
 			car.free()
 		root.free()
 		await get_tree().physics_frame
