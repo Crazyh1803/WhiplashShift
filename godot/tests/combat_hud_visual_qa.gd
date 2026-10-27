@@ -28,10 +28,10 @@ func _ready() -> void:
 	scene.race.tick(3.0)
 	scene.race.tick(1.0)
 	var hud: Hud = scene.hud
+	hud.set_process(false)
 	var foe: Vehicle = items.cars[1]
 	car.freeze = true
 	foe.freeze = true
-	hud._process(0.016)
 
 	hud._process(0.016)
 	_check("empty hands state", hud.combat.weapon["state"] == "EMPTY")
@@ -82,6 +82,9 @@ func _ready() -> void:
 	_check("wrecked bodywork wording", hud.combat.damage_label == "BODYWORK WRECKED")
 	await _shot(hud, "exhausted-expiring-wrecked")
 
+	scene.queue_free()
+	await get_tree().process_frame
+	await get_tree().process_frame
 	print("COMBAT HUD QA: %d passed, %d failed" % [_pass, _fail])
 	get_tree().quit(1 if _fail else 0)
 

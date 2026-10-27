@@ -70,7 +70,7 @@ func _run() -> void:
 
 	_test_weapon()
 	_test_utility()
-	_test_readiness()
+	await _test_readiness()
 	_test_damage()
 	_test_attacks()
 	_test_boundaries()
@@ -219,6 +219,20 @@ func _test_readiness() -> void:
 	foe.global_position = Vector3(0, 1, -500)
 	hud._process(0.016)
 	_check("homing with no target reads NO LOCK", combat.weapon["state"] == "NO LOCK" and not items.fire(0) and items.ammo[0] == 1)
+	foe.freeze = false
+	var car_home := car.global_position
+	car.global_position = Vector3(1100, 20, 1100)
+	foe.global_position = car.global_position + car.forward_vector() * 25.0
+	car.freeze = true
+	await get_tree().physics_frame
+	car.freeze = false
+	hud._process(0.016)
+	_check("eligible homing target reads READY and fires", combat.weapon["state"] == "READY" and items.has_lock(0)
+		and items.fire(0) and items.ammo[0] == 0)
+	foe.freeze = true
+	foe.linear_velocity = Vector3.ZERO
+	foe.angular_velocity = Vector3.ZERO
+	car.global_position = car_home
 	foe.global_position = home
 	items.held[0] = ""
 	items.ammo[0] = 0
