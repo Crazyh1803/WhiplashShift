@@ -61,6 +61,7 @@ func _ready() -> void:
 
 	race.tick(3.0)
 	race.tick(1.0)
+	hud._process(0.0)
 	_place(course, car, 0.62)
 	_place(course, foes[0], 0.69)
 	_place(course, foes[1], 0.55)
@@ -115,6 +116,7 @@ func _place(course: CourseDefinition, racer: Vehicle, fraction: float) -> void:
 
 func _shot(label: String, advice := "") -> void:
 	if _hud != null:
+		_hud.get_parent().rig.reset_follow()
 		_hud._process(0.0)
 		if not advice.is_empty():
 			_hud._upcoming.text = advice

@@ -21,9 +21,9 @@ func _ready() -> void:
 
 
 ## Applies and saves immediately. Unknown values fall back to the default unit.
-func set_speed_unit(value: String) -> void:
+func set_speed_unit(value: String) -> Error:
 	speed_unit = DrivingHud.sanitize_unit(value)
-	save_settings()
+	return save_settings()
 
 
 func load_settings() -> void:
@@ -32,11 +32,11 @@ func load_settings() -> void:
 		if config.load(settings_path) == OK else DrivingHud.DEFAULT_UNIT
 
 
-func save_settings() -> void:
+func save_settings() -> Error:
 	var config := ConfigFile.new()
 	config.set_value("meta", "schema_version", SETTINGS_SCHEMA_VERSION)
 	config.set_value("display", "speed_unit", speed_unit)
-	config.save(settings_path)
+	return config.save(settings_path)
 
 
 func configure(p_callsign: String, p_vehicle_id: String, p_cpu_ids: Array[String]) -> void:

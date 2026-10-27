@@ -28,6 +28,7 @@ func _ready() -> void:
 
 
 func _test_conversion() -> void:
+	_check("three-digit speed fits the number area", ThemeDB.fallback_font.get_string_size("999", HORIZONTAL_ALIGNMENT_LEFT, -1, 74).x <= DrivingHud.SPEED_NUMBER_WIDTH)
 	_check("zero speed reads 0 in both units", DrivingHud.display_speed(0.0, "mph") == 0 and DrivingHud.display_speed(0.0, "kmh") == 0)
 	_check("20 m/s is 72 km/h", DrivingHud.display_speed(20.0, "kmh") == 72)
 	_check("20 m/s is 45 mph", DrivingHud.display_speed(20.0, "mph") == 45)
@@ -137,6 +138,13 @@ func _test_garage_settings() -> void:
 	kmh.pressed.emit()
 	config.load(TEST_SETTINGS)
 	_check("switching back persists km/h", GameSession.speed_unit == "kmh" and config.get_value("display", "speed_unit") == "kmh")
+	GameSession.settings_path = TEST_SETTINGS + "/settings.cfg"
+	var error_output := Engine.print_error_messages
+	Engine.print_error_messages = false
+	mph.pressed.emit()
+	Engine.print_error_messages = error_output
+	_check("save failures are shown while the session choice applies", "Could not save" in garage._settings_status.text and GameSession.speed_unit == "mph")
+	GameSession.settings_path = TEST_SETTINGS
 	_check("dialog is smaller than a 1280x720 view", garage._settings_popup.size.x <= 1280 and garage._settings_popup.size.y <= 720)
 	garage.queue_free()
 	await get_tree().process_frame

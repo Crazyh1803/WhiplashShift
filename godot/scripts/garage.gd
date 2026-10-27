@@ -29,6 +29,7 @@ var _customization_popup: PopupPanel
 var _settings_button: Button
 var _settings_popup: PopupPanel
 var _speed_unit_buttons: Dictionary = {}
+var _settings_status: Label
 const PAINT_PICKER := preload("res://scripts/vehicle_paint_picker.gd")
 var _primary_picker: PAINT_PICKER
 var _secondary_picker: PAINT_PICKER
@@ -396,7 +397,8 @@ func _build_settings_popup() -> void:
 	box.add_theme_constant_override("separation", 12)
 	margin.add_child(box)
 	box.add_child(_label("SETTINGS // DISPLAY", 20, INK))
-	box.add_child(_label("Changes save immediately.", 11, MUTED))
+	_settings_status = _label("Changes save immediately.", 11, MUTED)
+	box.add_child(_settings_status)
 	box.add_child(_label("SPEED UNITS", 11, MUTED))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
@@ -425,7 +427,8 @@ func _open_settings() -> void:
 
 
 func _select_speed_unit(unit_id: String) -> void:
-	GameSession.set_speed_unit(unit_id)
+	var saved := GameSession.set_speed_unit(unit_id)
+	_settings_status.text = "Changes save immediately." if saved == OK else "Could not save. This choice applies for this session."
 	_refresh_speed_unit_buttons()
 
 

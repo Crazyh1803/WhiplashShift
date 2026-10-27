@@ -10,7 +10,8 @@ const UNITS := {
 	"mph": {"label": "MPH", "factor": 2.2369362920544},
 }
 const DEFAULT_UNIT := "kmh"
-const SPEEDO_SIZE := Vector2(214.0, 104.0)
+const SPEEDO_SIZE := Vector2(260.0, 104.0)
+const SPEED_NUMBER_WIDTH := 158.0
 const SPEEDO_MARGIN := Vector2(18.0, 46.0) ## left, bottom (clears the controls hint)
 const MAP_SIZE := Vector2(220.0, 216.0)
 const MAP_TOP := 112.0 ## below the CPU readout
@@ -207,10 +208,10 @@ func _draw() -> void:
 	draw_rect(panel, Color(0.02, 0.04, 0.07, 0.62))
 	draw_rect(panel, Color(1, 1, 1, 0.16), false, 1.0)
 	var number_color := Color("ffa63d") if reversing else Color.WHITE
-	draw_string(font, panel.position + Vector2(8.0, 78.0), str(speed_value), HORIZONTAL_ALIGNMENT_RIGHT, 118.0, 74, number_color)
-	draw_string(font, panel.position + Vector2(134.0, 78.0), unit_label(unit), HORIZONTAL_ALIGNMENT_LEFT, 74.0, 24, Color("4fd2ff"))
+	draw_string(font, panel.position + Vector2(8.0, 78.0), str(speed_value), HORIZONTAL_ALIGNMENT_RIGHT, SPEED_NUMBER_WIDTH, 74, number_color)
+	draw_string(font, panel.position + Vector2(174.0, 78.0), unit_label(unit), HORIZONTAL_ALIGNMENT_LEFT, 78.0, 24, Color("4fd2ff"))
 	if reversing:
-		draw_string(font, panel.position + Vector2(134.0, 38.0), "REVERSE", HORIZONTAL_ALIGNMENT_LEFT, 74.0, 17, Color("ffa63d"))
+		draw_string(font, panel.position + Vector2(174.0, 38.0), "REVERSE", HORIZONTAL_ALIGNMENT_LEFT, 78.0, 17, Color("ffa63d"))
 
 
 func _draw_map_panel() -> void:
