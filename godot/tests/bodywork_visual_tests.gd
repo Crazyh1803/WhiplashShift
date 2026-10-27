@@ -189,6 +189,15 @@ func _test_independent_and_unshared() -> void:
 	_check("no override material is shared between cars", not shared)
 	first.reset_effects_state()
 	_check("resetting one car leaves the other worn", _none_worn(a) and _all_worn(b))
+	var entry: Dictionary = a.surface_entries()[0]
+	var livery := ShaderMaterial.new()
+	livery.shader = VehicleBodywork.LIVERY_SHADER
+	entry.mesh.set_surface_override_material(entry.surface, livery)
+	for cycle in 5:
+		first.apply_cosmetic_damage(0.35)
+		var clone: Material = entry.mesh.get_surface_override_material(entry.surface)
+		_check("livery cycle %d retains only the original material" % cycle, clone.get_meta(VehicleBodywork.META_ORIGINAL) == livery)
+		first.reset_effects_state()
 	first.queue_free()
 	second.queue_free()
 	await get_tree().process_frame

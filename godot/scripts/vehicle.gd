@@ -188,8 +188,10 @@ func _rebind_bodywork() -> void:
 
 func _rebuild_visuals() -> void:
 	if _visual_root != null:
+		if _bodywork != null:
+			_bodywork.rebind(null)
 		remove_child(_visual_root)
-		_visual_root.free()
+		_visual_root.queue_free()
 	_visual_root = Node3D.new()
 	_visual_root.name = "VisualRoot"
 	add_child(_visual_root)

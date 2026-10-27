@@ -44,6 +44,8 @@ func _process(_delta: float) -> void:
 ## Rescan the eligible paint surfaces after the visuals or paint were rebuilt. Safe to call
 ## repeatedly: surfaces that already carry the wear pass are not wrapped again.
 func rebind(visual_root: Node) -> void:
+	if _attached:
+		_detach()
 	_entries.clear()
 	_attached = false
 	_applied_wear = -1.0
@@ -155,9 +157,15 @@ func _attach() -> void:
 		var current := mesh_instance.get_surface_override_material(entry.surface)
 		if current == null or _chain_has_wear(current):
 			continue
-		var clone := _chain_with_wear(current)
-		clone.set_meta(META_ORIGINAL, current)
-		mesh_instance.set_surface_override_material(entry.surface, clone)
+		var clone: Material
+		# Our metadata marks a private clone; shader cleanup leaves that clone installed.
+		if current is ShaderMaterial and current.has_meta(META_ORIGINAL):
+			clone = current
+			_append_wear(clone)
+		else:
+			clone = _chain_with_wear(current)
+			clone.set_meta(META_ORIGINAL, current)
+			mesh_instance.set_surface_override_material(entry.surface, clone)
 		if clone is ShaderMaterial:
 			wear_material.set_shader_parameter("hide_embedded_wheels",
 				(clone as ShaderMaterial).get_shader_parameter("hide_embedded_wheels"))
@@ -188,6 +196,12 @@ func _chain_with_wear(base: Material) -> Material:
 	var clone := base.duplicate() as Material
 	clone.next_pass = _chain_with_wear(base.next_pass) if base.next_pass != null else wear_material
 	return clone
+
+
+func _append_wear(material: Material) -> void:
+	while material.next_pass != null:
+		material = material.next_pass
+	material.next_pass = wear_material
 
 
 func _chain_has_wear(material: Material) -> bool:
