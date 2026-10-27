@@ -92,7 +92,7 @@ func _ready() -> void:
 		for p in CombatHud.ring_triangle(get_viewport().get_visible_rect().size, float(entry["angle"])):
 			worst = maxf(worst, p.y)
 	_check("attack markers sit above the dashboard", worst < (dash["band"] as Rect2).position.y)
-	await _shot("racing-kmh", "SAND IN 40m\nLIFT OFF THROTTLE\nHAIRPIN RIGHT · IN 120m\nBRAKE BEFORE TURN · ADVISORY 70 KM/H")
+	await _shot("racing-kmh", "HAIRPIN RIGHT · IN 120m\nBRAKE BEFORE TURN · ADVISORY 70 KM/H")
 
 	GameSession.speed_unit = "mph"
 	car.reversing = true

@@ -95,7 +95,8 @@ func _test_hud() -> void:
 	scene.car.speed = 50.0
 	scene.hud._process(0.0)
 	_check("real HUD shows turn and advisory braking", "ADVISORY" in scene.hud._upcoming.text and "BRAKE BEFORE TURN" in scene.hud._upcoming.text)
-	_check("corner and terrain advice coexist", "PREPARE END" in scene.hud._upcoming.text or "END " in scene.hud._upcoming.text)
+	_check("corner advice carries no terrain prediction", not ("PREPARE END" in scene.hud._upcoming.text) and not ("HOLD END" in scene.hud._upcoming.text)
+		and not (" READY" in scene.hud._upcoming.text))
 	await get_tree().process_frame
 	_check("expanded cue fits above controls and inside viewport", get_viewport().get_visible_rect().encloses(scene.hud._upcoming.get_global_rect())
 		and not scene.hud._upcoming.get_global_rect().intersects(scene.hud._hint.get_global_rect()))

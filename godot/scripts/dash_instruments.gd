@@ -9,10 +9,14 @@ const RED := Color("ff2a1c")
 const RED_DIM := Color(0.28, 0.035, 0.03, 0.9)
 const AMBER := Color("ffb02e")
 const AMBER_DIM := Color(1.0, 0.69, 0.18, 0.4)
-const BAND_FILL := Color(0.012, 0.014, 0.02, 0.94)
-const WELL_FILL := Color(0.0, 0.0, 0.0, 0.55)
+## Translucent on purpose: scenery shows through the band (see effective_alpha()).
+const BAND_FILL := Color(0.012, 0.014, 0.02, 0.5)
+const WELL_FILL := Color(0.0, 0.0, 0.0, 0.18)
+const PLATE_FILL := Color(0.0, 0.0, 0.0, 0.5) ## recessed plate behind the red digits
+const MAP_FILL := Color(0.01, 0.015, 0.02, 0.25)
+const BAND_HEIGHT := 160.0
 ## Instrument widths at 1600x900: velocity, systems, route, combat; the map takes the rest.
-const WIDTHS: Array[float] = [260.0, 220.0, 430.0, 284.0]
+const WIDTHS: Array[float] = [250.0, 220.0, 300.0, 250.0]
 const NAMES: Array[String] = ["velocity", "systems", "route", "combat"]
 const SEG_A := 1
 const SEG_B := 2
@@ -36,6 +40,14 @@ const DIGIT_MASKS: Array[int] = [
 const SCANNER_CELLS := 10
 
 
+## Opacity of the band fill, an instrument well and (optionally) the map panel stacked together.
+static func effective_alpha(with_map := false) -> float:
+	var clear := (1.0 - BAND_FILL.a) * (1.0 - WELL_FILL.a)
+	if with_map:
+		clear *= 1.0 - MAP_FILL.a
+	return 1.0 - clear
+
+
 static func view_scale(view: Vector2) -> float:
 	return maxf(0.25, minf(view.x / BASE_VIEW.x, view.y / BASE_VIEW.y))
 
@@ -44,7 +56,7 @@ static func view_scale(view: Vector2) -> float:
 ## above the band), velocity, systems, route, combat, map, hint_top (first y below the band).
 static func layout(view: Vector2) -> Dictionary:
 	var s := view_scale(view)
-	var band := Rect2(18.0 * s, view.y - 250.0 * s, view.x - 36.0 * s, 210.0 * s)
+	var band := Rect2(18.0 * s, view.y - 200.0 * s, view.x - 36.0 * s, BAND_HEIGHT * s)
 	var pad := 8.0 * s
 	var gap := 6.0 * s
 	var result := {"scale": s, "band": band, "hint_top": band.end.y + 4.0 * s,
@@ -61,7 +73,7 @@ static func layout(view: Vector2) -> Dictionary:
 
 ## Interior of an instrument below its title strip.
 static func body(rect: Rect2, s: float) -> Rect2:
-	var top := 22.0 * s
+	var top := 20.0 * s
 	return Rect2(rect.position + Vector2(8.0 * s, top), rect.size - Vector2(16.0 * s, top + 6.0 * s))
 
 
@@ -141,10 +153,10 @@ static func systems_layout(rect: Rect2, s: float) -> Dictionary:
 	var inner := body(rect, s)
 	var p := inner.position
 	var w := inner.size.x
-	return {"boost": Rect2(p, Vector2(w, 46.0 * s)),
-		"status": Rect2(p + Vector2(0.0, 50.0 * s), Vector2(w, 60.0 * s)),
-		"damage_label": Rect2(p + Vector2(0.0, 116.0 * s), Vector2(w, 18.0 * s)),
-		"damage_bar": Rect2(p + Vector2(0.0, 138.0 * s), Vector2(w, 10.0 * s))}
+	return {"boost": Rect2(p, Vector2(w, 39.0 * s)),
+		"status": Rect2(p + Vector2(0.0, 42.0 * s), Vector2(w, 30.0 * s)),
+		"damage_label": Rect2(p + Vector2(0.0, 75.0 * s), Vector2(w, 16.0 * s)),
+		"damage_bar": Rect2(p + Vector2(0.0, 96.0 * s), Vector2(w, 8.0 * s))}
 
 
 ## Scanner cells for `phase` (one full there-and-back sweep per 1.0): the bright head and a
@@ -175,3 +187,56 @@ static func fit_font_size(font: Font, text: String, box: Vector2, max_size: int,
 			break
 		size -= 1
 	return size
+
+
+## `text` cut with an ellipsis until it is at most `max_width` wide.
+static func ellipsize(font: Font, text: String, font_size: int, max_width: float) -> String:
+	if font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x <= max_width:
+		return text
+	var shown := text
+	while shown.length() > 1:
+		shown = shown.substr(0, shown.length() - 1)
+		if font.get_string_size(shown + "…", HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x <= max_width:
+			break
+	return shown + "…"
+
+
+## Name boxes for map markers. `entries` are {pos, text}; the result keeps their order as
+## {rect, text, from, to, leader}. Every rect lies inside `bounds`, avoids earlier boxes and all
+## marker discs when any free spot exists (closest of 8 directions first, then wider rings),
+## and `leader` says whether a line from the marker `from` to the box edge `to` is needed.
+static func place_map_labels(entries: Array, bounds: Rect2, font: Font, font_size: int, marker_radius := 8.0) -> Array[Dictionary]:
+	var placed: Array[Dictionary] = []
+	var taken: Array[Rect2] = []
+	var discs: Array[Rect2] = []
+	for entry: Dictionary in entries:
+		var at: Vector2 = entry["pos"]
+		discs.append(Rect2(at - Vector2.ONE * marker_radius, Vector2.ONE * marker_radius * 2.0))
+	var max_width := minf(bounds.size.x * 0.4, 120.0)
+	for i in entries.size():
+		var at: Vector2 = entries[i]["pos"]
+		var text := ellipsize(font, String(entries[i]["text"]), font_size, max_width - 6.0)
+		var box := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size) + Vector2(6.0, 2.0)
+		box.y = maxf(box.y, float(font_size) + 2.0)
+		var best := Rect2(bounds.position, box)
+		var best_cost := INF
+		for ring in 6:
+			var reach := marker_radius + 2.0 + float(ring) * (box.y + 3.0)
+			for dir_index in 8:
+				var dir := Vector2.from_angle(float(dir_index) * TAU / 8.0)
+				var rect := Rect2(at + dir * reach - Vector2(box.x * (0.5 - dir.x * 0.5), box.y * (0.5 - dir.y * 0.5)), box)
+				rect.position = rect.position.clamp(bounds.position, bounds.end - box)
+				var cost := float(ring) * 4.0 + float(dir_index) * 0.01
+				for other in taken + discs:
+					if rect.intersects(other):
+						cost += 1000.0
+				if cost < best_cost:
+					best_cost = cost
+					best = rect
+			if best_cost < 1000.0:
+				break
+		taken.append(best)
+		var anchor := Vector2(clampf(at.x, best.position.x, best.end.x), clampf(at.y, best.position.y, best.end.y))
+		placed.append({"rect": best, "text": text, "from": at, "to": anchor,
+			"leader": at.distance_to(anchor) > marker_radius + 3.0})
+	return placed

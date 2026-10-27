@@ -10,8 +10,9 @@ const UNITS := {
 	"mph": {"label": "MPH", "factor": 2.2369362920544},
 }
 const DEFAULT_UNIT := "kmh"
-const MAP_PAD := 12.0
-const KEY_HEIGHT := 26.0
+const MAP_PAD := 10.0
+const KEY_HEIGHT := 22.0
+const LABEL_SIZE := 11
 const SCAN_PERIOD := 3.4 ## seconds per there-and-back sweep
 const PLAYER_COLOR := Color("4fd2ff")
 const OPPONENT_COLORS: Array[Color] = [Color("ff5a8a"), Color("ffd24d"), Color("b48cff"), Color("7dff9b")]
@@ -19,7 +20,9 @@ const OPPONENT_COLORS: Array[Color] = [Color("ff5a8a"), Color("ffd24d"), Color("
 var unit := DEFAULT_UNIT
 var speed_value := 0
 var reversing := false
-var markers: Array[Dictionary] = [] ## {index, pos, heading, player, color}; map-local
+var markers: Array[Dictionary] = [] ## {index, pos, heading, player, color, name}; map-local
+var labels: Array[Dictionary] = [] ## DashInstruments.place_map_labels() result, one per marker
+var legend: Array[Dictionary] = [] ## {name, color, player} per racer, shown in the key strip
 var dash: Dictionary = {} ## DashInstruments.layout() for the current size
 var map_size := Vector2(300.0, 180.0)
 var scanner_time := 0.0 ## seconds; tests and QA set it for a deterministic sweep
@@ -158,8 +161,8 @@ func _layout() -> void:
 	var s: float = dash["scale"]
 	var area: Rect2 = dash["map"]
 	if _map != null:
-		_map.position = area.position + Vector2(6.0, 22.0) * s
-		map_size = (area.size - Vector2(12.0, 28.0) * s).max(Vector2(20.0, 20.0))
+		_map.position = area.position + Vector2(6.0, 20.0) * s
+		map_size = (area.size - Vector2(12.0, 26.0) * s).max(Vector2(20.0, 20.0))
 		_map.size = map_size
 		for layer: Control in [_course_layer, _marker_layer]:
 			layer.size = map_size
@@ -173,6 +176,7 @@ func map_area() -> Rect2:
 
 func clear() -> void:
 	markers.clear()
+	labels.clear()
 	speed_value = 0
 	reversing = false
 	queue_redraw()
@@ -180,8 +184,14 @@ func clear() -> void:
 		_marker_layer.queue_redraw()
 
 
-## `racers[0]` is the player; the rest are opponents in entrant order.
-func update(p_unit: String, car: Vehicle, racers: Array, course: CourseDefinition) -> void:
+## Area where marker name boxes may sit: the map layer minus the key strip.
+func label_bounds() -> Rect2:
+	return Rect2(Vector2(2.0, 2.0), Vector2(map_size.x - 4.0, map_size.y - KEY_HEIGHT - 2.0))
+
+
+## `racers[0]` is the player; the rest are opponents in entrant order. `names` (same order) are the
+## per-match callsigns shown beside the markers and in the key; missing entries read "YOU" / "CPU n".
+func update(p_unit: String, car: Vehicle, racers: Array, course: CourseDefinition, names: Array[String] = []) -> void:
 	if size != _laid_size:
 		_layout() # size changed since the last layout (resized may not have fired yet)
 	var clean_unit := sanitize_unit(p_unit)
@@ -194,10 +204,15 @@ func update(p_unit: String, car: Vehicle, racers: Array, course: CourseDefinitio
 		queue_redraw()
 	_ensure_map(course, racers.size())
 	markers.clear()
+	labels.clear()
+	legend.clear()
+	for i in racers.size():
+		legend.append({"name": racer_name(names, i), "player": i == 0, "color": racer_color(i)})
 	if not bool(fit.get("valid", false)):
 		_marker_layer.queue_redraw()
 		return
 	var area := map_area()
+	var entries: Array = []
 	for i in racers.size():
 		var racer: Vehicle = racers[i] if is_instance_valid(racers[i]) else null
 		if racer == null:
@@ -206,8 +221,20 @@ func update(p_unit: String, car: Vehicle, racers: Array, course: CourseDefinitio
 		var heading := Vector2(forward.x, forward.z)
 		markers.append({"index": i, "pos": project(fit, racer.global_position, area),
 			"heading": heading.normalized() if heading.length_squared() > 0.0001 else Vector2.UP,
-			"player": i == 0, "color": PLAYER_COLOR if i == 0 else OPPONENT_COLORS[(i - 1) % OPPONENT_COLORS.size()]})
+			"player": i == 0, "color": racer_color(i), "name": racer_name(names, i)})
+		entries.append({"pos": markers[-1]["pos"], "text": markers[-1]["name"]})
+	labels = DashInstruments.place_map_labels(entries, label_bounds(), ThemeDB.fallback_font, LABEL_SIZE)
 	_marker_layer.queue_redraw()
+
+
+static func racer_color(index: int) -> Color:
+	return PLAYER_COLOR if index == 0 else OPPONENT_COLORS[(index - 1) % OPPONENT_COLORS.size()]
+
+
+static func racer_name(names: Array[String], index: int) -> String:
+	if index < names.size() and not names[index].is_empty():
+		return names[index]
+	return "YOU" if index == 0 else "CPU %d" % index
 
 
 func _ensure_map(course: CourseDefinition, racer_count: int) -> void:
@@ -238,8 +265,10 @@ func _draw() -> void:
 		draw_rect(rect, DashInstruments.WELL_FILL)
 		draw_rect(rect, DashInstruments.AMBER_DIM, false, 1.0)
 		draw_line(rect.position + Vector2(8.0, 19.0) * s, rect.position + Vector2(rect.size.x - 8.0 * s, 19.0 * s), DashInstruments.AMBER_DIM, 1.0)
-		draw_string(font, rect.position + Vector2(10.0, 14.0) * s, titles[key], HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 20.0 * s,
-			maxi(9, roundi(12.0 * s)), DashInstruments.AMBER)
+		var title_pos := rect.position + Vector2(10.0, 14.0) * s
+		var title_size := maxi(9, roundi(12.0 * s))
+		draw_string_outline(font, title_pos, titles[key], HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 20.0 * s, title_size, 3, Color(0, 0, 0, 0.8))
+		draw_string(font, title_pos, titles[key], HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 20.0 * s, title_size, DashInstruments.AMBER)
 	_draw_speed(font, s)
 
 
@@ -247,6 +276,8 @@ func _draw_speed(font: Font, s: float) -> void:
 	var parts := DashInstruments.speed_layout(dash["velocity"], s)
 	var masks := DashInstruments.speed_masks(speed_value)
 	var cells: Array[Rect2] = parts["cells"]
+	# Recessed plate keeps the red digits high-contrast over a bright, translucent band.
+	draw_rect(Rect2(cells[0].position, Vector2(cells[2].end.x - cells[0].position.x, cells[0].size.y)).grow(4.0 * s), DashInstruments.PLATE_FILL)
 	for i in cells.size():
 		var polys := DashInstruments.segment_polygons(cells[i])
 		for bit: int in polys:
@@ -271,7 +302,7 @@ func _draw_scanner() -> void:
 
 
 func _draw_map_panel() -> void:
-	_map.draw_rect(Rect2(Vector2.ZERO, map_size), Color(0.01, 0.015, 0.02, 0.8))
+	_map.draw_rect(Rect2(Vector2.ZERO, map_size), DashInstruments.MAP_FILL)
 	_map.draw_rect(Rect2(Vector2.ZERO, map_size), DashInstruments.AMBER_DIM, false, 1.0)
 
 
@@ -307,18 +338,31 @@ func _draw_markers() -> void:
 			var arrow := PackedVector2Array([pos + heading * 10.0, pos - heading * 6.0 + side * 6.5, pos - heading * 2.0, pos - heading * 6.0 - side * 6.5])
 			_marker_layer.draw_colored_polygon(arrow, Color(entry["color"]))
 			_marker_layer.draw_polyline(PackedVector2Array([arrow[0], arrow[1], arrow[2], arrow[3], arrow[0]]), Color.WHITE, 1.5)
-	# Key: what each marker means.
-	var key_y := map_size.y - 10.0
-	var slot := (map_size.x - MAP_PAD) / float(_racer_count + 1)
+	# Names beside the markers: dark plate, marker-coloured text and a leader line when displaced.
+	for i in labels.size():
+		var label: Dictionary = labels[i]
+		var rect: Rect2 = label["rect"]
+		var color: Color = markers[i]["color"]
+		if bool(label["leader"]):
+			_marker_layer.draw_line(Vector2(label["from"]), Vector2(label["to"]), Color(color, 0.9), 1.5)
+		_marker_layer.draw_rect(rect, Color(0, 0, 0, 0.72))
+		_marker_layer.draw_rect(rect, Color(color, 0.8), false, 1.0)
+		_marker_layer.draw_string(font, rect.position + Vector2(3.0, rect.size.y - 4.0), String(label["text"]),
+			HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 4.0, LABEL_SIZE, color.lightened(0.25))
+	# Key: the same names, one slot each.
+	var key_y := map_size.y - 8.0
+	var slot := (map_size.x - MAP_PAD) / float(legend.size() + 1)
 	var x := MAP_PAD * 0.5 + 4.0
-	for i in _racer_count:
+	for i in legend.size():
 		var swatch := Vector2(x + 5.0, key_y - 4.0)
-		if i == 0:
+		var key_color: Color = legend[i]["color"]
+		if bool(legend[i]["player"]):
 			var up := PackedVector2Array([swatch + Vector2(0, -5), swatch + Vector2(4.5, 4), swatch + Vector2(0, 1.5), swatch + Vector2(-4.5, 4)])
-			_marker_layer.draw_colored_polygon(up, PLAYER_COLOR)
+			_marker_layer.draw_colored_polygon(up, key_color)
 		else:
-			_marker_layer.draw_circle(swatch, 4.0, OPPONENT_COLORS[(i - 1) % OPPONENT_COLORS.size()])
-		_marker_layer.draw_string(font, Vector2(x + 13.0, key_y), "YOU" if i == 0 else "CPU %d" % i, HORIZONTAL_ALIGNMENT_LEFT, slot - 13.0, 11, Color(1, 1, 1, 0.8))
+			_marker_layer.draw_circle(swatch, 4.0, key_color)
+		_marker_layer.draw_string(font, Vector2(x + 13.0, key_y), DashInstruments.ellipsize(font, String(legend[i]["name"]), LABEL_SIZE, slot - 17.0),
+			HORIZONTAL_ALIGNMENT_LEFT, slot - 13.0, LABEL_SIZE, Color(1, 1, 1, 0.85))
 		x += slot
 	_marker_layer.draw_rect(Rect2(x + 1.0, key_y - 9.0, 8.0, 8.0), Color.WHITE)
 	_marker_layer.draw_rect(Rect2(x + 3.0, key_y - 7.0, 4.0, 4.0), Color.BLACK)

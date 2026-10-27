@@ -65,8 +65,8 @@ func _ready() -> void:
 	_check("camera present for screenshot", camera != null)
 	_check("hits are staged as indicators", hud.combat.indicators.size() == 4)
 	_check("active utility blocks fire as WAIT", hud.combat.weapon["state"] == "WAIT" and hud.combat.utility["id"] == "shield")
-	await _shot(hud, "held-active-hits", "SAND IN 40m\nLIFT OFF THROTTLE")
-	_check("terrain advice is shown under the indicators", hud._upcoming.text.begins_with("SAND"))
+	await _shot(hud, "held-active-hits", "HAIRPIN RIGHT · IN 120m\nBRAKE BEFORE TURN · ADVISORY 70 KM/H")
+	_check("corner advice is shown under the indicators", hud._upcoming.text.begins_with("HAIRPIN"))
 
 	# Last round: record it held, then spend it so the readout reports the gun used up.
 	items.ammo[0] = 1
