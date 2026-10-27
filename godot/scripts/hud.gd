@@ -9,7 +9,17 @@ signal retry_requested
 var cpu_drivers: Array[CpuDriver] = []
 var pilot_callsign: String = "ROADGHOST"
 var race: RaceDirector
-var items: RaceItems
+var items: RaceItems:
+	set(value):
+		if items != null and items.attack_hit.is_connected(_on_attack_hit):
+			items.attack_hit.disconnect(_on_attack_hit)
+		items = value
+		if items != null:
+			items.attack_hit.connect(_on_attack_hit)
+## Optional override; defaults to the viewport's current camera, which follows swaps.
+var camera: Camera3D
+var combat: CombatHud
+var _last_race_state := -1
 var _item_status: Label
 var course_cues: CourseCues
 var _upcoming: Label
@@ -73,7 +83,14 @@ func _ready() -> void:
 	_item_status.add_theme_color_override("font_color", Color("ffc34d"))
 	_boost_status = _label(17, Vector2(18, 286))
 	_boost_status.name = "BoostStatus"
+	combat = CombatHud.new()
+	add_child(combat)
 	_build_results()
+
+
+func _on_attack_hit(victim: int, source_pos: Vector3, blocked: bool, _weapon: String) -> void:
+	if victim == 0 and combat != null and race != null and race.state == RaceDirector.State.RACING:
+		combat.add_hit(source_pos, blocked)
 
 
 func _build_results() -> void:
@@ -130,9 +147,13 @@ func _label(size: int, pos: Vector2) -> Label:
 	return l
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if target == null:
 		return
+	if race != null and int(race.state) != _last_race_state:
+		# Countdown, results and retry all start from a clean combat readout.
+		_last_race_state = int(race.state)
+		combat.clear()
 	var cpu_lines := PackedStringArray()
 	for driver: CpuDriver in cpu_drivers:
 		if not is_instance_valid(driver.target):
@@ -180,21 +201,16 @@ func _process(_delta: float) -> void:
 		_banner.modulate = Color.WHITE
 	if items != null:
 		_item_status.visible = race.state == RaceDirector.State.RACING
-		_item_status.text = "ITEM: EMPTY — COLLECT A GOLD BOX"
-		if not items.active[0].is_empty():
-			_item_status.text = "%s ACTIVE  %.1fs" % [ItemCatalog.label(items.active[0]), items.remaining[0]]
-		elif not items.held[0].is_empty():
-			var id := items.held[0]
-			if ItemCatalog.is_ammo(id):
-				_item_status.text = "%s · %d LEFT  [E] %s" % [ItemCatalog.label(id), items.ammo[0], "3-ROUND BURST" if id == "machine_guns" else "FIRE ONE"]
-			else:
-				_item_status.text = "%s  [E] ACTIVATE" % ItemCatalog.label(id)
+		_item_status.text = ""
 		if items.oil_time[0] > 0.0:
-			_item_status.text += "  // LOW GRIP"
+			_item_status.text += "LOW GRIP  "
 		if items.obscured[0]:
-			_item_status.text += "  // SMOKE"
+			_item_status.text += "SMOKE  "
 		if items.feedback_time > 0.0:
 			_item_status.text += "\n" + items.feedback
+		combat.visible = race.state == RaceDirector.State.RACING
+		var view_camera := camera if camera != null else get_viewport().get_camera_3d()
+		combat.update(delta, items, target, view_camera)
 	_update_race()
 
 

@@ -9,6 +9,10 @@ const PICKUP_RADIUS := 3.0
 const OIL_GRIP := 0.35
 const MAX_HAZARDS := 192
 
+## A weapon landed on (or was blocked by a shield on) a racer. `source_pos` is the
+## attacker's world position at the moment of impact. Not emitted during invulnerability.
+signal attack_hit(victim: int, source_pos: Vector3, blocked: bool, weapon: String)
+
 var art: RaceItemArt
 var audio: ItemAudio
 var _gun_mounts: Array[Dictionary] = []
@@ -588,6 +592,7 @@ func _apply_hit(victim: int, owner: int, id: String) -> void:
 	if active[victim] == "shield":
 		art.shield_hit(_shields[victim])
 		audio.play("shield_hit", cars[victim].global_position)
+		attack_hit.emit(victim, cars[owner].global_position, true, id)
 		if victim == 0 or owner == 0:
 			_message("SHIELD BLOCKED HIT")
 		return
@@ -599,6 +604,7 @@ func _apply_hit(victim: int, owner: int, id: String) -> void:
 	car.apply_central_impulse(-flat.normalized() * minf(flat.length() * float(data["loss"]), float(data["cap"])) * car.mass)
 	car.apply_cosmetic_damage(clampf(float(data["loss"]) * 2.0, 0.15, 0.65))
 	protection[victim] = HIT_PROTECTION
+	attack_hit.emit(victim, cars[owner].global_position, false, id)
 	if victim == 0:
 		_message("HIT — SPEED LOST")
 	elif owner == 0:
