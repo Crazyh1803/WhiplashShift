@@ -70,6 +70,7 @@ func _ready() -> void:
 		items._apply_hit(0, 1, "rockets")
 		foe.global_position = saved
 	hud.driving.scanner_time = DrivingHud.SCAN_PERIOD * 0.37
+	hud.driving.get_node("ScannerLayer").queue_redraw()
 	hud._process(0.016)
 	hud._set_fitted(hud._upcoming, "HAIRPIN RIGHT · IN 120m\nBRAKE BEFORE TURN · ADVISORY 70 KM/H", 18)
 	_check("busy state has ammo, a utility timer, hits and 112 km/h", hud.combat.weapon["ammo"] == 3 and hud.combat.utility["id"] == "shield"
@@ -80,6 +81,10 @@ func _ready() -> void:
 	scene.queue_free()
 	await get_tree().process_frame
 	await get_tree().process_frame
+	# Allow audio/render workers to retire after the scene has left the tree.
+	var cleanup_deadline := Time.get_ticks_msec() + 300
+	while Time.get_ticks_msec() < cleanup_deadline:
+		await get_tree().process_frame
 	print("COMPACT HUD QA: %d passed, %d failed" % [_pass, _fail])
 	get_tree().quit(1 if _fail else 0)
 
