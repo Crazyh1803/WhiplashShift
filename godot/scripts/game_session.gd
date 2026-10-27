@@ -2,16 +2,41 @@ extends Node
 
 const CUSTOMIZATION_PATH := "user://vehicle_customization.cfg"
 const CUSTOMIZATION_SCHEMA_VERSION := 1
+const SETTINGS_PATH := "user://settings.cfg"
+const SETTINGS_SCHEMA_VERSION := 1
 
 var callsign: String = "ROADGHOST"
 var selected_vehicle_id: String = "blackjack"
 var cpu_vehicle_ids: Array[String] = []
 var cpu_difficulty: String = "medium"
 var vehicle_customizations: Dictionary = {}
+var speed_unit: String = DrivingHud.DEFAULT_UNIT
+## Separate from the vehicle and profile files; tests point this at a scratch path.
+var settings_path: String = SETTINGS_PATH
 
 
 func _ready() -> void:
 	_load_customizations()
+	load_settings()
+
+
+## Applies and saves immediately. Unknown values fall back to the default unit.
+func set_speed_unit(value: String) -> Error:
+	speed_unit = DrivingHud.sanitize_unit(value)
+	return save_settings()
+
+
+func load_settings() -> void:
+	var config := ConfigFile.new()
+	speed_unit = DrivingHud.sanitize_unit(config.get_value("display", "speed_unit", DrivingHud.DEFAULT_UNIT)) \
+		if config.load(settings_path) == OK else DrivingHud.DEFAULT_UNIT
+
+
+func save_settings() -> Error:
+	var config := ConfigFile.new()
+	config.set_value("meta", "schema_version", SETTINGS_SCHEMA_VERSION)
+	config.set_value("display", "speed_unit", speed_unit)
+	return config.save(settings_path)
 
 
 func configure(p_callsign: String, p_vehicle_id: String, p_cpu_ids: Array[String]) -> void:

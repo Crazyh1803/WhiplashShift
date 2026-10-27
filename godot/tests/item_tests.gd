@@ -76,7 +76,8 @@ func _run() -> void:
 	_check("gun crate grants thirty rounds", items.ammo[0] == 30)
 	_check("E spends three rounds and starts one burst", items.fire(0) and items.ammo[0] == 27 and items.shots.size() == 1 and items.active[0].is_empty())
 	scene.hud._process(0.0)
-	_check("HUD shows remaining rounds and the per-press burst action", scene.hud._item_status.text.contains("27 LEFT") and scene.hud._item_status.text.contains("3-ROUND BURST"))
+	_check("HUD shows remaining rounds and the burst in progress", scene.hud.combat.weapon["ammo"] == 27 and scene.hud.combat.weapon["max"] == 30
+		and scene.hud.combat.weapon["state"] == "FIRING")
 	items._collect(0.01)
 	_check("loaded weapon prevents inventory stacking", items.held[0] == "machine_guns" and float(second["cooldown"]) == 0.0)
 	_check("pressing during a burst cannot spend more ammo", not items.fire(0) and items.ammo[0] == 27)

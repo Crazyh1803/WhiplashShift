@@ -9,7 +9,7 @@ if grep -Eq '(^ERROR:|SCRIPT ERROR:|Parse Error:)' "$import_log"; then
   exit 1
 fi
 result=0
-for scene in vehicle_audio_tests vehicle_feedback_tests vehicle_effects_tests test_main viscera_response_tests rubble_response_tests armor_response_tests coolant_response_tests effluent_response_tests ichor_response_tests track_visual_tests viscera_pit_tests boulder_motion_tests item_tests weapon_attachment_tests deployment_oil_tests racecraft_tests cpu_main race_tests course_cues_tests camera_tests corner_tests terrain_profile_tests blackjack_refined_tests blackjack_blueprint_tests consolidation_tests nightshift_blueprint_tests ramjet_blueprint_tests boilerfang_blueprint_tests helix_blueprint_tests knifeedge_blueprint_tests; do
+for scene in vehicle_audio_tests vehicle_feedback_tests vehicle_effects_tests bodywork_visual_tests test_main viscera_response_tests rubble_response_tests armor_response_tests coolant_response_tests effluent_response_tests ichor_response_tests track_visual_tests viscera_pit_tests boulder_motion_tests item_tests combat_hud_tests driving_hud_tests dashboard_hud_tests compact_hud_tests weapon_attachment_tests deployment_oil_tests racecraft_tests cpu_main race_tests course_cues_tests camera_tests corner_tests terrain_profile_tests blackjack_refined_tests blackjack_blueprint_tests consolidation_tests nightshift_blueprint_tests ramjet_blueprint_tests boilerfang_blueprint_tests helix_blueprint_tests knifeedge_blueprint_tests; do
   # CPU coverage runs all difficulty tiers; race coverage drives three laps and a retry.
   # CPU coverage simulates 420 seconds per tier; Windows needs over 360 seconds for all tiers.
   scene_timeout=120

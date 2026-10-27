@@ -19,6 +19,9 @@ var course_cues: CourseCues
 var track: Array
 var cpu_drivers: Array[CpuDriver] = []
 var cpu_cars: Array[Vehicle] = []
+## CPU callsigns for this match (entrant order after the player); redrawn on every real restart.
+var cpu_callsigns: Array[String] = []
+var callsign_rng := RandomNumberGenerator.new()
 var _spawn: Transform3D
 var race: RaceDirector
 var items: RaceItems
@@ -119,7 +122,14 @@ func _build_car() -> void:
 	add_child(vehicle_audio)
 
 
+## Draws fresh CPU callsigns (never the player's, avoiding last match's while the pool allows).
+func _draw_callsigns() -> void:
+	cpu_callsigns = RacerCallsigns.draw(2, GameSession.callsign, cpu_callsigns, callsign_rng)
+
+
 func _build_cpu_drivers() -> void:
+	if cpu_callsigns.is_empty():
+		_draw_callsigns() # callsign_rng is randomly seeded unless a test injected a seed first
 	var roster: Array[String] = GameSession.cpu_vehicle_ids.duplicate()
 	if roster.size() < 2:
 		roster = VehicleCatalog.random_cpu_roster(2, GameSession.selected_vehicle_id)
@@ -152,6 +162,7 @@ func _build_ui() -> void:
 	hud.target = car
 	hud.pilot_callsign = GameSession.callsign
 	hud.cpu_drivers = cpu_drivers
+	hud.cpu_callsigns = cpu_callsigns
 	hud.race = race
 	hud.items = items
 	hud.course_cues = course_cues
@@ -169,9 +180,9 @@ func _setup_race() -> void:
 	race = RaceDirector.new()
 	var names: Array[String] = [GameSession.callsign]
 	var trackers: Array[TrackProgress] = [player_progress]
-	for driver: CpuDriver in cpu_drivers:
-		names.append(driver.target.vehicle_label)
-		trackers.append(driver.progress)
+	for i in cpu_drivers.size():
+		names.append(cpu_callsigns[i])
+		trackers.append(cpu_drivers[i].progress)
 	race.setup(course, names, trackers)
 	for entrant: Vehicle in [car] + cpu_cars:
 		_collision_layers.append(entrant.collision_layer)
@@ -217,10 +228,12 @@ func restart_race() -> void:
 	for i in cpu_drivers.size():
 		cpu_drivers[i].reset(_grid_indices[i + 1])
 	_retired.clear()
-	var names: Array[String] = []
+	_draw_callsigns()
+	hud.cpu_callsigns = cpu_callsigns
+	var names: Array[String] = [GameSession.callsign]
+	names.append_array(cpu_callsigns)
 	var trackers: Array[TrackProgress] = []
 	for entry: Dictionary in race.entrants:
-		names.append(entry["name"])
 		trackers.append(entry["progress"])
 	race.setup(course, names, trackers)
 	for driver: CpuDriver in cpu_drivers:

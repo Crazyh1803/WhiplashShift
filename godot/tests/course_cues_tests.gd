@@ -106,7 +106,11 @@ func _test_scene() -> void:
 	scene.car.speed = 20.0
 	scene.race.state = RaceDirector.State.RACING
 	scene.hud._process(0.0)
-	_check("racing HUD shows advance surface advice", not scene.hud._upcoming.text.is_empty())
+	var advance_text: String = scene.hud._upcoming.text
+	var terrain_words := ["PREPARE END", "HOLD END", "END B READY", "END A READY"]
+	for sid in Surfaces.NAMES.size():
+		terrain_words.append("%s IN " % Surfaces.NAMES[sid])
+	_check("racing HUD shows no advance terrain advice", terrain_words.all(func(w: String) -> bool: return not (w in advance_text)))
 	var active: String = scene.car.active_end
 	var velocity: Vector3 = scene.car.linear_velocity
 	scene.hud._process(0.0)

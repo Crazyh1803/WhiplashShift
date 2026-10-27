@@ -26,6 +26,10 @@ var _stat_fills: Dictionary = {}
 var _stat_values: Dictionary = {}
 var _roster_buttons: Array[Button] = []
 var _customization_popup: PopupPanel
+var _settings_button: Button
+var _settings_popup: PopupPanel
+var _speed_unit_buttons: Dictionary = {}
+var _settings_status: Label
 const PAINT_PICKER := preload("res://scripts/vehicle_paint_picker.gd")
 var _primary_picker: PAINT_PICKER
 var _secondary_picker: PAINT_PICKER
@@ -49,6 +53,7 @@ func _ready() -> void:
 	set_process_unhandled_key_input(true)
 	_build_interface()
 	_build_customization_popup()
+	_build_settings_popup()
 	_load_profile()
 	var selected_index := 0
 	for i: int in VehicleCatalog.VEHICLES.size():
@@ -103,6 +108,12 @@ func _build_interface() -> void:
 	var tagline := _label("DRIVE BOTH WAYS.  SURVIVE EITHER ONE.", 14, MUTED)
 	tagline.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	header.add_child(tagline)
+	_settings_button = _button("SETTINGS", 13)
+	_settings_button.name = "SettingsButton"
+	_settings_button.custom_minimum_size = Vector2(120, 38)
+	_settings_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_settings_button.pressed.connect(_open_settings)
+	header.add_child(_settings_button)
 
 	var rule := ColorRect.new()
 	rule.color = Color("42535c66")
@@ -363,6 +374,72 @@ func _build_customization_popup() -> void:
 	var close := _button("SAVE BUILD // CLOSE", 14)
 	close.pressed.connect(_customization_popup.hide)
 	box.add_child(close)
+
+
+func _build_settings_popup() -> void:
+	var shade := ColorRect.new()
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.color = Color(0.0, 0.0, 0.0, 0.85)
+	shade.hide()
+	add_child(shade)
+	_settings_popup = PopupPanel.new()
+	_settings_popup.name = "SettingsPopup"
+	_settings_popup.title = "SETTINGS"
+	_settings_popup.add_theme_stylebox_override("panel", _panel_style(Color("0b1115"), Color("42535c"), 2))
+	_settings_popup.visibility_changed.connect(func() -> void: shade.visible = _settings_popup.visible)
+	add_child(_settings_popup)
+	var margin := MarginContainer.new()
+	margin.custom_minimum_size = Vector2(440, 0)
+	for side: String in ["left", "right", "top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 24)
+	_settings_popup.add_child(margin)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 12)
+	margin.add_child(box)
+	box.add_child(_label("SETTINGS // DISPLAY", 20, INK))
+	_settings_status = _label("Changes save immediately.", 11, MUTED)
+	box.add_child(_settings_status)
+	box.add_child(_label("SPEED UNITS", 11, MUTED))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	box.add_child(row)
+	var group := ButtonGroup.new()
+	for unit_id: String in ["mph", "kmh"]:
+		var choice := _button(DrivingHud.unit_label(unit_id), 18)
+		choice.name = "SpeedUnit_%s" % unit_id
+		choice.toggle_mode = true
+		choice.button_group = group
+		choice.custom_minimum_size = Vector2(150, 48)
+		choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		choice.pressed.connect(_select_speed_unit.bind(unit_id))
+		row.add_child(choice)
+		_speed_unit_buttons[unit_id] = choice
+	var close := _button("CLOSE", 14)
+	close.name = "SettingsClose"
+	close.pressed.connect(_settings_popup.hide)
+	box.add_child(close)
+	_refresh_speed_unit_buttons()
+
+
+func _open_settings() -> void:
+	_refresh_speed_unit_buttons()
+	_settings_popup.popup_centered(Vector2i(488, 250))
+
+
+func _select_speed_unit(unit_id: String) -> void:
+	var saved := GameSession.set_speed_unit(unit_id)
+	_settings_status.text = "Changes save immediately." if saved == OK else "Could not save. This choice applies for this session."
+	_refresh_speed_unit_buttons()
+
+
+func _refresh_speed_unit_buttons() -> void:
+	for unit_id: String in _speed_unit_buttons:
+		var choice := _speed_unit_buttons[unit_id] as Button
+		var active := unit_id == GameSession.speed_unit
+		choice.set_pressed_no_signal(active)
+		choice.add_theme_stylebox_override("normal", _panel_style(Color("101a20"), _accent if active else Color("42535c"), 2))
+		choice.add_theme_stylebox_override("pressed", _panel_style(_accent.darkened(0.72), _accent, 2))
+		choice.add_theme_color_override("font_color", _accent if active else MUTED)
 
 
 func _open_customization() -> void:
