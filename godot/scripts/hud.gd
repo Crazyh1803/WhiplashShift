@@ -8,6 +8,7 @@ signal retry_requested
 @export var target: Vehicle
 var cpu_drivers: Array[CpuDriver] = []
 var pilot_callsign: String = "ROADGHOST"
+var cpu_callsigns: Array[String] = [] ## per-match CPU names, same order as cpu_drivers
 var race: RaceDirector
 var items: RaceItems:
 	set(value):
@@ -73,7 +74,7 @@ func _ready() -> void:
 	add_child(driving)
 	# Instrument text is created after the band so it draws on top of it.
 	_upcoming = _label(18, Vector2.ZERO)
-	_upcoming.name = "UpcomingTerrain"
+	_upcoming.name = "RouteAdvice"
 	_upcoming.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_item_status = _label(15, Vector2.ZERO)
 	_item_status.name = "HeldItem"
@@ -84,6 +85,7 @@ func _ready() -> void:
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	for label: Label in [_upcoming, _item_status, _boost_status]:
 		label.clip_text = true
+		label.add_theme_constant_override("line_spacing", 0) # compact band: two lines must stay visible
 	combat = CombatHud.new()
 	add_child(combat)
 	_build_results()
@@ -115,7 +117,7 @@ func _set_fitted(label: Label, text: String, max_size: int) -> void:
 	label.text = text
 	_fitted[label] = text
 	label.add_theme_font_size_override("font_size", DashInstruments.fit_font_size(
-		label.get_theme_font("font"), text, label.size, max_size, 10, label.autowrap_mode != TextServer.AUTOWRAP_OFF))
+		label.get_theme_font("font"), text, label.size, max_size, 9, label.autowrap_mode != TextServer.AUTOWRAP_OFF))
 
 
 func _on_attack_hit(victim: int, source_pos: Vector3, blocked: bool, _weapon: String) -> void:
@@ -189,13 +191,17 @@ func _process(delta: float) -> void:
 		driving.clear()
 	var unit := DrivingHud.sanitize_unit(GameSession.speed_unit)
 	var racers: Array = [target]
+	var names: Array[String] = ["YOU"]
 	var cpu_lines := PackedStringArray()
 	for driver: CpuDriver in cpu_drivers:
 		if not is_instance_valid(driver.target):
 			continue
 		racers.append(driver.target)
+		var slot := cpu_drivers.find(driver)
+		var callsign := cpu_callsigns[slot] if slot < cpu_callsigns.size() else driver.target.name.replace("_", " ")
+		names.append(callsign)
 		cpu_lines.append("%s  %3d %s  END %s  LAP %d%s" % [
-			driver.target.name.replace("_", " "),
+			callsign,
 			DrivingHud.display_speed(driver.target.speed, unit), DrivingHud.unit_label(unit), driver.target.active_end,
 			mini(driver.progress.lap + 1, race.course.default_laps) if race else driver.progress.lap + 1,
 			"  FINISHED" if race and float(race.entrants[cpu_drivers.find(driver) + 1]["finish_time"]) >= 0.0
@@ -215,7 +221,7 @@ func _process(delta: float) -> void:
 	_main.modulate = Color("4fd2ff") if target.active_end == "A" else Color("ffa63d")
 	driving.visible = race == null or race.state != RaceDirector.State.RESULTS
 	if driving.visible:
-		driving.update(unit, target, racers, race.course if race != null else null)
+		driving.update(unit, target, racers, race.course if race != null else null, names)
 	else:
 		driving.clear()
 
@@ -248,7 +254,7 @@ func _process(delta: float) -> void:
 		var status := "  ".join(lamps)
 		if items.feedback_time > 0.0:
 			status += ("\n" if not status.is_empty() else "") + items.feedback
-		_set_fitted(_item_status, status, 15)
+		_set_fitted(_item_status, status, 13)
 		combat.visible = race.state == RaceDirector.State.RACING
 		var view_camera := camera if camera != null else get_viewport().get_camera_3d()
 		combat.update(delta, items, target, view_camera)
@@ -292,14 +298,8 @@ func _route_text(tracker: TrackProgress) -> String:
 	var width := float(race.course.points[tracker.index]["w"])
 	if tracker.off_line >= width * 0.65:
 		return ""
-	var cue := course_cues.upcoming(tracker.distance, target.speed)
 	var lines := PackedStringArray()
 	var caution := false
-	if not cue.is_empty():
-		var sid := int(cue["surface"])
-		lines.append("%s IN %dm" % [Surfaces.NAMES[sid], ceili(float(cue["metres"]))])
-		lines.append(CourseCues.advice(sid, target.active_end))
-		caution = sid in [Surfaces.Id.ICE, Surfaces.Id.OIL]
 	var corner := course_cues.corner_advice(tracker.distance, target)
 	if not corner.is_empty():
 		var where := "IN CORNER" if bool(corner["inside"]) else "IN %dm" % ceili(float(corner["metres"]))

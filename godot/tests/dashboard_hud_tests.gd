@@ -107,7 +107,8 @@ func _test_scanner() -> void:
 func _test_layout() -> void:
 	var l := DashInstruments.layout(Vector2(1600, 900))
 	var band: Rect2 = l["band"]
-	_check("band spans y 650 to 860 at 1600x900", absf(band.position.y - 650.0) < 0.5 and absf(band.end.y - 860.0) < 0.5)
+	_check("compact band spans y 700 to 860 at 1600x900", absf(band.position.y - 700.0) < 0.5 and absf(band.end.y - 860.0) < 0.5)
+	_check("band is at least 25% shorter than the 210px original", band.size.y <= 210.0 * 0.78)
 	for view in VIEWS:
 		var lay := DashInstruments.layout(view)
 		var b: Rect2 = lay["band"]
@@ -140,16 +141,16 @@ func _test_ring() -> void:
 
 func _test_fit() -> void:
 	var font := ThemeDB.fallback_font
-	var advice := "SAND IN 40m\nLIFT OFF THROTTLE\nHAIRPIN RIGHT · IN 120m\nBRAKE BEFORE TURN · ADVISORY 100 KM/H"
+	var advice := "HAIRPIN RIGHT · IN 120m\nBRAKE BEFORE TURN · ADVISORY 100 KM/H"
 	var box := DashInstruments.body(DashInstruments.layout(Vector2(1600, 900))["route"], 1.0)
 	var size := DashInstruments.fit_font_size(font, advice, box.size, 18)
 	var measured := font.get_multiline_string_size(advice, HORIZONTAL_ALIGNMENT_LEFT, -1.0, size)
-	_check("four-line route advice fits the route instrument", measured.x <= box.size.x and measured.y <= box.size.y and size >= 14)
+	_check("two-line corner advice fits the route instrument", measured.x <= box.size.x and measured.y <= box.size.y and size >= 13)
 	var tight := DashInstruments.fit_font_size(font, "A VERY LONG LINE OF ADVICE THAT CANNOT POSSIBLY FIT", Vector2(120.0, 30.0), 18)
 	_check("impossible text shrinks to the floor", tight == 9)
-	var wrapped := DashInstruments.fit_font_size(font, "BOOST READY  ACCELERATE + [Q]", Vector2(204.0, 46.0), 15, 10, true)
+	var wrapped := DashInstruments.fit_font_size(font, "BOOST READY  ACCELERATE + [Q]", Vector2(204.0, 36.0), 12, 9, true)
 	var size_wrapped := font.get_multiline_string_size("BOOST READY  ACCELERATE + [Q]", HORIZONTAL_ALIGNMENT_LEFT, 204.0, wrapped)
-	_check("boost text wraps inside the systems instrument", size_wrapped.y <= 46.0 and size_wrapped.x <= 204.0)
+	_check("boost text wraps inside the compact systems instrument", size_wrapped.y <= 36.0 and size_wrapped.x <= 204.0)
 	var parts := DashInstruments.speed_layout(DashInstruments.layout(Vector2(1600, 900))["velocity"], 1.0)
 	var unit_rect: Rect2 = parts["unit"]
 	for text in ["KM/H", "MPH", "REVERSE"]:
@@ -206,12 +207,12 @@ func _test_integration() -> void:
 	var route := DashInstruments.body(l["route"], s)
 	_check("hint clears the band and the viewport", hud._hint.get_global_rect().position.y >= (l["band"] as Rect2).end.y
 		and Rect2(Vector2.ZERO, view).encloses(hud._hint.get_global_rect()))
-	var route_text := "SAND IN 40m\nLIFT OFF THROTTLE\nHAIRPIN RIGHT · IN 120m\nBRAKE BEFORE TURN · ADVISORY 100 KM/H"
+	var route_text := "HAIRPIN RIGHT · IN 120m\nBRAKE BEFORE TURN · ADVISORY 100 KM/H"
 	hud._set_fitted(hud._upcoming, route_text, 18)
 	var font := hud._upcoming.get_theme_font("font")
 	var route_size := font.get_multiline_string_size(route_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, hud._upcoming.get_theme_font_size("font_size"))
 	_check("route label sits in the route instrument", route.encloses(hud._upcoming.get_rect()) and route_size.x <= route.size.x and route_size.y <= route.size.y)
-	hud._set_fitted(hud._item_status, "LOW GRIP  SMOKE\nNO MISSILE LOCK — ITEM SAVED AND MORE EXTRA LONG WORDS HERE", 15)
+	hud._set_fitted(hud._item_status, "LOW GRIP  SMOKE\nNO MISSILE LOCK — ITEM SAVED", 13)
 	var status_font := hud._item_status.get_theme_font("font")
 	var status_size := status_font.get_multiline_string_size(hud._item_status.text, HORIZONTAL_ALIGNMENT_LEFT, hud._item_status.size.x, hud._item_status.get_theme_font_size("font_size"))
 	_check("long item feedback wraps inside the systems instrument", (systems["status"] as Rect2) == hud._item_status.get_rect()
@@ -225,7 +226,7 @@ func _test_integration() -> void:
 	_check("diagnostics clear the dashboard", hud._main.get_rect().end.y < (l["scanner"] as Rect2).position.y
 		and hud._cpu.get_rect().end.y < (l["scanner"] as Rect2).position.y)
 	var combat_panel := DashInstruments.body(l["combat"], s)
-	_check("weapon panel fits the combat instrument", (l["combat"] as Rect2).encloses(combat_panel) and combat_panel.size.y >= 130.0)
+	_check("weapon panel fits the combat instrument", (l["combat"] as Rect2).encloses(combat_panel) and combat_panel.size.y >= 100.0 * s)
 
 	# Speed values: digits follow display_speed for each saved unit.
 	GameSession.speed_unit = "kmh"

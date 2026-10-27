@@ -155,11 +155,11 @@ func _draw_panel(font: Font) -> void:
 	var panel := DashInstruments.body(l["combat"], s)
 	var wide := panel.size.x
 	var x := panel.position.x
-	var y := panel.position.y + 18.0 * s
+	var y := panel.position.y + 14.0 * s
 	var wid := String(weapon["id"])
 	var accent := Color(String(ItemCatalog.DATA[wid]["color"])) if ItemCatalog.DATA.has(wid) else Color("a7adb7")
 	var shown_name := String(weapon["name"]) if not String(weapon["name"]).is_empty() else "NO WEAPON"
-	draw_string(font, Vector2(x, y), shown_name, HORIZONTAL_ALIGNMENT_LEFT, wide, 18, accent)
+	draw_string(font, Vector2(x, y), shown_name, HORIZONTAL_ALIGNMENT_LEFT, wide, maxi(10, roundi(17.0 * s)), accent)
 	var state := String(weapon["state"])
 	var state_color := {"READY": Color("7dff9b"), "FIRING": Color("ffd24d"), "COOLING": Color("ff9a4d"),
 		"EXHAUSTED": Color("ff5a5a"), "EMPTY": Color("a7adb7"),
@@ -169,10 +169,11 @@ func _draw_panel(font: Font) -> void:
 		hint = " [E] " + ("ACTIVATE" if not ItemCatalog.is_ammo(wid) else ("3-ROUND BURST" if wid == "machine_guns" else "FIRE ONE"))
 	elif state == "EMPTY":
 		hint = " - COLLECT A GOLD BOX"
-	draw_string(font, Vector2(x, y + 22.0), state + hint, HORIZONTAL_ALIGNMENT_LEFT, wide, 15, state_color)
+	draw_string(font, Vector2(x, y + 18.0 * s), state + hint, HORIZONTAL_ALIGNMENT_LEFT, wide, maxi(10, roundi(14.0 * s)), state_color)
 	var max_ammo := int(weapon["max"])
 	if max_ammo > 0:
-		var bar := Rect2(x, y + 34.0, wide, 12.0)
+		var count_w := 56.0 * s
+		var bar := Rect2(x, y + 26.0 * s, wide - count_w, 11.0 * s)
 		draw_rect(bar, Color(1, 1, 1, 0.12))
 		var segments := max_ammo if max_ammo <= 6 else 10
 		var filled := float(weapon["ammo"]) / float(max_ammo)
@@ -182,21 +183,21 @@ func _draw_panel(font: Font) -> void:
 			var amount := clampf(filled * segments - n, 0.0, 1.0)
 			if amount > 0.0:
 				draw_rect(Rect2(seg.position, Vector2(seg.size.x * amount, seg.size.y)), accent)
-		draw_string(font, Vector2(x, y + 62.0), "%d / %d" % [weapon["ammo"], max_ammo], HORIZONTAL_ALIGNMENT_LEFT, 120.0, 14, Color.WHITE)
+		draw_string(font, Vector2(bar.end.x + 6.0 * s, bar.end.y), "%d/%d" % [weapon["ammo"], max_ammo], HORIZONTAL_ALIGNMENT_LEFT, count_w, maxi(10, roundi(13.0 * s)), Color.WHITE)
 		if float(weapon["cooldown"]) > 0.0:
-			draw_rect(Rect2(x + 130.0, y + 52.0, (wide - 130.0) * (1.0 - float(weapon["cooldown"])), 5.0), state_color)
+			draw_rect(Rect2(x, bar.end.y + 3.0 * s, wide * (1.0 - float(weapon["cooldown"])), 4.0 * s), state_color)
 	elif not held_utility.is_empty():
-		draw_string(font, Vector2(x, y + 50.0), "HELD UTILITY", HORIZONTAL_ALIGNMENT_LEFT, wide, 13, Color(1, 1, 1, 0.6))
+		draw_string(font, Vector2(x, y + 34.0 * s), "HELD UTILITY", HORIZONTAL_ALIGNMENT_LEFT, wide, maxi(9, roundi(12.0 * s)), Color(1, 1, 1, 0.7))
 	if String(utility["id"]).is_empty():
 		return
-	var uy := y + 84.0
+	var uy := y + 66.0 * s
 	var ucolor := Color(String(ItemCatalog.DATA[String(utility["id"])]["color"]))
 	if bool(utility["expiring"]) and int(Time.get_ticks_msec() / 120) % 2 == 0:
 		ucolor = Color("ff5a5a")
-	draw_string(font, Vector2(x, uy), "%s  %.1fs" % [utility["name"], utility["remaining"]], HORIZONTAL_ALIGNMENT_LEFT, wide, 15, ucolor)
+	draw_string(font, Vector2(x, uy), "%s  %.1fs" % [utility["name"], utility["remaining"]], HORIZONTAL_ALIGNMENT_LEFT, wide, maxi(10, roundi(14.0 * s)), ucolor)
 	var fraction := clampf(float(utility["remaining"]) / maxf(float(utility["duration"]), 0.001), 0.0, 1.0)
-	draw_rect(Rect2(x, uy + 6.0, wide, 9.0), Color(1, 1, 1, 0.12))
-	draw_rect(Rect2(x, uy + 6.0, wide * fraction, 9.0), ucolor)
+	draw_rect(Rect2(x, uy + 5.0 * s, wide, 8.0 * s), Color(1, 1, 1, 0.12))
+	draw_rect(Rect2(x, uy + 5.0 * s, wide * fraction, 8.0 * s), ucolor)
 
 
 ## Bodywork label and bar live in the systems instrument.
