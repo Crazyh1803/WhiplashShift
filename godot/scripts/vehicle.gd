@@ -89,6 +89,7 @@ var _part_sockets: Dictionary = {}
 var _axle_root: Node3D
 var _axle_visuals: Dictionary = {}
 var _bogie_root: Node3D
+var _bodywork: VehicleBodywork
 
 
 func _ready() -> void:
@@ -113,6 +114,9 @@ func _build() -> void:
 	_refresh_mass_properties()
 
 	_rebuild_collision()
+	_bodywork = VehicleBodywork.new()
+	add_child(_bodywork)
+	_bodywork.setup(self)
 	_rebuild_visuals()
 	_build_wheels()
 	_build_axles()
@@ -155,6 +159,7 @@ func apply_cosmetic_damage(severity: float) -> void:
 	if not is_finite(severity) or severity <= 0.0:
 		return
 	damage = clampf(damage + severity, 0.0, 1.0)
+	_sync_bodywork()
 	damaged.emit(severity)
 
 
@@ -163,11 +168,22 @@ func reset_effects_state() -> void:
 	boost_time = 0.0
 	boost_cooldown = 0.0
 	damage = 0.0
+	_sync_bodywork()
 	swap_feedback_time = 0.0
 	reset_terrain_response()
 	var effects := get_node_or_null("VehicleEffects")
 	if effects != null:
 		effects.reset()
+
+
+func _sync_bodywork() -> void:
+	if _bodywork != null:
+		_bodywork.sync()
+
+
+func _rebind_bodywork() -> void:
+	if _bodywork != null:
+		_bodywork.rebind(_visual_root)
 
 
 func _rebuild_visuals() -> void:
@@ -190,11 +206,13 @@ func _rebuild_visuals() -> void:
 				model.rotation_degrees = _config_vec3("rotation_degrees", Vector3.ZERO)
 				_visual_root.add_child(model)
 				_configure_imported_meshes(model)
+				_rebind_bodywork()
 				_build_part_sockets()
 				_rebuild_parts()
 				return
 
 	_build_placeholder_visuals(_visual_root)
+	_rebind_bodywork()
 	_build_part_sockets()
 	_rebuild_parts()
 
@@ -315,6 +333,7 @@ func set_paint_color(color: Color) -> void:
 	_customization["primary_color"] = color.to_html(false)
 	if _visual_root != null:
 		_configure_imported_meshes(_visual_root)
+		_rebind_bodywork()
 
 
 func apply_customization(customization: Dictionary) -> void:
