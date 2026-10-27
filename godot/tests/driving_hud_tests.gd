@@ -28,7 +28,8 @@ func _ready() -> void:
 
 
 func _test_conversion() -> void:
-	_check("three-digit speed fits the number area", ThemeDB.fallback_font.get_string_size("999", HORIZONTAL_ALIGNMENT_LEFT, -1, 74).x <= DrivingHud.SPEED_NUMBER_WIDTH)
+	var cells: Array[Rect2] = DashInstruments.speed_layout(DashInstruments.layout(Vector2(1600, 900))["velocity"], 1.0)["cells"]
+	_check("three-digit speed fits the velocity instrument", cells.size() == 3 and (DashInstruments.layout(Vector2(1600, 900))["velocity"] as Rect2).encloses(cells[2]))
 	_check("zero speed reads 0 in both units", DrivingHud.display_speed(0.0, "mph") == 0 and DrivingHud.display_speed(0.0, "kmh") == 0)
 	_check("20 m/s is 72 km/h", DrivingHud.display_speed(20.0, "kmh") == 72)
 	_check("20 m/s is 45 mph", DrivingHud.display_speed(20.0, "mph") == 45)
@@ -222,16 +223,13 @@ func _test_integration() -> void:
 
 	# Layout: speedometer and map clear the existing panels at the test viewport.
 	await get_tree().process_frame
-	var map_rect := Rect2(driving.get_node("Minimap").global_position, DrivingHud.MAP_SIZE)
+	var map_rect := Rect2(driving.get_node("Minimap").global_position, driving.map_size)
 	var view := get_viewport().get_visible_rect()
-	_check("minimap is inside the viewport", view.encloses(map_rect))
-	# CombatHud's panel starts 360 px above the bottom edge (see CombatHud._draw_panel).
-	_check("minimap clears CPU readout and the combat panel at 1280x720", DrivingHud.MAP_TOP >= hud._cpu.get_global_rect().position.y + 60.0
-		and DrivingHud.MAP_TOP + DrivingHud.MAP_SIZE.y <= 720.0 - 360.0)
-	var speedo := Rect2(DrivingHud.SPEEDO_MARGIN.x, view.size.y - DrivingHud.SPEEDO_MARGIN.y - DrivingHud.SPEEDO_SIZE.y,
-		DrivingHud.SPEEDO_SIZE.x, DrivingHud.SPEEDO_SIZE.y)
-	_check("speedometer clears the controls hint and boost readout", not speedo.intersects(hud._hint.get_global_rect())
-		and speedo.position.y > hud._boost_status.get_global_rect().end.y + 40.0)
+	var dash := DashInstruments.layout(view.size)
+	_check("minimap is inside the viewport and its map instrument", view.encloses(map_rect) and (dash["map"] as Rect2).encloses(map_rect))
+	_check("dashboard clears the CPU readout and the controls hint", (dash["band"] as Rect2).position.y >= hud._cpu.get_global_rect().end.y + 60.0
+		and not (dash["band"] as Rect2).intersects(hud._hint.get_global_rect()))
+	_check("boost readout sits in the systems instrument", (dash["systems"] as Rect2).encloses(hud._boost_status.get_global_rect()))
 
 	# Corner advisory uses the same unit, with km/h behaviour unchanged.
 	var corner: Dictionary = scene.course_cues.corners[0]

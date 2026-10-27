@@ -7,6 +7,7 @@ const QA_SETTINGS := "user://driving_hud_qa_settings.cfg"
 var _pass := 0
 var _fail := 0
 var _hud: Hud
+var _shots := 0
 var output := ProjectSettings.globalize_path("res://../.ai/captures/driving-hud")
 
 
@@ -83,6 +84,14 @@ func _ready() -> void:
 		foes[0].global_position = saved
 	hud._process(0.016)
 	_check("busy racing readout", hud.driving.speed_value == 112 and hud.driving.markers.size() == 3)
+	var dash := DashInstruments.layout(get_viewport().get_visible_rect().size)
+	_check("busy shot has ammo and a utility timer", hud.combat.weapon["ammo"] == 3 and hud.combat.utility["id"] == "shield"
+		and not hud.combat.indicators.is_empty())
+	var worst := -INF
+	for entry: Dictionary in hud.combat.indicators:
+		for p in CombatHud.ring_triangle(get_viewport().get_visible_rect().size, float(entry["angle"])):
+			worst = maxf(worst, p.y)
+	_check("attack markers sit above the dashboard", worst < (dash["band"] as Rect2).position.y)
 	await _shot("racing-kmh", "SAND IN 40m\nLIFT OFF THROTTLE\nHAIRPIN RIGHT · IN 120m\nBRAKE BEFORE TURN · ADVISORY 70 KM/H")
 
 	GameSession.speed_unit = "mph"
@@ -117,9 +126,12 @@ func _place(course: CourseDefinition, racer: Vehicle, fraction: float) -> void:
 func _shot(label: String, advice := "") -> void:
 	if _hud != null:
 		_hud.get_parent().rig.reset_follow()
+		_hud.driving.set_process(false) # deterministic scanner pose instead of wall-clock animation
+		_hud.driving.scanner_time = DrivingHud.SCAN_PERIOD * (0.2 + 0.17 * _shots)
+		_shots += 1
 		_hud._process(0.0)
 		if not advice.is_empty():
-			_hud._upcoming.text = advice
+			_hud._set_fitted(_hud._upcoming, advice, 18)
 	await RenderingServer.frame_post_draw
 	var image := get_viewport().get_texture().get_image()
 	_check(label + " is 1280x720", image.get_width() == 1280 and image.get_height() == 720)
