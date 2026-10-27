@@ -108,6 +108,9 @@ func _ready() -> void:
 	scene.queue_free()
 	await get_tree().process_frame
 	await get_tree().process_frame
+	var cleanup_deadline := Time.get_ticks_msec() + 300
+	while Time.get_ticks_msec() < cleanup_deadline:
+		await get_tree().process_frame
 	if FileAccess.file_exists(QA_SETTINGS):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(QA_SETTINGS))
 	GameSession.settings_path = saved_path
@@ -128,6 +131,7 @@ func _shot(label: String, advice := "") -> void:
 		_hud.get_parent().rig.reset_follow()
 		_hud.driving.set_process(false) # deterministic scanner pose instead of wall-clock animation
 		_hud.driving.scanner_time = DrivingHud.SCAN_PERIOD * (0.2 + 0.17 * _shots)
+		_hud.driving.get_node("ScannerLayer").queue_redraw()
 		_shots += 1
 		_hud._process(0.0)
 		if not advice.is_empty():

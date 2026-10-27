@@ -219,6 +219,7 @@ func _test_integration() -> void:
 	_check("boost label sits above bodywork inside systems", (l["systems"] as Rect2).encloses(hud._boost_status.get_rect())
 		and hud._boost_status.get_rect().end.y <= hud._item_status.get_rect().position.y
 		and hud._item_status.get_rect().end.y <= (systems["damage_label"] as Rect2).position.y)
+	_check("boost charging instruction shows both lines", hud._boost_status.get_line_count() == 2 and hud._boost_status.get_visible_line_count() >= 2)
 	_check("main diagnostics keep driver, end and surface", "END " in hud._main.text and hud._main.text.contains(hud.pilot_callsign)
 		and not ("transmission" in hud._main.text))
 	_check("diagnostics clear the dashboard", hud._main.get_rect().end.y < (l["scanner"] as Rect2).position.y

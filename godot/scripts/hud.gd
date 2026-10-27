@@ -219,14 +219,14 @@ func _process(delta: float) -> void:
 	else:
 		driving.clear()
 
-	var boost_text := "BOOST: EARN WITH A CLEAN WHIPLASH"
+	var boost_text := "BOOST UNCHARGED\nWHIPLASH TO CHARGE"
 	if target.boost_time > 0.0:
 		boost_text = "BOOST FIRING  %.1fs" % target.boost_time
 	elif target.boost_cooldown > 0.0:
 		boost_text = "BOOST COOLING  %.1fs" % target.boost_cooldown
 	elif target.boost_charge > 0:
-		boost_text = "BOOST READY  ACCELERATE + [Q]"
-	_set_fitted(_boost_status, boost_text, 15)
+		boost_text = "BOOST READY\nACCELERATE + [Q]"
+	_set_fitted(_boost_status, boost_text, 12)
 	_boost_status.modulate = Color("4fd2ff") if target.boost_charge > 0 or target.boost_time > 0 else Color("a7adb7")
 	var wl: Dictionary = target.last_whiplash
 	if wl.is_empty() or float(wl.get("age", 99.0)) > 2.2:
