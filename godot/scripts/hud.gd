@@ -19,6 +19,7 @@ var items: RaceItems:
 ## Optional override; defaults to the viewport's current camera, which follows swaps.
 var camera: Camera3D
 var combat: CombatHud
+var driving: DrivingHud
 var _last_race_state := -1
 var _item_status: Label
 var course_cues: CourseCues
@@ -83,6 +84,8 @@ func _ready() -> void:
 	_item_status.add_theme_color_override("font_color", Color("ffc34d"))
 	_boost_status = _label(17, Vector2(18, 286))
 	_boost_status.name = "BoostStatus"
+	driving = DrivingHud.new()
+	add_child(driving)
 	combat = CombatHud.new()
 	add_child(combat)
 	_build_results()
@@ -154,13 +157,17 @@ func _process(delta: float) -> void:
 		# Countdown, results and retry all start from a clean combat readout.
 		_last_race_state = int(race.state)
 		combat.clear()
+		driving.clear()
+	var unit := DrivingHud.sanitize_unit(GameSession.speed_unit)
+	var racers: Array = [target]
 	var cpu_lines := PackedStringArray()
 	for driver: CpuDriver in cpu_drivers:
 		if not is_instance_valid(driver.target):
 			continue
-		cpu_lines.append("%s  %3d KM/H  END %s  LAP %d%s" % [
+		racers.append(driver.target)
+		cpu_lines.append("%s  %3d %s  END %s  LAP %d%s" % [
 			driver.target.name.replace("_", " "),
-			roundi(driver.target.speed * 3.6), driver.target.active_end,
+			DrivingHud.display_speed(driver.target.speed, unit), DrivingHud.unit_label(unit), driver.target.active_end,
 			mini(driver.progress.lap + 1, race.course.default_laps) if race else driver.progress.lap + 1,
 			"  FINISHED" if race and float(race.entrants[cpu_drivers.find(driver) + 1]["finish_time"]) >= 0.0
 			else ("  PAUSED" if not driver.enabled else "")])
@@ -172,13 +179,17 @@ func _process(delta: float) -> void:
 		swap_state = "POWER CUT"
 	_main.text = "\n".join([
 		"%s  //  %s" % [pilot_callsign, target.vehicle_label],
-		"%3d KM/H   %s" % [roundi(target.speed * 3.6), "REVERSE" if target.reversing else ""],
 		"END %s DRIVING   %s" % [target.active_end, Surfaces.NAMES[target.surface_under]],
 		"  A pair on %-9s  B pair on %s" % [Surfaces.NAMES[a_surf], Surfaces.NAMES[b_surf]],
 		"transmission %3d%%   swap %s" % [roundi(target.engage * 100.0), swap_state],
 		"WRONG END" if target.wrong_end and target.speed > 11.0 else "",
 	])
 	_main.modulate = Color("4fd2ff") if target.active_end == "A" else Color("ffa63d")
+	driving.visible = race == null or race.state != RaceDirector.State.RESULTS
+	if driving.visible:
+		driving.update(unit, target, racers, race.course if race != null else null)
+	else:
+		driving.clear()
 
 	var boost_text := "BOOST: EARN WITH A CLEAN WHIPLASH"
 	if target.boost_time > 0.0:
@@ -264,7 +275,9 @@ func _update_upcoming(tracker: TrackProgress) -> void:
 		if bool(corner["low_grip"]):
 			lines.append("LOW GRIP — EASE SPEED")
 		else:
-			lines.append((action if bool(corner["slow"]) else "") + "ADVISORY %d KM/H" % (floori(float(corner["speed"]) * 3.6 / 5.0) * 5))
+			lines.append((action if bool(corner["slow"]) else "") + "ADVISORY %d %s" % [
+					DrivingHud.advisory_speed(float(corner["speed"]), GameSession.speed_unit),
+					DrivingHud.unit_label(GameSession.speed_unit)])
 		caution = caution or bool(corner["slow"]) or bool(corner["low_grip"])
 	_upcoming.text = "\n".join(lines)
 	_upcoming.modulate = Color("ffdc80") if caution else Color("e7f1ff")
