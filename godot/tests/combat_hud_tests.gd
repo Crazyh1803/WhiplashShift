@@ -70,6 +70,7 @@ func _run() -> void:
 
 	_test_weapon()
 	_test_utility()
+	_test_readiness()
 	_test_damage()
 	_test_attacks()
 	_test_boundaries()
@@ -79,6 +80,7 @@ func _run() -> void:
 
 func _test_weapon() -> void:
 	items.grant_item(0, "machine_guns")
+	_deploy()
 	hud._process(0.016)
 	_check("machine guns ready with full magazine", combat.weapon["state"] == "READY" and combat.weapon["ammo"] == 30
 		and combat.weapon["max"] == 30)
@@ -140,17 +142,20 @@ func _test_utility() -> void:
 	items.active[0] = "shield"
 	items.remaining[0] = 4.0
 	items.grant_item(0, "rockets")
+	_deploy()
 	hud._process(0.016)
 	_check("active utility shows time left", combat.utility["id"] == "shield" and absf(float(combat.utility["remaining"]) - 4.0) < 0.01
 		and combat.utility["duration"] == 5.0 and not combat.utility["expiring"])
-	_check("held weapon stays visible beside active utility", combat.weapon["id"] == "rockets" and combat.weapon["state"] == "READY")
+	_check("held weapon stays visible beside active utility", combat.weapon["id"] == "rockets" and combat.weapon["state"] == "WAIT")
+	_check("WAIT matches the game refusing to fire", not items.fire(0) and items.ammo[0] == 4)
 	items.remaining[0] = 0.6
 	hud._process(0.016)
 	_check("expiring utility is flagged", combat.utility["expiring"])
 	items.active[0] = ""
 	items.remaining[0] = 0.0
 	hud._process(0.016)
-	_check("expired utility leaves the held weapon", combat.utility["id"] == "" and combat.weapon["id"] == "rockets")
+	_check("expired utility leaves the held weapon", combat.utility["id"] == "" and combat.weapon["id"] == "rockets"
+		and combat.weapon["state"] == "READY")
 	items.held[0] = ""
 	items.ammo[0] = 0
 	items.active[0] = "oil"
@@ -159,6 +164,68 @@ func _test_utility() -> void:
 	_check("every timed utility is tracked", combat.utility["id"] == "oil" and combat.utility["name"] == "OIL SLICK")
 	items.active[0] = ""
 	items.remaining[0] = 0.0
+
+
+## Settle the weapon rig the way physics frames would, firing any queued shot.
+func _deploy() -> void:
+	items._tick_mounts(0, 2.0)
+
+
+## READY must agree with what pressing E actually does, using the real mount state.
+func _test_readiness() -> void:
+	combat.clear()
+	car.freeze = false # fire() refuses frozen cars; no physics frame runs inside this test
+	items.held[0] = ""
+	items.active[0] = ""
+	items.remaining[0] = 0.0
+	items.ammo[0] = 0
+	items.fire_cooldown[0] = 0.0
+	items.burst_left[0] = 0
+	ItemWeaponMounts.hide(items._gun_mounts[0], true)
+	items.grant_item(0, "rockets")
+	hud._process(0.016)
+	_check("undeployed rig reads DEPLOYING", combat.weapon["state"] == "DEPLOYING" and not items.weapon_deployed(0))
+	_check("pressing E while deploying queues the shot", items.fire(0) and items.shot_queued(0) and items.ammo[0] == 4)
+	hud._process(0.016)
+	_check("queued shot reads QUEUED", combat.weapon["state"] == "QUEUED")
+	_deploy()
+	hud._process(0.016)
+	_check("deployment fires the queued shot and cools down", items.ammo[0] == 3 and not items.shot_queued(0)
+		and combat.weapon["state"] == "COOLING")
+	items.fire_cooldown[0] = 0.0
+	hud._process(0.016)
+	_check("cooldown end is READY and E really fires", combat.weapon["state"] == "READY" and items.fire(0) and items.ammo[0] == 2)
+
+	# Held utility is blocked while another utility runs, and READY again after.
+	items.fire_cooldown[0] = 0.0
+	items.held[0] = ""
+	items.grant_item(0, "smoke")
+	items.active[0] = "oil"
+	items.remaining[0] = 3.0
+	hud._process(0.016)
+	_check("held utility reads WAIT while another is active", combat.weapon["state"] == "WAIT" and combat.held_utility == "smoke")
+	_check("WAIT utility really cannot be used", not items.fire(0) and items.held[0] == "smoke")
+	items.active[0] = ""
+	items.remaining[0] = 0.0
+	hud._process(0.016)
+	_check("held utility is READY once the active one ends", combat.weapon["state"] == "READY")
+
+	# Homing without a lock is refused by fire(), so it must not read READY.
+	items.held[0] = ""
+	ItemWeaponMounts.hide(items._gun_mounts[0], true)
+	items.grant_item(0, "homing")
+	_deploy()
+	var home := foe.global_position
+	foe.global_position = Vector3(0, 1, -500)
+	hud._process(0.016)
+	_check("homing with no target reads NO LOCK", combat.weapon["state"] == "NO LOCK" and not items.fire(0) and items.ammo[0] == 1)
+	foe.global_position = home
+	items.held[0] = ""
+	items.ammo[0] = 0
+	ItemWeaponMounts.hide(items._gun_mounts[0], true)
+	hud._process(0.016)
+	car.freeze = true
+	combat.clear()
 
 
 func _test_damage() -> void:

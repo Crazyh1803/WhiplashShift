@@ -33,12 +33,20 @@ func _ready() -> void:
 	foe.freeze = true
 	hud._process(0.016)
 
+	hud._process(0.016)
+	_check("empty hands state", hud.combat.weapon["state"] == "EMPTY")
+	await _shot(hud, "empty-collect-hint")
+
 	items.grant_item(0, "machine_guns")
+	items._tick_mounts(0, 2.0)
 	items.ammo[0] = 21
 	items.fire_cooldown[0] = 0.15
+	hud._process(0.016)
+	_check("machine guns cooling state", hud.combat.weapon["state"] == "COOLING")
 	await _shot(hud, "machine-guns-cooling")
 
 	items.grant_item(0, "rockets")
+	items._tick_mounts(0, 2.0)
 	items.ammo[0] = 2
 	items.fire_cooldown[0] = 0.0
 	car.damage = 0.45
@@ -55,22 +63,33 @@ func _ready() -> void:
 	car.damage = 0.45
 	hud._process(0.016)
 	_check("camera present for screenshot", camera != null)
-	await _shot(hud, "held-active-hits")
+	_check("hits are staged as indicators", hud.combat.indicators.size() == 4)
+	_check("active utility blocks fire as WAIT", hud.combat.weapon["state"] == "WAIT" and hud.combat.utility["id"] == "shield")
+	await _shot(hud, "held-active-hits", "SAND IN 40m\nLIFT OFF THROTTLE")
+	_check("terrain advice is shown under the indicators", hud._upcoming.text.begins_with("SAND"))
 
+	# Last round: record it held, then spend it so the readout reports the gun used up.
+	items.ammo[0] = 1
+	items.fire_cooldown[0] = 0.0
+	hud._process(0.016)
 	items.held[0] = ""
 	items.ammo[0] = 0
 	items.fire_cooldown[0] = 0.4
 	items.remaining[0] = 0.6
 	car.damage = 0.9
 	hud._process(0.5)
+	_check("spent weapon reads EXHAUSTED", hud.combat.weapon["state"] == "EXHAUSTED" and hud.combat.utility["expiring"])
+	_check("wrecked bodywork wording", hud.combat.damage_label == "BODYWORK WRECKED")
 	await _shot(hud, "exhausted-expiring-wrecked")
 
 	print("COMBAT HUD QA: %d passed, %d failed" % [_pass, _fail])
 	get_tree().quit(1 if _fail else 0)
 
 
-func _shot(hud: Hud, label: String) -> void:
+func _shot(hud: Hud, label: String, advice := "") -> void:
 	hud._process(0.0)
+	if not advice.is_empty():
+		hud._upcoming.text = advice
 	await RenderingServer.frame_post_draw
 	var image := get_viewport().get_texture().get_image()
 	_check(label + " is 1280x720", image.get_width() == 1280 and image.get_height() == 720)
