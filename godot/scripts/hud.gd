@@ -21,6 +21,8 @@ var camera: Camera3D
 var combat: CombatHud
 var driving: DrivingHud
 var _last_race_state := -1
+var _laid_view := Vector2.ZERO
+var _fitted: Dictionary = {} ## Label -> text the font size was last fitted for
 var _item_status: Label
 var course_cues: CourseCues
 var _upcoming: Label
@@ -43,9 +45,6 @@ func _ready() -> void:
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_banner.add_theme_font_size_override("font_size", 28)
 	_hint = _label(12, Vector2(18, 0))
-	_hint.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_hint.offset_top = -34.0
-	_hint.offset_left = 18.0
 	_hint.text = "W/S throttle-brake  A/D steer  SPACE swap  SHIFT handbrake  E item  Q boost  R recover  C camera  F1 debug  F2 CPUs"
 	_hint.modulate = Color(1, 1, 1, 0.45)
 	_cpu = _label(15, Vector2.ZERO)
@@ -58,7 +57,7 @@ func _ready() -> void:
 	var menu_button := Button.new()
 	menu_button.name = "MainMenuButton"
 	menu_button.text = "←  MAIN MENU"
-	menu_button.position = Vector2(18.0, 176.0)
+	menu_button.position = Vector2(18.0, 118.0)
 	menu_button.custom_minimum_size = Vector2(154.0, 38.0)
 	menu_button.add_theme_font_size_override("font_size", 14)
 	menu_button.focus_mode = Control.FOCUS_NONE
@@ -70,25 +69,53 @@ func _ready() -> void:
 	_race_status.offset_right = 210.0
 	_race_status.offset_top = 18.0
 	_race_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_upcoming = _label(20, Vector2.ZERO)
-	_upcoming.name = "UpcomingTerrain"
-	_upcoming.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_upcoming.offset_left = -430.0
-	_upcoming.offset_right = 430.0
-	_upcoming.offset_top = -160.0
-	_upcoming.offset_bottom = -48.0
-	_upcoming.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_upcoming.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_item_status = _label(19, Vector2(18, 228))
-	_item_status.name = "HeldItem"
-	_item_status.add_theme_color_override("font_color", Color("ffc34d"))
-	_boost_status = _label(17, Vector2(18, 286))
-	_boost_status.name = "BoostStatus"
 	driving = DrivingHud.new()
 	add_child(driving)
+	# Instrument text is created after the band so it draws on top of it.
+	_upcoming = _label(18, Vector2.ZERO)
+	_upcoming.name = "UpcomingTerrain"
+	_upcoming.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_item_status = _label(15, Vector2.ZERO)
+	_item_status.name = "HeldItem"
+	_item_status.add_theme_color_override("font_color", Color("ffc34d"))
+	_boost_status = _label(15, Vector2.ZERO)
+	_boost_status.name = "BoostStatus"
+	for label: Label in [_item_status, _boost_status]:
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	for label: Label in [_upcoming, _item_status, _boost_status]:
+		label.clip_text = true
 	combat = CombatHud.new()
 	add_child(combat)
 	_build_results()
+	_layout_dash()
+
+
+## Positions the text instruments inside the dashboard band for the current viewport.
+func _layout_dash() -> void:
+	_laid_view = get_viewport().get_visible_rect().size
+	var l := DashInstruments.layout(_laid_view)
+	var s: float = l["scale"]
+	var systems := DashInstruments.systems_layout(l["systems"], s)
+	_hint.position = Vector2(18.0 * s, float(l["hint_top"]))
+	_place(_upcoming, DashInstruments.body(l["route"], s))
+	_place(_boost_status, systems["boost"])
+	_place(_item_status, systems["status"])
+
+
+func _place(label: Label, rect: Rect2) -> void:
+	label.position = rect.position
+	label.size = rect.size
+	_fitted.erase(label)
+
+
+## Sets text, shrinking the font until it fits the label's box (wrapping labels wrap at its width).
+func _set_fitted(label: Label, text: String, max_size: int) -> void:
+	if label.text == text and _fitted.get(label, "") == text:
+		return
+	label.text = text
+	_fitted[label] = text
+	label.add_theme_font_size_override("font_size", DashInstruments.fit_font_size(
+		label.get_theme_font("font"), text, label.size, max_size, 10, label.autowrap_mode != TextServer.AUTOWRAP_OFF))
 
 
 func _on_attack_hit(victim: int, source_pos: Vector3, blocked: bool, _weapon: String) -> void:
@@ -151,6 +178,8 @@ func _label(size: int, pos: Vector2) -> Label:
 
 
 func _process(delta: float) -> void:
+	if get_viewport().get_visible_rect().size != _laid_view:
+		_layout_dash()
 	if target == null:
 		return
 	if race != null and int(race.state) != _last_race_state:
@@ -179,9 +208,8 @@ func _process(delta: float) -> void:
 		swap_state = "POWER CUT"
 	_main.text = "\n".join([
 		"%s  //  %s" % [pilot_callsign, target.vehicle_label],
-		"END %s DRIVING   %s" % [target.active_end, Surfaces.NAMES[target.surface_under]],
-		"  A pair on %-9s  B pair on %s" % [Surfaces.NAMES[a_surf], Surfaces.NAMES[b_surf]],
-		"transmission %3d%%   swap %s" % [roundi(target.engage * 100.0), swap_state],
+		"END %s DRIVING   %s   SWAP %s" % [target.active_end, Surfaces.NAMES[target.surface_under], swap_state],
+		"A pair on %s   B pair on %s" % [Surfaces.NAMES[a_surf], Surfaces.NAMES[b_surf]],
 		"WRONG END" if target.wrong_end and target.speed > 11.0 else "",
 	])
 	_main.modulate = Color("4fd2ff") if target.active_end == "A" else Color("ffa63d")
@@ -198,7 +226,7 @@ func _process(delta: float) -> void:
 		boost_text = "BOOST COOLING  %.1fs" % target.boost_cooldown
 	elif target.boost_charge > 0:
 		boost_text = "BOOST READY  ACCELERATE + [Q]"
-	_boost_status.text = boost_text
+	_set_fitted(_boost_status, boost_text, 15)
 	_boost_status.modulate = Color("4fd2ff") if target.boost_charge > 0 or target.boost_time > 0 else Color("a7adb7")
 	var wl: Dictionary = target.last_whiplash
 	if wl.is_empty() or float(wl.get("age", 99.0)) > 2.2:
@@ -212,13 +240,15 @@ func _process(delta: float) -> void:
 		_banner.modulate = Color.WHITE
 	if items != null:
 		_item_status.visible = race.state == RaceDirector.State.RACING
-		_item_status.text = ""
+		var lamps := PackedStringArray()
 		if items.oil_time[0] > 0.0:
-			_item_status.text += "LOW GRIP  "
+			lamps.append("LOW GRIP")
 		if items.obscured[0]:
-			_item_status.text += "SMOKE  "
+			lamps.append("SMOKE")
+		var status := "  ".join(lamps)
 		if items.feedback_time > 0.0:
-			_item_status.text += "\n" + items.feedback
+			status += ("\n" if not status.is_empty() else "") + items.feedback
+		_set_fitted(_item_status, status, 15)
 		combat.visible = race.state == RaceDirector.State.RACING
 		var view_camera := camera if camera != null else get_viewport().get_camera_3d()
 		combat.update(delta, items, target, view_camera)
@@ -253,12 +283,15 @@ func _update_race() -> void:
 
 
 func _update_upcoming(tracker: TrackProgress) -> void:
-	_upcoming.text = ""
+	_set_fitted(_upcoming, _route_text(tracker), 18)
+
+
+func _route_text(tracker: TrackProgress) -> String:
 	if course_cues == null or race.state != RaceDirector.State.RACING or tracker.wrong_way:
-		return
+		return ""
 	var width := float(race.course.points[tracker.index]["w"])
 	if tracker.off_line >= width * 0.65:
-		return
+		return ""
 	var cue := course_cues.upcoming(tracker.distance, target.speed)
 	var lines := PackedStringArray()
 	var caution := false
@@ -279,5 +312,5 @@ func _update_upcoming(tracker: TrackProgress) -> void:
 					DrivingHud.advisory_speed(float(corner["speed"]), GameSession.speed_unit),
 					DrivingHud.unit_label(GameSession.speed_unit)])
 		caution = caution or bool(corner["slow"]) or bool(corner["low_grip"])
-	_upcoming.text = "\n".join(lines)
 	_upcoming.modulate = Color("ffdc80") if caution else Color("e7f1ff")
+	return "\n".join(lines)
