@@ -7,8 +7,9 @@ extends Control
 const INDICATOR_LIFE := 1.4
 const EXHAUSTED_TIME := 1.6
 const EXPIRY_WARNING := 1.0
+const RING_RADIUS := 0.24 ## of viewport height; clears the terrain cue above the rear marker
 const PANEL_SIZE := Vector2(284.0, 150.0)
-const DAMAGE_RECT := Rect2(18.0, 318.0, 220.0, 10.0)
+const DAMAGE_RECT := Rect2(18.0, 342.0, 220.0, 10.0)
 
 var weapon := {"state": "EMPTY", "id": "", "name": "", "ammo": 0, "max": 0, "cooldown": 0.0, "burst": 0}
 var utility := {"id": "", "name": "", "remaining": 0.0, "duration": 0.0, "expiring": false}
@@ -102,6 +103,8 @@ func _update_weapon(delta: float, items: RaceItems) -> void:
 		_prev_id = ""
 		held_utility = id
 		var state := "EXHAUSTED" if _exhausted > 0.0 and id.is_empty() else ("READY" if not id.is_empty() else "EMPTY")
+		if state == "READY" and not items.active[0].is_empty():
+			state = "WAIT"
 		weapon = {"state": state, "id": id, "name": _exhausted_name if state == "EXHAUSTED" else ItemCatalog.label(id),
 			"ammo": 0, "max": 0, "cooldown": 0.0, "burst": burst}
 		return
@@ -116,6 +119,14 @@ func _update_weapon(delta: float, items: RaceItems) -> void:
 		cooldown = clampf(items.fire_cooldown[0] / float(data["cooldown"]), 0.0, 1.0)
 	elif items.ammo[0] < int(data["cost"]):
 		state = "EXHAUSTED"
+	elif not items.active[0].is_empty():
+		state = "WAIT"
+	elif items.shot_queued(0):
+		state = "QUEUED"
+	elif not items.weapon_deployed(0):
+		state = "DEPLOYING"
+	elif id == "homing" and not items.has_lock(0):
+		state = "NO LOCK"
 	weapon = {"state": state, "id": id, "name": ItemCatalog.label(id), "ammo": items.ammo[0],
 		"max": int(data["ammo"]), "cooldown": cooldown, "burst": burst}
 	_prev_id = id
@@ -152,8 +163,13 @@ func _draw_panel(font: Font) -> void:
 	draw_string(font, Vector2(x, y), shown_name, HORIZONTAL_ALIGNMENT_LEFT, 256.0, 18, accent)
 	var state := String(weapon["state"])
 	var state_color := {"READY": Color("7dff9b"), "FIRING": Color("ffd24d"), "COOLING": Color("ff9a4d"),
-		"EXHAUSTED": Color("ff5a5a"), "EMPTY": Color("a7adb7")}[state] as Color
-	var hint := " [E]" if state == "READY" else ""
+		"EXHAUSTED": Color("ff5a5a"), "EMPTY": Color("a7adb7"),
+		"WAIT": Color("ff9a4d"), "DEPLOYING": Color("ffd24d"), "QUEUED": Color("ffd24d"), "NO LOCK": Color("ff9a4d")}[state] as Color
+	var hint := ""
+	if state == "READY":
+		hint = " [E] " + ("ACTIVATE" if not ItemCatalog.is_ammo(wid) else ("3-ROUND BURST" if wid == "machine_guns" else "FIRE ONE"))
+	elif state == "EMPTY":
+		hint = " - COLLECT A GOLD BOX"
 	draw_string(font, Vector2(x, y + 22.0), state + hint, HORIZONTAL_ALIGNMENT_LEFT, 256.0, 15, state_color)
 	var max_ammo := int(weapon["max"])
 	if max_ammo > 0:
@@ -185,7 +201,7 @@ func _draw_panel(font: Font) -> void:
 
 
 func _draw_damage(font: Font) -> void:
-	draw_string(font, DAMAGE_RECT.position + Vector2(0.0, -4.0), damage_label, HORIZONTAL_ALIGNMENT_LEFT, 220.0, 12,
+	draw_string(font, DAMAGE_RECT.position + Vector2(0.0, -4.0), damage_label, HORIZONTAL_ALIGNMENT_LEFT, 220.0, 14,
 		Color(1, 1, 1, 0.7))
 	draw_rect(DAMAGE_RECT, Color(1, 1, 1, 0.12))
 	var heat := Color("ffd24d").lerp(Color("ff4a3a"), damage_level)
@@ -194,7 +210,7 @@ func _draw_damage(font: Font) -> void:
 
 func _draw_indicators() -> void:
 	var center := size * 0.5
-	var radius := minf(size.x, size.y) * 0.3
+	var radius := minf(size.x, size.y) * RING_RADIUS
 	for entry: Dictionary in indicators:
 		if not entry.has("angle"):
 			continue

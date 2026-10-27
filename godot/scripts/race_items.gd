@@ -166,6 +166,19 @@ func grant_item(index: int, id: String) -> void:
 	_cpu_wait[index] = 0.8
 
 
+## Read-only queries for the combat readout.
+func shot_queued(index: int) -> bool:
+	return _queued_fire[index]
+
+
+func weapon_deployed(index: int) -> bool:
+	return not held[index].is_empty() and ItemWeaponMounts.ready(_gun_mounts[index], cars[index].active_end, held[index])
+
+
+func has_lock(index: int) -> bool:
+	return _target(index) >= 0
+
+
 func _roll_pickup(pickup: Dictionary) -> void:
 	# Every lane uses exactly the same full catalog, independently on each respawn.
 	pickup["item"] = ItemCatalog.roll(rng.randf())
