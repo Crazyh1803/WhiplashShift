@@ -112,7 +112,8 @@ func _gameplay() -> void:
 	GameSession.configure("SCENERY REVIEW", "blackjack", ["boilerfang", "ramjet"])
 	var scene: Variant = load("res://scenes/proving_ground.tscn").instantiate()
 	add_child(scene)
-	await get_tree().physics_frame
+	for frame in 30:
+		await get_tree().physics_frame
 	scene.set_physics_process(false)
 	for car: Vehicle in [scene.car, scene.cpu_cars[0], scene.cpu_cars[1]]:
 		car.freeze = true

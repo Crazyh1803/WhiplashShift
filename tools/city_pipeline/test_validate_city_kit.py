@@ -84,7 +84,11 @@ def main():
     for name, mut, needle in (("moved vertex", move_vertex, "POSITION min/max"),
                               ("blackened glow", blacken_glow, "emissiveFactor"),
                               ("no emissive strength", drop_strength, "emissive_strength"),
-                              ("bad count", truncate_view, "outside bufferView")):
+                              ("bad count", truncate_view, "outside bufferView"),
+                              ("negative offset", lambda js, b: change_position(js, "byteOffset", -12), "nonnegative integers"),
+                              ("fractional offset", lambda js, b: change_position(js, "byteOffset", 0.5), "nonnegative integers"),
+                              ("NaN bounds", lambda js, b: change_position(js, "min", [float("nan"), 0, 0]), "finite numeric"),
+                              ("NaN glow strength", nan_strength, "emissive_strength")):
         code, out = run(mut)
         ok = code == 1 and needle in out
         print(("ok   " if ok else "FAIL ") + name)
@@ -93,6 +97,18 @@ def main():
     for f in fails:
         print(f)
     return 1 if fails else 0
+
+
+def change_position(js, field, value):
+    js["accessors"][js["meshes"][0]["primitives"][0]["attributes"]["POSITION"]][field] = value
+    return js
+
+
+def nan_strength(js, binary):
+    for material in js["materials"]:
+        if material["name"].startswith("glow_"):
+            material["extensions"]["KHR_materials_emissive_strength"]["emissiveStrength"] = float("nan")
+    return js
 
 
 sys.exit(main())

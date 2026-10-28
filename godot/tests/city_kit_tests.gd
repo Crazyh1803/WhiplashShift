@@ -23,6 +23,15 @@ func _ready() -> void:
 	_test_assets()
 	var host := Node3D.new()
 	add_child(host)
+	for distance: float in [1.0, 100.0, 300.0, course.total_length * 0.25 - 1.0]:
+		var sampled := CityDistrict.sample(course, distance)
+		_check("route sampling round-trips at %.1f" % distance, absf(CityDistrict.route_distance(course, sampled["pos"]) - distance) < 0.01)
+	var saved_entries: Dictionary = CityKit._entries
+	CityKit._entries = {}
+	var fallback := CityScenery.build(host, course)
+	_check("unavailable kit preserves legacy scenery", not fallback.get_meta("authored_quarter") and not fallback.has_node("CityKit") and fallback.has_node("Body"))
+	fallback.free()
+	CityKit._entries = saved_entries
 	var legacy := CityScenery.build(host, course)
 	var district := legacy.get_node_or_null("CityKit") as Node3D
 	_check("district root exists beside legacy scenery", district != null and district.get_parent() == legacy)

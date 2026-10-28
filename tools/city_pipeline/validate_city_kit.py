@@ -70,13 +70,15 @@ def read_positions(js, binary, ai, aid):
     if a.get("componentType") != 5126 or a.get("type") != "VEC3" or "sparse" in a or "bufferView" not in a:
         raise ValueError(f"POSITION accessor must be dense float32 VEC3")
     cnt = a.get("count")
-    if not isinstance(cnt, int) or cnt <= 0:
+    if type(cnt) is not int or cnt <= 0:
         raise ValueError("bad POSITION count")
     bv = js["bufferViews"][a["bufferView"]]
     if bv.get("buffer", 0) != 0:
         raise ValueError("POSITION bufferView not in the GLB BIN buffer")
     stride = bv.get("byteStride", 12)
     start, bvo, bvl = a.get("byteOffset", 0), bv.get("byteOffset", 0), bv["byteLength"]
+    if any(type(v) is not int or v < 0 for v in (stride, start, bvo, bvl)):
+        raise ValueError("POSITION offsets and lengths must be nonnegative integers")
     if stride < 12 or stride % 4 or start % 4 or bvo % 4:
         raise ValueError("bad POSITION stride/alignment")
     if start + stride * (cnt - 1) + 12 > bvl or bvo + bvl > len(binary):
@@ -85,6 +87,9 @@ def read_positions(js, binary, ai, aid):
     verts = [struct.unpack_from("<3f", binary, base + i * stride) for i in range(cnt)]
     if not all(math.isfinite(c) for v in verts for c in v):
         raise ValueError("non-finite vertex position")
+    for bound in (a.get("min"), a.get("max")):
+        if not isinstance(bound, list) or len(bound) != 3 or not all(type(v) in (int, float) and math.isfinite(v) for v in bound):
+            raise ValueError("POSITION min/max must be finite numeric VEC3 bounds")
     for k in range(3):
         vmin, vmax = min(v[k] for v in verts), max(v[k] for v in verts)
         if abs(vmin - a["min"][k]) > 1e-4 or abs(vmax - a["max"][k]) > 1e-4:
@@ -165,7 +170,7 @@ def check_glb(e):
             if not ok:
                 err(f"{aid}: glow surface {m.get('name')} needs positive finite emissiveFactor, got {em}")
             st = m.get("extensions", {}).get("KHR_materials_emissive_strength", {}).get("emissiveStrength")
-            if not isinstance(st, (int, float)) or abs(st - 2.0) > 1e-6:
+            if type(st) not in (int, float) or not math.isfinite(st) or abs(st - 2.0) > 1e-6:
                 err(f"{aid}: glow surface {m.get('name')} needs KHR_materials_emissive_strength 2.0, got {st}")
         for t in ("emissiveTexture", "normalTexture", "occlusionTexture"):
             if t in m:
