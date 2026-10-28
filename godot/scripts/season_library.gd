@@ -132,7 +132,11 @@ func _write_atomic(path: String, content: String) -> String:
 		return "Could not write the season file."
 	file.store_string(content)
 	file.flush()
+	var write_error := file.get_error()
 	file.close()
+	if write_error != OK:
+		DirAccess.remove_absolute(temp)
+		return "Could not write the complete season file."
 	if DirAccess.rename_absolute(temp, path) != OK:
 		DirAccess.remove_absolute(temp)
 		return "Could not finish writing the season file."

@@ -87,6 +87,9 @@ func _ready() -> void:
 	_refresh_saved()
 	var run: Variant = _season_run()
 	_show_page("standings" if run != null and bool(run.call("is_complete")) else "home")
+	if not GameSession.menu_error.is_empty():
+		_set_status(GameSession.menu_error, true)
+		GameSession.menu_error = ""
 	queue_redraw()
 
 
@@ -411,7 +414,7 @@ func _refresh_standings() -> void:
 	if run == null:
 		_standings_label.text = "No season results."
 		return
-	_standings_label.text = "\n".join(run.call("table_lines", false))
+	_standings_label.text = _run_name(run) + "\n\n" + "\n".join(run.call("table_lines", false))
 
 
 func _season_run() -> Variant:
@@ -648,6 +651,11 @@ func _sync_settings() -> void:
 
 
 func _open_url(url: String) -> void:
+	if url in [HOMEPAGE_URL, SUPPORT_URL]:
+		_open_link(url)
+
+
+func _open_link(url: String) -> void:
 	if OS.shell_open(url) != OK:
 		_set_status("Could not open the link. Visit %s" % url, true)
 

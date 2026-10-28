@@ -10,6 +10,7 @@ var selected_vehicle_id: String = "blackjack"
 var cpu_vehicle_ids: Array[String] = []
 var cpu_difficulty: String = "medium"
 var course_id: String = "split_shift"
+var menu_error: String = ""
 var race_setup_active: bool = false
 var race_laps: int = 3
 var race_reverse: bool = false
@@ -53,7 +54,7 @@ func configure(p_callsign: String, p_vehicle_id: String, p_cpu_ids: Array[String
 	callsign = clean_callsign if not clean_callsign.is_empty() else "ROADGHOST"
 	selected_vehicle_id = p_vehicle_id if not p_vehicle_id.is_empty() else "blackjack"
 	cpu_vehicle_ids = p_cpu_ids.duplicate()
-	if season != null and season.entrants.size() == 3:
+	if season != null and not season.is_complete() and season.entrants.size() == 3:
 		callsign = season.entrants[0]["callsign"]
 		cpu_vehicle_ids.assign([season.entrants[1]["vehicle_id"], season.entrants[2]["vehicle_id"]])
 

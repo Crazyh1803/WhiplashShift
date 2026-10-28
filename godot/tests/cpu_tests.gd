@@ -32,7 +32,9 @@ func _ready() -> void:
 
 
 func _test_difficulty_settings() -> void:
-	_check("CPU difficulty defaults to Medium", GameSession.cpu_difficulty == "medium")
+	var fresh: Node = load("res://scripts/game_session.gd").new()
+	_check("CPU difficulty defaults to Medium", fresh.get("cpu_difficulty") == "medium")
+	fresh.free()
 	GameSession.set_cpu_difficulty("invalid")
 	_check("unknown CPU difficulty falls back to Medium", GameSession.cpu_difficulty == "medium")
 	GameSession.set_cpu_difficulty("hard")
@@ -157,6 +159,8 @@ func _test_difficulty_race(difficulty: String, flat_control: bool = false) -> fl
 
 
 func _test_garage_difficulty() -> void:
+	var previous_settings_path := GameSession.settings_path
+	GameSession.settings_path = "user://cpu_garage_test_settings.cfg"
 	# Preserve the user's profile, including a missing-file first launch.
 	var profile_path := "user://profile.cfg"
 	var existed := FileAccess.file_exists(profile_path)
@@ -206,6 +210,8 @@ func _test_garage_difficulty() -> void:
 	else:
 		DirAccess.remove_absolute(profile_path)
 	GameSession.set_cpu_difficulty("medium")
+	DirAccess.remove_absolute(GameSession.settings_path)
+	GameSession.settings_path = previous_settings_path
 	await get_tree().process_frame
 
 

@@ -14,13 +14,20 @@ This folder brings forward the saved gameplay and Blackjack work from `Whiplash 
 and the Deadbolt asset branch from `Whiplash Shift - Deadbolt`. Both original folders
 are preserved. The earlier Git history and local gameplay changes are committed here.
 
-Open `godot/project.godot` in Godot 4.7.2 and press **F5** for the project.
+Open `godot/project.godot` in Godot 4.7.2 and press **F5** for the main menu.
+Choose **Season Race**, **Single Race**, **Custom Season**, **Settings** or **About**.
+Season 1 currently offers the Block Circuit preview; the other eight planned races
+are marked Coming Soon. Single races support 1–99 laps and Forward/Reverse. Custom
+seasons support ordered race lists, local saves, portable JSON files and share codes.
+See [the mode guide](docs/game-modes/main-menu.md) for scoring and sharing.
+
 The garage offers seven named chassis buttons, including **DEADBOLT**;
 **VIEW 3D // PAINT & PARTS** opens the rotatable 3D preview. Left/right arrows also
 cycle the roster, and returning from a race keeps the selected chassis.
 All seven vehicles use authored models with their saved handling and blueprint
 images. Enter a callsign and choose
-**IGNITE** to race two CPU opponents over three full laps after a countdown.
+**IGNITE** to race two CPU opponents with the chosen lap count and direction after a countdown.
+The default is three laps.
 Choose **CPU DIFFICULTY** in the garage: **Easy** gives a relaxed pace with earlier
 braking and more space in traffic; **Medium** gives a balanced racing pace;
 **Hard** carries more speed, brakes later and commits sooner to clear passes. Medium is the
@@ -359,6 +366,10 @@ progression are planned, not implemented.
 
 Run `ak-test` for the season/course checks and the existing full regression suite. The new runner
 uses Python and Godot on Windows rather than requiring Linux timeout/temp paths.
-For renders, set `TEST_CMD='python tools/workflow/test_season.py --capture'` when
+For City renders, set `TEST_CMD='python tools/workflow/test_season.py --capture'` when
 calling `ak-test`; images are written to `.ai/captures/city/`. The overview uses
 inspection lighting; driver and gameplay captures use the race environment.
+
+Main menu UI captures use `TEST_CMD='python tools/workflow/test_season.py --menu-capture'`
+with `ak-test`, writing `.ai/captures/main-menu/`. The default suite also covers
+season sharing, mode/session flow and actual reverse-direction races.

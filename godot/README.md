@@ -107,7 +107,9 @@ godot --path godot
 
 ## Garage
 
-The main scene is `scenes/garage.tscn`. Arrow keys or the on-screen controls cycle
+The main scene is `scenes/main_menu.tscn`, offering season racing, configurable
+single races, custom-season creation/sharing, settings and creator links. Modes
+lead to `scenes/garage.tscn` for vehicle selection. Arrow keys or on-screen controls cycle
 through all seven technical blueprints; `Enter` or **IGNITE** starts the race. The
 callsign is saved to `user://profile.cfg`. All seven chassis have named buttons,
 including **DEADBOLT**. **VIEW 3D // PAINT & PARTS** opens the selected model preview.

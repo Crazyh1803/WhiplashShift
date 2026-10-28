@@ -28,7 +28,9 @@ def run_engine(args, timeout):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--capture', action='store_true')
+    parser.add_argument('--menu-capture', action='store_true')
     parser.add_argument('--scenes', nargs='+', default=[
+        'season_codec_tests', 'race_modes_tests', 'reverse_race_tests',
         'block_circuit_tests', 'season_course_tests', 'vehicle_audio_tests', 'vehicle_feedback_tests',
         'vehicle_effects_tests', 'bodywork_visual_tests', 'test_main', 'viscera_response_tests',
         'rubble_response_tests', 'armor_response_tests', 'coolant_response_tests', 'effluent_response_tests',
@@ -41,14 +43,16 @@ def main():
         'helix_blueprint_tests', 'knifeedge_blueprint_tests'])
     options = parser.parse_args()
     run_engine(['--headless', '--import', '--path', 'godot'], 180)
-    if options.capture:
+    if options.menu_capture:
+        run_engine(['--path', 'godot', 'res://tests/main_menu_visual_qa.tscn', '--', '--capture'], 180)
+    elif options.capture:
         run_engine(['--path', 'godot', 'res://tests/city_visual_qa.tscn', '--', '--capture'], 180)
         run_engine(['--path', 'godot', 'res://tests/season_course_tests.tscn', '--', '--capture'], 180)
     else:
         for scene in options.scenes:
             print(f'CHECK {scene}', flush=True)
             run_engine(['--headless', '--fixed-fps', '120', '--path', 'godot',
-                        f'res://tests/{scene}.tscn'], 900 if scene in ('race_tests', 'season_course_tests', 'cpu_main') else 300)
+                        f'res://tests/{scene}.tscn'], 900 if scene in ('race_tests', 'season_course_tests', 'cpu_main', 'reverse_race_tests') else 300)
     return 0
 
 
