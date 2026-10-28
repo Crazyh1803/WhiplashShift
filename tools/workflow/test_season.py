@@ -25,13 +25,21 @@ def run_engine(args, timeout):
         raise RuntimeError(f'Godot check failed: {args}')
 
 
+def validate_city_kit():
+    result = subprocess.run([sys.executable, '-I', str(ROOT / 'tools' / 'city_pipeline' / 'validate_city_kit.py')],
+                            cwd=ROOT, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=120)
+    print(result.stdout + result.stderr, flush=True)
+    if result.returncode:
+        raise RuntimeError('City kit asset validation failed')
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--capture', action='store_true')
     parser.add_argument('--menu-capture', action='store_true')
     parser.add_argument('--scenes', nargs='+', default=[
         'season_codec_tests', 'race_modes_tests', 'reverse_race_tests', 'main_menu_visual_qa',
-        'block_circuit_tests', 'season_course_tests', 'vehicle_audio_tests', 'vehicle_feedback_tests',
+        'block_circuit_tests', 'city_kit_tests', 'season_course_tests', 'vehicle_audio_tests', 'vehicle_feedback_tests',
         'vehicle_effects_tests', 'bodywork_visual_tests', 'test_main', 'viscera_response_tests',
         'rubble_response_tests', 'armor_response_tests', 'coolant_response_tests', 'effluent_response_tests',
         'ichor_response_tests', 'track_visual_tests', 'viscera_pit_tests', 'boulder_motion_tests',
@@ -42,6 +50,7 @@ def main():
         'consolidation_tests', 'nightshift_blueprint_tests', 'ramjet_blueprint_tests', 'boilerfang_blueprint_tests',
         'helix_blueprint_tests', 'knifeedge_blueprint_tests'])
     options = parser.parse_args()
+    validate_city_kit()
     run_engine(['--headless', '--import', '--path', 'godot'], 180)
     if options.menu_capture:
         run_engine(['--path', 'godot', 'res://tests/main_menu_visual_qa.tscn', '--', '--capture'], 180)

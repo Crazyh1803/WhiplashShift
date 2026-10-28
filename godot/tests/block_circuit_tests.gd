@@ -185,10 +185,15 @@ func _test_scenery(course: CourseDefinition) -> void:
 		and scenery.find_children("*", "DirectionalLight3D", true, false).is_empty() and scenery.find_children("*", "SpotLight3D", true, false).is_empty())
 	var meshes := scenery.find_children("*", "MeshInstance3D", true, false)
 	var batches := scenery.find_children("*", "MultiMeshInstance3D", true, false)
+	var district := scenery.get_node_or_null("CityKit") as Node3D
 	var instances := 0
+	var legacy_batches := 0
 	for batch: MultiMeshInstance3D in batches:
 		instances += batch.multimesh.instance_count
-	_check("draw nodes bounded (%d meshes, %d batches)" % [meshes.size(), batches.size()], meshes.size() <= 24 and batches.size() <= 12)
+		legacy_batches += int(district == null or not district.is_ancestor_of(batch))
+	var kit_batches := batches.size() - legacy_batches
+	_check("draw nodes bounded (%d meshes, %d legacy + %d kit batches)" % [meshes.size(), legacy_batches, kit_batches],
+		meshes.size() <= 24 and legacy_batches <= 12 and kit_batches <= 14)
 	_check("instance count bounded (%d)" % instances, instances >= 300 and instances <= 4500)
 	_check("has crown, skyline, towers and street kit", scenery.has_node("Crown") and scenery.has_node("Skyline")
 		and scenery.has_node("Body") and scenery.has_node("Rib") and scenery.has_node("Wall") and scenery.has_node("Cyan") and scenery.has_node("Amber"))
@@ -203,7 +208,7 @@ func _test_scenery(course: CourseDefinition) -> void:
 		var placed: Array = _placed(batch)
 		_check("%s keeps one transform record per instance" % batch.name, placed.size() == batch.multimesh.instance_count)
 		for i in placed.size():
-			var world := _world_box(batch.global_transform * (placed[i] as Transform3D), AABB(Vector3(-0.5, -0.5, -0.5), Vector3.ONE))
+			var world := _world_box(batch.global_transform * (placed[i] as Transform3D), batch.get_meta("city_local_aabb", CityScenery.UNIT_BOX))
 			var gap := CityScenery.road_clearance(world, course)
 			worst = minf(worst, gap)
 			if batch.name == "Wall":
@@ -231,8 +236,7 @@ func _test_scenery(course: CourseDefinition) -> void:
 	_check("clearance accepts distant ground", CityScenery.road_clearance(AABB(Vector3(900, 0, 900), Vector3(4, 10, 4)), course) > 100.0)
 	_test_clearance_bounds(course)
 	_check("rebuild places identical batches", _signature(scenery) == _signature(repeat))
-	var opening := _body_count(scenery, course, true)
-	_check("opening district is the densest sample (%d)" % opening, opening >= 12)
+	_test_authored_district(scenery, course, district)
 	host.free()
 	second_host.free()
 
@@ -306,7 +310,7 @@ func _test_clearance_bounds(course: CourseDefinition) -> void:
 
 func _sampled_clear(course: CourseDefinition, scenery: Node3D) -> bool:
 	var body: MultiMeshInstance3D = scenery.get_node("Body")
-	var local := AABB(Vector3(-0.5, -0.5, -0.5), Vector3.ONE)
+	var local: AABB = body.get_meta("city_local_aabb", CityScenery.UNIT_BOX)
 	var count := course.points.size()
 	var placed := _placed(body)
 	for i in placed.size():
@@ -321,15 +325,24 @@ func _sampled_clear(course: CourseDefinition, scenery: Node3D) -> bool:
 	return true
 
 
-func _body_count(scenery: Node3D, course: CourseDefinition, opening: bool) -> int:
-	var origin: Vector3 = course.points[0]["pos"]
-	var body: MultiMeshInstance3D = scenery.get_node("Body")
-	var found := 0
-	var placed := _placed(body)
-	for i in placed.size():
-		var near := (placed[i] as Transform3D).origin.distance_to(origin) < 400.0
-		found += int(near == opening)
-	return found
+func _test_authored_district(scenery: Node3D, course: CourseDefinition, district: Node3D) -> void:
+	_check("opening quarter is an authored district", district != null and scenery.get_meta("authored_quarter") == true)
+	if district == null:
+		return
+	var placements: Array = district.get_meta("placements", [])
+	var assets := {}
+	for placement: Dictionary in placements:
+		assets[placement["asset"]] = true
+	_check("authored district places many kit pieces (%d)" % placements.size(), placements.size() >= 60)
+	_check("authored district uses all %d kit assets (%d)" % [CityKit.EXPECTED_IDS.size(), assets.size()], assets.size() == CityKit.EXPECTED_IDS.size())
+	_check("authored district stays inside its triangle budget (%d)" % int(district.get_meta("triangle_count")),
+		int(district.get_meta("triangle_count")) > 0 and int(district.get_meta("triangle_count")) <= CityDistrict.TRIANGLE_BUDGET)
+	var quarter := course.total_length * CityDistrict.FRACTION
+	var legacy_inside := 0
+	for transform: Transform3D in _placed(scenery.get_node("Body")):
+		legacy_inside += int(CityDistrict.route_distance(course, transform.origin) < quarter - 40.0)
+	_check("legacy towers no longer fill the authored quarter (%d)" % legacy_inside, legacy_inside == 0)
+	_check("legacy towers still line the rest of the circuit", _placed(scenery.get_node("Body")).size() >= 100)
 
 
 func _signature(scenery: Node3D) -> Array:
