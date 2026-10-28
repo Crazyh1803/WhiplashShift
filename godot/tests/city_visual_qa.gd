@@ -42,15 +42,18 @@ func _captures(course: CourseDefinition, city: Node3D, camera: Camera3D, environ
 	camera.global_position = origin["pos"] - dir * 30.0 + Vector3.UP * 1.4
 	camera.look_at(origin["pos"] + dir * 120.0 + Vector3.UP * 5.0, Vector3.UP)
 	await _capture(camera, path.path_join("opening-driver.png"))
+	var count := course.points.size()
+	var corner := 0
+	while corner < count and _bend_ahead(course, corner) < 0.12:
+		corner += 1
+	_view_along(course, camera, (corner - _steps(course, 40.0) + count) % count, 40.0 + 70.0, 1.2)
+	await _capture(camera, path.path_join("first-corner-driver.png"))
 	var gravel := 0
-	for i in course.points.size():
+	for i in count:
 		if int(course.points[i]["s"]) == Surfaces.Id.GRAVEL:
 			gravel = i
 			break
-	var point: Dictionary = course.points[(gravel - 25 + course.points.size()) % course.points.size()]
-	dir = point["dir"]
-	camera.global_position = point["pos"] + Vector3.UP * 1.5
-	camera.look_at(point["pos"] + dir * 90.0 + Vector3.UP * 3.0, Vector3.UP)
+	_view_along(course, camera, (gravel - _steps(course, 12.0) + count) % count, 12.0 + 70.0, 1.6)
 	await _capture(camera, path.path_join("service-district.png"))
 	var crown: Node3D = city.get_node("Crown")
 	camera.global_position = origin["pos"] - (origin["dir"] as Vector3) * 60.0 + Vector3.UP * 2.0
@@ -58,11 +61,40 @@ func _captures(course: CourseDefinition, city: Node3D, camera: Camera3D, environ
 	await _capture(camera, path.path_join("skyline.png"))
 	var open_air: Environment = TrackMaterials.environment()
 	open_air.fog_enabled = false
+	# QA lighting: neutral, overview.png only, so the route shape reads. The game has no sun or ambient.
+	open_air.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	open_air.ambient_light_color = Color(0.75, 0.78, 0.85)
+	open_air.ambient_light_energy = 1.0
+	var qa_light := DirectionalLight3D.new()
+	qa_light.name = "QaLightingOverviewOnly"
+	qa_light.rotation_degrees = Vector3(-60, 30, 0)
+	qa_light.light_energy = 0.8
+	camera.get_parent().add_child(qa_light)
+	print("QA_LIGHTING overview.png uses neutral QA-only illumination, not game lighting")
 	environment.environment = open_air
 	camera.far = 3500
 	camera.global_position = Vector3(0, 1250, 700)
 	camera.look_at(Vector3.ZERO, Vector3.UP)
 	await _capture(camera, path.path_join("overview.png"))
+
+
+func _steps(course: CourseDefinition, metres: float) -> int:
+	return maxi(1, roundi(metres / (course.total_length / float(course.points.size()))))
+
+
+func _bend_ahead(course: CourseDefinition, index: int) -> float:
+	var count := course.points.size()
+	var ahead: Dictionary = course.points[(index + _steps(course, 40.0)) % count]
+	return absf((course.points[index]["dir"] as Vector3).signed_angle_to(ahead["dir"], Vector3.UP))
+
+
+## Camera at a route point, aimed at the route point `metres` further along (not the tangent).
+func _view_along(course: CourseDefinition, camera: Camera3D, index: int, metres: float, height: float) -> void:
+	var count := course.points.size()
+	var from: Vector3 = course.points[index]["pos"]
+	var to: Vector3 = course.points[(index + _steps(course, metres)) % count]["pos"]
+	camera.global_position = from + Vector3.UP * height
+	camera.look_at(to + Vector3.UP * (height * 0.8), Vector3.UP)
 
 
 func _capture(camera: Camera3D, path: String) -> void:
