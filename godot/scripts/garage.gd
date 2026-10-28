@@ -206,7 +206,7 @@ func _build_dossier(parent: HBoxContainer) -> void:
 	margin.add_theme_constant_override("margin_bottom", 22)
 	_dossier_panel.add_child(margin)
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 6)
+	box.add_theme_constant_override("separation", 4)
 	margin.add_child(box)
 	box.add_child(_label("SELECT CHASSIS", 13, _accent))
 	_name_label = _label("", 38, INK)
