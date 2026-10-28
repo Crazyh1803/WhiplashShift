@@ -55,7 +55,7 @@ func _test_validate() -> void:
 	many["races"].pop_back()
 	_check("30 repeated races accepted", SeasonDefinition.validate(many)["ok"])
 	var dirty := _season()
-	dirty["name"] = "  Ni\u0001ght\n‮Run\t "
+	dirty["name"] = "  Ni\u0001ght\n\u202eRun\t "
 	_check("control characters cleaned from name", SeasonDefinition.validate(dirty)["season"]["name"] == "NightRun")
 	dirty["name"] = "\u0001\n"
 	_check("control-only name rejected", not SeasonDefinition.validate(dirty)["ok"])

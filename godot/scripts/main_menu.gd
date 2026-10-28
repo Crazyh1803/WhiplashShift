@@ -670,14 +670,14 @@ func _start_single() -> void:
 	var reverse := _single_direction.selected == 1
 	_request_start(func() -> void:
 		GameSession.call("begin_single", course_id, laps, reverse)
-		get_tree().change_scene_to_file(GARAGE_SCENE))
+		_open_garage())
 
 
 func _begin_season(data: Dictionary, builtin: bool) -> void:
 	if not bool(GameSession.call("begin_season", data, builtin)):
 		_set_status("Could not start that season.", true)
 		return
-	get_tree().change_scene_to_file(GARAGE_SCENE)
+	_open_garage()
 
 
 func _request_start(action: Callable) -> void:
@@ -697,7 +697,7 @@ func _on_replace_confirmed() -> void:
 
 
 func _resume_season() -> void:
-	get_tree().change_scene_to_file(GARAGE_SCENE)
+	_open_garage()
 
 
 func _label(text_value: String, font_size: int, color: Color) -> Label:
@@ -733,3 +733,7 @@ func _panel_style(fill: Color, border: Color, width: int) -> StyleBoxFlat:
 	style.content_margin_top = 8
 	style.content_margin_bottom = 8
 	return style
+
+
+func _open_garage() -> void:
+	get_tree().change_scene_to_file(GARAGE_SCENE)

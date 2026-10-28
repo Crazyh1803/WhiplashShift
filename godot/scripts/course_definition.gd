@@ -8,6 +8,8 @@ extends Resource
 
 const CHECKPOINT_SPACING := 110.0
 
+var geometry_source: CourseDefinition = null
+var is_reverse: bool = false
 var course_id: String = ""
 var display_name: String = ""
 var theme_id: String = ""
@@ -98,3 +100,7 @@ func _make_checkpoint(index: int, distance: float) -> Dictionary:
 	transform.basis = Basis(Vector3.UP, atan2(-direction.x, -direction.z))
 	transform.origin = point.get("pos", Vector3.ZERO)
 	return {"index": index, "distance": distance, "transform": transform}
+
+
+func geometry() -> CourseDefinition:
+	return geometry_source if geometry_source != null else self

@@ -10,6 +10,10 @@ var selected_vehicle_id: String = "blackjack"
 var cpu_vehicle_ids: Array[String] = []
 var cpu_difficulty: String = "medium"
 var course_id: String = "split_shift"
+var race_setup_active: bool = false
+var race_laps: int = 3
+var race_reverse: bool = false
+var season: SeasonRun = null
 var vehicle_customizations: Dictionary = {}
 var speed_unit: String = DrivingHud.DEFAULT_UNIT
 ## Separate from the vehicle and profile files; tests point this at a scratch path.
@@ -32,11 +36,15 @@ func load_settings() -> void:
 	speed_unit = DrivingHud.sanitize_unit(config.get_value("display", "speed_unit", DrivingHud.DEFAULT_UNIT)) \
 		if config.load(settings_path) == OK else DrivingHud.DEFAULT_UNIT
 
+	if config.has_section_key("race", "cpu_difficulty"):
+		set_cpu_difficulty(String(config.get_value("race", "cpu_difficulty")))
+
 
 func save_settings() -> Error:
 	var config := ConfigFile.new()
 	config.set_value("meta", "schema_version", SETTINGS_SCHEMA_VERSION)
 	config.set_value("display", "speed_unit", speed_unit)
+	config.set_value("race", "cpu_difficulty", cpu_difficulty)
 	return config.save(settings_path)
 
 
@@ -45,6 +53,9 @@ func configure(p_callsign: String, p_vehicle_id: String, p_cpu_ids: Array[String
 	callsign = clean_callsign if not clean_callsign.is_empty() else "ROADGHOST"
 	selected_vehicle_id = p_vehicle_id if not p_vehicle_id.is_empty() else "blackjack"
 	cpu_vehicle_ids = p_cpu_ids.duplicate()
+	if season != null and season.entrants.size() == 3:
+		callsign = season.entrants[0]["callsign"]
+		cpu_vehicle_ids.assign([season.entrants[1]["vehicle_id"], season.entrants[2]["vehicle_id"]])
 
 
 func set_course(value: String) -> void:
@@ -135,3 +146,45 @@ func _save_customizations() -> void:
 		for socket_name: String in parts:
 			config.set_value(section, "part_%s" % socket_name, parts[socket_name])
 	config.save(CUSTOMIZATION_PATH)
+
+
+func begin_single(id: String, laps: int, reverse: bool) -> void:
+	season = null
+	race_setup_active = true
+	set_course(id)
+	race_laps = clampi(laps, 1, 99)
+	race_reverse = reverse
+
+
+func begin_season(data: Dictionary, is_builtin: bool = false) -> bool:
+	var checked := SeasonDefinition.validate(data)
+	if not checked["ok"]:
+		return false
+	season = SeasonRun.new().configure(checked["season"], is_builtin)
+	_prepare_round()
+	return true
+
+
+func _prepare_round() -> void:
+	var options := season.race_options()
+	if options.is_empty():
+		return
+	race_setup_active = true
+	set_course(options["course_id"])
+	race_laps = int(options["laps"])
+	race_reverse = bool(options["reverse"])
+
+
+func race_options() -> Dictionary:
+	if season != null and not season.is_complete():
+		return season.race_options()
+	return {"course_id": course_id, "laps": race_laps if race_setup_active else 3,
+		"reverse": race_reverse if race_setup_active else false}
+
+
+func advance_season() -> bool:
+	if season == null or not season.commit():
+		return false
+	if not season.is_complete():
+		_prepare_round()
+	return true

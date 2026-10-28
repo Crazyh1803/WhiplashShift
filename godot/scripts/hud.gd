@@ -4,6 +4,11 @@ extends CanvasLayer
 
 signal main_menu_requested
 signal retry_requested
+signal continue_requested
+
+var continue_caption: String = ""
+var season_lines := PackedStringArray()
+var _continue_button: Button
 
 @export var target: Vehicle
 var cpu_drivers: Array[CpuDriver] = []
@@ -149,12 +154,13 @@ func _build_results() -> void:
 	margin.add_child(column)
 	_results_text = Label.new()
 	_results_text.add_theme_font_size_override("font_size", 23)
+	_results_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_results_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(_results_text)
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 20)
 	column.add_child(buttons)
-	for caption: String in ["RACE AGAIN  [ENTER]", "BACK TO GARAGE"]:
+	for caption: String in ["RACE AGAIN  [ENTER]", "MAIN MENU"]:
 		var button := Button.new()
 		button.name = "RetryButton" if buttons.get_child_count() == 0 else "GarageButton"
 		button.text = caption
@@ -165,6 +171,12 @@ func _build_results() -> void:
 		else:
 			button.pressed.connect(func() -> void: main_menu_requested.emit())
 		buttons.add_child(button)
+	_continue_button = Button.new()
+	_continue_button.name = "ContinueButton"
+	_continue_button.custom_minimum_size.y = 48
+	_continue_button.pressed.connect(func() -> void: continue_requested.emit())
+	column.add_child(_continue_button)
+	_continue_button.hide()
 	_results.hide()
 
 
@@ -274,6 +286,8 @@ func _update_race() -> void:
 		_banner.text = str(ceili(race.countdown))
 	elif race.state == RaceDirector.State.RACING and race.elapsed < 0.8:
 		_banner.text = "GO!"
+	_continue_button.visible = not continue_caption.is_empty()
+	_continue_button.text = continue_caption
 	_results.visible = race.state == RaceDirector.State.RESULTS
 	if not _results.visible:
 		return
@@ -285,6 +299,9 @@ func _update_race() -> void:
 		lines.append("%d. %s  —  %s" % [rank + 1, entry["name"],
 			RaceDirector.clock_text(time) if time >= 0.0 else "UNFINISHED"])
 	lines.append("\nRace ends when you finish.")
+	if not season_lines.is_empty():
+		lines.append("")
+		lines.append_array(season_lines)
 	_results_text.text = "\n".join(lines)
 
 

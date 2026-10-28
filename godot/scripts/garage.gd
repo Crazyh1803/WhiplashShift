@@ -97,6 +97,10 @@ func _build_interface() -> void:
 	var eyebrow := _label("REDLINE AUTHORITY // GRID ACCESS", 13, _accent)
 	eyebrow.add_theme_constant_override("outline_size", 4)
 	eyebrow.add_theme_color_override("font_outline_color", Color("050708"))
+	if GameSession.race_setup_active:
+		var options := GameSession.race_options()
+		var mode := "SINGLE RACE" if GameSession.season == null else "SEASON RACE %d/%d" % [GameSession.season.round_index + 1, GameSession.season.definition["races"].size()]
+		eyebrow.text = "%s  //  %d LAPS  //  %s" % [mode, options["laps"], "REVERSE" if options["reverse"] else "FORWARD"]
 	page.add_child(eyebrow)
 
 	var header := HBoxContainer.new()
@@ -191,6 +195,10 @@ func _build_stage(parent: HBoxContainer) -> void:
 	_next_button.tooltip_text = "Next chassis"
 	_next_button.pressed.connect(func() -> void: _select(_index + 1))
 	nav.add_child(_next_button)
+	var menu := _button("MAIN MENU", 13)
+	menu.name = "GarageMainMenuButton"
+	menu.pressed.connect(func() -> void: get_tree().change_scene_to_file("res://scenes/main_menu.tscn"))
+	nav.add_child(menu)
 
 
 func _build_dossier(parent: HBoxContainer) -> void:
@@ -712,11 +720,15 @@ func _load_profile() -> void:
 	var config := ConfigFile.new()
 	if config.load(profile_path) == OK:
 		_callsign.text = String(config.get_value("profile", "callsign", "ROADGHOST"))
-		GameSession.set_cpu_difficulty(String(config.get_value("profile", "cpu_difficulty", "medium")))
+		if not GameSession.race_setup_active:
+			GameSession.set_cpu_difficulty(String(config.get_value("profile", "cpu_difficulty", "medium")))
 	else:
 		_callsign.text = "ROADGHOST"
 
-	GameSession.set_course(String(config.get_value("profile", "course", "block_circuit")))
+	if not GameSession.race_setup_active:
+		GameSession.set_course(String(config.get_value("profile", "course", "block_circuit")))
+	_course.disabled = GameSession.race_setup_active
+	_course.tooltip_text = "Track, laps and direction are selected in the main menu." if GameSession.race_setup_active else "Choose a track."
 	_select_option(_course, GameSession.course_id)
 	for i in _difficulty.item_count:
 		if _difficulty.get_item_metadata(i) == GameSession.cpu_difficulty:
@@ -732,6 +744,7 @@ func _select_course(index: int) -> void:
 func _select_difficulty(index: int) -> void:
 	GameSession.set_cpu_difficulty(String(_difficulty.get_item_metadata(index)))
 	_update_difficulty_tooltip()
+	GameSession.save_settings()
 	_save_profile(_callsign.text.strip_edges().to_upper())
 
 

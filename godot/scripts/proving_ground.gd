@@ -74,10 +74,11 @@ func _build_world() -> void:
 	ground.add_child(gm)
 	add_child(ground)
 
-	course = CourseCatalog.build_course(GameSession.course_id)
+	var options := GameSession.race_options()
+	course = CourseCatalog.build_course(options["course_id"], options["reverse"], options["laps"])
 	track = course.points
-	TrackBuilder.build(self, track)
-	TrackBuilder.build_guard_rails(self, track)
+	TrackBuilder.build(self, course.geometry().points)
+	TrackBuilder.build_guard_rails(self, course.geometry().points)
 	CourseCatalog.build_scenery(self, course)
 	course_cues = CourseCues.new()
 	course_cues.setup(course)
@@ -118,6 +119,9 @@ func _build_car() -> void:
 
 ## Draws fresh CPU callsigns (never the player's, avoiding last match's while the pool allows).
 func _draw_callsigns() -> void:
+	if GameSession.season != null and GameSession.season.entrants.size() == 3:
+		cpu_callsigns.assign([GameSession.season.entrants[1]["callsign"], GameSession.season.entrants[2]["callsign"]])
+		return
 	cpu_callsigns = RacerCallsigns.draw(2, GameSession.callsign, cpu_callsigns, callsign_rng)
 
 
@@ -163,6 +167,7 @@ func _build_ui() -> void:
 	add_child(hud)
 	hud.main_menu_requested.connect(_return_to_menu)
 	hud.retry_requested.connect(restart_race)
+	hud.continue_requested.connect(_continue_season)
 	overlay = DebugOverlay.new()
 	overlay.target = car
 	add_child(overlay)
@@ -178,6 +183,12 @@ func _setup_race() -> void:
 		names.append(cpu_callsigns[i])
 		trackers.append(cpu_drivers[i].progress)
 	race.setup(course, names, trackers)
+	if GameSession.season != null:
+		GameSession.season.pending.clear()
+		var roster: Array[Dictionary] = [{"callsign": GameSession.callsign, "vehicle_id": car.vehicle_id}]
+		for i in cpu_cars.size():
+			roster.append({"callsign": cpu_callsigns[i], "vehicle_id": cpu_cars[i].vehicle_id})
+		GameSession.season.set_roster(roster)
 	for entrant: Vehicle in [car] + cpu_cars:
 		_collision_layers.append(entrant.collision_layer)
 		_collision_masks.append(entrant.collision_mask)
@@ -204,6 +215,9 @@ func _set_grid_controls() -> void:
 func restart_race() -> void:
 	if race.state != RaceDirector.State.RESULTS:
 		return
+	if GameSession.season != null:
+		GameSession.season.pending.clear()
+		hud.season_lines = PackedStringArray()
 	var cars: Array = [car] + cpu_cars
 	for i in cars.size():
 		var entrant: Vehicle = cars[i]
@@ -320,6 +334,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_R:
 			if race.state == RaceDirector.State.RACING:
 				_recover_player()
+		KEY_N:
+			if race.state == RaceDirector.State.RESULTS:
+				_continue_season()
 		KEY_ENTER:
 			restart_race()
 		KEY_C:
@@ -346,7 +363,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 func _return_to_menu() -> void:
-	get_tree().change_scene_to_file("res://scenes/garage.tscn")
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 
 func _physics_process(delta: float) -> void:
@@ -363,6 +380,10 @@ func _physics_process(delta: float) -> void:
 	for index: int in race.finish_order:
 		_retire(index)
 	if race.state == RaceDirector.State.RESULTS:
+		if GameSession.season != null and not GameSession.season.is_complete():
+			GameSession.season.set_pending(race.standings())
+			hud.season_lines = GameSession.season.table_lines(true)
+			hud.continue_caption = "FINAL STANDINGS  [N]" if GameSession.season.round_index + 1 >= GameSession.season.definition["races"].size() else "NEXT RACE  [N]"
 		for index in race.entrants.size():
 			_retire(index)
 		return
@@ -377,3 +398,15 @@ func _physics_process(delta: float) -> void:
 	car.brake = back
 	car.steer = right - left
 	car.handbrake = Input.is_key_pressed(KEY_SHIFT)
+
+
+func _continue_season() -> void:
+	if race.state != RaceDirector.State.RESULTS or GameSession.season == null:
+		return
+	GameSession.season.set_pending(race.standings())
+	if not GameSession.advance_season():
+		return
+	if GameSession.season.is_complete():
+		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	else:
+		get_tree().reload_current_scene()
