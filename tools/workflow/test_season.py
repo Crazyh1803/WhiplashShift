@@ -14,11 +14,14 @@ def run_engine(args, timeout):
     engine = os.environ.get('GODOT_BIN') or shutil.which('godot')
     if not engine:
         raise RuntimeError('Godot is not on PATH; set GODOT_BIN to its executable.')
-    result = subprocess.run([engine, *args], cwd=ROOT, stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT, text=True, encoding='utf-8',
-                            errors='replace', timeout=timeout)
-    print(result.stdout, flush=True)
-    if result.returncode or ERROR.search(result.stdout):
+    log = ROOT / '.ai' / 'season-engine.log'
+    log.parent.mkdir(exist_ok=True)
+    with log.open('w', encoding='utf-8') as output:
+        result = subprocess.run([engine, *args], cwd=ROOT, stdout=output,
+                                stderr=subprocess.STDOUT, timeout=timeout)
+    report = log.read_text(encoding='utf-8', errors='replace')
+    print(report, flush=True)
+    if result.returncode or ERROR.search(report):
         raise RuntimeError(f'Godot check failed: {args}')
 
 
@@ -33,6 +36,7 @@ def main():
     run_engine(['--headless', '--import', '--path', 'godot'], 180)
     if options.capture:
         run_engine(['--path', 'godot', 'res://tests/city_visual_qa.tscn', '--', '--capture'], 180)
+        run_engine(['--path', 'godot', 'res://tests/season_course_tests.tscn', '--', '--capture'], 180)
     else:
         for scene in options.scenes:
             print(f'CHECK {scene}', flush=True)

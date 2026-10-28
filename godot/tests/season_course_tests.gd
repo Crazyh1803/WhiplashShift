@@ -5,6 +5,10 @@ var _fail := 0
 
 
 func _ready() -> void:
+	if "--capture" in OS.get_cmdline_user_args():
+		await _captures()
+		get_tree().quit(1 if _fail else 0)
+		return
 	_test_catalog()
 	await _test_garage()
 	await _test_scene_rules("split_shift")
@@ -131,6 +135,33 @@ func _test_city_driving() -> void:
 	_check("City physical retry resets grid", scene.race.state == RaceDirector.State.COUNTDOWN and scene.player_progress.lap == 0)
 	scene.queue_free()
 	await get_tree().process_frame
+
+
+func _captures() -> void:
+	var garage: Variant = load("res://scenes/garage.tscn").instantiate()
+	garage.profile_path = "user://season_capture_unused.cfg"
+	add_child(garage)
+	await _capture("garage")
+	garage.queue_free()
+	await get_tree().process_frame
+	GameSession.set_course("block_circuit")
+	GameSession.configure("ROADGHOST", "blackjack", ["boilerfang", "ramjet"])
+	var scene: Variant = load("res://scenes/proving_ground.tscn").instantiate()
+	add_child(scene)
+	for frame in 180:
+		await get_tree().physics_frame
+	await _capture("gameplay")
+	scene.queue_free()
+	await get_tree().process_frame
+
+
+func _capture(label: String) -> void:
+	var directory := ProjectSettings.globalize_path("res://../.ai/captures/city")
+	DirAccess.make_dir_recursive_absolute(directory)
+	for frame in 10:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_check(label + " capture saved", get_viewport().get_texture().get_image().save_png(directory.path_join(label + ".png")) == OK)
 
 
 func _check(label: String, ok: bool) -> void:

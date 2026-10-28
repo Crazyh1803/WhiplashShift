@@ -331,3 +331,34 @@ The rendered check activates every item through the game, verifies positional
 audio and sustain loops, captures the new materials/effects, and checks audio
 voice limits and cleanup. Captures and sample WAVs go to
 `.ai/captures/item-effects/`. A `Dummy` audio driver can verify routing without speakers.
+
+## Season one: first City race
+
+The garage's **RACE** selector offers **Block Circuit // City** and the original
+**Split Shift // Proving Ground**. New garage profiles start on Block Circuit;
+course selection is remembered alongside the callsign and CPU difficulty.
+Choose a course, select a vehicle and press **IGNITE**. Both tracks use the same
+three-lap countdown, rivals, checkpoints, items, results and retry flow.
+
+Block Circuit is the first playable season-one slice: about 2.1 km of rounded
+City streets, two long passing straights and a 186 m chitin/gravel service section
+through a tighter bend. Its 26 m road gives rivals room, and the start line has
+roughly 110 m of straight road behind it for the grid. It introduces one major
+traction change before the later races add more complex combinations.
+
+The City kit uses batched ribbed steel towers, ceramic street walls, loading
+decks, a stepped skyline and a communications crown. The opening boulevard and
+first corner carry the most detail; the rest is lighter dressing for layout
+iteration. Decorative geometry has no collision and stays outside the full road
+and rail envelope. This is a procedural visual sample, ready for driving feedback;
+bespoke production assets and full-course detail remain later work.
+
+The [season design](docs/season-one/season-design.md) describes all nine races
+across City, Underworks, Foundry and Coldworks. The other eight races and cup
+progression are planned, not implemented.
+
+Run `ak-test` for the season/course and affected regression suite. The new runner
+uses Python and Godot on Windows rather than requiring Linux timeout/temp paths.
+For renders, set `TEST_CMD='python tools/workflow/test_season.py --capture'` when
+calling `ak-test`; images are written to `.ai/captures/city/`. The overview uses
+inspection lighting; driver and gameplay captures use the race environment.
