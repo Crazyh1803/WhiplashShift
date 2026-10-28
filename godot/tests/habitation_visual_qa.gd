@@ -35,6 +35,7 @@ func _ready() -> void:
 		meshes.append(model)
 	var first := true
 	var triangles := 0
+	var colored_vertices := 0
 	for mesh: MeshInstance3D in meshes:
 		if mesh.mesh == null:
 			push_error("Review model contains an empty MeshInstance3D: " + String(mesh.name))
@@ -47,11 +48,18 @@ func _ready() -> void:
 			var arrays := mesh.mesh.surface_get_arrays(surface)
 			var indices: Variant = arrays[Mesh.ARRAY_INDEX]
 			triangles += indices.size() / 3 if indices is PackedInt32Array and not indices.is_empty() else (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() / 3
-	if first or triangles <= 0 or triangles > 25000:
+			var colors: Variant = arrays[Mesh.ARRAY_COLOR]
+			if colors is PackedColorArray and not colors.is_empty():
+				colored_vertices += colors.size()
+				var material := mesh.get_active_material(surface) as BaseMaterial3D
+				if material != null and not material.vertex_color_use_as_albedo:
+					push_error("Imported material discards authored vertex-color detail")
+					_fail += 1
+	if first or triangles <= 0 or triangles > 30000:
 		push_error("Habitation candidate geometry is missing or over budget")
 		get_tree().quit(1)
 		return
-	print("HABITATION_GEOMETRY meshes=%d triangles=%d bounds=%s" % [meshes.size(), triangles, _box])
+	print("HABITATION_GEOMETRY meshes=%d triangles=%d colored_vertices=%d bounds=%s" % [meshes.size(), triangles, colored_vertices, _box])
 	_environment = WorldEnvironment.new()
 	add_child(_environment)
 	_camera = Camera3D.new()
