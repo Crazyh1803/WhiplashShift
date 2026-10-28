@@ -14,11 +14,15 @@ const FACADE_SHADER := preload("res://shaders/city_facade.gdshader")
 const UNIT_BOX := AABB(Vector3(-0.5, -0.5, -0.5), Vector3.ONE)
 
 
-static func build(parent: Node3D, course: CourseDefinition) -> Node3D:
+static func build(parent: Node3D, course: CourseDefinition, use_city_kit: bool = true) -> Node3D:
+	course = course.geometry()
 	var root := Node3D.new()
 	root.name = "CityScenery"
 	parent.add_child(root)
-	_Kit.new(course).populate(root)
+	_Kit.new(course, use_city_kit).populate(root)
+	root.set_meta("authored_quarter", use_city_kit)
+	if use_city_kit:
+		CityDistrict.build(root, course)
 	return root
 
 
@@ -60,6 +64,7 @@ static func _rect_segment_distance(low: Vector2, high: Vector2, a: Vector2, b: V
 
 class _Kit extends RefCounted:
 	var course: CourseDefinition
+	var replace_first_quarter: bool
 	var rng := RandomNumberGenerator.new()
 	var cumulative := PackedFloat32Array()
 	var total := 0.0
@@ -70,8 +75,9 @@ class _Kit extends RefCounted:
 	var materials := {}
 	var box := BoxMesh.new()
 
-	func _init(p_course: CourseDefinition) -> void:
+	func _init(p_course: CourseDefinition, use_city_kit: bool) -> void:
 		course = p_course
+		replace_first_quarter = use_city_kit
 		rng.seed = CityScenery.SEED
 		for key in ["body", "rib", "wall", "post", "cyan", "amber", "sinew", "skyline", "windows", "crown_rib"]:
 			pieces[key] = []
@@ -154,7 +160,7 @@ class _Kit extends RefCounted:
 			merged = merged.merge(part[1] * CityScenery.UNIT_BOX)
 		return merged
 
-	func _accept(parts: Array, own_overlap: bool = true) -> bool:
+	func _accept(parts: Array, own_overlap: bool = true, emit_geometry: bool = true) -> bool:
 		var bounds := _bounds(parts)
 		if absf(bounds.position.x) > CityScenery.WORLD_LIMIT or absf(bounds.end.x) > CityScenery.WORLD_LIMIT \
 				or absf(bounds.position.z) > CityScenery.WORLD_LIMIT or absf(bounds.end.z) > CityScenery.WORLD_LIMIT:
@@ -167,8 +173,9 @@ class _Kit extends RefCounted:
 				if other.intersects(flat):
 					return false
 			footprints.append(flat)
-		for part: Array in parts:
-			pieces[part[0]].append(part[1])
+		if emit_geometry:
+			for part: Array in parts:
+				pieces[part[0]].append(part[1])
 		return true
 
 	func _in_detail(raw: float) -> bool:
@@ -211,21 +218,22 @@ class _Kit extends RefCounted:
 		while raw < total - CityScenery.DETAIL_BEHIND:
 			var detailed := _in_detail(raw)
 			var at := _sample(raw)
+			var emit_geometry := not replace_first_quarter or fposmod(raw, total) >= total * CityDistrict.FRACTION
 			for side: float in [-1.0, 1.0]:
 				index += 1
 				if rng.randf() < 0.12:
 					continue
-				_place_tower(at, side, rng.randf_range(11.0, 19.0), detailed, index, rng.randf_range(32.0, 68.0))
+				_place_tower(at, side, rng.randf_range(11.0, 19.0), detailed, index, rng.randf_range(32.0, 68.0), emit_geometry)
 				if index % 2 == 0:
-					_place_tower(at, side, rng.randf_range(38.0, 52.0), false, index, rng.randf_range(55.0, 96.0))
+					_place_tower(at, side, rng.randf_range(38.0, 52.0), false, index, rng.randf_range(55.0, 96.0), emit_geometry)
 			raw += 30.0 if detailed else 50.0
 
-	func _place_tower(at: Dictionary, side: float, gap: float, detailed: bool, index: int, height: float) -> void:
+	func _place_tower(at: Dictionary, side: float, gap: float, detailed: bool, index: int, height: float, emit_geometry: bool) -> void:
 		var fx := rng.randf_range(15.0, 26.0)
 		var fz := rng.randf_range(15.0, 24.0)
 		var basis := _basis(at["dir"])
 		var offset: float = float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET + gap + fz * 0.5
-		_accept(_tower_parts(basis, at["pos"] + basis * Vector3(0, 0, offset * side), side, fx, fz, height, detailed, index))
+		_accept(_tower_parts(basis, at["pos"] + basis * Vector3(0, 0, offset * side), side, fx, fz, height, detailed, index), true, emit_geometry)
 
 	func _tower_parts(basis: Basis, origin: Vector3, side: float, fx: float, fz: float, h: float, detailed: bool, index: int) -> Array:
 		var parts: Array = [_part("body", basis, origin, Vector3(0, h * 0.5, 0), Vector3(fx, h, fz)),
