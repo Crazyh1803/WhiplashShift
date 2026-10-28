@@ -1,0 +1,54 @@
+{
+  "tris": 26689,
+  "verts": 20697,
+  "lo": [
+    -17.2,
+    -0.127,
+    -12.2
+  ],
+  "hi": [
+    19.05,
+    29.22,
+    13.0
+  ],
+  "colors": {
+    "corners": 53499,
+    "min": 0.168,
+    "mean": 0.789,
+    "max": 1.0,
+    "distinct": 1240
+  },
+  "parts": {
+    "podium_hull": 180,
+    "podium_front_armor": 586,
+    "podium_lintels": 496,
+    "bay_a": 2358,
+    "bay_b": 1598,
+    "airlock": 582,
+    "terrace": 1342,
+    "stair_front": 742,
+    "stair_left": 1400,
+    "podium_side_stencil": 120,
+    ".fit_shutter": 1430,
+    ".fit_door": 770,
+    ".fit_strip": 866,
+    ".fit_porthole": 272,
+    ".fit_louvre": 440,
+    ".windows": 4656,
+    ".armor": 2254,
+    ".fit_slits": 164,
+    "module_m1": 3628,
+    "module_m2": 2579,
+    "module_m3": 1507,
+    "module_support": 668,
+    "filter_tower": 1898,
+    "right_alley": 1775,
+    "rear_service": 2209,
+    "damage_breach": 907,
+    "roof_m3": 528,
+    "roof_m2": 734,
+    "roof_m1": 440,
+    "roof_right_deck": 412
+  },
+  "cameras_lights": []
+}
