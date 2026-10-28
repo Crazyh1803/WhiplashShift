@@ -194,25 +194,42 @@ func _test_scenery(course: CourseDefinition) -> void:
 		and scenery.has_node("Body") and scenery.has_node("Rib") and scenery.has_node("Wall") and scenery.has_node("Cyan") and scenery.has_node("Amber"))
 	_check("sinew is sparing", not scenery.has_node("Sinew") or scenery.get_node("Sinew").multimesh.instance_count <= 12)
 	var worst := INF
+	var nearest_wall := INF
 	var outside := false
 	var boxes := 0
+	var disagreements := 0
+	var moved := 0
 	for batch: MultiMeshInstance3D in batches:
-		var local := batch.multimesh.mesh.get_aabb()
-		for i in batch.multimesh.instance_count:
-			var world: AABB = batch.global_transform * batch.multimesh.get_instance_transform(i) * local
-			worst = minf(worst, CityScenery.road_clearance(world, course))
+		var placed: Array = _placed(batch)
+		_check("%s keeps one transform record per instance" % batch.name, placed.size() == batch.multimesh.instance_count)
+		for i in placed.size():
+			var world := _world_box(batch.global_transform * (placed[i] as Transform3D), AABB(Vector3(-0.5, -0.5, -0.5), Vector3.ONE))
+			var gap := CityScenery.road_clearance(world, course)
+			worst = minf(worst, gap)
+			if batch.name == "Wall":
+				nearest_wall = minf(nearest_wall, gap)
 			outside = outside or _outside(world)
 			boxes += 1
+			moved += int((placed[i] as Transform3D).origin != Vector3.ZERO)
+			if i % 5 == 0 and not _gap_agrees(world, gap, course):
+				disagreements += 1
 	for mesh: MeshInstance3D in meshes:
-		var world: AABB = mesh.global_transform * mesh.get_aabb()
-		worst = minf(worst, CityScenery.road_clearance(world, course))
+		var world := _world_box(mesh.global_transform, _mesh_local(mesh.mesh))
+		var gap := CityScenery.road_clearance(world, course)
+		worst = minf(worst, gap)
 		outside = outside or _outside(world)
 		boxes += 1
+		if not _gap_agrees(world, gap, course):
+			disagreements += 1
+	_check("recorded placements are real, not identity (%d of %d)" % [moved, boxes], moved >= boxes - meshes.size() - 1)
 	_check("every world AABB (%d) clears the full road envelope (%.1f m)" % [boxes, worst], worst >= 3.0)
+	_check("street walls hug the road, proving clearance is measured (%.1f m)" % nearest_wall, nearest_wall >= 3.5 and nearest_wall < 12.0)
+	_check("clearance matches independent point sampling (%d disagreements)" % disagreements, disagreements == 0)
 	_check("scenery stays inside +/-1100", not outside)
 	_check("independent centreline sampling agrees for towers and crown", _sampled_clear(course, scenery))
 	_check("clearance rejects road centre", CityScenery.road_clearance(AABB(course.points[40]["pos"] - Vector3(2, 0, 2), Vector3(4, 10, 4)), course) < 0.0)
 	_check("clearance accepts distant ground", CityScenery.road_clearance(AABB(Vector3(900, 0, 900), Vector3(4, 10, 4)), course) > 100.0)
+	_test_clearance_bounds(course)
 	_check("rebuild places identical batches", _signature(scenery) == _signature(repeat))
 	var opening := _body_count(scenery, course, true)
 	_check("opening district is the densest sample (%d)" % opening, opening >= 12)
@@ -224,12 +241,76 @@ func _outside(world: AABB) -> bool:
 	return absf(world.position.x) > LIMIT or absf(world.end.x) > LIMIT or absf(world.position.z) > LIMIT or absf(world.end.z) > LIMIT
 
 
+func _placed(batch: MultiMeshInstance3D) -> Array:
+	return batch.get_meta("city_transforms", [])
+
+
+## Corner-by-corner world bounds, independent of AABB/Transform3D multiplication.
+func _world_box(xf: Transform3D, local: AABB) -> AABB:
+	var low := Vector3(INF, INF, INF)
+	var high := Vector3(-INF, -INF, -INF)
+	for corner in 8:
+		var c := local.position + Vector3(local.size.x * float(corner & 1), local.size.y * float((corner >> 1) & 1), local.size.z * float((corner >> 2) & 1))
+		var w := xf.basis * c + xf.origin
+		low = Vector3(minf(low.x, w.x), minf(low.y, w.y), minf(low.z, w.z))
+		high = Vector3(maxf(high.x, w.x), maxf(high.y, w.y), maxf(high.z, w.z))
+	return AABB(low, high - low)
+
+
+func _mesh_local(mesh: Mesh) -> AABB:
+	var cube := mesh as BoxMesh
+	if cube:
+		return AABB(-cube.size * 0.5, cube.size)
+	var tube := mesh as CylinderMesh
+	if tube:
+		var r := maxf(tube.top_radius, tube.bottom_radius)
+		return AABB(Vector3(-r, -tube.height * 0.5, -r), Vector3(r * 2.0, tube.height, r * 2.0))
+	var ball := mesh as SphereMesh
+	if ball:
+		return AABB(Vector3(-ball.radius, -ball.height * 0.5, -ball.radius), Vector3(ball.radius * 2.0, ball.height, ball.radius * 2.0))
+	return mesh.get_aabb()
+
+
+## Centreline samples are at most 4.5 m apart, so segment clearance lies within 2.3 m below the sample gap.
+func _gap_agrees(world: AABB, gap: float, course: CourseDefinition) -> bool:
+	var low := Vector2(world.position.x, world.position.z)
+	var high := Vector2(world.end.x, world.end.z)
+	var sampled := INF
+	for point: Dictionary in course.points:
+		var p: Vector3 = point["pos"]
+		var out := Vector2(maxf(maxf(low.x - p.x, 0.0), p.x - high.x), maxf(maxf(low.y - p.z, 0.0), p.z - high.y))
+		sampled = minf(sampled, out.length() - float(point["w"]) * 0.5 - TrackBuilder.RAIL_OFFSET)
+	return gap <= sampled + 0.001 and gap >= sampled - 2.3
+
+
+func _test_clearance_bounds(course: CourseDefinition) -> void:
+	var at: Dictionary = course.points[0]
+	var pos: Vector3 = at["pos"]
+	var side: Vector3 = (at["dir"] as Vector3).cross(Vector3.UP)
+	var edge: float = float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
+	var near_reject := 0.0
+	var near_accept := 0.0
+	for gap: float in [1.0, 3.0, 4.0, 6.0]:
+		var centre := pos + side * (edge + gap + 0.1)
+		var measured := CityScenery.road_clearance(AABB(centre - Vector3(0.1, 0, 0.1), Vector3(0.2, 8, 0.2)), course)
+		_check("clearance %.1f m from the rail reads %.2f" % [gap, measured], absf(measured - gap) < 0.2)
+		if gap == 1.0:
+			near_reject = measured
+		if gap == 4.0:
+			near_accept = measured
+	_check("near-road box is rejected below %.1f m and one past it accepted" % CityScenery.ROAD_CLEARANCE,
+			near_reject < CityScenery.ROAD_CLEARANCE and near_accept >= CityScenery.ROAD_CLEARANCE)
+	var straddle := pos + side * (edge - 5.0)
+	_check("box overlapping the rail reads negative", CityScenery.road_clearance(AABB(straddle - Vector3(1, 0, 1), Vector3(2, 8, 2)), course) < 0.0)
+
+
 func _sampled_clear(course: CourseDefinition, scenery: Node3D) -> bool:
 	var body: MultiMeshInstance3D = scenery.get_node("Body")
-	var local := body.multimesh.mesh.get_aabb()
+	var local := AABB(Vector3(-0.5, -0.5, -0.5), Vector3.ONE)
 	var count := course.points.size()
-	for i in body.multimesh.instance_count:
-		var world: AABB = body.global_transform * body.multimesh.get_instance_transform(i) * local
+	var placed := _placed(body)
+	for i in placed.size():
+		var world := _world_box(body.global_transform * (placed[i] as Transform3D), local)
 		var centre := Vector2(world.get_center().x, world.get_center().z)
 		var half := Vector2(world.size.x, world.size.z) * 0.5
 		for k in count:
@@ -244,8 +325,9 @@ func _body_count(scenery: Node3D, course: CourseDefinition, opening: bool) -> in
 	var origin: Vector3 = course.points[0]["pos"]
 	var body: MultiMeshInstance3D = scenery.get_node("Body")
 	var found := 0
-	for i in body.multimesh.instance_count:
-		var near := body.multimesh.get_instance_transform(i).origin.distance_to(origin) < 400.0
+	var placed := _placed(body)
+	for i in placed.size():
+		var near := (placed[i] as Transform3D).origin.distance_to(origin) < 400.0
 		found += int(near == opening)
 	return found
 
@@ -254,7 +336,7 @@ func _signature(scenery: Node3D) -> Array:
 	var out: Array = []
 	for child in scenery.get_children():
 		if child is MultiMeshInstance3D:
-			out.append([child.name, child.multimesh.instance_count, child.multimesh.buffer])
+			out.append([child.name, child.multimesh.instance_count, _placed(child)])
 		elif child is OmniLight3D:
 			out.append([child.position, child.light_color])
 		elif child is Node3D:

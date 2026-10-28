@@ -10,6 +10,7 @@ const ROAD_CLEARANCE := 3.5
 const DETAIL_BEHIND := 100.0
 const DETAIL_AHEAD := 350.0
 const WORLD_LIMIT := 1100.0
+const FACADE_SHADER := preload("res://shaders/city_facade.gdshader")
 const UNIT_BOX := AABB(Vector3(-0.5, -0.5, -0.5), Vector3.ONE)
 
 
@@ -92,7 +93,9 @@ class _Kit extends RefCounted:
 			_batch(root, key.capitalize().replace(" ", ""), pieces[key], materials[meshes[key]], key == "windows")
 
 	func _make_materials() -> void:
-		materials["steel"] = _material(Color(0.075, 0.085, 0.10), 0.55, 0.45)
+		var facade := ShaderMaterial.new()
+		facade.shader = CityScenery.FACADE_SHADER
+		materials["steel"] = facade
 		materials["cream"] = _material(Color(0.80, 0.76, 0.64), 0.1, 0.6)
 		materials["ceramic"] = _material(Color(0.50, 0.48, 0.42), 0.05, 0.7)
 		materials["cyan"] = _glow(Color("00f0ff"), false)
@@ -400,8 +403,10 @@ class _Kit extends RefCounted:
 		multimesh.use_colors = coloured
 		multimesh.mesh = box
 		multimesh.instance_count = transforms.size()
+		var placed: Array[Transform3D] = []
 		for i in transforms.size():
 			var item = transforms[i]
+			placed.append(item[0] if coloured else item)
 			if coloured:
 				multimesh.set_instance_transform(i, item[0])
 				multimesh.set_instance_color(i, item[1])
@@ -410,6 +415,8 @@ class _Kit extends RefCounted:
 		var instance := MultiMeshInstance3D.new()
 		instance.name = label
 		instance.multimesh = multimesh
+		# Headless rendering returns identity from MultiMesh reads, so tests use this record.
+		instance.set_meta("city_transforms", placed)
 		instance.material_override = material
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		root.add_child(instance)
