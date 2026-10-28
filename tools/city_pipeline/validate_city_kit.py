@@ -6,7 +6,7 @@ import struct
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-KIT = os.path.join(ROOT, "godot", "assets", "city", "kit")
+KIT = os.environ.get("CITY_KIT_DIR") or os.path.join(ROOT, "godot", "assets", "city", "kit")
 IDS = {
     "landmark": ["relay_tower", "exchange_hall", "pump_citadel"],
     "building": ["shutter_workshop", "utility_midrise", "ribbed_stack"],
@@ -33,17 +33,17 @@ def read_glb(path):
     magic, ver, length = struct.unpack_from("<4sII", data, 0)
     if magic != b"glTF" or ver != 2 or length != len(data):
         raise ValueError("bad GLB header")
-    off, js, binlen = 12, None, 0
+    off, js, binary = 12, None, b""
     while off < len(data):
         clen, ctype = struct.unpack_from("<I4s", data, off)
         if ctype == b"JSON":
             js = json.loads(data[off + 8:off + 8 + clen].decode("utf-8"))
         elif ctype == b"BIN\x00":
-            binlen = clen
+            binary = data[off + 8:off + 8 + clen]
         off += 8 + clen
     if js is None:
         raise ValueError("no JSON chunk")
-    return js, binlen
+    return js, binary
 
 
 def node_matrix(n):
@@ -64,7 +64,35 @@ def mat_mul(a, b):
     return [[sum(a[i][k] * b[k][j] for k in range(4)) for j in range(4)] for i in range(4)]
 
 
-def world_bounds(js, aid):
+def read_positions(js, binary, ai, aid):
+    """Decode the real float32 VEC3 vertices of accessor ai and check them against the declared min/max."""
+    a = js["accessors"][ai]
+    if a.get("componentType") != 5126 or a.get("type") != "VEC3" or "sparse" in a or "bufferView" not in a:
+        raise ValueError(f"POSITION accessor must be dense float32 VEC3")
+    cnt = a.get("count")
+    if not isinstance(cnt, int) or cnt <= 0:
+        raise ValueError("bad POSITION count")
+    bv = js["bufferViews"][a["bufferView"]]
+    if bv.get("buffer", 0) != 0:
+        raise ValueError("POSITION bufferView not in the GLB BIN buffer")
+    stride = bv.get("byteStride", 12)
+    start, bvo, bvl = a.get("byteOffset", 0), bv.get("byteOffset", 0), bv["byteLength"]
+    if stride < 12 or stride % 4 or start % 4 or bvo % 4:
+        raise ValueError("bad POSITION stride/alignment")
+    if start + stride * (cnt - 1) + 12 > bvl or bvo + bvl > len(binary):
+        raise ValueError("POSITION data outside bufferView/BIN chunk")
+    base = bvo + start
+    verts = [struct.unpack_from("<3f", binary, base + i * stride) for i in range(cnt)]
+    if not all(math.isfinite(c) for v in verts for c in v):
+        raise ValueError("non-finite vertex position")
+    for k in range(3):
+        vmin, vmax = min(v[k] for v in verts), max(v[k] for v in verts)
+        if abs(vmin - a["min"][k]) > 1e-4 or abs(vmax - a["max"][k]) > 1e-4:
+            raise ValueError(f"POSITION min/max axis {k} declared {a['min'][k]}..{a['max'][k]} but vertices {vmin}..{vmax}")
+    return verts
+
+
+def world_bounds(js, binary, aid):
     scene = js["scenes"][js.get("scene", 0)]
     nodes = js["nodes"]
     lo, hi = [math.inf] * 3, [-math.inf] * 3
@@ -78,13 +106,10 @@ def world_bounds(js, aid):
         if "mesh" in n:
             count[0] += 1
             for p in js["meshes"][n["mesh"]]["primitives"]:
-                a = js["accessors"][p["attributes"]["POSITION"]]
-                for cx in (a["min"][0], a["max"][0]):
-                    for cy in (a["min"][1], a["max"][1]):
-                        for cz in (a["min"][2], a["max"][2]):
-                            for k in range(3):
-                                v = m[k][0] * cx + m[k][1] * cy + m[k][2] * cz + m[k][3]
-                                lo[k], hi[k] = min(lo[k], v), max(hi[k], v)
+                for cx, cy, cz in read_positions(js, binary, p["attributes"]["POSITION"], aid):
+                    for k in range(3):
+                        v = m[k][0] * cx + m[k][1] * cy + m[k][2] * cz + m[k][3]
+                        lo[k], hi[k] = min(lo[k], v), max(hi[k], v)
         for c in n.get("children", []):
             walk(c, m)
 
@@ -106,7 +131,7 @@ def check_glb(e):
     if not os.path.isfile(path):
         return err(f"{aid}: missing {e['glb']}")
     try:
-        js, _ = read_glb(path)
+        js, binary = read_glb(path)
     except Exception as ex:
         return err(f"{aid}: {ex}")
     for k in ("cameras", "animations", "skins", "images", "textures"):
@@ -135,12 +160,22 @@ def check_glb(e):
         em = m.get("emissiveFactor", [0, 0, 0])
         if m.get("name") not in GLOWS and any(v > 1e-6 for v in em):
             err(f"{aid}: emission on non-glow surface {m.get('name')}")
+        if m.get("name") in GLOWS:
+            ok = len(em) == 3 and all(isinstance(v, (int, float)) and math.isfinite(v) and v >= 0 for v in em) and max(em) > 1e-3
+            if not ok:
+                err(f"{aid}: glow surface {m.get('name')} needs positive finite emissiveFactor, got {em}")
+            st = m.get("extensions", {}).get("KHR_materials_emissive_strength", {}).get("emissiveStrength")
+            if not isinstance(st, (int, float)) or abs(st - 2.0) > 1e-6:
+                err(f"{aid}: glow surface {m.get('name')} needs KHR_materials_emissive_strength 2.0, got {st}")
         for t in ("emissiveTexture", "normalTexture", "occlusionTexture"):
             if t in m:
                 err(f"{aid}: texture reference {t}")
         if "baseColorTexture" in m.get("pbrMetallicRoughness", {}):
             err(f"{aid}: baseColorTexture")
-    lo, hi, nm = world_bounds(js, aid)
+    try:
+        lo, hi, nm = world_bounds(js, binary, aid)
+    except (ValueError, KeyError, IndexError, struct.error) as ex:
+        return err(f"{aid}: {ex}")
     if nm != 1:
         err(f"{aid}: {nm} mesh nodes")
     for k in range(3):
