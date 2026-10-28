@@ -384,8 +384,8 @@ def exchange_hall(k):
             for m in range(n):
                 k.box(ox + 0.1, ox + bw - 0.1, -1.1, -0.95, top - (m + 1) * 0.27, top - m * 0.27 - 0.03, "machinery")
             k.cyl(ox, -1.0, 8.6, 0.25, bw, "trim", axis="x")
-            for rx in (1.4, 2.8, 4.2):
-                k.cyl(ox + 0.3, -3.2 + rx * 0.0 + (rx - 2.0) * 0.0, 0.8, 0.2, bw - 0.6, "machinery", axis="x", seg=8)
+            for ry in (-3.0, -2.3, -1.6):
+                k.cyl(ox + 0.3, ry, 0.8, 0.2, bw - 0.6, "machinery", axis="x", seg=8)
             k.box(ox + 0.4, ox + bw - 0.4, -3.55, -1.6, 0.8, 1.1, "trim")
         k.box(-20.0, 20.0, -3.7, 1.0, 9.4, 11.4, "ceramic", bev=0.15)
         bays(k, -19.0, 19.0, 9.7, 11.1, 14, 1, 0.4, -0.6, pier=0.55, sill=0.3, glow=("glow_amber", 3, 1), frame="trim")
