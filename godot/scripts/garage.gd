@@ -14,6 +14,8 @@ var _model_number: Label
 var _name_label: Label
 var _class_label: Label
 var _description: Label
+var profile_path: String = PROFILE_PATH
+var _course: OptionButton
 var _difficulty: OptionButton
 var _callsign: LineEdit
 var _validation: Label
@@ -245,6 +247,20 @@ func _build_dossier(parent: HBoxContainer) -> void:
 		_difficulty.set_item_metadata(_difficulty.item_count - 1, id)
 	_difficulty.item_selected.connect(_select_difficulty)
 	difficulty_row.add_child(_difficulty)
+
+	var course_row := HBoxContainer.new()
+	box.add_child(course_row)
+	var course_label := _label("RACE", 11, MUTED)
+	course_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	course_row.add_child(course_label)
+	_course = OptionButton.new()
+	_course.name = "CourseSelect"
+	_course.add_theme_font_size_override("font_size", 13)
+	for id: String in CourseCatalog.IDS:
+		_course.add_item(CourseCatalog.LABELS[id])
+		_course.set_item_metadata(_course.item_count - 1, id)
+	_course.item_selected.connect(_select_course)
+	course_row.add_child(_course)
 
 	var callsign_label := _label("PILOT CALLSIGN", 11, MUTED)
 	box.add_child(callsign_label)
@@ -680,6 +696,7 @@ func _ignite() -> void:
 	_start_button.text = "IGNITION SEQUENCE // ARMED"
 	_start_button.disabled = true
 	_difficulty.disabled = true
+	_course.disabled = true
 	_prev_button.disabled = true
 	_next_button.disabled = true
 	for button: Button in _roster_buttons:
@@ -693,16 +710,23 @@ func _ignite() -> void:
 
 func _load_profile() -> void:
 	var config := ConfigFile.new()
-	if config.load(PROFILE_PATH) == OK:
+	if config.load(profile_path) == OK:
 		_callsign.text = String(config.get_value("profile", "callsign", "ROADGHOST"))
 		GameSession.set_cpu_difficulty(String(config.get_value("profile", "cpu_difficulty", "medium")))
 	else:
 		_callsign.text = "ROADGHOST"
 
+	GameSession.set_course(String(config.get_value("profile", "course", "block_circuit")))
+	_select_option(_course, GameSession.course_id)
 	for i in _difficulty.item_count:
 		if _difficulty.get_item_metadata(i) == GameSession.cpu_difficulty:
 			_difficulty.select(i)
 	_update_difficulty_tooltip()
+
+
+func _select_course(index: int) -> void:
+	GameSession.set_course(String(_course.get_item_metadata(index)))
+	_save_profile(_callsign.text.strip_edges().to_upper())
 
 
 func _select_difficulty(index: int) -> void:
@@ -719,7 +743,8 @@ func _save_profile(pilot: String) -> void:
 	var config := ConfigFile.new()
 	config.set_value("profile", "callsign", pilot)
 	config.set_value("profile", "cpu_difficulty", GameSession.cpu_difficulty)
-	config.save(PROFILE_PATH)
+	config.set_value("profile", "course", GameSession.course_id)
+	config.save(profile_path)
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

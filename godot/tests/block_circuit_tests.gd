@@ -94,7 +94,7 @@ func _test_envelopes(course: CourseDefinition) -> void:
 			var a := Vector2(points[j]["pos"].x, points[j]["pos"].z)
 			var next: Dictionary = points[(j + 1) % count]
 			var b := Vector2(next["pos"].x, next["pos"].z)
-			tightest = minf(tightest, p.distance_to(Geometry2D.get_closest_point_to_segment_2d(p, a, b)))
+			tightest = minf(tightest, p.distance_to(Geometry2D.get_closest_point_to_segment(p, a, b)))
 	_check("distant road never nears itself (%.1f m >= %.1f)" % [tightest, needed], tightest >= needed)
 
 

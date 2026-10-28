@@ -53,7 +53,7 @@ static func _rect_segment_distance(low: Vector2, high: Vector2, a: Vector2, b: V
 			return 0.0
 	var best := minf(_rect_point_distance(low, high, a), _rect_point_distance(low, high, b))
 	for corner: Vector2 in corners:
-		best = minf(best, corner.distance_to(Geometry2D.get_closest_point_to_segment_2d(corner, a, b)))
+		best = minf(best, corner.distance_to(Geometry2D.get_closest_point_to_segment(corner, a, b)))
 	return best
 
 

@@ -9,6 +9,7 @@ var callsign: String = "ROADGHOST"
 var selected_vehicle_id: String = "blackjack"
 var cpu_vehicle_ids: Array[String] = []
 var cpu_difficulty: String = "medium"
+var course_id: String = "split_shift"
 var vehicle_customizations: Dictionary = {}
 var speed_unit: String = DrivingHud.DEFAULT_UNIT
 ## Separate from the vehicle and profile files; tests point this at a scratch path.
@@ -44,6 +45,10 @@ func configure(p_callsign: String, p_vehicle_id: String, p_cpu_ids: Array[String
 	callsign = clean_callsign if not clean_callsign.is_empty() else "ROADGHOST"
 	selected_vehicle_id = p_vehicle_id if not p_vehicle_id.is_empty() else "blackjack"
 	cpu_vehicle_ids = p_cpu_ids.duplicate()
+
+
+func set_course(value: String) -> void:
+	course_id = CourseCatalog.sanitize(value)
 
 
 func set_cpu_difficulty(value: String) -> void:

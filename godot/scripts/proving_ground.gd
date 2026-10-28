@@ -74,20 +74,14 @@ func _build_world() -> void:
 	ground.add_child(gm)
 	add_child(ground)
 
-	course = TrackData.build_course()
-	# Move the line along the opening straight, leaving room for a staggered grid.
-	var race_points: Array = course.points.slice(16) + course.points.slice(0, 16)
-	course.configure(course.course_id, course.display_name, course.theme_id, 3, race_points)
+	course = CourseCatalog.build_course(GameSession.course_id)
 	track = course.points
 	TrackBuilder.build(self, track)
 	TrackBuilder.build_guard_rails(self, track)
-	TrackScenery.build(self, course)
-	TrackScenery.build_guidance(self, course)
-	TrackScenery.build_deposits(self, course)
+	CourseCatalog.build_scenery(self, course)
 	course_cues = CourseCues.new()
 	course_cues.setup(course)
 	TrackBuilder.build_approach_boards(self, course_cues)
-	TrackBuilder.build_proving_ground(self, Vector3(-620.0, 0.0, 0.0))
 	_build_finish_line()
 
 
