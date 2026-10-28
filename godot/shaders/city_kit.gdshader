@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode specular_toon;
+render_mode specular_toon, cull_disabled;
 
 uniform vec4 base_color : source_color = vec4(0.23, 0.27, 0.32, 1.0);
 uniform float metalness : hint_range(0.0, 1.0) = 0.25;

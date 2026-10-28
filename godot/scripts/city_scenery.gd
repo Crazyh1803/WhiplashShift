@@ -16,6 +16,9 @@ const UNIT_BOX := AABB(Vector3(-0.5, -0.5, -0.5), Vector3.ONE)
 
 static func build(parent: Node3D, course: CourseDefinition, use_city_kit: bool = true) -> Node3D:
 	course = course.geometry()
+	use_city_kit = use_city_kit and course.course_id == "block_circuit"
+	if use_city_kit:
+		use_city_kit = CityKit.is_available()
 	var root := Node3D.new()
 	root.name = "CityScenery"
 	parent.add_child(root)

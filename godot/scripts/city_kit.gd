@@ -12,6 +12,16 @@ static var _materials: Dictionary = {}
 static var _loaded := false
 
 
+static func is_available() -> bool:
+	var catalog := entries()
+	if catalog.size() != EXPECTED_IDS.size():
+		return false
+	for id: String in EXPECTED_IDS:
+		if not catalog.has(id) or mesh(id) == null:
+			return false
+	return true
+
+
 static func entries() -> Dictionary:
 	if not _loaded:
 		_loaded = true
@@ -51,10 +61,12 @@ static func mesh(id: String) -> ArrayMesh:
 	var entry: Dictionary = _entries.get(id, {})
 	if entry.is_empty():
 		push_error("Unknown city kit asset: " + id)
+		_meshes[id] = null
 		return null
 	var packed := load(DIRECTORY + String(entry["glb"])) as PackedScene
 	if packed == null:
 		push_error("Could not load city asset: " + id)
+		_meshes[id] = null
 		return null
 	var scene := packed.instantiate()
 	var found: Array[Dictionary] = []
@@ -62,14 +74,21 @@ static func mesh(id: String) -> ArrayMesh:
 	if found.size() != 1:
 		push_error("City asset must contain one static mesh: " + id)
 		scene.free()
+		_meshes[id] = null
 		return null
 	var source: Mesh = found[0]["mesh"]
 	if entry["surfaces"].size() != source.get_surface_count():
 		push_error("City asset surface manifest does not match mesh: " + id)
 		scene.free()
+		_meshes[id] = null
 		return null
 	var transform: Transform3D = found[0]["transform"]
 	var combined := source.duplicate(true) as ArrayMesh
+	if combined == null:
+		push_error("City asset requires an ArrayMesh: " + id)
+		scene.free()
+		_meshes[id] = null
+		return null
 	if not transform.is_equal_approx(Transform3D.IDENTITY):
 		combined = ArrayMesh.new()
 		for i in source.get_surface_count():
@@ -101,12 +120,14 @@ static func material(semantic: String) -> Material:
 		var glow := StandardMaterial3D.new()
 		glow.albedo_color = Color("00f0ff") if semantic == "glow_cyan" else Color("ffb703")
 		glow.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		glow.cull_mode = BaseMaterial3D.CULL_DISABLED
 		glow.emission_enabled = true
 		glow.emission = glow.albedo_color
 		glow.emission_energy_multiplier = 3.0
 		result = glow
 	elif semantic == "sinew":
 		var flesh := TrackMaterials.flesh().duplicate() as StandardMaterial3D
+		flesh.cull_mode = BaseMaterial3D.CULL_DISABLED
 		flesh.emission_enabled = true
 		flesh.emission = Color("35100e")
 		result = flesh

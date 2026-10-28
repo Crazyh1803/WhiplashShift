@@ -1,6 +1,7 @@
 class_name CityDistrict
 extends RefCounted
 
+# Authored for Block Circuit's non-crossing geometry; other tracks reuse CityKit assets with their own layout.
 const FRACTION := 0.25
 const TRIANGLE_BUDGET := 150000
 const GAP := 0.8

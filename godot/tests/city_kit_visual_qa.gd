@@ -1,7 +1,7 @@
 extends Node3D
 
 var _camera: Camera3D
-var _directory := "res://../.ai/captures/city-kit"
+var _directory := ""
 var _fail := 0
 
 
@@ -10,7 +10,10 @@ func _ready() -> void:
 		push_error("City kit visual QA requires the rendering device")
 		get_tree().quit(1)
 		return
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_directory))
+	_directory = ProjectSettings.globalize_path("res://").path_join("../.ai/captures/city-kit").simplify_path()
+	if DirAccess.make_dir_recursive_absolute(_directory) != OK:
+		get_tree().quit(1)
+		return
 	var environment := WorldEnvironment.new()
 	environment.environment = TrackMaterials.environment()
 	add_child(environment)
@@ -98,7 +101,7 @@ func _capture(label: String) -> void:
 	for frame in 12:
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
-	var path := ProjectSettings.globalize_path(_directory).path_join(label + ".png")
+	var path := _directory.path_join(label + ".png")
 	if get_viewport().get_texture().get_image().save_png(path) != OK:
 		_fail += 1
 	print("CITY_KIT_CAPTURE ", path)
