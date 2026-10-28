@@ -1,0 +1,5 @@
+VERDICT: APPROVE
+FINDINGS:
+- [MED] godot/tests/race_modes_tests.gd:14 — The new test scenes are absent from tools/workflow/test_season.py’s default suite, so the configured ak-test command never executes them. — Register race_modes_tests, reverse_race_tests, and the headless layout checks; register visual captures under --capture.
+- [MED] godot/tests/race_modes_tests.gd:706 — Disconnecting the production Continue handler and later calling GameSession.advance_season() directly lets the season-flow test pass even if Continue never advances or navigates correctly. — Exercise the production handler through a test seam that intercepts scene navigation, then assert scoring and the requested destination.
+- [MED] godot/tests/reverse_race_tests.gd:112 — CPU sustained-progress assertions are skipped entirely when the player finishes before PROGRESS_TICK, allowing stalled or wrong-way rivals to pass with any positive final distance. — Always evaluate rival progress, using a bounded observation window independent of the player’s finish.

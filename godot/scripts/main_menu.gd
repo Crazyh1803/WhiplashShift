@@ -239,13 +239,13 @@ func _build_custom() -> void:
 	split.add_theme_constant_override("v_separation", 12)
 	body.add_child(split)
 	var left := VBoxContainer.new()
-	left.custom_minimum_size.x = 420
+	left.custom_minimum_size.x = 500
 	left.add_theme_constant_override("separation", 8)
 	split.add_child(left)
 	left.add_child(_label("RACES (1-%d, ORDERED)" % SeasonDefinition.MAX_RACES, 13, ACCENT))
 	_race_list = ItemList.new()
 	_race_list.name = "RaceList"
-	_race_list.custom_minimum_size = Vector2(420, 200)
+	_race_list.custom_minimum_size = Vector2(500, 200)
 	_race_list.item_selected.connect(_on_race_selected)
 	left.add_child(_race_list)
 	var order := HFlowContainer.new()

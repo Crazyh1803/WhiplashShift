@@ -98,7 +98,9 @@ func _menu_pages(size: Vector2i) -> void:
 				var roster: Array[Dictionary] = [{"callsign": "ROADGHOST", "vehicle_id": "blackjack"}, {"callsign": "CINDERBACK", "vehicle_id": "ramjet"},
 					{"callsign": "VANTA", "vehicle_id": "helix"}]
 				done.set_roster(roster)
-				for order: Array[int] in [[0, 1, 2], [1, 0, 2], [1, 2, 0]]:
+				for raw_order: Array in [[0, 1, 2], [1, 0, 2], [1, 2, 0]]:
+					var order: Array[int] = []
+					order.assign(raw_order)
 					done.set_pending(order)
 					done.commit()
 				GameSession.season = done

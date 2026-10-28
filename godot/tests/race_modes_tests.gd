@@ -33,6 +33,8 @@ func _ready() -> void:
 	await _test_lap_run("block_circuit", 7, false)
 	await _test_lap_run("block_circuit", 7, true)
 	await _test_season_flow()
+	await _test_double_continue()
+	await _test_final_continue_destination()
 	_restore_session()
 	_remove_recursive(_scratch)
 	print("RACE_MODES: %d passed, %d failed" % [_pass, _fail])
@@ -213,8 +215,10 @@ func _test_season_run() -> void:
 	_check("completed run exposes no options and rejects more", run.race_options().is_empty() and not run.set_pending([0, 1, 2]) and not run.commit()
 		and run.points == [19, 22, 16] and run.results.size() == 3)
 	var tied := SeasonRun.new().configure(_season_data("Tie", _three_races()))
-	for order: Array[int] in [[0, 1, 2], [1, 2, 0], [2, 0, 1]]:
-		tied.set_pending(order)
+	for order: Array in [[0, 1, 2], [1, 2, 0], [2, 0, 1]]:
+		var typed_order: Array[int] = []
+		typed_order.assign(order)
+		tied.set_pending(typed_order)
 		tied.commit()
 	_check("three way tie keeps entrant order", tied.points == [19, 19, 19] and tied.table_lines(false)[1].begins_with("1. YOU")
 		and tied.table_lines(false)[3].begins_with("3. RIVAL 2"))
@@ -426,6 +430,7 @@ func _test_menu_pending_season() -> void:
 	_press(_named(menu, "ChooseVehicle"))
 	_check("single race asks before replacing a season", menu._confirm.visible and menu.garage_requests == 1 and GameSession.season == live)
 	menu._confirm.get_cancel_button().pressed.emit()
+	await get_tree().process_frame
 	_check("cancel keeps the season and does nothing", not menu._confirm.visible and menu.garage_requests == 1 and GameSession.season == live
 		and GameSession.course_id == "block_circuit")
 	_press(_named(menu, "ChooseVehicle"))
@@ -438,6 +443,7 @@ func _test_menu_pending_season() -> void:
 	_press(_named(menu, "StartCustom"))
 	_check("custom start asks before replacing a season", menu._confirm.visible and GameSession.season == live and menu.garage_requests == 2)
 	menu._confirm.get_cancel_button().pressed.emit()
+	await get_tree().process_frame
 	_check("cancelled custom start keeps the old season", GameSession.season == live and menu.garage_requests == 2)
 	_press(_named(menu, "StartCustom"))
 	menu._confirm.get_ok_button().pressed.emit()
@@ -446,6 +452,7 @@ func _test_menu_pending_season() -> void:
 	_press(_named(menu, "StartSeasonOne"))
 	_check("Season 1 also asks first", menu._confirm.visible and GameSession.season.definition["name"] == "Grand Tour")
 	menu._confirm.get_cancel_button().pressed.emit()
+	await get_tree().process_frame
 	await _drop(menu)
 	var done := SeasonRun.new().configure(_season_data("Done", _three_races()))
 	var roster: Array[Dictionary] = [{"callsign": "ONE", "vehicle_id": "blackjack"}, {"callsign": "TWO", "vehicle_id": "ramjet"}, {"callsign": "THREE", "vehicle_id": "helix"}]
@@ -513,7 +520,7 @@ func _test_menu_custom_editor() -> void:
 	_check("remove without a selection reports an error", menu._status.get_theme_color("font_color") == ERROR_COLOR and menu._draft_races.size() == 2)
 	var snapshot: Array = menu._draft_races.duplicate(true)
 	_press(_named(menu, "SaveSeason"))
-	var saved := menu.library.list_seasons()
+	var saved: Array = menu.library.list_seasons()
 	_check("save writes one library entry and selects it", saved.size() == 1 and saved[0]["name"] == "Editor Cup" and saved[0]["race_count"] == 2
 		and menu._saved_seasons.item_count == 1 and menu._status.get_theme_color("font_color") != ERROR_COLOR)
 	_check("library lives in the scratch folder", FileAccess.file_exists(_scratch.path_join("library").path_join(saved[0]["id"] + ".json")))
@@ -778,3 +785,43 @@ func _check(label: String, ok: bool, detail: String = "") -> void:
 	_pass += int(ok)
 	_fail += int(not ok)
 	print("  [%s] %s%s" % ["pass" if ok else "FAIL", label, "" if ok or detail.is_empty() else " :: " + detail])
+
+
+func _test_double_continue() -> void:
+	_reset_session()
+	GameSession.begin_season(_season_data("Continue Guard", _three_races()))
+	GameSession.configure("GUARD PILOT", "blackjack", ["boilerfang", "ramjet"])
+	var scene: Variant = load("res://tests/race_modes_test_race.gd").new()
+	add_child(scene)
+	scene.set_physics_process(false)
+	for car: Vehicle in [scene.car, scene.cpu_cars[0], scene.cpu_cars[1]]:
+		car.freeze = true
+	for driver: CpuDriver in scene.cpu_drivers:
+		driver.enabled = false
+	scene.race.tick(3.0)
+	await _drive_laps(scene, 1, "continue guard")
+	scene._physics_process(0.0)
+	scene._continue_season()
+	scene._continue_season()
+	_check("two Continue events commit only one round", GameSession.season.round_index == 1 and GameSession.season.results.size() == 1)
+	_check("two Continue events request only one navigation", scene.navigation_requests == 1 and scene._continuing and not scene.navigation_complete)
+	scene.queue_free()
+	await get_tree().process_frame
+	_reset_session()
+
+
+func _test_final_continue_destination() -> void:
+	_reset_session()
+	GameSession.begin_season(SeasonLibrary.season_one()["season"], true)
+	GameSession.configure("FINAL PILOT", "blackjack", ["boilerfang", "ramjet"])
+	var scene: Variant = load("res://tests/race_modes_test_race.gd").new()
+	add_child(scene)
+	scene.set_physics_process(false)
+	scene.race.state = RaceDirector.State.RESULTS
+	scene._continue_season()
+	_check("final Continue requests the main menu standings destination", GameSession.season.is_complete() and scene.navigation_complete and scene.navigation_requests == 1)
+	scene._continue_season()
+	_check("repeated final Continue is ignored", GameSession.season.results.size() == 1 and scene.navigation_requests == 1)
+	scene.queue_free()
+	await get_tree().process_frame
+	_reset_session()

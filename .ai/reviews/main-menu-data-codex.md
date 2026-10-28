@@ -1,0 +1,7 @@
+VERDICT: CHANGES_REQUESTED
+FINDINGS:
+- [HIGH] godot/scripts/main_menu.gd:672 — GameSession has neither `begin_single` nor `begin_season`, and no `season` property. Dynamic calls therefore fail; single races ignore the requested configuration and seasons cannot start. — Implement the session APIs and race progression integration before exposing these actions.
+- [MED] godot/scenes/main_menu.tscn:5 — The new menu is unreachable: the project still starts in garage.tscn and no existing code navigates to main_menu.tscn. — Wire startup and race return navigation to this scene.
+- [MED] godot/scripts/main_menu.gd:634 — CPU difficulty reports successful persistence, but GameSession.save_settings() only writes speed units and load_settings() never restores difficulty. — Persist and restore CPU difficulty, with a settings round-trip test.
+- [MED] godot/scripts/season_library.gd:132 — Write and flush errors are ignored before replacing the destination, potentially replacing a valid season with truncated data while reporting success. — Check the write error after flushing and preserve the destination on failure.
+- [MED] godot/tests/season_codec_tests.tscn:5 — The new suite is absent from the default scene list in tools/workflow/test_season.py, so the repository test command never executes these assertions. — Register season_codec_tests in the default test runner.

@@ -420,7 +420,10 @@ func _continue_season() -> void:
 	if not GameSession.advance_season():
 		_continuing = false
 		return
-	if GameSession.season.is_complete():
-		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
-	else:
-		get_tree().reload_current_scene()
+	_navigate_next_round(GameSession.season.is_complete())
+
+
+func _navigate_next_round(complete: bool) -> Error:
+	if complete:
+		return get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	return get_tree().reload_current_scene()

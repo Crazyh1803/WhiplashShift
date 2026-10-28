@@ -30,7 +30,7 @@ def main():
     parser.add_argument('--capture', action='store_true')
     parser.add_argument('--menu-capture', action='store_true')
     parser.add_argument('--scenes', nargs='+', default=[
-        'season_codec_tests', 'race_modes_tests', 'reverse_race_tests',
+        'season_codec_tests', 'race_modes_tests', 'reverse_race_tests', 'main_menu_visual_qa',
         'block_circuit_tests', 'season_course_tests', 'vehicle_audio_tests', 'vehicle_feedback_tests',
         'vehicle_effects_tests', 'bodywork_visual_tests', 'test_main', 'viscera_response_tests',
         'rubble_response_tests', 'armor_response_tests', 'coolant_response_tests', 'effluent_response_tests',
