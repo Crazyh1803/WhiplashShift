@@ -9,6 +9,10 @@ func _ready() -> void:
 		await _captures()
 		get_tree().quit(1 if _fail else 0)
 		return
+	if "--city-only" in OS.get_cmdline_user_args():
+		await _test_city_driving()
+		get_tree().quit(1 if _fail else 0)
+		return
 	_test_catalog()
 	await _test_garage()
 	await _test_scene_rules("split_shift")
@@ -48,8 +52,12 @@ func _test_garage() -> void:
 	garage._course.item_selected.emit(1)
 	var config := ConfigFile.new()
 	_check("course choice persists", config.load(path) == OK and config.get_value("profile", "course") == "split_shift")
+	var previous_callsign: String = garage._callsign.text
+	garage._callsign.clear()
 	garage._course.select(0)
 	garage._course.item_selected.emit(0)
+	config.load(path)
+	_check("switching course preserves callsign while field is blank", config.get_value("profile", "callsign") == previous_callsign.strip_edges().to_upper())
 	garage._load_profile()
 	_check("City choice reloads", GameSession.course_id == "block_circuit" and garage._course.selected == 0)
 	config.set_value("profile", "course", "invalid")
@@ -104,6 +112,8 @@ func _test_city_driving() -> void:
 	GameSession.configure("CITY PILOT", "blackjack", ["boilerfang", "ramjet"])
 	var scene: Variant = load("res://scenes/proving_ground.tscn").instantiate()
 	add_child(scene)
+	scene.items.rng.seed = 20261028
+	scene.items.reset()
 	var pilot := CpuDriver.new()
 	pilot.setup(scene.car, scene.course, scene._grid_indices[0])
 	pilot.skill = 0.9
@@ -126,10 +136,13 @@ func _test_city_driving() -> void:
 				print("CITY_CPU %d progress=%.1f recoveries=%d wrong_ticks=%d" % [i, driver.progress.total_distance, driver.recoveries, wrong[i]])
 				_check("City CPU %d makes sustained progress" % i, driver.progress.total_distance >= 300.0
 					and driver.recoveries <= 1 and wrong[i] <= 240)
+		if ticks % 7200 == 0:
+			print("CITY_TRACE t=%.1f lap=%d cp=%d/%d distance=%.1f off=%.1f pilot_lap=%d pilot_distance=%.1f speed=%.1f end=%s" % [scene.race.elapsed, scene.player_progress.lap, scene.player_progress._next_checkpoint, scene.course.checkpoints.size(), scene.player_progress.total_distance, scene.player_progress.off_line, pilot.progress.lap, pilot.progress.total_distance, scene.car.speed, scene.car.active_end])
 		ticks += 1
 	pilot.enabled = false
 	_check("City physical pilot completes three laps", scene.race.state == RaceDirector.State.RESULTS and scene.player_progress.lap == 3)
 	_check("City pilot stays finite with bounded recovery", scene.car.position.is_finite() and pilot.recoveries <= 3)
+	_check("City pilot and player trackers agree", scene.player_progress.lap == pilot.progress.lap)
 	print("CITY_RACE elapsed=%.2f recoveries=%d" % [scene.race.elapsed, pilot.recoveries])
 	scene.restart_race()
 	_check("City physical retry resets grid", scene.race.state == RaceDirector.State.COUNTDOWN and scene.player_progress.lap == 0)

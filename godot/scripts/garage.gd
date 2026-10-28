@@ -741,7 +741,9 @@ func _update_difficulty_tooltip() -> void:
 
 func _save_profile(pilot: String) -> void:
 	var config := ConfigFile.new()
-	config.set_value("profile", "callsign", pilot)
+	config.load(profile_path)
+	config.set_value("profile", "callsign", pilot if not pilot.is_empty()
+		else config.get_value("profile", "callsign", GameSession.callsign))
 	config.set_value("profile", "cpu_difficulty", GameSession.cpu_difficulty)
 	config.set_value("profile", "course", GameSession.course_id)
 	config.save(profile_path)

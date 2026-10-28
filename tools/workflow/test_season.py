@@ -29,9 +29,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--capture', action='store_true')
     parser.add_argument('--scenes', nargs='+', default=[
-        'block_circuit_tests', 'season_course_tests', 'test_main',
-        'race_tests', 'course_cues_tests', 'corner_tests', 'racecraft_tests',
-        'track_visual_tests', 'driving_hud_tests', 'compact_hud_tests'])
+        'block_circuit_tests', 'season_course_tests', 'vehicle_audio_tests', 'vehicle_feedback_tests',
+        'vehicle_effects_tests', 'bodywork_visual_tests', 'test_main', 'viscera_response_tests',
+        'rubble_response_tests', 'armor_response_tests', 'coolant_response_tests', 'effluent_response_tests',
+        'ichor_response_tests', 'track_visual_tests', 'viscera_pit_tests', 'boulder_motion_tests',
+        'item_tests', 'combat_hud_tests', 'driving_hud_tests', 'dashboard_hud_tests',
+        'compact_hud_tests', 'weapon_attachment_tests', 'deployment_oil_tests', 'racecraft_tests',
+        'cpu_main', 'race_tests', 'course_cues_tests', 'camera_tests',
+        'corner_tests', 'terrain_profile_tests', 'blackjack_refined_tests', 'blackjack_blueprint_tests',
+        'consolidation_tests', 'nightshift_blueprint_tests', 'ramjet_blueprint_tests', 'boilerfang_blueprint_tests',
+        'helix_blueprint_tests', 'knifeedge_blueprint_tests'])
     options = parser.parse_args()
     run_engine(['--headless', '--import', '--path', 'godot'], 180)
     if options.capture:
@@ -41,7 +48,7 @@ def main():
         for scene in options.scenes:
             print(f'CHECK {scene}', flush=True)
             run_engine(['--headless', '--fixed-fps', '120', '--path', 'godot',
-                        f'res://tests/{scene}.tscn'], 900 if scene == 'race_tests' else 300)
+                        f'res://tests/{scene}.tscn'], 900 if scene in ('race_tests', 'season_course_tests', 'cpu_main') else 300)
     return 0
 
 

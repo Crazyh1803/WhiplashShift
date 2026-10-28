@@ -357,7 +357,7 @@ The [season design](docs/season-one/season-design.md) describes all nine races
 across City, Underworks, Foundry and Coldworks. The other eight races and cup
 progression are planned, not implemented.
 
-Run `ak-test` for the season/course and affected regression suite. The new runner
+Run `ak-test` for the season/course checks and the existing full regression suite. The new runner
 uses Python and Godot on Windows rather than requiring Linux timeout/temp paths.
 For renders, set `TEST_CMD='python tools/workflow/test_season.py --capture'` when
 calling `ak-test`; images are written to `.ai/captures/city/`. The overview uses
