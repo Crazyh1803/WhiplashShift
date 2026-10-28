@@ -1,0 +1,221 @@
+{
+  "relay_tower": {
+    "tris": 11936,
+    "verts": 7506,
+    "surfaces": [
+      "steel",
+      "cavity",
+      "ceramic",
+      "machinery",
+      "glow_amber",
+      "glow_cyan",
+      "sinew"
+    ],
+    "dims_m": [
+      22.705,
+      81.35,
+      18.82
+    ]
+  },
+  "exchange_hall": {
+    "tris": 10454,
+    "verts": 6435,
+    "surfaces": [
+      "steel",
+      "cavity",
+      "ceramic",
+      "glow_amber",
+      "machinery",
+      "glow_cyan",
+      "sinew"
+    ],
+    "dims_m": [
+      57.6,
+      23.15,
+      28.2
+    ]
+  },
+  "pump_citadel": {
+    "tris": 10418,
+    "verts": 5949,
+    "surfaces": [
+      "steel",
+      "ceramic",
+      "machinery",
+      "cavity",
+      "glow_amber",
+      "glow_cyan",
+      "sinew"
+    ],
+    "dims_m": [
+      34.4,
+      33.48,
+      35.82
+    ]
+  },
+  "shutter_workshop": {
+    "tris": 3056,
+    "verts": 1920,
+    "surfaces": [
+      "steel",
+      "cavity",
+      "ceramic",
+      "machinery",
+      "glow_amber"
+    ],
+    "dims_m": [
+      18.0,
+      12.3,
+      16.509
+    ]
+  },
+  "utility_midrise": {
+    "tris": 7584,
+    "verts": 4824,
+    "surfaces": [
+      "steel",
+      "cavity",
+      "ceramic",
+      "machinery",
+      "glow_amber"
+    ],
+    "dims_m": [
+      14.8,
+      31.5,
+      14.9
+    ]
+  },
+  "ribbed_stack": {
+    "tris": 4200,
+    "verts": 2562,
+    "surfaces": [
+      "steel",
+      "cavity",
+      "ceramic",
+      "glow_amber",
+      "machinery",
+      "sinew"
+    ],
+    "dims_m": [
+      12.679,
+      38.15,
+      12.679
+    ]
+  },
+  "pipe_rack": {
+    "tris": 1512,
+    "verts": 856,
+    "surfaces": [
+      "ceramic",
+      "machinery",
+      "sinew",
+      "glow_amber"
+    ],
+    "dims_m": [
+      6.1,
+      5.1,
+      1.8
+    ]
+  },
+  "exhaust_stack": {
+    "tris": 772,
+    "verts": 460,
+    "surfaces": [
+      "steel",
+      "ceramic",
+      "glow_amber"
+    ],
+    "dims_m": [
+      4.3,
+      8.87,
+      3.199
+    ]
+  },
+  "service_cabinet": {
+    "tris": 512,
+    "verts": 304,
+    "surfaces": [
+      "steel",
+      "ceramic",
+      "glow_cyan"
+    ],
+    "dims_m": [
+      1.52,
+      2.5,
+      0.88
+    ]
+  },
+  "transformer": {
+    "tris": 1336,
+    "verts": 784,
+    "surfaces": [
+      "machinery",
+      "ceramic",
+      "cavity",
+      "glow_amber"
+    ],
+    "dims_m": [
+      3.4,
+      3.45,
+      2.4
+    ]
+  },
+  "cargo_crate": {
+    "tris": 1124,
+    "verts": 664,
+    "surfaces": [
+      "steel",
+      "ceramic",
+      "glow_amber"
+    ],
+    "dims_m": [
+      4.142,
+      2.58,
+      2.31
+    ]
+  },
+  "barrier_segment": {
+    "tris": 396,
+    "verts": 240,
+    "surfaces": [
+      "ceramic",
+      "steel",
+      "glow_amber"
+    ],
+    "dims_m": [
+      4.2,
+      1.2,
+      0.88
+    ]
+  },
+  "beacon_post": {
+    "tris": 528,
+    "verts": 300,
+    "surfaces": [
+      "steel",
+      "ceramic",
+      "glow_cyan"
+    ],
+    "dims_m": [
+      1.17,
+      4.24,
+      0.799
+    ]
+  },
+  "conduit_pillar": {
+    "tris": 568,
+    "verts": 342,
+    "surfaces": [
+      "steel",
+      "ceramic",
+      "cavity",
+      "glow_cyan"
+    ],
+    "dims_m": [
+      1.916,
+      6.75,
+      1.975
+    ]
+  },
+  "_scene_cameras_lights": []
+}

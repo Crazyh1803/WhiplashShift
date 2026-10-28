@@ -1,0 +1,589 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "relay_tower",
+      "class": "landmark",
+      "glb": "relay_tower.glb",
+      "tris": 11936,
+      "aabb": {
+        "min": [
+          -11.3524,
+          0.0,
+          -9.41
+        ],
+        "max": [
+          11.3524,
+          81.35,
+          9.41
+        ]
+      },
+      "footprint": {
+        "min": [
+          -11.3524,
+          -9.41
+        ],
+        "max": [
+          11.3524,
+          9.41
+        ]
+      },
+      "front_setback_m": 2.02,
+      "surfaces": [
+        "steel",
+        "cavity",
+        "ceramic",
+        "machinery",
+        "glow_amber",
+        "glow_cyan",
+        "sinew"
+      ],
+      "reuse_worlds": [
+        "city"
+      ],
+      "budget_note": "11936 tris of 18000 max, 7 surfaces. Split-spine relay tower; two tiered recessed shafts, off-axis dish, mechanical crown."
+    },
+    {
+      "id": "exchange_hall",
+      "class": "landmark",
+      "glb": "exchange_hall.glb",
+      "tris": 10454,
+      "aabb": {
+        "min": [
+          -28.8,
+          0.0,
+          -14.1
+        ],
+        "max": [
+          28.8,
+          23.15,
+          14.1
+        ]
+      },
+      "footprint": {
+        "min": [
+          -28.8,
+          -14.1
+        ],
+        "max": [
+          28.8,
+          14.1
+        ]
+      },
+      "front_setback_m": 1.2,
+      "surfaces": [
+        "steel",
+        "cavity",
+        "ceramic",
+        "glow_amber",
+        "machinery",
+        "glow_cyan",
+        "sinew"
+      ],
+      "reuse_worlds": [
+        "city"
+      ],
+      "budget_note": "10454 tris of 18000 max, 7 surfaces. Broad exchange hall; five deep shuttered bays, articulated truss roof, silo and transformer wings."
+    },
+    {
+      "id": "pump_citadel",
+      "class": "landmark",
+      "glb": "pump_citadel.glb",
+      "tris": 10418,
+      "aabb": {
+        "min": [
+          -17.2,
+          0.0,
+          -17.9101
+        ],
+        "max": [
+          17.2,
+          33.48,
+          17.9101
+        ]
+      },
+      "footprint": {
+        "min": [
+          -17.2,
+          -17.9101
+        ],
+        "max": [
+          17.2,
+          17.9101
+        ]
+      },
+      "front_setback_m": 3.342,
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "machinery",
+        "cavity",
+        "glow_amber",
+        "glow_cyan",
+        "sinew"
+      ],
+      "reuse_worlds": [
+        "city"
+      ],
+      "budget_note": "10418 tris of 18000 max, 7 surfaces. Cylindrical pumping citadel; ribbed shell, buttresses, tank cluster and exposed manifolds."
+    },
+    {
+      "id": "shutter_workshop",
+      "class": "building",
+      "glb": "shutter_workshop.glb",
+      "tris": 3056,
+      "aabb": {
+        "min": [
+          -9.0,
+          0.0,
+          -8.2547
+        ],
+        "max": [
+          9.0,
+          12.3,
+          8.2547
+        ]
+      },
+      "footprint": {
+        "min": [
+          -9.0,
+          -8.2547
+        ],
+        "max": [
+          9.0,
+          8.2547
+        ]
+      },
+      "front_setback_m": 1.66,
+      "surfaces": [
+        "steel",
+        "cavity",
+        "ceramic",
+        "machinery",
+        "glow_amber"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "budget_note": "3056 tris of 8000 max, 5 surfaces. Modular workshop with roll shutters, sawtooth roof; alt back/side."
+    },
+    {
+      "id": "utility_midrise",
+      "class": "building",
+      "glb": "utility_midrise.glb",
+      "tris": 7584,
+      "aabb": {
+        "min": [
+          -7.4,
+          0.0,
+          -7.45
+        ],
+        "max": [
+          7.4,
+          31.5,
+          7.45
+        ]
+      },
+      "footprint": {
+        "min": [
+          -7.4,
+          -7.45
+        ],
+        "max": [
+          7.4,
+          7.45
+        ]
+      },
+      "front_setback_m": 2.6,
+      "surfaces": [
+        "steel",
+        "cavity",
+        "ceramic",
+        "machinery",
+        "glow_amber"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "budget_note": "7584 tris of 8000 max, 5 surfaces. Podium plus recessed tower with rooftop plant and riser/ladder back."
+    },
+    {
+      "id": "ribbed_stack",
+      "class": "building",
+      "glb": "ribbed_stack.glb",
+      "tris": 4200,
+      "aabb": {
+        "min": [
+          -6.3395,
+          0.0,
+          -6.3395
+        ],
+        "max": [
+          6.3395,
+          38.15,
+          6.3395
+        ]
+      },
+      "footprint": {
+        "min": [
+          -6.3395,
+          -6.3395
+        ],
+        "max": [
+          6.3395,
+          6.3395
+        ]
+      },
+      "front_setback_m": 1.64,
+      "surfaces": [
+        "steel",
+        "cavity",
+        "ceramic",
+        "glow_amber",
+        "machinery",
+        "sinew"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "budget_note": "4200 tris of 8000 max, 6 surfaces. Slot-window block with buttress ribs and clawed crown."
+    },
+    {
+      "id": "pipe_rack",
+      "class": "prop",
+      "glb": "pipe_rack.glb",
+      "tris": 1512,
+      "aabb": {
+        "min": [
+          -3.05,
+          0.0,
+          -0.9
+        ],
+        "max": [
+          3.05,
+          5.1,
+          0.9
+        ]
+      },
+      "footprint": {
+        "min": [
+          -3.05,
+          -0.9
+        ],
+        "max": [
+          3.05,
+          0.9
+        ]
+      },
+      "front_setback_m": 0.0,
+      "surfaces": [
+        "ceramic",
+        "machinery",
+        "sinew",
+        "glow_amber"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry",
+        "coldworks"
+      ],
+      "budget_note": "1512 tris of 2000 max, 4 surfaces. Portal pipe rack with flanged runs and valve."
+    },
+    {
+      "id": "exhaust_stack",
+      "class": "prop",
+      "glb": "exhaust_stack.glb",
+      "tris": 772,
+      "aabb": {
+        "min": [
+          -2.1498,
+          0.0,
+          -1.5995
+        ],
+        "max": [
+          2.1498,
+          8.87,
+          1.5995
+        ]
+      },
+      "footprint": {
+        "min": [
+          -2.1498,
+          -1.5995
+        ],
+        "max": [
+          2.1498,
+          1.5995
+        ]
+      },
+      "front_setback_m": 0.0,
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "glow_amber"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry",
+        "coldworks"
+      ],
+      "budget_note": "772 tris of 2000 max, 3 surfaces. Guyed exhaust stack with ladder and breeching."
+    },
+    {
+      "id": "service_cabinet",
+      "class": "prop",
+      "glb": "service_cabinet.glb",
+      "tris": 512,
+      "aabb": {
+        "min": [
+          -0.76,
+          0.0,
+          -0.44
+        ],
+        "max": [
+          0.76,
+          2.5,
+          0.44
+        ]
+      },
+      "footprint": {
+        "min": [
+          -0.76,
+          -0.44
+        ],
+        "max": [
+          0.76,
+          0.44
+        ]
+      },
+      "front_setback_m": 0.0,
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "glow_cyan"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry",
+        "coldworks"
+      ],
+      "budget_note": "512 tris of 2000 max, 3 surfaces. Door cabinet with vent slots and status lights."
+    },
+    {
+      "id": "transformer",
+      "class": "prop",
+      "glb": "transformer.glb",
+      "tris": 1336,
+      "aabb": {
+        "min": [
+          -1.7,
+          0.0,
+          -1.2
+        ],
+        "max": [
+          1.7,
+          3.45,
+          1.2
+        ]
+      },
+      "footprint": {
+        "min": [
+          -1.7,
+          -1.2
+        ],
+        "max": [
+          1.7,
+          1.2
+        ]
+      },
+      "front_setback_m": 0.0,
+      "surfaces": [
+        "machinery",
+        "ceramic",
+        "cavity",
+        "glow_amber"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry",
+        "coldworks"
+      ],
+      "budget_note": "1336 tris of 2000 max, 4 surfaces. Finned transformer with bushings and conservator."
+    },
+    {
+      "id": "cargo_crate",
+      "class": "prop",
+      "glb": "cargo_crate.glb",
+      "tris": 1124,
+      "aabb": {
+        "min": [
+          -2.0708,
+          0.0,
+          -1.155
+        ],
+        "max": [
+          2.0708,
+          2.58,
+          1.155
+        ]
+      },
+      "footprint": {
+        "min": [
+          -2.0708,
+          -1.155
+        ],
+        "max": [
+          2.0708,
+          1.155
+        ]
+      },
+      "front_setback_m": 0.0,
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "glow_amber"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry",
+        "coldworks"
+      ],
+      "budget_note": "1124 tris of 2000 max, 3 surfaces. Corrugated container with castings and locking doors."
+    },
+    {
+      "id": "barrier_segment",
+      "class": "prop",
+      "glb": "barrier_segment.glb",
+      "tris": 396,
+      "aabb": {
+        "min": [
+          -2.1,
+          0.0,
+          -0.44
+        ],
+        "max": [
+          2.1,
+          1.2,
+          0.44
+        ]
+      },
+      "footprint": {
+        "min": [
+          -2.1,
+          -0.44
+        ],
+        "max": [
+          2.1,
+          0.44
+        ]
+      },
+      "front_setback_m": 0.0,
+      "surfaces": [
+        "ceramic",
+        "steel",
+        "glow_amber"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry",
+        "coldworks"
+      ],
+      "budget_note": "396 tris of 2000 max, 3 surfaces. Interlocking road barrier with hazard chevrons."
+    },
+    {
+      "id": "beacon_post",
+      "class": "prop",
+      "glb": "beacon_post.glb",
+      "tris": 528,
+      "aabb": {
+        "min": [
+          -0.585,
+          0.0,
+          -0.3994
+        ],
+        "max": [
+          0.585,
+          4.24,
+          0.3994
+        ]
+      },
+      "footprint": {
+        "min": [
+          -0.585,
+          -0.3994
+        ],
+        "max": [
+          0.585,
+          0.3994
+        ]
+      },
+      "front_setback_m": 0.0,
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "glow_cyan"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry",
+        "coldworks"
+      ],
+      "budget_note": "528 tris of 2000 max, 3 surfaces. Cyan beacon post with amber cap."
+    },
+    {
+      "id": "conduit_pillar",
+      "class": "prop",
+      "glb": "conduit_pillar.glb",
+      "tris": 568,
+      "aabb": {
+        "min": [
+          -0.9578,
+          0.0,
+          -0.9876
+        ],
+        "max": [
+          0.9578,
+          6.75,
+          0.9876
+        ]
+      },
+      "footprint": {
+        "min": [
+          -0.9578,
+          -0.9876
+        ],
+        "max": [
+          0.9578,
+          0.9876
+        ]
+      },
+      "front_setback_m": 0.0,
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "cavity",
+        "glow_cyan"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry",
+        "coldworks"
+      ],
+      "budget_note": "568 tris of 2000 max, 4 surfaces. Ceramic pillar with conduit bundle and junction cap."
+    }
+  ]
+}
