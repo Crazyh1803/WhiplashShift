@@ -23,6 +23,7 @@ func _ready() -> void:
 	headlight.light_energy = 2.0
 	headlight.omni_range = 45.0
 	_camera.add_child(headlight)
+	await _gallery(environment)
 	var course := BlockCircuitData.build_course().geometry()
 	var world := Node3D.new()
 	add_child(world)
@@ -59,6 +60,38 @@ func _ready() -> void:
 	await _gameplay()
 	print("CITY_KIT_VISUAL_QA failures=%d" % _fail)
 	get_tree().quit(1 if _fail else 0)
+
+
+func _gallery(environment: WorldEnvironment) -> void:
+	var studio := TrackMaterials.environment()
+	studio.fog_enabled = false
+	studio.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	studio.ambient_light_color = Color("a0aabd")
+	studio.ambient_light_energy = 0.5
+	environment.environment = studio
+	var key := DirectionalLight3D.new()
+	key.rotation_degrees = Vector3(-50.0, -30.0, 0.0)
+	key.light_energy = 0.8
+	add_child(key)
+	print("QA_STUDIO gallery uses neutral inspection lighting; route captures use game lighting")
+	for id: String in CityKit.EXPECTED_IDS:
+		var mesh := CityKit.mesh(id)
+		if mesh == null:
+			_fail += 1
+			continue
+		var model := MeshInstance3D.new()
+		model.mesh = mesh
+		add_child(model)
+		var box := CityKit.bounds(id)
+		var radius := box.size.length() * 0.5
+		for reverse: bool in [false, true]:
+			var side := -1.0 if reverse else 1.0
+			_camera.position = box.get_center() + Vector3(0.65 * side, 0.35, -1.0 * side).normalized() * radius * 2.7
+			_camera.look_at(box.get_center(), Vector3.UP)
+			await _capture("gallery-%s-%s" % [id, "back" if reverse else "front"])
+		model.free()
+	key.free()
+	environment.environment = TrackMaterials.environment()
 
 
 func _capture(label: String) -> void:

@@ -72,6 +72,12 @@ class _Placer extends RefCounted:
 		_place_landmark("relay_tower", [[145.0, -1.0, 12.0], [150.0, 1.0, 16.0], [175.0, -1.0, 22.0]])
 		_place_landmark("exchange_hall", [[345.0, 1.0, 15.0], [325.0, 1.0, 24.0], [305.0, -1.0, 28.0]])
 		_place_landmark("pump_citadel", [[455.0, -1.0, 20.0], [440.0, -1.0, 30.0], [425.0, 1.0, 30.0]])
+		for station in 35:
+			var s := 18.0 + 14.0 * station
+			_place(CityDistrict.PROPS[station % CityDistrict.PROPS.size()], s, -1.0 if station % 2 == 0 else 1.0, 9.0)
+		for station in 18:
+			var s := 26.0 + 26.0 * station
+			_place(CityDistrict.PROPS[(station + 3) % CityDistrict.PROPS.size()], s, 1.0 if station % 2 == 0 else -1.0, 9.0)
 		for station in 11:
 			var s := 38.0 + 44.0 * station
 			for side: float in [-1.0, 1.0]:
@@ -81,12 +87,6 @@ class _Placer extends RefCounted:
 			var s := 85.0 + 110.0 * station
 			for side: float in [-1.0, 1.0]:
 				_place(CityDistrict.BUILDINGS[(station + 1) % CityDistrict.BUILDINGS.size()], s, side, 46.0)
-		for station in 35:
-			var s := 18.0 + 14.0 * station
-			_place(CityDistrict.PROPS[station % CityDistrict.PROPS.size()], s, -1.0 if station % 2 == 0 else 1.0, 9.0)
-		for station in 18:
-			var s := 26.0 + 26.0 * station
-			_place(CityDistrict.PROPS[(station + 3) % CityDistrict.PROPS.size()], s, 1.0 if station % 2 == 0 else -1.0, 9.0)
 		for id: String in transforms:
 			_batch(root, id)
 		root.set_meta("quarter_length", quarter)
