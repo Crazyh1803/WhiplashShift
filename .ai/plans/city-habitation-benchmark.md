@@ -1,0 +1,21 @@
+# Reusable inhabited city architecture: workshop benchmark
+
+## User correction
+The first City kit is too tidy, sparse and generic. The user wants the reaction that this could be the human city of R-Type's world, and explicitly prioritizes slow, detailed work on reusable buildings. Establish one finished workshop/habitation building as the new quality benchmark before spreading that treatment across the kit. This is an asset review milestone, not another track-population pass.
+
+## Design intent
+An original fortified civilian repair block: industrial infrastructure adapted into cramped housing and kept alive through generations of repairs. This is a functioning human neighborhood at the edge of a biomechanical war. Three levels of detail must work together: an asymmetric stepped silhouette; substantial layered wall sections, galleries and machinery; and restrained small-scale seams, wear, fittings and stencils. Large blank slabs with trim and a few luminous dashes fail the target.
+
+Required visible stories: two deep working repair bays and a smaller human airlock; stacked inhabited upper modules with differently shuttered windows, recessed amber interiors and exterior service access; reachable stairs/galleries with railings and visible supports; external life-support intake, filtration and plumbing with purposeful connections; layered ceramic armor over dark pressure structure, exposed cutaway/ribs, several localized repairs and chipped lips; restrained cable/tendon intrusion in one damaged service area. Every side must work, including an alley service elevation and roof. Tiny lamps stay subordinate to masses and shadow depth. Include a non-runtime human scale reference in the presentation.
+
+Reference context: project Bydo-Grid art direction and the official R-Type Final 2 stage presentation (https://rtypefinal2.com/?lang=en), particularly the abandoned space city / invaded factory / occupied former space base themes. These inform an original inhabited civilian interpretation rather than a claim about canonical housing.
+
+## Ownership and files
+- Claude asset lead via ak-delegate owns the whole 3D candidate, source generator, exports, numeric validator and studio inspection. Use ak-blender, no GUI, no assets/final promotion. Existing fourteen City GLBs and the first-quarter composition stay intact for this review milestone.
+- New source: tools/city_pipeline/build_habitation_workshop.py, validate_habitation_workshop.py, HABITATION_WORKSHOP.md; assets/generated/city_habitation/; assets/previews/city_habitation/.
+- Candidate runtime file: godot/assets/city/candidates/habitation_workshop.glb and a small manifest. Stable metre scale, grounded foot-centred origin, Godot -Z facade. Existing semantic palette; up to eight materials. 25k triangle cap for the prototype, with intentional detail allocation and future near/mid/far strategy recorded. Preserve reusable components in source. Vertex-color wear/cavity variation is welcome; no broad emissive surfaces. No camera/light/collision/animation in GLB.
+- Codex lead handles candidate-only Godot review capture/material compatibility and independent checks; no driving or main scenery edits. Use actual exported geometry under both neutral studio and project night lighting, at pedestrian and driving scales.
+- Independent reviewer: ak-review over the asset author's scope, fixing all HIGH/MED findings. Small integration review separately. Human review determines whether this benchmark should guide the other two building families.
+
+## Completion gate
+Inspect front, rear, roof and close-up studio renders before integration; a plain rectangular shell plus bolt scatter fails. Verify meaningful geometry depth and connected, plausible circulation/services. Validate real exported bounds/triangles/materials and absence of runtime extras, import into Godot, capture neutral and night front/rear/close views. Complete relevant ak-test and independent review, commit and publish the review assets to this chat branch. Present the actual new building clearly as the first reusable-building benchmark, with no claim that all three are redesigned.
