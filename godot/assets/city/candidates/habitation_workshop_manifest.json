@@ -6,7 +6,7 @@
       "id": "habitation_workshop",
       "class": "building",
       "glb": "habitation_workshop.glb",
-      "tris": 26689,
+      "tris": 26789,
       "aabb": {
         "min": [
           -18.125,
@@ -51,7 +51,7 @@
         "role": "multiplies albedo: grime, streaks, paint and repair tint"
       },
       "lod_strategy": "near: this mesh; mid: drop interiors, stencils, rails, window furniture (about 45 percent of tris); far: podium + module + roof silhouettes only (about 5 percent). Not yet generated.",
-      "budget_note": "26689 tris of 30000 cap, 8 materials, COLOR_0 wear."
+      "budget_note": "26789 tris of 30000 cap, 8 materials, COLOR_0 wear."
     }
   ]
 }

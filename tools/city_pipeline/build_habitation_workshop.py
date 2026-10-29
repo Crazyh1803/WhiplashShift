@@ -1,6 +1,6 @@
 """Inhabited workshop-plus-habitation block: the City quality benchmark (one combined mesh with COLOR_0 wear).
 
-Run (never the GUI):  ak-blender tools/city_pipeline/build_habitation_workshop.py -- [--no-render] [--size 1280]
+Run (never the GUI):  ak-blender tools/city_pipeline/build_habitation_workshop.py -- [--no-render] [--size 1.0]
 
 Design space: +Y is the facade (Godot -Z), +Z up, origin at the foot centre. The whole build sits under a root X
 mirror so that design +X reads as the viewer's right when looking at the facade from outside.
@@ -239,11 +239,19 @@ class Kit:
                     faces.append((a[i], a[j], b[0]))
                 else:
                     faces.append((a[i], a[j], b[j], b[i]))
+        # Side-face winding is derived from the profile: a segment's normal is (dh * radial, -dr * axial), so
+        # ascending walls face out, descending walls (inner wall of a hollow ring) face in, flats follow dr.
+        # An open profile that only descends (or a capped one that ends lower than it starts) is reversed so
+        # its solid still faces out; hollow-ring profiles that rise somewhere are left as authored.
+        dhs = [b[1] - a[1] for a, b in zip(prof[:-1], prof[1:])]
+        flip = prof[-1][1] < prof[0][1] and (caps or all(d <= 0 for d in dhs))
+        if flip:
+            faces = [tuple(reversed(f)) for f in faces]
         if caps:
-            for ring in (rings[0], rings[-1]):
+            for ring, down in ((rings[0], not flip), (rings[-1], flip)):
                 if len(ring) > 1:
-                    faces.append(tuple(ring))
-        s._mk(verts, faces, mat, fix="centroid")
+                    faces.append(tuple(reversed(ring)) if down else tuple(ring))
+        s._mk(verts, faces, mat, fix="trust")
 
     def cyl(s, x, y, z, r, h, mat, axis="z", seg=10, r2=None, caps=True):
         rot = {"z": {}, "x": {"ry": pi / 2}, "y": {"rx": -pi / 2}}[axis]
@@ -1099,7 +1107,7 @@ def bay_b(k, rng):
             k.cyl(xx, 9.65, top - 0.38, 0.33, 0.1, "steel", axis="x", seg=8)
         for sx in (xa, xb - 0.2):
             k.box(sx, sx + 0.2, 9.3, 10.1, 0.1, top, "machinery")
-        k.box(1.58, 1.62, 9.9, 9.94, top - 0.55, top - 1.75, "steel")
+        k.box(1.58, 1.62, 9.9, 9.94, top - 1.75, top - 0.55, "steel")
         k.box(1.4, 1.8, 9.88, 9.96, top - 1.95, top - 1.75, "trim")
         k.box(-0.8, 7.8, 10.0, 10.5, 0.0, 0.1, "steel")
         for xx in (0.3, 6.9):
@@ -1352,7 +1360,7 @@ def part_modules(k, rng):
 def valve(k, x, y, z, r=0.2, side=1.0):
     """Gate valve on a vertical pipe: fat body, stem and a hand-wheel."""
     k.cyl(x, y, z, r * 1.6, 0.42, "steel", seg=6)
-    k.box(x + side * r, x + side * (r + 0.28), y - 0.03, y + 0.03, z + 0.18, z + 0.24, "steel", skip=("yn", "yp"))
+    k.box(min(x + side * r, x + side * (r + 0.28)), max(x + side * r, x + side * (r + 0.28)), y - 0.03, y + 0.03, z + 0.18, z + 0.24, "steel", skip=("yn", "yp"))
     with k.at(x + side * (r + 0.3), y, z + 0.21, ry=pi / 2):
         k.lathe([(0.2, 0), (0.2, 0.04), (0.16, 0.04), (0.16, 0)], "trim", 6, False)
 
@@ -1455,7 +1463,7 @@ def part_right_alley(k, rng):
                      "machinery", 2.6, "steel")
             for zz in (1.0, 3.0, 5.0, 6.6):
                 if zz > 2.0:
-                    k.box(xx - 0.05, 14.95, yy - 0.05, yy + 0.05, zz - 0.04, zz + 0.04, "steel")
+                    k.box(14.95, xx - 0.05, yy - 0.05, yy + 0.05, zz - 0.04, zz + 0.04, "steel")
             valve(k, xx, yy, 3.4, r, 1.0)
             gauge(k, xx + 0.25, yy, 5.1)
         # tank-to-wall link and a drain
@@ -1986,6 +1994,8 @@ def main():
     p.add_argument("--size", type=float, default=1.0, help="render resolution scale")
     p.add_argument("--only-shots", default="")
     a = args(p)
+    if not 0.25 <= a.size <= 2.0:
+        p.error("--size is a resolution SCALE from 0.25 to 2.0; use --size 1.0, not a pixel width")
     root = os.environ.get("AK_REPO", os.getcwd())
     cand_dir = os.path.join(root, "godot", "assets", "city", "candidates")
     gen_dir = os.path.join(root, "assets", "generated", "city_habitation")
