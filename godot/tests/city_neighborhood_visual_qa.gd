@@ -44,7 +44,9 @@ func _ready() -> void:
 	_world = Node3D.new()
 	add_child(_world)
 	if not TrackBuilder.build(_world, _course.points):
-		_fail += 1
+		push_error("Cannot build canonical road for neighborhood review")
+		get_tree().quit(1)
+		return
 	TrackBuilder.build_guard_rails(_world, _course.points)
 	TrackScenery.build_guidance(_world, _course)
 	for slot: Dictionary in SLOTS:
@@ -82,6 +84,10 @@ func _place_building(slot: Dictionary) -> void:
 		_fail += 1
 		return
 	var entry: Dictionary = _catalog[id]
+	if not _valid_bounds(entry.get("aabb")):
+		push_error("Invalid neighborhood bounds: " + id)
+		_fail += 1
+		return
 	var low: Array = entry["aabb"]["min"]
 	var high: Array = entry["aabb"]["max"]
 	var local := AABB(Vector3(low[0], low[1], low[2]), Vector3(high[0] - low[0], high[1] - low[1], high[2] - low[2]))
@@ -165,6 +171,20 @@ func _lamp(position: Vector3, color: Color, energy: float, radius: float, shadow
 	lamp.shadow_enabled = shadows
 	_world.add_child(lamp)
 	_lamps.append(lamp)
+
+
+func _valid_bounds(raw: Variant) -> bool:
+	if not raw is Dictionary or not raw.get("min") is Array or not raw.get("max") is Array:
+		return false
+	if raw["min"].size() != 3 or raw["max"].size() != 3:
+		return false
+	for component: Variant in raw["min"] + raw["max"]:
+		if not (component is int or component is float) or not is_finite(float(component)):
+			return false
+	for axis in 3:
+		if float(raw["max"][axis]) <= float(raw["min"][axis]):
+			return false
+	return true
 
 
 func _views() -> void:

@@ -161,7 +161,7 @@ func _studio() -> void:
 	var habitation := _target("activity", Vector3(center.x - _box.size.x * 0.1, _box.size.y * 0.67, front_z + 1.0))
 	_camera.position = habitation + Vector3(-5.0, 1.0, -11.0)
 	_camera.look_at(habitation, Vector3.UP)
-	await _capture("studio-habitation-detail")
+	await _capture("studio-activity-detail" if not _review_targets.is_empty() else "studio-habitation-detail")
 	if not _review_targets.is_empty():
 		var service := _target("service", center)
 		_camera.position = service + Vector3(-8.0, 3.0, 11.0)

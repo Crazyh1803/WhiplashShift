@@ -209,7 +209,7 @@ def cistern(k, x, y, z, r, h, rng, tone=None, legs=True):
         for a in range(4):
             th = pi / 4 + a * pi / 2
             k.box(x + r * 0.85 * math.cos(th) - 0.06, x + r * 0.85 * math.cos(th) + 0.06, y + r * 0.85 * math.sin(th) - 0.06,
-                  y + r * 0.85 * math.sin(th) + 0.06, 0.0 if z > 0.3 else z, z + 0.1, "steel", skip=("zn",))
+                  y + r * 0.85 * math.sin(th) + 0.06, max(0.0, z - 0.6), z + 0.1, "steel", skip=("zn",))
     ladder(k, x + r + 0.12, y, z + 0.2, z + h + 0.1, 0.4, "x")
     k.box(x - 0.03, x + 0.03, y + r - 0.04, y + r + 0.05, z + h * 0.2, z + h * 0.8, "cavity")
     k.box(x - 0.015, x + 0.015, y + r + 0.05, y + r + 0.07, z + h * 0.22 + h * 0.4 * rng.random(), z + h * 0.8, "glow_cyan", skip=("yn",))
@@ -386,7 +386,6 @@ def m_arcade(k, rng):
             k.box(x - 0.45, x + 0.45, 8.45, 9.35, ZD - 0.65, ZD - 0.35, "ceramic")
             k.beam((x, 8.9, ZD - 0.65), (x, 7.5, ZD - 0.35), 0.18, 0.12, "steel")
             lamp(k, x + 0.0, 8.9, ZD - 0.75, "glow_amber" if i % 3 else "glow_cyan", 0.06)
-        deck(k, -16.5, 16.5, 5.0, ARC_Y, ZD, "machinery", 0.35, True, rng)
         k.box(-16.5, 16.5, -7.0, 5.0, ZG, ZD, "ceramic")
         # street life: crates, barrels, carts, benches and shoppers between the columns
         for i in range(14):
@@ -482,11 +481,11 @@ def m_terrace(k, rng):
         planter(k, -4.6, -2.0, -5.4, -4.8, z, rng)
         planter(k, 0.2, 1.6, -5.4, -4.8, z, rng)
         planter(k, -4.7, -4.3, -3.0, 0.0, z, rng)
-        # shade sail on poles + festoon lamps
+        # Horizontal terrace canopy meets the four pole tops; festoon lamps hang below.
         for px, py in ((-4.5, -1.5), (1.5, -1.5), (-4.5, 3.8), (1.5, 3.8)):
             k.box(px - 0.04, px + 0.04, py - 0.04, py + 0.04, z, z + 3.0, "steel", skip=("zn",))
         with k.look(0.85, rng.choice(TEAL)):
-            k.plate([(-4.5, 2.75), (1.5, 2.75), (1.5, 3.1), (-4.5, 3.1)], -1.5, 0.04, "trim")
+            k.box(-4.5, 1.5, -1.5, 3.8, z + 2.95, z + 3.0, "trim")
         hang_line(k, (-4.5, 3.8, z + 2.9), (1.5, 3.8, z + 2.9), 0.3, 6, 0.012)
         for x in (-3.5, -2.0, -0.5):
             lamp(k, x, 3.8, z + 2.55, "glow_amber", 0.05)
