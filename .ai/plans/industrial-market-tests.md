@@ -1,0 +1,13 @@
+# Independent benchmark regression task
+
+Goal: independently test the new candidate benchmark and viewer, then wire its validator and headless suite into tools/workflow/test_season.py. Do not change runtime scripts, vehicles, assets, existing tests or settings/saves. Expected new files: godot/tests/industrial_market_tests.{gd,tscn}, focused test doubles if needed, and runner hook (about five files).
+
+Use actual IndustrialMarketBenchmark and imported candidate GLBs. Confirm exact three placements/transforms, real measured indexed triangle/surface counts and world bounds against manifest, people at the sidewalk and distinct human-scale figures. Confirm GLB material UVs/tangents/maps and roughness-G/metallic-B channels where authored; vertex wear colors, no emission on people, candidate-only skin SSS, no missing textures. Use per-surface declared material maps rather than requiring normal maps on intentionally emissive sign surfaces.
+
+Use manifest_errors independently with malformed/non-dictionary/null roots, missing/duplicate/unknown assets and placements, traversal/absolute filenames, missing/nonfinite/bool positions/yaw, missing/nonfinite inspection targets, empty/invalid nested material targets. Valid actual manifest passes. No filesystem mutation to simulate missing resources.
+
+Confirm actual factory Blackjack reference metadata/visible geometry and grounded preview, frozen/disabled processing and collisions/raycasts/audio; preserve vehicle state. Validate candidate bounds/cost separately from the reference car. A second build into the populated host must be rejected.
+
+Instantiate actual review scene headlessly, exercise all camera presets, finite above-ground camera and orbit/zoom bounds, neutral directional-only versus night exactly four local lights / at most two shadowed spots, no blanket person emission. Exercise controls. For interactive failure recovery, subclass viewer script and override _create_benchmark() with a failing IndustrialMarketBenchmark double plus _back() as a recorded request. It must set GameSession.menu_error and return via deferred menu navigation without quitting or building controls. Restore prior GameSession/menu state. No --capture for headless tests. The main-menu layout suite covers About entry at 1280x720 and1600x900; optionally inspect menu signal binding without navigating the test tree.
+
+Runner adds validate_industrial_market.py to existing asset validator tuple and industrial_market_tests to default scenes. Run via ak-test with TEST_CMD='python tools/workflow/test_season.py --scenes industrial_market_tests'. Do not run whole long suite. Report exact checks and limitations. No review/Gemini inside test delegation; root handles independent review.
