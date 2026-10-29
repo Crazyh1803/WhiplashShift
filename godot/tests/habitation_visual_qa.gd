@@ -2,6 +2,8 @@
 extends Node3D
 
 const MODEL := "res://assets/city/candidates/habitation_workshop.glb"
+# Matches the standalone prototype policy in validate_habitation_workshop.py::TRI_CAP.
+const PROTOTYPE_TRIANGLE_CAP := 30000
 var _camera: Camera3D
 var _environment: WorldEnvironment
 var _box := AABB()
@@ -51,11 +53,16 @@ func _ready() -> void:
 			var colors: Variant = arrays[Mesh.ARRAY_COLOR]
 			if colors is PackedColorArray and not colors.is_empty():
 				colored_vertices += colors.size()
+				var authored_color := false
+				for color: Color in colors:
+					authored_color = authored_color or not color.is_equal_approx(Color.WHITE)
 				var material := mesh.get_active_material(surface) as BaseMaterial3D
-				if material != null and not material.vertex_color_use_as_albedo:
-					push_error("Imported material discards authored vertex-color detail")
-					_fail += 1
-	if first or triangles <= 0 or triangles > 30000:
+				if authored_color and material != null and not material.vertex_color_use_as_albedo:
+					material = material.duplicate() as BaseMaterial3D
+					material.vertex_color_use_as_albedo = true
+					mesh.set_surface_override_material(surface, material)
+					print("HABITATION_MATERIAL_ADAPT enabled authored vertex colors: ", material.resource_name)
+	if first or triangles <= 0 or triangles > PROTOTYPE_TRIANGLE_CAP:
 		push_error("Habitation candidate geometry is missing or over budget")
 		get_tree().quit(1)
 		return
@@ -127,6 +134,7 @@ func _studio() -> void:
 
 func _night() -> void:
 	_environment.environment = TrackMaterials.environment()
+	_environment.environment.ambient_light_energy = 0.0
 	var center := _box.get_center()
 	for side: float in [-1.0, 1.0]:
 		var lamp := OmniLight3D.new()

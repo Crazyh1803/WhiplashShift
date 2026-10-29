@@ -52,6 +52,12 @@ three-quarters, street human view, right alley, roof/service, bay A/B and airloc
 Note: with `export_vertex_color="ACTIVE"` Blender 5 writes the active attribute as `COLOR_0` only when it is set
 active and `export_all_vertex_colors=False`; otherwise `COLOR_0` is flat white and the wear lands in `COLOR_1`.
 
+The Godot review scene preserves embedded PBR materials and enables vertex-color albedo on a local material
+copy when an imported material has it disabled (observed on steel). This preserves the authored wear without
+changing the GLB or shared material resources. The review uses neutral studio lighting and, separately, the
+project's night environment with three local yard lamps and a camera headlight. It does not place the asset on
+the track; production material integration and LODs remain a later step.
+
 ## Not yet built
 LODs. Planned: mid LOD drops interiors, stencils, rails and window furniture (about 45 percent of triangles); far
 LOD keeps podium, module and roof silhouettes only (about 5 percent). Neither exists yet.

@@ -26,11 +26,12 @@ def run_engine(args, timeout):
 
 
 def validate_city_kit():
-    result = subprocess.run([sys.executable, '-I', str(ROOT / 'tools' / 'city_pipeline' / 'validate_city_kit.py')],
-                            cwd=ROOT, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=120)
-    print(result.stdout + result.stderr, flush=True)
-    if result.returncode:
-        raise RuntimeError('City kit asset validation failed')
+    for validator in ('validate_city_kit.py', 'validate_habitation_workshop.py'):
+        result = subprocess.run([sys.executable, '-I', str(ROOT / 'tools' / 'city_pipeline' / validator)],
+                                cwd=ROOT, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=120)
+        print(result.stdout + result.stderr, flush=True)
+        if result.returncode:
+            raise RuntimeError(f'City asset validation failed: {validator}')
 
 
 def main():
