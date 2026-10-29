@@ -14,7 +14,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
-EXPECTED_IDS = ("market_habitat", "service_tenement")   # the freight_depot pass appends its id here and in the builder
+EXPECTED_IDS = ("market_habitat", "service_tenement", "freight_depot")
 TRI_CAP = 35000
 MIN_TRIS = 8000                                          # a "detailed" building, not a blockout
 TARGETS = ("entry", "activity", "service")
