@@ -283,8 +283,8 @@ class _Builder extends RefCounted:
 				continue
 			var id: String = slot["id"]
 			var bounds: AABB = CityStreetBlock._meshes[id].get_aabb()
-			var front := 12.0 - bounds.position.z + float(CityStreetBlock._catalog[id].get("front_setback_m", 0.0))
-			_surface("entry_apron", float(slot["s"]), side, bounds.size.x + 2.0, 8.0, minf(12.0 + bounds.size.z, front), 0.025, 2)
+			var front := 12.0 + float(CityStreetBlock._catalog[id].get("front_setback_m", 0.0))
+			_surface("entry_apron", float(slot["s"]), side, bounds.size.x + 2.0, 12.0, maxf(12.1, front), 0.025, 2)
 
 	func _batch(root: Node3D, id: String) -> void:
 		var mesh: Mesh = mesh_sources[id]
