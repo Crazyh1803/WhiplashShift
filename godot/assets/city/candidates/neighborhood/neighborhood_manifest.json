@@ -6,7 +6,7 @@
       "id": "market_habitat",
       "class": "building",
       "glb": "market_habitat.glb",
-      "tris": 33781,
+      "tris": 49400,
       "aabb": {
         "min": [
           -17.214,
@@ -70,36 +70,36 @@
         ]
       },
       "lod_strategy": "Near-review mesh only (this file). No mid/far LODs exist yet; a later pass could drop interiors, stencils, rails and window furniture, then keep volumes + roof silhouette.",
-      "budget_note": "33781 tris of the 35000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
+      "budget_note": "49400 tris of the 50000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
     },
     {
       "id": "service_tenement",
       "class": "building",
       "glb": "service_tenement.glb",
-      "tris": 33216,
+      "tris": 36929,
       "aabb": {
         "min": [
           -11.8655,
           0.0,
-          -10.3446
+          -10.4037
         ],
         "max": [
           11.8655,
           36.8073,
-          10.3446
+          10.4037
         ]
       },
       "footprint": {
         "min": [
           -11.8655,
-          -10.3446
+          -10.4037
         ],
         "max": [
           11.8655,
-          10.3446
+          10.4037
         ]
       },
-      "front_setback_m": 2.0892,
+      "front_setback_m": 2.2074,
       "origin": "foot-centred: footprint centre at xz 0, base at y 0; primary facade faces -Z",
       "surfaces": [
         "steel",
@@ -126,27 +126,27 @@
         "entry": [
           1.133,
           1.407,
-          -9.655
+          -9.596
         ],
         "activity": [
           6.033,
           1.407,
-          -9.655
+          -9.596
         ],
         "service": [
           1.233,
           1.907,
-          11.345
+          11.404
         ]
       },
       "lod_strategy": "Near-review mesh only (this file). No mid/far LODs exist yet; a later pass could drop interiors, stencils, rails and window furniture, then keep volumes + roof silhouette.",
-      "budget_note": "33216 tris of the 35000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
+      "budget_note": "36929 tris of the 50000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
     },
     {
       "id": "freight_depot",
       "class": "building",
       "glb": "freight_depot.glb",
-      "tris": 29317,
+      "tris": 34737,
       "aabb": {
         "min": [
           -26.5,
@@ -210,7 +210,7 @@
         ]
       },
       "lod_strategy": "Near-review mesh only (this file). No mid/far LODs exist yet; a later pass could drop interiors, stencils, rails and window furniture, then keep volumes + roof silhouette.",
-      "budget_note": "29317 tris of the 35000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
+      "budget_note": "34737 tris of the 50000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
     }
   ]
 }

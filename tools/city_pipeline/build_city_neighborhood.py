@@ -19,7 +19,7 @@ import sys
 from math import pi
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _spec = importlib.util.spec_from_file_location("build_habitation_workshop", os.path.join(_HERE, "build_habitation_workshop.py"))
@@ -34,7 +34,10 @@ for _n in ("Kit", "Wall", "face_frame", "face_len", "armor_field", "stencil", "r
            "CURTAIN_TONES", "DRUM_TONES", "hazard_floor", "report", "args", "SEM"):
     globals()[_n] = getattr(W, _n)
 
-TRI_CAP = 35000
+sys.path.insert(0, _HERE)
+import city_detail as CD  # noqa: E402  (people, neon signs/pictograms, piers: shared by all three buildings)
+
+TRI_CAP = 50000
 TONES = CURTAIN_TONES
 OXIDE = [(0.85, 0.5, 0.36), (0.78, 0.6, 0.4), (0.7, 0.42, 0.34), (0.9, 0.72, 0.5)]
 TEAL = [(0.55, 0.82, 0.86), (0.5, 0.74, 0.82), (0.62, 0.86, 0.8), (0.45, 0.62, 0.78)]
@@ -121,25 +124,7 @@ def shell(k, bx, z0, z1, rng, windows, t=None, armor=True, akw=None, extra_excl=
     cornice(k, bx, z1 - 0.2, 0.2, 0.3)
 
 
-def person(k, x, y, z, rng, rot=0.0, seated=False, tone=None):
-    """Simple occupant silhouette (legs, torso, arms, head) so stalls and galleries read as inhabited."""
-    tone = tone or rng.choice(TONES)
-    with k.at(x, y, z, rz=rot):
-        if seated:
-            k.box(-0.18, 0.18, -0.22, 0.25, 0.42, 0.5, "machinery")
-            k.box(-0.17, -0.04, -0.2, 0.3, 0.0, 0.42, "machinery", skip=("zn",))
-            k.box(0.04, 0.17, -0.2, 0.3, 0.0, 0.42, "machinery", skip=("zn",))
-            zt = 0.5
-        else:
-            k.box(-0.17, -0.03, -0.1, 0.1, 0.0, 0.85, "machinery", skip=("zn",))
-            k.box(0.03, 0.17, -0.1, 0.1, 0.0, 0.85, "machinery", skip=("zn",))
-            zt = 0.85
-        with k.look(0.85, tone):
-            k.box(-0.22, 0.22, -0.13, 0.13, zt, zt + 0.6, "trim")
-            k.box(-0.33, -0.22, -0.07, 0.07, zt + 0.1, zt + 0.55, "trim")
-            k.box(0.22, 0.33, -0.07, 0.07, zt + 0.1, zt + 0.55, "trim")
-        with k.at(0, 0, zt + 0.62):
-            k.lathe([(0, 0.0), (0.11, 0.04), (0.11, 0.2), (0, 0.26)], "ceramic", 6, True)
+person = CD.person   # shaped, posed, clothed occupants (city_detail.py); face local +Y at rot=0
 
 
 def lamp(k, x, y, z, mat="glow_amber", s=0.07):
@@ -283,7 +268,7 @@ def goods(k, x0, x1, y, depth, zb, rng, hmax=0.4, tones=None):
         x += w + rng.uniform(0.02, 0.12)
 
 
-def fit_stall(k, w, h, t, rng, lit=True, tone=None, seated=True, **_):
+def fit_stall(k, w, h, t, rng, lit=True, tone=None, seated=True, shop=None, **_):
     """Deep street stall: dark recess, counter with produce, back shelves, dispenser, lamp, occupant, cloth canopy."""
     tone = tone or rng.choice(TONES)
     k.box(0, w, -t - 0.02, -t + 0.03, 0, h, "cavity")
@@ -293,7 +278,10 @@ def fit_stall(k, w, h, t, rng, lit=True, tone=None, seated=True, **_):
         k.box(0.15, w - 0.15, -0.12, 0.34, 0.0, 0.95, "machinery")
     k.box(0.1, w - 0.1, -0.17, 0.4, 0.95, 1.02, "steel")
     k.box(0.1, w - 0.1, 0.34, 0.4, 0.2, 0.95, "cavity", skip=("yn",))
-    goods(k, 0.25, w - 0.25, -0.1, 0.4, 1.02, rng, 0.38)
+    if shop is None:
+        goods(k, 0.25, w - 0.25, -0.1, 0.4, 1.02, rng, 0.38)
+    else:
+        CD.shop_goods(k, shop, w, rng)
     for i, zz in enumerate((1.25, 1.85, 2.4)):
         if zz + 0.3 > h:
             continue
@@ -313,8 +301,11 @@ def fit_stall(k, w, h, t, rng, lit=True, tone=None, seated=True, **_):
         k.box(lx - 0.07, lx + 0.07, -0.66, -0.52, h - 0.7, h - 0.58, "glow_amber", skip=("zp",))
     with k.look(0.88, rng.choice(TONES)):
         k.box(0.05, w - 0.05, -0.2, -0.14, h - rng.choice((0.35, 0.55, 0.8)), h - 0.03, "machinery")
-    if rng.random() < 0.75:
-        person(k, w * rng.uniform(0.3, 0.55), -0.95, 0.0, rng, pi, seated)
+    vx = w * rng.uniform(0.3, 0.55)
+    if shop is not None:                      # vendor stands behind the counter facing the street (+Y in the face frame)
+        person(k, vx, -0.62, 0.0, rng, 0.0, False, role="vendor")
+    elif rng.random() < 0.75:
+        person(k, vx, -0.95, 0.0, rng, 0.0, False, role="vendor")
     awning(k, -0.45, w + 0.45, 0.2, 1.7, h + 0.48, 0.55, rng, tone, True, 0.0)
 
 
@@ -348,9 +339,11 @@ def m_ground(k, rng):
     gap = (L - sum(w for _, w in items)) / (len(items) + 1)
     wf, excl, x, n = [], [], gap, 0
     M_TARGETS["stalls"], M_TARGETS["doors"] = [], []
+    shop_i = 0
     for kind, w in items:
         if kind == "stall":
-            wf.append((fit_stall, x, x + w, 0.0, 2.9, dict(tone=TONES[n % len(TONES)], seated=n % 2 == 0)))
+            wf.append((fit_stall, x, x + w, 0.0, 2.9, dict(tone=TONES[n % len(TONES)], seated=n % 2 == 0, shop=shop_i)))
+            shop_i += 1
             M_TARGETS["stalls"].append(x + w / 2)
         else:
             wf.append((fit_entry, x, x + w, 0.0, 2.7, dict(awning=False, lamp="glow_cyan" if n % 2 else "glow_amber")))
@@ -366,12 +359,19 @@ def m_ground(k, rng):
     shell(k, MG, 0.0, ZG, rng, {"F": wf, "B": wb, "L": wl, "R": wr}, t=dict(F=2.0), akw=dict(cov=0.85, repair=0.16, max_rib=2),
           extra_excl={"F": excl}, base_cornice=False)
     with face_frame(k, "F", MG):
-        for i, (kind, w) in enumerate(items):
-            xx = gap * (i + 1) + sum(v for _, v in items[:i])
-            if kind == "stall":
-                sign_plate(k, xx + 0.15, xx + w - 0.15, 3.4, 4.1, ("A-%02d" % (11 + 3 * i)), rng)
-            else:
-                sign_plate(k, xx + 0.2, xx + w - 0.2, 3.1, 3.75, "ROOT" if i == 2 else "HAB-" + str(2 + i % 3), rng)
+        with k.part(".signage"):
+            srng, shop_i, plaque_i = random.Random("m_signs"), 0, 0
+            for i, (kind, w) in enumerate(items):
+                xx = gap * (i + 1) + sum(v for _, v in items[:i])
+                if kind == "stall":
+                    # hung from the gallery-deck soffit just in front of the piers so no pier ever covers a name
+                    name, icon, ca, cb, tint, gl = CD.SHOPS[shop_i]
+                    CD.shop_sign(k, xx - 0.15, xx + w + 0.15, 2.85, 3.7, name, icon, ca, cb, tint, gl, srng, y1=4.5, hang_to=ZD - 0.3)
+                    shop_i += 1
+                else:
+                    name, icon, ca, cb, tint = CD.PLAQUES[plaque_i]
+                    CD.shop_sign(k, xx + 0.1, xx + w - 0.1, 2.9, 3.55, name, icon, ca, cb, tint, False, srng, y1=4.5, hang_to=ZD - 0.3)
+                    plaque_i += 1
     # shop-front legs at pilaster seams: grime kerb and a drain along the street edge
     k.box(-16.4, 16.4, 4.2, 5.0, 0.0, 0.18, "steel")
 
@@ -379,19 +379,31 @@ def m_ground(k, rng):
 def m_arcade(k, rng):
     with k.part(".arcade"):
         k.box(-16.4, 16.4, 5.0, ARC_Y + 0.1, 0.0, 0.07, "steel")
-        for i in range(8):
-            x = -14.0 + i * 4.0
-            k.box(x - 0.34, x + 0.34, 8.56, 9.24, 0.0, 0.4, "steel")
-            spine(k, x, 8.9, 0.4, ZD - 0.35, 0.28)
-            k.box(x - 0.45, x + 0.45, 8.45, 9.35, ZD - 0.65, ZD - 0.35, "ceramic")
+        piers = [-14.0 + i * 4.0 for i in range(8)]
+        for i, x in enumerate(piers):
+            # load path: footing -> plinth -> segmented drum shaft with collars -> capital -> head plate under the gallery deck,
+            # plus the rear girder tying the head back to the stall wall
+            CD.pier(k, x, 8.9, 0.0, ZD - 0.3)
             k.beam((x, 8.9, ZD - 0.65), (x, 7.5, ZD - 0.35), 0.18, 0.12, "steel")
-            lamp(k, x + 0.0, 8.9, ZD - 0.75, "glow_amber" if i % 3 else "glow_cyan", 0.06)
+            lamp(k, x, 8.9 + 0.36, ZD - 0.95, "glow_amber" if i % 3 else "glow_cyan", 0.06)
         k.box(-16.5, 16.5, -7.0, 5.0, ZG, ZD, "ceramic")
-        # street life: crates, barrels, carts, benches and shoppers between the columns
+        # street life: explicit shoppers at the counters and walkers between piers, then crates/barrels/benches that keep clear
+        crowd = []
+        shoppers = [(-13.4, 7.5, "shopper"), (-9.7, 7.55, "shopper"), (-8.5, 7.45, "stand"), (-1.95, 7.5, "shopper")]
+        for sx, sy, role in shoppers:
+            person(k, sx, sy, 0.07, rng, pi, False, role=role)
+            crowd.append((sx, sy))
+        for sx, sy, rt in ((-4.0, 7.95, -pi / 2), (4.2, 7.85, pi / 2)):
+            person(k, sx, sy, 0.07, rng, rt, False, role="walker")
+            crowd.append((sx, sy))
         for i in range(14):
             x = -15.0 + i * 2.2 + rng.uniform(-0.3, 0.3)
-            y = rng.uniform(6.0, 8.0)
+            y = rng.uniform(7.25, 7.6)
+            if any(abs(x - p) < 0.95 for p in piers):
+                x += 1.1
             c = rng.random()
+            if any(math.hypot(x + 0.5 - cx, y - cy) < 1.5 for cx, cy in crowd):
+                continue
             if c < 0.35:
                 crate(k, x, y, 0.07, rng.uniform(0.5, 0.9), rng.uniform(0.4, 0.7), rng.uniform(0.35, 0.8), rng)
                 if rng.random() < 0.5:
@@ -403,7 +415,7 @@ def m_arcade(k, rng):
                 for sx in (x + 0.1, x + 1.0):
                     k.box(sx, sx + 0.06, y + 0.05, y + 0.35, 0.07, 0.45, "steel")
             else:
-                person(k, x, y, 0.07, rng, rng.uniform(0, 6.28), False)
+                crate(k, x, y, 0.07, 0.55, 0.5, 0.5, rng)
         k.box(2.0, 3.6, 6.6, 7.4, 0.07, 0.17, "machinery")                   # hand cart bed
         k.box(2.0, 3.6, 6.6, 6.65, 0.17, 1.0, "steel")
         for wx in (2.2, 3.4):
@@ -428,7 +440,7 @@ def m_galleries(k, rng):
             for sx, sy in ((x + 0.05, 7.45), (x + 0.9, 7.45), (x + 0.05, 7.9), (x + 0.9, 7.9)):
                 k.box(sx, sx + 0.05, sy, sy + 0.05, ZD, ZD + 0.7, "steel", skip=("zn",))
             goods(k, x + 0.1, x + 0.9, 7.5, 0.4, ZD + 0.76, rng, 0.2)
-            person(k, x + 0.5, 8.6, ZD, rng, pi, True)
+            person(k, x + 0.5, 8.45, ZD, rng, pi, True, stool=True, reach=0.52)
         for x in (-15.6, -1.5, 9.5, 15.5):
             planter(k, x, x + 1.2, 9.0, 9.5, ZD, rng)
         for x in (-8.8, 0.5, 7.5):
@@ -477,7 +489,7 @@ def m_terrace(k, rng):
             for sx, sy in ((x + 0.05, 0.55), (x + 1.2, 0.55), (x + 0.05, 1.4), (x + 1.2, 1.4)):
                 k.box(sx, sx + 0.05, sy, sy + 0.05, z, z + 0.7, "steel", skip=("zn",))
             goods(k, x + 0.1, x + 1.2, 0.7, 0.6, z + 0.76, rng, 0.2)
-            person(k, x + 0.65, -0.1, z, rng, 0.0, True)
+            person(k, x + 0.65, -0.1, z, rng, 0.0, True, stool=True, reach=0.55)
         planter(k, -4.6, -2.0, -5.4, -4.8, z, rng)
         planter(k, 0.2, 1.6, -5.4, -4.8, z, rng)
         planter(k, -4.7, -4.3, -3.0, 0.0, z, rng)
@@ -610,6 +622,20 @@ SHOTS["market_habitat"] = [
     ("rear_service", 180, (8, -40, 9), (3, -7, 5.5), 34, (-0.5, -13.0), (1600, 1200)),
     ("roof_service", 180, (-26, -26, 32), (2, 0, 11), 34, None, (1600, 1200)),
     ("side_flank", 90, (48, 4, 7), (14, 0, 6.5), 32, (24.0, 4.0), (1600, 1200)),
+    # market identity pass: sidewalk-scale evidence (neutral light, then a dark-world night comparison)
+    ("shopfront_row_street", 0, (-7, 21, 1.7), (-6, 5, 3.4), 30, None, (1600, 1200)),
+    ("shopfront_row_street_night", 0, (-7, 21, 1.7), (-6, 5, 3.4), 30, None, (1600, 1200)),
+    ("sign_root_ramen", 0, (-11.3, 15, 2.0), (-11.3, 9.5, 3.3), 34, None, (1600, 1200)),
+    ("sign_bolt_orbit", 0, (0.2, 15, 2.0), (0.2, 9.5, 3.3), 34, None, (1600, 1200)),
+    ("sign_patch_rethread", 0, (10, 15, 2.0), (10, 9.5, 3.3), 34, None, (1600, 1200)),
+    ("sign_closeup_bolt", 0, (-2, 14.5, 2.0), (-2, 9.5, 3.3), 42, None, (1600, 1200)),
+    ("sign_closeup_bolt_night", 0, (-2, 14.5, 2.0), (-2, 9.5, 3.3), 42, None, (1600, 1200)),
+    ("pictogram_closeup", 0, (2.35, 15.2, 2.1), (2.35, 9.5, 3.3), 42, None, (1600, 1200)),
+    ("support_assembly", -20, (4.5, 14.0, 2.4), (-2, 8.9, 2.2), 34, None, (1200, 1600)),
+    ("vendor_closeup", 0, (6.2, 8.4, 1.55), (6.2, 4.4, 1.35), 36, None, (1600, 1200)),
+    ("walker_face_body", 0, (-1.0, 7.95, 1.5), (-4.0, 7.95, 1.2), 42, None, (1600, 1200)),
+    ("walker_full_body", 0, (1.6, 7.85, 1.2), (4.2, 7.85, 0.95), 40, None, (1200, 1600)),
+    ("gallery_diners", 0, (-6, 14.5, 7.2), (-3, 8.4, 5.4), 36, None, (1600, 1200)),
 ]
 
 
@@ -637,9 +663,36 @@ def render_building(bid, ob, human, outdir, off, size_scale, only):
         if hp:
             human.location = dpo(off, hp[0], hp[1], hp[2] if len(hp) > 2 else 0.0)
         res = (int(res[0] * size_scale), int(res[1] * size_scale))
-        st.snap(os.path.join(outdir, name + ".png"), dpo(off, *cam), dpo(off, *tgt), lens, res=res)
+        night = name.endswith("_night")
+        bg = scene.world.node_tree.nodes["Background"]
+        if night:                                    # dark world, ~4% of the studio light: emissive signs must carry themselves
+            bg.inputs[0].default_value = (0.004, 0.005, 0.009, 1)
+            for lo, _d in st.lights:
+                lo.data.energy *= 0.04
+        try:
+            st.snap(os.path.join(outdir, name + ".png"), dpo(off, *cam), dpo(off, *tgt), lens, res=res)
+        finally:
+            if night:
+                bg.inputs[0].default_value = (0.11, 0.115, 0.13, 1)
+                for lo, _d in st.lights:
+                    lo.data.energy /= 0.04
         report(render=bid + ":" + name)
     human.hide_render = True
+
+
+def build_ref_person(coll, mats):
+    """Non-exported scale reference: the shared stylised person (neutral stand, 1.0 scale) instead of the workshop box mannequin."""
+    k = Kit()
+    k.stack = [Matrix.Identity(4)]
+    CD.person(k, 0.0, 0.0, 0.0, random.Random(11), 0.0, False, role="stand", scale=1.0)
+    me = bpy.data.meshes.new("human_ref")
+    k.bm.to_mesh(me)
+    k.bm.free()
+    for sem in W.SEM:
+        me.materials.append(mats[sem])
+    ob = bpy.data.objects.new("human_ref_1p75m", me)
+    coll.objects.link(ob)
+    return ob
 
 
 def build_one(bid, spec, cand_dir, gen_dir, prev_dir, render, size, only_shots):
@@ -689,7 +742,7 @@ def build_one(bid, spec, cand_dir, gen_dir, prev_dir, render, size, only_shots):
         with open(os.path.join(gen_dir, bid, "qa.json"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(qa, f, indent=2)
             f.write("\n")
-        human = W.build_human(ref, mats)
+        human = build_ref_person(ref, mats)
         human.hide_render = True
         W.wire_vertex_colors(mats)
         bpy.ops.wm.save_as_mainfile(filepath=os.path.join(gen_dir, bid, bid + ".blend"))
