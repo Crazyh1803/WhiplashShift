@@ -38,8 +38,8 @@ PBR = {
     "glow_amber": ((0.3, 0.12, 0.0), 0.3, 0.0, (1.0, 0.42, 0.02)),
     "trim": ((0.52, 0.40, 0.19), 0.5, 0.5, None),
 }
-TRI_CAP = 25000
-TRI_TARGET = (18000, 25000)
+TRI_CAP = 30000
+TRI_TARGET = (18000, 30000)
 GLOWS = ("glow_cyan", "glow_amber")
 
 # ---------------------------------------------------------------------------- vertex-colour wear model
@@ -1784,11 +1784,23 @@ def wire_vertex_colors(mats):
         nt.links.new(mix.outputs["Color"], bsdf.inputs["Base Color"])
 
 
+OFFSET = [0.0, 0.0, 0.0]  # Blender-space translation baked into the mesh by finalize()
+
+
 def finalize(k, mats, coll):
     bm = k.bm
     me = bpy.data.meshes.new(ASSET_ID)
     bm.to_mesh(me)
     bm.free()
+    # Bake a foot-centred origin: xz footprint centre at 0, lowest point at y=0 (glTF space; Blender y = -glTF z).
+    xs = [v.co.x for v in me.vertices]
+    ys = [v.co.y for v in me.vertices]
+    zs = [v.co.z for v in me.vertices]
+    OFFSET[:] = [-(min(xs) + max(xs)) / 2, -(min(ys) + max(ys)) / 2, -min(zs)]
+    me.transform(Matrix.Translation(Vector(OFFSET)))
+    # The exporter writes the active/render colour attribute as COLOR_0; make "Col" both so it isn't left as COLOR_1.
+    me.color_attributes.active_color = me.color_attributes["Col"]
+    me.color_attributes.render_color_index = me.color_attributes.find("Col")
     for sem in SEM:
         me.materials.append(mats[sem])
     ob = bpy.data.objects.new(ASSET_ID, me)
@@ -1814,7 +1826,7 @@ def export_glb(ob, path):
     want = dict(filepath=path, export_format="GLB", use_selection=True, export_apply=True, export_yup=True,
                 export_cameras=False, export_lights=False, export_animations=False, export_normals=True,
                 export_tangents=False, export_texcoords=False, export_materials="EXPORT", export_image_format="NONE",
-                export_vertex_color="ACTIVE", export_colors=True, export_attributes=False, export_extras=False)
+                export_vertex_color="ACTIVE", export_all_vertex_colors=False, export_colors=True, export_attributes=False, export_extras=False)
     have = bpy.ops.export_scene.gltf.get_rna_type().properties.keys()
     bpy.ops.export_scene.gltf(**{key: v for key, v in want.items() if key in have})
 
@@ -1926,7 +1938,7 @@ class Studio:
 
 def dp(x, y, z):
     """Design-space point -> Blender world (the root X mirror)."""
-    return Vector((-x, y, z))
+    return Vector((-x, y, z)) + Vector(OFFSET)
 
 
 # name, light azimuth (deg), camera (design xyz), target (design xyz), lens, show_human, resolution
@@ -1995,6 +2007,8 @@ def main():
     report(asset=ASSET_ID, tris=tris, verts=nv, lo=[round(x, 2) for x in lo], hi=[round(x, 2) for x in hi], colors=cs,
            parts=k.parts)
 
+    # Primary facade plane (podium front, design y = PBOX[3]) vs the footprint's front extent (glTF -Z).
+    setback = round(-(PBOX[3] + OFFSET[1]) - lo[2], 4)
     glb = os.path.join(cand_dir, ASSET_ID + ".glb")
     export_glb(ob, glb)
     surfaces = [m.name for m in ob.data.materials]
@@ -2003,7 +2017,8 @@ def main():
             "id": ASSET_ID, "class": "building", "glb": ASSET_ID + ".glb", "tris": tris,
             "aabb": {"min": [round(x, 4) for x in lo], "max": [round(x, 4) for x in hi]},
             "footprint": {"min": [round(lo[0], 4), round(lo[2], 4)], "max": [round(hi[0], 4), round(hi[2], 4)]},
-            "front_setback_m": 0.0, "surfaces": surfaces, "reuse_worlds": ["city", "underworks", "foundry"],
+            "front_setback_m": setback,
+            "origin": "foot-centred: footprint centre at xz 0, base at y 0; primary facade faces -Z", "surfaces": surfaces, "reuse_worlds": ["city", "underworks", "foundry"],
             "vertex_colors": {"attribute": "COLOR_0", "role": "multiplies albedo: grime, streaks, paint and repair tint"},
             "lod_strategy": "near: this mesh; mid: drop interiors, stencils, rails, window furniture (about 45 percent of "
                             "tris); far: podium + module + roof silhouettes only (about 5 percent). Not yet generated.",

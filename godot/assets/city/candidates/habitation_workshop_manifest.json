@@ -9,27 +9,28 @@
       "tris": 26689,
       "aabb": {
         "min": [
-          -17.2,
-          -0.1271,
-          -12.2
+          -18.125,
+          0.0,
+          -12.6
         ],
         "max": [
-          19.05,
-          29.22,
-          13.0
+          18.125,
+          29.3471,
+          12.6
         ]
       },
       "footprint": {
         "min": [
-          -17.2,
-          -12.2
+          -18.125,
+          -12.6
         ],
         "max": [
-          19.05,
-          13.0
+          18.125,
+          12.6
         ]
       },
-      "front_setback_m": 0.0,
+      "front_setback_m": 2.2,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; primary facade faces -Z",
       "surfaces": [
         "steel",
         "ceramic",
@@ -50,7 +51,7 @@
         "role": "multiplies albedo: grime, streaks, paint and repair tint"
       },
       "lod_strategy": "near: this mesh; mid: drop interiors, stencils, rails, window furniture (about 45 percent of tris); far: podium + module + roof silhouettes only (about 5 percent). Not yet generated.",
-      "budget_note": "26689 tris of 25000 cap, 8 materials, COLOR_0 wear."
+      "budget_note": "26689 tris of 30000 cap, 8 materials, COLOR_0 wear."
     }
   ]
 }
