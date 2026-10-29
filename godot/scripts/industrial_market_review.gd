@@ -69,9 +69,9 @@ func _build_world() -> void:
 	key.shadow_enabled = true
 	add_child(key)
 	var counter := benchmark.target("counter")
-	_spot(counter + Vector3(-2.4, 2.8, -2.0), counter, Color("ffd5a0"), 6.0, 13.0)
+	_spot(Vector3(0.6, 3.55, -1.2), counter, Color("ffd5a0"), 9.0, 7.0)
 	_spot(Vector3(2.5, 5.2, -7.0), Vector3(-2.0, 0.6, -5.0), Color("b4cfda"), 4.0, 15.0)
-	_omni(counter + Vector3(2.0, 1.9, -0.3), Color("ffc987"), 1.1, 7.0)
+	_omni(counter + Vector3(2.0, 1.9, -0.3), Color("ffc987"), 2.0, 7.0)
 	_omni(counter + Vector3(-3.8, 1.4, -2.8), Color("8eb9c9"), 1.3, 10.0)
 
 
@@ -116,6 +116,7 @@ func _set_lighting(value: bool) -> void:
 		env.tonemap_mode = Environment.TONE_MAPPER_AGX
 	else:
 		env = preload("res://scripts/blackjack_studio_finish.gd").environment(Color("30383e"))
+		env.ambient_light_energy = 0.8
 	env.ssao_enabled = true
 	env.ssao_radius = 0.25
 	env.ssao_intensity = 1.25

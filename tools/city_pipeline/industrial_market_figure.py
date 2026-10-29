@@ -288,7 +288,7 @@ class Figure:
             for i in range(len(rrows) - 1):
                 for j in range(20):
                     j2 = (j + 1) % 20
-                    f2.append(((i + 1) * 20 + j, (i + 1) * 20 + j2, i * 20 + j2, i * 20 + j))
+                    f2.append((i * 20 + j, i * 20 + j2, (i + 1) * 20 + j2, (i + 1) * 20 + j))
             pt2 = rrows.reshape(-1, 3)
             # top rim (leather collar): thin quad strip inward
             ctop = pt2[-20:]

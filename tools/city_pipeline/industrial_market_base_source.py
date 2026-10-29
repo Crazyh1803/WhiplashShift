@@ -31,8 +31,16 @@ def main():
     work = os.path.join(tempfile.gettempdir(), "hbm_src_v141")
     os.makedirs(work, exist_ok=True)
     zp = os.path.join(work, "bundle.zip")
+    if os.path.exists(zp) and hashlib.sha256(open(zp, "rb").read()).hexdigest() != SHA:
+        os.remove(zp)
     if not os.path.exists(zp):
-        urllib.request.urlretrieve(URL, zp)
+        with urllib.request.urlopen(URL, timeout=60) as response:
+            payload = response.read()
+        if hashlib.sha256(payload).hexdigest() != SHA:
+            raise RuntimeError("Downloaded human-base bundle checksum differs")
+        with open(zp + ".part", "wb") as archive:
+            archive.write(payload)
+        os.replace(zp + ".part", zp)
     h = hashlib.sha256(open(zp, "rb").read()).hexdigest()
     assert h == SHA, "bundle checksum changed: " + h
     ex = os.path.join(work, "x")
