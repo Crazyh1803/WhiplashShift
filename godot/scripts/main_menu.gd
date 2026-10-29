@@ -368,8 +368,19 @@ func _build_about() -> void:
 	support.name = "SupportLink"
 	support.pressed.connect(_open_url.bind(SUPPORT_URL))
 	body.add_child(support)
+	if FileAccess.file_exists("res://assets/city/candidates/industrial_market/benchmark_manifest.json"):
+		var review := _button("REDLINE RAMEN // ART BENCHMARK", 16)
+		review.name = "MarketBenchmarkButton"
+		review.pressed.connect(_open_market_benchmark)
+		body.add_child(review)
 	body.add_child(_back_button())
 	_first_focus["about"] = home
+
+
+func _open_market_benchmark() -> void:
+	var result := get_tree().change_scene_to_file("res://scenes/industrial_market_review.tscn")
+	if result != OK:
+		_set_status("Cannot open the market art benchmark: " + error_string(result), true)
 
 
 func _build_standings() -> void:
