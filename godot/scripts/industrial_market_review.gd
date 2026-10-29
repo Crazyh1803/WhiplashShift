@@ -22,8 +22,13 @@ func _ready() -> void:
 	benchmark = IndustrialMarketBenchmark.new()
 	add_child(benchmark)
 	if not benchmark.build():
-		push_error("Industrial market review: " + "; ".join(benchmark.errors))
-		get_tree().quit(1)
+		var message := "Industrial market review: " + "; ".join(benchmark.errors)
+		if _capture_mode:
+			push_error(message)
+			get_tree().quit(1)
+		else:
+			GameSession.menu_error = message
+			_back.call_deferred()
 		return
 	_build_world()
 	_build_controls()
@@ -39,7 +44,7 @@ func _build_world() -> void:
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(36.0, 36.0)
 	ground.mesh = plane
-	ground.position.y = -0.015
+	ground.position.y = 0.0
 	var material := StandardMaterial3D.new()
 	material.albedo_color = Color("252a2c")
 	material.roughness = 0.88
@@ -227,5 +232,6 @@ func _captures() -> bool:
 				push_error("Cannot save industrial market image: " + path)
 				return false
 			print("INDUSTRIAL_MARKET_CAPTURE ", path)
-	print("INDUSTRIAL_MARKET_REVIEW candidate_triangles=%d surfaces=%d reference=%s lights=%d shadows=2" % [benchmark.triangle_count, benchmark.surface_count, benchmark.get_meta("vehicle_reference"), local_lights.size()])
+	var shadows := local_lights.filter(func(light: Light3D) -> bool: return light.shadow_enabled).size()
+	print("INDUSTRIAL_MARKET_REVIEW candidate_triangles=%d surfaces=%d vehicle_triangles=%d vehicle_surfaces=%d reference=%s lights=%d shadows=%d" % [benchmark.triangle_count, benchmark.surface_count, benchmark.vehicle_triangle_count, benchmark.vehicle_surface_count, benchmark.get_meta("vehicle_reference"), local_lights.size(), shadows])
 	return true

@@ -4,6 +4,7 @@ extends Node3D
 const DIRECTORY := "res://assets/city/candidates/industrial_market/"
 const MANIFEST := DIRECTORY + "benchmark_manifest.json"
 const IDS: Array[String] = ["redline_shop", "ramen_vendor", "ramen_customer"]
+# Candidate-only limits; the unchanged catalog vehicle is measured separately.
 const TRIANGLE_CAP := 120000
 const SURFACE_CAP := 20
 
@@ -15,6 +16,8 @@ var reference_vehicle: Vehicle
 var vehicle_bounds := AABB()
 var triangle_count := 0
 var surface_count := 0
+var vehicle_triangle_count := 0
+var vehicle_surface_count := 0
 
 
 func build() -> bool:
@@ -23,24 +26,15 @@ func build() -> bool:
 	if not FileAccess.file_exists(MANIFEST):
 		return _fail("Industrial market assets have not been generated")
 	var raw: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST))
-	if not raw is Dictionary or raw.get("version") != 1 or not raw.get("assets") is Array or not raw.get("placements") is Array:
-		return _fail("Invalid industrial market manifest")
+	var issues := manifest_errors(raw)
+	if not issues.is_empty():
+		errors.append_array(issues)
+		return false
 	manifest = raw
-	var catalog := {}
-	for entry: Variant in manifest["assets"]:
-		if not entry is Dictionary or not entry.get("id") is String or entry["id"] not in IDS or catalog.has(entry["id"]):
-			return _fail("Invalid or duplicate benchmark asset id")
-		if entry.get("glb") != entry["id"] + ".glb":
-			return _fail("Benchmark GLBs must use their approved plain filenames")
-		catalog[entry["id"]] = entry
-	if catalog.size() != IDS.size():
-		return _fail("Benchmark requires the shop, vendor and customer")
 	for placement: Variant in manifest["placements"]:
-		if not placement is Dictionary or placement.get("id") not in IDS or models.has(placement["id"]):
-			return _fail("Invalid or duplicate benchmark placement")
 		var id: String = placement["id"]
-		if not is_vector(placement.get("position")) or not is_number(placement.get("yaw_degrees")):
-			return _fail("Benchmark placement requires a finite position and yaw: " + id)
+		if not ResourceLoader.exists(DIRECTORY + id + ".glb"):
+			return _fail("Missing benchmark asset: " + id)
 		var packed := load(DIRECTORY + id + ".glb") as PackedScene
 		if packed == null:
 			return _fail("Cannot load benchmark asset: " + id)
@@ -65,7 +59,7 @@ func build() -> bool:
 			var box: AABB = record["transform"] * mesh.get_aabb()
 			bounds = box if first else bounds.merge(box)
 			first = false
-			triangle_count += mesh.get_faces().size() / 3
+			triangle_count += count_triangles(mesh)
 			surface_count += mesh.get_surface_count()
 		var instances := model.find_children("*", "MeshInstance3D", true, false)
 		if model is MeshInstance3D:
@@ -77,12 +71,6 @@ func build() -> bool:
 		mesh_bounds[id] = bounds
 	if models.size() != IDS.size() or triangle_count > TRIANGLE_CAP or surface_count > SURFACE_CAP:
 		return _fail("Incomplete or over-budget industrial market")
-	var targets: Variant = manifest.get("review_targets")
-	if not targets is Dictionary:
-		return _fail("Benchmark requires review targets")
-	for key: String in ["counter", "vendor_face", "customer_face", "support", "sign", "materials"]:
-		if not is_vector(targets.get(key)):
-			return _fail("Missing or invalid benchmark review target: " + key)
 	_add_vehicle()
 	return true
 
@@ -115,15 +103,22 @@ func _add_vehicle() -> void:
 			player.call("stop")
 	var first := true
 	for mesh: MeshInstance3D in reference_vehicle.find_children("*", "MeshInstance3D", true, false):
-		if mesh.mesh == null:
+		if mesh.mesh == null or not mesh.is_visible_in_tree():
 			continue
-		var box: AABB = mesh.global_transform * mesh.get_aabb()
-		vehicle_bounds = box if first else vehicle_bounds.merge(box)
-		first = false
+		vehicle_triangle_count += count_triangles(mesh.mesh)
+		vehicle_surface_count += mesh.mesh.get_surface_count()
+		for surface in mesh.mesh.get_surface_count():
+			var arrays := mesh.mesh.surface_get_arrays(surface)
+			for vertex: Vector3 in arrays[Mesh.ARRAY_VERTEX]:
+				var point := mesh.global_transform * vertex
+				vehicle_bounds = AABB(point, Vector3.ZERO) if first else vehicle_bounds.expand(point)
+				first = false
 	set_meta("vehicle_reference", {"id": "blackjack", "rig": spec["visual"]["rig"], "scene": spec["visual"]["scene"], "customization": spec["customization"]})
 
 
 func _skin_materials(instance: MeshInstance3D) -> void:
+	if instance.mesh == null:
+		return
 	for surface in instance.mesh.get_surface_count():
 		var material := instance.get_active_material(surface) as BaseMaterial3D
 		if material == null or not "skin" in material.resource_name.to_lower():
@@ -144,8 +139,47 @@ static func is_number(value: Variant) -> bool:
 	return (value is int or value is float) and is_finite(float(value))
 
 
+static func manifest_errors(value: Variant) -> Array[String]:
+	if not value is Dictionary or value.get("version") != 1 or not value.get("assets") is Array or not value.get("placements") is Array:
+		return ["Invalid industrial market manifest"]
+	var assets := {}
+	for entry: Variant in value["assets"]:
+		if not entry is Dictionary or not entry.get("id") is String or entry["id"] not in IDS or assets.has(entry["id"]):
+			return ["Invalid or duplicate benchmark asset id"]
+		if entry.get("glb") != entry["id"] + ".glb":
+			return ["Benchmark GLBs must use their approved plain filenames"]
+		assets[entry["id"]] = true
+	if assets.size() != IDS.size():
+		return ["Benchmark requires the shop, vendor and customer"]
+	var placed := {}
+	for placement: Variant in value["placements"]:
+		if not placement is Dictionary or placement.get("id") not in IDS or placed.has(placement["id"]):
+			return ["Invalid or duplicate benchmark placement"]
+		if not is_vector(placement.get("position")) or not is_number(placement.get("yaw_degrees")):
+			return ["Benchmark placement requires a finite position and yaw"]
+		placed[placement["id"]] = true
+	if placed.size() != IDS.size():
+		return ["Benchmark requires all three placements"]
+	var targets: Variant = value.get("review_targets")
+	if not targets is Dictionary:
+		return ["Benchmark requires review targets"]
+	for key: String in ["counter", "vendor_face", "customer_face", "support", "sign", "materials"]:
+		if not is_vector(targets.get(key)):
+			return ["Missing or invalid benchmark review target: " + key]
+	return []
+
+
 static func is_vector(value: Variant) -> bool:
 	return value is Array and value.size() == 3 and value.all(is_number)
+
+
+static func count_triangles(mesh: Mesh) -> int:
+	var result := 0
+	for surface in mesh.get_surface_count():
+		var arrays := mesh.surface_get_arrays(surface)
+		var indices: Variant = arrays[Mesh.ARRAY_INDEX]
+		result += indices.size() / 3 if indices is PackedInt32Array and not indices.is_empty() else arrays[Mesh.ARRAY_VERTEX].size() / 3
+	return result
 
 
 func _fail(message: String) -> bool:
