@@ -1,0 +1,297 @@
+{
+ "generator": "tools/city_pipeline/industrial_market_textures.py (numpy, deterministic seeds)",
+ "comfyui_used": false,
+ "assets": {
+  "redline_shop": {
+   "steel_structure": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/redline_shop/steel_structure_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/redline_shop/steel_structure_orm.png",
+     "normal": "assets/generated/industrial_market/textures/redline_shop/steel_structure_normal.png"
+    },
+    "seed": 47128,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "cladding_main": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/redline_shop/cladding_main_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/redline_shop/cladding_main_orm.png",
+     "normal": "assets/generated/industrial_market/textures/redline_shop/cladding_main_normal.png"
+    },
+    "seed": 39056,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "cladding_patch": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/redline_shop/cladding_patch_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/redline_shop/cladding_patch_orm.png",
+     "normal": "assets/generated/industrial_market/textures/redline_shop/cladding_patch_normal.png"
+    },
+    "seed": 42029,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "concrete": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/redline_shop/concrete_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/redline_shop/concrete_orm.png",
+     "normal": "assets/generated/industrial_market/textures/redline_shop/concrete_normal.png"
+    },
+    "seed": 26649,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "equipment_steel": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/redline_shop/equipment_steel_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/redline_shop/equipment_steel_orm.png",
+     "normal": "assets/generated/industrial_market/textures/redline_shop/equipment_steel_normal.png"
+    },
+    "seed": 46469,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "awning_fabric": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/redline_shop/awning_fabric_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/redline_shop/awning_fabric_orm.png",
+     "normal": "assets/generated/industrial_market/textures/redline_shop/awning_fabric_normal.png"
+    },
+    "seed": 39236,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "rubber": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/redline_shop/rubber_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/redline_shop/rubber_orm.png",
+     "normal": "assets/generated/industrial_market/textures/redline_shop/rubber_normal.png"
+    },
+    "seed": 22103,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "ceramic": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/redline_shop/ceramic_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/redline_shop/ceramic_orm.png",
+     "normal": "assets/generated/industrial_market/textures/redline_shop/ceramic_normal.png"
+    },
+    "seed": 23927,
+    "recipe": "r_ceramic+r_food atlas",
+    "params": {}
+   }
+  },
+  "ramen_vendor": {
+   "skin": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_vendor/skin_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_vendor/skin_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_vendor/skin_normal.png"
+    },
+    "seed": 18134,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "shirt": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_vendor/shirt_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_vendor/shirt_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_vendor/shirt_normal.png"
+    },
+    "seed": 20362,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "apron": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_vendor/apron_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_vendor/apron_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_vendor/apron_normal.png"
+    },
+    "seed": 20205,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "trousers": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_vendor/trousers_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_vendor/trousers_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_vendor/trousers_normal.png"
+    },
+    "seed": 27618,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "hair": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_vendor/hair_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_vendor/hair_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_vendor/hair_normal.png"
+    },
+    "seed": 17881,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "leather": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_vendor/leather_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_vendor/leather_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_vendor/leather_normal.png"
+    },
+    "seed": 24295,
+    "recipe": "<lambda>",
+    "params": {}
+   }
+  },
+  "ramen_customer": {
+   "skin": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_customer/skin_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_customer/skin_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_customer/skin_normal.png"
+    },
+    "seed": 22513,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "jacket": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_customer/jacket_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_customer/jacket_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_customer/jacket_normal.png"
+    },
+    "seed": 26679,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "trousers": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_customer/trousers_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_customer/trousers_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_customer/trousers_normal.png"
+    },
+    "seed": 32929,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "hair": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_customer/hair_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_customer/hair_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_customer/hair_normal.png"
+    },
+    "seed": 22226,
+    "recipe": "<lambda>",
+    "params": {}
+   },
+   "leather": {
+    "sizes": {
+     "albedo": 512,
+     "orm": 256,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_customer/leather_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_customer/leather_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_customer/leather_normal.png"
+    },
+    "seed": 29282,
+    "recipe": "<lambda>",
+    "params": {}
+   }
+  }
+ }
+}

@@ -1,0 +1,155 @@
+{
+ "results": {
+  "redline_shop": {
+   "tris": 34828,
+   "glb_bytes": 4604404,
+   "seconds": 3.4,
+   "aabb": [
+    [
+     -4.8,
+     0.0,
+     -4.7
+    ],
+    [
+     4.8,
+     4.97,
+     2.2
+    ]
+   ],
+   "tris_by_material": {
+    "rubber": 2724,
+    "concrete": 212,
+    "equipment_steel": 2426,
+    "steel_structure": 7202,
+    "cladding_main": 6332,
+    "cladding_patch": 536,
+    "awning_fabric": 3252,
+    "sign_emissive": 1347,
+    "ceramic": 10797
+   }
+  }
+ },
+ "textures": {
+  "redline_shop/steel_structure": {
+   "sizes": {
+    "albedo": 256,
+    "orm": 256,
+    "normal": 256
+   },
+   "files": {
+    "albedo": "godot/assets/city/candidates/industrial_market/textures/redline_shop/steel_structure_albedo.png",
+    "orm": "godot/assets/city/candidates/industrial_market/textures/redline_shop/steel_structure_orm.png",
+    "normal": "godot/assets/city/candidates/industrial_market/textures/redline_shop/steel_structure_normal.png"
+   },
+   "seed": 47128,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "redline_shop/cladding_main": {
+   "sizes": {
+    "albedo": 256,
+    "orm": 256,
+    "normal": 256
+   },
+   "files": {
+    "albedo": "godot/assets/city/candidates/industrial_market/textures/redline_shop/cladding_main_albedo.png",
+    "orm": "godot/assets/city/candidates/industrial_market/textures/redline_shop/cladding_main_orm.png",
+    "normal": "godot/assets/city/candidates/industrial_market/textures/redline_shop/cladding_main_normal.png"
+   },
+   "seed": 39056,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "redline_shop/cladding_patch": {
+   "sizes": {
+    "albedo": 256,
+    "orm": 256,
+    "normal": 256
+   },
+   "files": {
+    "albedo": "godot/assets/city/candidates/industrial_market/textures/redline_shop/cladding_patch_albedo.png",
+    "orm": "godot/assets/city/candidates/industrial_market/textures/redline_shop/cladding_patch_orm.png",
+    "normal": "godot/assets/city/candidates/industrial_market/textures/redline_shop/cladding_patch_normal.png"
+   },
+   "seed": 42029,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "redline_shop/concrete": {
+   "sizes": {
+    "albedo": 256,
+    "orm": 256,
+    "normal": 256
+   },
+   "files": {
+    "albedo": "godot/assets/city/candidates/industrial_market/textures/redline_shop/concrete_albedo.png",
+    "orm": "godot/assets/city/candidates/industrial_market/textures/redline_shop/concrete_orm.png",
+    "normal": "godot/assets/city/candidates/industrial_market/textures/redline_shop/concrete_normal.png"
+   },
+   "seed": 26649,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "redline_shop/equipment_steel": {
+   "sizes": {
+    "albedo": 256,
+    "orm": 256,
+    "normal": 256
+   },
+   "files": {
+    "albedo": "godot/assets/city/candidates/industrial_market/textures/redline_shop/equipment_steel_albedo.png",
+    "orm": "godot/assets/city/candidates/industrial_market/textures/redline_shop/equipment_steel_orm.png",
+    "normal": "godot/assets/city/candidates/industrial_market/textures/redline_shop/equipment_steel_normal.png"
+   },
+   "seed": 46469,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "redline_shop/awning_fabric": {
+   "sizes": {
+    "albedo": 256,
+    "orm": 256,
+    "normal": 256
+   },
+   "files": {
+    "albedo": "godot/assets/city/candidates/industrial_market/textures/redline_shop/awning_fabric_albedo.png",
+    "orm": "godot/assets/city/candidates/industrial_market/textures/redline_shop/awning_fabric_orm.png",
+    "normal": "godot/assets/city/candidates/industrial_market/textures/redline_shop/awning_fabric_normal.png"
+   },
+   "seed": 39236,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "redline_shop/rubber": {
+   "sizes": {
+    "albedo": 256,
+    "orm": 256,
+    "normal": 256
+   },
+   "files": {
+    "albedo": "godot/assets/city/candidates/industrial_market/textures/redline_shop/rubber_albedo.png",
+    "orm": "godot/assets/city/candidates/industrial_market/textures/redline_shop/rubber_orm.png",
+    "normal": "godot/assets/city/candidates/industrial_market/textures/redline_shop/rubber_normal.png"
+   },
+   "seed": 22103,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "redline_shop/ceramic": {
+   "sizes": {
+    "albedo": 256,
+    "orm": 256,
+    "normal": 256
+   },
+   "files": {
+    "albedo": "godot/assets/city/candidates/industrial_market/textures/redline_shop/ceramic_albedo.png",
+    "orm": "godot/assets/city/candidates/industrial_market/textures/redline_shop/ceramic_orm.png",
+    "normal": "godot/assets/city/candidates/industrial_market/textures/redline_shop/ceramic_normal.png"
+   },
+   "seed": 23927,
+   "recipe": "r_ceramic+r_food atlas",
+   "params": {}
+  }
+ },
+ "face_local": {}
+}
