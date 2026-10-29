@@ -104,14 +104,14 @@ def ring_loop(m, centre, rx, ry, z, r, mat, ratio=1.0, a0=0, a1=345, uvs=3.0, up
     return m.tube(pts, [r] * len(pts), mat, seg=8, samples=len(pts) * 3, ratio=ratio, up=up, uv=("cloth", uvs))
 
 
-def headband(m, head_c, tilt, mat):
-    z = 0.073
+def headband(m, head_c, tilt, mat, rx=0.0667, ry=0.0845, z=0.073):
+    """Band around the head at height z above head_c (rx/ry = half width / half depth of the head there, plus the band's own clearance)."""
     pts = []
     for a in range(200, 540, 14):
         ar = math.radians(a)
-        pts.append(head_c + tilt @ V((0.0667 * math.sin(ar), 0.0845 * math.cos(ar) * (1.0 if math.cos(ar) > 0 else 0.97) - 0.002, z - 0.012 * (0.5 - 0.5 * math.cos(ar)))))
+        pts.append(head_c + tilt @ V((rx * math.sin(ar), ry * math.cos(ar) * (1.0 if math.cos(ar) > 0 else 0.97) - 0.002, z - 0.012 * (0.5 - 0.5 * math.cos(ar)))))
     m.tube(pts, [0.016] * len(pts), mat, seg=8, samples=len(pts) * 2, ratio=0.3, up=tilt @ V((0, 0, 1)), uv=("cloth", 3.0))
-    knot = head_c + tilt @ V((0.012, -0.09, 0.05))
+    knot = head_c + tilt @ V((0.012, -ry - 0.006, z - 0.023))
     m.sphere(knot, 0.021, mat, scale=(1.1, 0.8, 0.9), seg=10, rings=8, smooth=True)
     for s, dz in ((-1, 0.0), (1, 0.03)):
         m.tube([knot, knot + tilt @ V((s * 0.02, -0.03, -0.04)), knot + tilt @ V((s * 0.035, -0.045, -0.13 + dz)), knot + tilt @ V((s * 0.03, -0.035, -0.18 + dz))],

@@ -1,0 +1,3 @@
+Human Base Meshes v1.4.1 - Blender Studio / Blender Foundation and contributors.
+Listed as CC0 (public domain dedication) at https://www.blender.org/download/demo-files/ . Only the realistic male/female body level-0 meshes, UVs and eye spheres are retained here.
+Derived person assets in this folder's parent use these meshes with clothing, hair and textures added by tools/city_pipeline.

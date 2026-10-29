@@ -2,7 +2,7 @@
 
 Each recipe returns albedo (n,n,3), roughness, metallic (n,n) and height (n,n) in 0..1; `write_set` saves
 <name>_albedo.png, <name>_orm.png (R=occlusion, G=roughness, B=metallic) and <name>_normal.png (OpenGL +Y).
-Tileable by construction (wrapped value noise). The skin recipes also paint a face + swatch atlas (see ATLAS).
+Tileable by construction (wrapped value noise). Skin/eyes are baked from the real mesh UVs in industrial_market_skin.py.
 Usage from build_industrial_market.py; run standalone: python industrial_market_textures.py <outdir>
 """
 import json
@@ -12,27 +12,6 @@ import sys
 import zlib
 
 import numpy as np
-
-# Skin atlas layout in Blender UV space (u, v from bottom-left), all rectangles (u0, v0, u1, v1).
-ATLAS = {
-    "tile": (0.0, 0.5, 0.5, 1.0),      # tiling skin pores, used by body / hands / ears
-    "face": (0.5, 0.5, 1.0, 1.0),      # front-projected face paint
-    "eye": (0.0, 0.25, 0.25, 0.5),     # eyeball: sclera + iris, front projected
-    "lip": (0.25, 0.25, 0.5, 0.5),     # lip swatch
-    "nail": (0.5, 0.25, 0.75, 0.5),    # fingernail swatch
-    "brow": (0.75, 0.25, 1.0, 0.5),    # dark brow / lash swatch
-    "dark": (0.0, 0.0, 1.0, 0.25),     # nostril / shadow swatch
-}
-# Head-local mapping shared by the face paint and the head UVs: eye line is z=0, x metres across.
-FACE_HALF_W = 0.095
-FACE_Z0, FACE_Z1 = -0.135, 0.125
-
-
-def face_uv(x, z):
-    u0, v0, u1, v1 = ATLAS["face"]
-    return (u0 + (u1 - u0) * (0.5 + 0.5 * max(-1, min(1, x / FACE_HALF_W))),
-            v0 + (v1 - v0) * max(0.0, min(1.0, (z - FACE_Z0) / (FACE_Z1 - FACE_Z0))))
-
 
 def _vn(n, fy, fx, rng):
     g = rng.random((fy, fx))
@@ -71,19 +50,6 @@ def _col(c):
 
 
 # ---------------------------------------------------------------------------------------------- recipes
-def r_skin(n, rng, tone, ruddy=0.0, stubble=False, seed_tag=0):
-    base = _col(tone)
-    blot = fbm(n, 3, rng, 4)
-    pores = fbm(n, 64, rng, 2)
-    fine = fbm(n, 24, rng, 3)
-    alb = _lerp3(base * 0.93, base * 1.06 + np.array([0.02, 0.0, 0.0]), blot)
-    alb *= (0.96 + 0.06 * pores)[..., None]
-    alb[..., 0] += 0.03 * ruddy * fbm(n, 5, rng, 2)
-    rough = 0.52 + 0.14 * fine
-    height = 0.5 + 0.35 * (pores - 0.5) + 0.25 * (fine - 0.5)
-    return alb, rough, np.zeros((n, n)), height
-
-
 def r_cloth(n, rng, color, weave=96, twill=True, wear=0.25, streak=0.0, stain=0.0, color2=None):
     y, x = _grid(n)
     base = _col(color)
@@ -116,9 +82,9 @@ def r_hair(n, rng, color, sheen=0.2):
     strand = fbm(n, 6, rng, 3, aniso=(0.05, 40))
     clump = fbm(n, 5, rng, 3, aniso=(0.1, 10))
     base = _col(color)
-    alb = base[None, None, :] * (0.55 + 0.7 * strand * clump)[..., None]
+    alb = base[None, None, :] * (0.72 + 0.5 * strand * clump)[..., None]
     rough = 0.45 + 0.3 * (1 - strand)
-    height = 0.5 + 0.5 * (strand - 0.5)
+    height = 0.5 + 0.28 * (strand - 0.5)
     return np.clip(alb, 0, 1), rough, np.zeros((n, n)), height
 
 
@@ -253,101 +219,6 @@ def r_board(n, rng, color=(0.05, 0.055, 0.06)):
     scuff = np.clip((fbm(n, 7, rng, 4) - 0.6) * 4, 0, 1)
     alb = base[None, None, :] * (0.8 + 0.5 * mott)[..., None] + scuff[..., None] * 0.07
     return np.clip(alb, 0, 1), 0.6 + 0.25 * scuff, np.zeros((n, n)), 0.5 + 0.1 * (mott - 0.5)
-
-
-# ------------------------------------------------------------------------------------------- face atlas
-def paint_skin_atlas(alb, rough, height, tone, rng, stubble=0.0, lip=(0.55, 0.27, 0.25), iris=(0.18, 0.1, 0.05), brow=(0.07, 0.045, 0.03),
-                     freckle=0.0):
-    n = alb.shape[0]
-    base = _col(tone)
-    tile = ATLAS["tile"]
-    # the top half is skin; fill the whole atlas with tiling skin first (already), then paint regions
-    def px(r):
-        return (int(r[0] * n), int(r[1] * n), int(r[2] * n), int(r[3] * n))
-    # tile region: re-tile whole top-left from a down-sampled copy so it is itself tileable
-    x0, y0, x1, y1 = px(ATLAS["tile"])
-    h = y1 - y0
-    # image rows are top-first: v in [0.5,1] occupies rows [0, n/2)
-    def rows(r):
-        return (n - int(r[3] * n), n - int(r[1] * n), int(r[0] * n), int(r[2] * n))
-    ra, rb, ca, cb = rows(ATLAS["tile"])
-    t_alb, t_rough, _, t_h = r_skin(cb - ca, rng, tone)
-    alb[:] = base[None, None, :] * 0.92
-    alb[ra:rb, ca:cb] = t_alb
-    rough[ra:rb, ca:cb] = t_rough
-    height[ra:rb, ca:cb] = t_h
-    # face region
-    fr0, fr1, fc0, fc1 = rows(ATLAS["face"])
-    fh, fw = fr1 - fr0, fc1 - fc0
-    yy, xx = np.mgrid[0:fh, 0:fw]
-    X = ((xx + 0.5) / fw - 0.5) * 2 * FACE_HALF_W                     # head x (m), image-left = head-left in the frame (image u increases with x)
-    Z = FACE_Z1 - (yy + 0.5) / fh * (FACE_Z1 - FACE_Z0)               # head z (m); row 0 is the top
-    face = alb[fr0:fr1, fc0:fc1]
-    face[:] = base[None, None, :] * (0.94 + 0.1 * fbm(fw, 4, rng, 3)[:fh, :fw])[..., None] if fbm(fw, 4, rng, 3).shape[0] >= fh else face
-    # soft t-zone/cheek warmth, eye-socket shading, under-nose and jaw shadow
-    def gauss(cx, cz, sx, sz):
-        return np.exp(-(((X - cx) / sx) ** 2 + ((Z - cz) / sz) ** 2))
-    warm = gauss(0.052, -0.045, 0.028, 0.03) + gauss(-0.052, -0.045, 0.028, 0.03)
-    face *= 1.0
-    face[..., 0] += 0.045 * warm
-    face[..., 1] -= 0.02 * warm
-    sock = gauss(0.032, -0.002, 0.026, 0.017) + gauss(-0.032, -0.002, 0.026, 0.017)
-    face *= (1 - 0.25 * sock)[..., None] * np.array([1.0, 0.97, 1.02])[None, None, :] + 0 * sock[..., None]
-    jaw = np.clip((-Z - 0.10) * 30, 0, 1)
-    face *= (1 - 0.18 * jaw)[..., None]
-    # brows: arched dark bands
-    for sgn in (-1, 1):
-        cx = sgn * 0.034
-        arch = 0.031 + 0.006 * (1 - ((X - cx) / 0.025) ** 2)
-        b = np.exp(-(((Z - arch) / 0.0042) ** 2)) * (np.abs(X - cx) < 0.027) * np.clip(1 - (np.abs(X - cx) / 0.027) ** 4, 0, 1)
-        face[:] = face * (1 - 0.75 * b[..., None]) + 0.75 * b[..., None] * _col(brow)[None, None, :]
-    # lips
-    mouth = np.exp(-((X / 0.027) ** 4 + ((Z + 0.081) / 0.0105) ** 2))
-    face[:] = face * (1 - 0.8 * mouth[..., None]) + 0.8 * mouth[..., None] * _col(lip)[None, None, :]
-    line = np.exp(-(((Z + 0.0815) / 0.0012) ** 2)) * (np.abs(X) < 0.026)
-    face *= (1 - 0.55 * line)[..., None]
-    # nostrils
-    for sgn in (-1, 1):
-        nst = np.exp(-((((X - sgn * 0.0105) / 0.0045) ** 2) + ((Z + 0.049) / 0.0032) ** 2))
-        face *= (1 - 0.8 * nst)[..., None]
-    # stubble / freckles
-    if stubble:
-        sm = np.clip(((-Z - 0.045) * 14), 0, 1) * np.clip(1 - np.abs(X) / 0.075, 0, 1) * (np.abs(Z + 0.081) > 0.012)
-        sm *= (fbm(fw, 90, rng, 2)[:fh, :fw] if fbm(fw, 90, rng, 2).shape[0] >= fh else 0.5)
-        face *= (1 - stubble * 0.5 * sm)[..., None]
-    if freckle:
-        fk = (fbm(fw, 50, rng, 2)[:fh, :fw] > 0.8) * gauss(0, -0.03, 0.07, 0.04)
-        face *= (1 - freckle * 0.25 * fk)[..., None]
-    # border blend into base skin so the planar edge matches tiling skin
-    edge = np.clip(np.minimum(np.minimum(xx, fw - 1 - xx), np.minimum(yy, fh - 1 - yy)) / 8.0, 0, 1)[..., None]
-    face[:] = face * edge + base[None, None, :] * (1 - edge)
-    # eye swatch: sclera + iris centred in its rect, 0..1 across
-    er0, er1, ec0, ec1 = rows(ATLAS["eye"])
-    eh, ew = er1 - er0, ec1 - ec0
-    ey, ex = np.mgrid[0:eh, 0:ew]
-    ex = (ex + 0.5) / ew - 0.5
-    ey = (ey + 0.5) / eh - 0.5
-    rr = np.sqrt(ex ** 2 + ey ** 2)
-    eye = np.zeros((eh, ew, 3))
-    scl = np.array([0.82, 0.8, 0.77]) * (0.9 + 0.1 * np.cos(rr * 8))[..., None] * (1 - 0.35 * np.clip((rr - 0.3) * 4, 0, 1))[..., None]
-    eye[:] = scl
-    ir = (rr < 0.27)
-    ang = np.arctan2(ey, ex)
-    irc = _col(iris)[None, None, :] * (0.8 + 0.5 * np.sin(ang * 14)[..., None] * 0.4)
-    eye[ir] = irc[ir] * (1.4 - 4.0 * np.clip(rr[ir] - 0.1, 0, 1))[..., None]
-    eye[rr < 0.11] = 0.012
-    eye[(rr > 0.245) & (rr < 0.27)] *= 0.35
-    alb[er0:er1, ec0:ec1] = eye
-    rough[er0:er1, ec0:ec1] = 0.12
-    # lip, nail, brow, dark swatches
-    for key, col, rv in (("lip", lip, 0.38), ("nail", (0.72, 0.5, 0.46), 0.3), ("brow", brow, 0.7), ("dark", (0.022, 0.015, 0.014), 0.8)):
-        r0, r1, c0, c1 = rows(ATLAS[key])
-        alb[r0:r1, c0:c1] = _col(col)[None, None, :] * (0.95 + 0.05 * fbm(max(c1 - c0, r1 - r0), 6, rng, 2)[:r1 - r0, :c1 - c0, None] if False else 1.0)
-        rough[r0:r1, c0:c1] = rv
-        height[r0:r1, c0:c1] = 0.5
-    # brow swatch: hair-like fine streaks via modulation
-    alb[:] = np.clip(alb, 0, 1)
-    return alb, rough, height
 
 
 # ------------------------------------------------------------------------------------------------ output

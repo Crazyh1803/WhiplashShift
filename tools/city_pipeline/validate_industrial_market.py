@@ -3,6 +3,7 @@ textures and checks them against benchmark_manifest.json, the budgets, grounding
 
 Usage: python validate_industrial_market.py [candidate_dir]      Exit 1 on any failure.
 """
+import hashlib
 import json
 import math
 import os
@@ -14,7 +15,8 @@ DEFAULT_DIR = os.path.join(ROOT, "godot", "assets", "city", "candidates", "indus
 ASSETS = ("redline_shop", "ramen_vendor", "ramen_customer")
 BAD_EXT = ("KHR_lights", "KHR_physics", "OMI_", "KHR_xmp")
 TOL = 2e-3
-CAPS = {"shop_tris": 70000, "person_tris": 18000, "combined_tris": 120000, "combined_surfaces": 20, "texture_mib": 128.0}
+# person_tris was 18000 for the primitive figures; real adult base-human topology (face + hands + fitted garments) needs ~25-30k each (see manifest costs)
+CAPS = {"shop_tris": 70000, "person_tris": 40000, "combined_tris": 120000, "combined_surfaces": 20, "texture_mib": 128.0}
 FLOOR_TOP = 0.15
 COUNTER_TOP = 1.20
 errors = []
@@ -314,6 +316,25 @@ def main():
                 if not safe_rel(t) or not os.path.isfile(os.path.join(ROOT, t)):
                     err(f"{aid}: source texture {t!r} missing/unsafe")
     ok = all(infos.get(a) for a in ASSETS)
+    # human base provenance: the retained source blend must exist, match its recorded checksum and the people must declare it
+    hb = man.get("human_base", {})
+    pv = hb.get("provenance")
+    if not safe_rel(pv) or not os.path.isfile(os.path.join(ROOT, pv)):
+        err("manifest human_base.provenance missing/unsafe")
+    else:
+        with open(os.path.join(ROOT, pv), encoding="utf-8") as fh:
+            prov = json.load(fh)
+        blend = os.path.join(os.path.dirname(os.path.join(ROOT, pv)), prov.get("retained_file", ""))
+        if prov.get("license", "")[:5] != "CC0 1" or not prov.get("bundle_sha256") or not os.path.isfile(blend):
+            err("human base provenance must record CC0 license, bundle checksum and the retained blend")
+        elif hashlib.sha256(open(blend, "rb").read()).hexdigest() != prov.get("retained_sha256"):
+            err("retained human base blend does not match its recorded sha256")
+    for who in ("ramen_vendor", "ramen_customer"):
+        if hb.get("bodies", {}).get(who) not in ("male", "female"):
+            err(f"manifest human_base.bodies.{who} missing")
+        sk = next((m for m in infos[who]["materials"] if m["name"] == "skin"), None) if infos.get(who) else None
+        if infos.get(who) and (sk is None or sk["slots"].get("baseColor", {}).get("width", 0) < 1024):
+            err(f"{who}: skin atlas must be at least 1024 px (faces need ~1500 px/m)")
     # budgets
     if ok:
         tt = {a: infos[a]["tris"] for a in ASSETS}
