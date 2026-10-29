@@ -368,7 +368,7 @@ func _build_about() -> void:
 	support.name = "SupportLink"
 	support.pressed.connect(_open_url.bind(SUPPORT_URL))
 	body.add_child(support)
-	if FileAccess.file_exists("res://assets/city/candidates/industrial_market/benchmark_manifest.json"):
+	if OS.is_debug_build() and FileAccess.file_exists("res://assets/city/candidates/industrial_market/benchmark_manifest.json"):
 		var review := _button("REDLINE RAMEN // ART BENCHMARK", 16)
 		review.name = "MarketBenchmarkButton"
 		review.pressed.connect(_open_market_benchmark)
