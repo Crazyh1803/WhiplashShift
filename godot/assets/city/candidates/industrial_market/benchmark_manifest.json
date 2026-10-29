@@ -1,0 +1,948 @@
+{
+ "version": 1,
+ "status": "candidate-review",
+ "units": "metres, Y-up, front -Z, origin at foot centre / floor",
+ "generator": "tools/city_pipeline/build_industrial_market.py",
+ "assets": [
+  {
+   "id": "redline_shop",
+   "glb": "redline_shop.glb",
+   "tris": 34828,
+   "aabb": {
+    "min": [
+     -4.8,
+     0.0,
+     -4.7
+    ],
+    "max": [
+     4.8,
+     4.97,
+     2.2
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_main",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "awning_fabric",
+    "sign_emissive",
+    "ceramic",
+    "rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 7201,
+    "cladding_main": 6332,
+    "cladding_patch": 536,
+    "concrete": 212,
+    "equipment_steel": 2426,
+    "awning_fabric": 3252,
+    "sign_emissive": 1347,
+    "ceramic": 10798,
+    "rubber": 2724
+   },
+   "textures": [
+    {
+     "material": "steel_structure",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 109989
+    },
+    {
+     "material": "steel_structure",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 71582
+    },
+    {
+     "material": "steel_structure",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 552332
+    },
+    {
+     "material": "cladding_main",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 252198
+    },
+    {
+     "material": "cladding_main",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 130750
+    },
+    {
+     "material": "cladding_main",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 578014
+    },
+    {
+     "material": "cladding_patch",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 179242
+    },
+    {
+     "material": "cladding_patch",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 82623
+    },
+    {
+     "material": "cladding_patch",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 576381
+    },
+    {
+     "material": "concrete",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 165356
+    },
+    {
+     "material": "concrete",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 85043
+    },
+    {
+     "material": "concrete",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 686956
+    },
+    {
+     "material": "equipment_steel",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 101443
+    },
+    {
+     "material": "equipment_steel",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 43691
+    },
+    {
+     "material": "equipment_steel",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 72328
+    },
+    {
+     "material": "awning_fabric",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 284185
+    },
+    {
+     "material": "awning_fabric",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 1209
+    },
+    {
+     "material": "awning_fabric",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 11936
+    },
+    {
+     "material": "ceramic",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 155155
+    },
+    {
+     "material": "ceramic",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 33691
+    },
+    {
+     "material": "ceramic",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 355791
+    },
+    {
+     "material": "rubber",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 56674
+    },
+    {
+     "material": "rubber",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 53292
+    },
+    {
+     "material": "rubber",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 394311
+    }
+   ],
+   "texture_mib_mips": 24.0,
+   "texture_mib_with_import_copy": 48.0,
+   "identity": "Redline Ramen: worn corrugated steel stall on an H-column portal frame, canvas awning, one aging illuminated sign, patched cladding, service counter",
+   "source_blend": "assets/generated/industrial_market/redline_shop.blend",
+   "source_textures": [
+    "assets/generated/industrial_market/textures/redline_shop/awning_fabric_albedo.png",
+    "assets/generated/industrial_market/textures/redline_shop/awning_fabric_normal.png",
+    "assets/generated/industrial_market/textures/redline_shop/awning_fabric_orm.png",
+    "assets/generated/industrial_market/textures/redline_shop/ceramic_albedo.png",
+    "assets/generated/industrial_market/textures/redline_shop/ceramic_normal.png",
+    "assets/generated/industrial_market/textures/redline_shop/ceramic_orm.png",
+    "assets/generated/industrial_market/textures/redline_shop/cladding_main_albedo.png",
+    "assets/generated/industrial_market/textures/redline_shop/cladding_main_normal.png",
+    "assets/generated/industrial_market/textures/redline_shop/cladding_main_orm.png",
+    "assets/generated/industrial_market/textures/redline_shop/cladding_patch_albedo.png",
+    "assets/generated/industrial_market/textures/redline_shop/cladding_patch_normal.png",
+    "assets/generated/industrial_market/textures/redline_shop/cladding_patch_orm.png",
+    "assets/generated/industrial_market/textures/redline_shop/concrete_albedo.png",
+    "assets/generated/industrial_market/textures/redline_shop/concrete_normal.png",
+    "assets/generated/industrial_market/textures/redline_shop/concrete_orm.png",
+    "assets/generated/industrial_market/textures/redline_shop/equipment_steel_albedo.png",
+    "assets/generated/industrial_market/textures/redline_shop/equipment_steel_normal.png",
+    "assets/generated/industrial_market/textures/redline_shop/equipment_steel_orm.png",
+    "assets/generated/industrial_market/textures/redline_shop/rubber_albedo.png",
+    "assets/generated/industrial_market/textures/redline_shop/rubber_normal.png",
+    "assets/generated/industrial_market/textures/redline_shop/rubber_orm.png",
+    "assets/generated/industrial_market/textures/redline_shop/steel_structure_albedo.png",
+    "assets/generated/industrial_market/textures/redline_shop/steel_structure_normal.png",
+    "assets/generated/industrial_market/textures/redline_shop/steel_structure_orm.png"
+   ],
+   "vertex_color": "COLOR_0 = ray-cast ambient occlusion x gravity/shelter wear (no flat albedo fill)"
+  },
+  {
+   "id": "ramen_vendor",
+   "glb": "ramen_vendor.glb",
+   "tris": 17836,
+   "aabb": {
+    "min": [
+     -0.4119,
+     0.0,
+     -0.5642
+    ],
+    "max": [
+     0.3821,
+     1.7461,
+     0.2546
+    ]
+   },
+   "surfaces": [
+    "skin",
+    "shirt",
+    "apron",
+    "trousers",
+    "hair",
+    "leather"
+   ],
+   "tris_by_surface": {
+    "skin": 7036,
+    "shirt": 4564,
+    "apron": 3004,
+    "trousers": 1808,
+    "hair": 800,
+    "leather": 624
+   },
+   "textures": [
+    {
+     "material": "skin",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 89390
+    },
+    {
+     "material": "skin",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 42752
+    },
+    {
+     "material": "skin",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 297332
+    },
+    {
+     "material": "shirt",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 258629
+    },
+    {
+     "material": "shirt",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 80414
+    },
+    {
+     "material": "shirt",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 754913
+    },
+    {
+     "material": "apron",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 280505
+    },
+    {
+     "material": "apron",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 82835
+    },
+    {
+     "material": "apron",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 754205
+    },
+    {
+     "material": "trousers",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 183231
+    },
+    {
+     "material": "trousers",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 79054
+    },
+    {
+     "material": "trousers",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 748026
+    },
+    {
+     "material": "hair",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 8006
+    },
+    {
+     "material": "hair",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 1495
+    },
+    {
+     "material": "hair",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 15338
+    },
+    {
+     "material": "leather",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 108715
+    },
+    {
+     "material": "leather",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 77921
+    },
+    {
+     "material": "leather",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 583275
+    }
+   ],
+   "texture_mib_mips": 18.0,
+   "texture_mib_with_import_copy": 36.0,
+   "identity": "Ramen vendor: stocky cook in rolled-sleeve work shirt, canvas apron and headband, handing a bowl across the counter",
+   "source_blend": "assets/generated/industrial_market/ramen_vendor.blend",
+   "source_textures": [
+    "assets/generated/industrial_market/textures/ramen_vendor/apron_albedo.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/apron_normal.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/apron_orm.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/hair_albedo.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/hair_normal.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/hair_orm.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/leather_albedo.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/leather_normal.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/leather_orm.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/shirt_albedo.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/shirt_normal.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/shirt_orm.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/skin_albedo.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/skin_normal.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/skin_orm.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/trousers_albedo.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/trousers_normal.png",
+    "assets/generated/industrial_market/textures/ramen_vendor/trousers_orm.png"
+   ],
+   "vertex_color": "COLOR_0 = ray-cast ambient occlusion x gravity/shelter wear (no flat albedo fill)"
+  },
+  {
+   "id": "ramen_customer",
+   "glb": "ramen_customer.glb",
+   "tris": 17632,
+   "aabb": {
+    "min": [
+     -0.2749,
+     0.0,
+     -0.6423
+    ],
+    "max": [
+     0.3277,
+     1.8305,
+     0.1845
+    ]
+   },
+   "surfaces": [
+    "skin",
+    "jacket",
+    "trousers",
+    "hair",
+    "leather"
+   ],
+   "tris_by_surface": {
+    "skin": 6388,
+    "jacket": 6148,
+    "trousers": 2192,
+    "hair": 1200,
+    "leather": 1704
+   },
+   "textures": [
+    {
+     "material": "skin",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 91709
+    },
+    {
+     "material": "skin",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 42828
+    },
+    {
+     "material": "skin",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 296241
+    },
+    {
+     "material": "jacket",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 218562
+    },
+    {
+     "material": "jacket",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 83747
+    },
+    {
+     "material": "jacket",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 758671
+    },
+    {
+     "material": "trousers",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 185420
+    },
+    {
+     "material": "trousers",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 77147
+    },
+    {
+     "material": "trousers",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 735624
+    },
+    {
+     "material": "hair",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 8476
+    },
+    {
+     "material": "hair",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 1497
+    },
+    {
+     "material": "hair",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 14345
+    },
+    {
+     "material": "leather",
+     "slot": "baseColor",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 121202
+    },
+    {
+     "material": "leather",
+     "slot": "metallicRoughness",
+     "embedded": true,
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 79228
+    },
+    {
+     "material": "leather",
+     "slot": "normal",
+     "embedded": true,
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 583943
+    }
+   ],
+   "texture_mib_mips": 15.0,
+   "texture_mib_with_import_copy": 30.0,
+   "identity": "Ramen customer: slim diner in a hooded work jacket and cargo trousers, taking the bowl at the counter",
+   "source_blend": "assets/generated/industrial_market/ramen_customer.blend",
+   "source_textures": [
+    "assets/generated/industrial_market/textures/ramen_customer/hair_albedo.png",
+    "assets/generated/industrial_market/textures/ramen_customer/hair_normal.png",
+    "assets/generated/industrial_market/textures/ramen_customer/hair_orm.png",
+    "assets/generated/industrial_market/textures/ramen_customer/jacket_albedo.png",
+    "assets/generated/industrial_market/textures/ramen_customer/jacket_normal.png",
+    "assets/generated/industrial_market/textures/ramen_customer/jacket_orm.png",
+    "assets/generated/industrial_market/textures/ramen_customer/leather_albedo.png",
+    "assets/generated/industrial_market/textures/ramen_customer/leather_normal.png",
+    "assets/generated/industrial_market/textures/ramen_customer/leather_orm.png",
+    "assets/generated/industrial_market/textures/ramen_customer/skin_albedo.png",
+    "assets/generated/industrial_market/textures/ramen_customer/skin_normal.png",
+    "assets/generated/industrial_market/textures/ramen_customer/skin_orm.png",
+    "assets/generated/industrial_market/textures/ramen_customer/trousers_albedo.png",
+    "assets/generated/industrial_market/textures/ramen_customer/trousers_normal.png",
+    "assets/generated/industrial_market/textures/ramen_customer/trousers_orm.png"
+   ],
+   "vertex_color": "COLOR_0 = ray-cast ambient occlusion x gravity/shelter wear (no flat albedo fill)"
+  }
+ ],
+ "placements": [
+  {
+   "asset": "redline_shop",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "yaw_degrees": 0
+  },
+  {
+   "asset": "ramen_vendor",
+   "position": [
+    0.4000000059604645,
+    0.15,
+    -1.3300000429153442
+   ],
+   "yaw_degrees": 0
+  },
+  {
+   "asset": "ramen_customer",
+   "position": [
+    0.6600000262260437,
+    0.15,
+    -2.299999952316284
+   ],
+   "yaw_degrees": 180
+  }
+ ],
+ "vehicle_slot": {
+  "center": [
+   -3.0,
+   0.0,
+   -7.5
+  ],
+  "yaw_degrees": 90,
+  "reserved_strip_z": [
+   -5.0,
+   -10.0
+  ],
+  "curb_z": -4.7,
+  "note": "Lead places the approved BLACKJACK X-17 here; no vehicle ships in this candidate."
+ },
+ "floor_top_y": 0.15,
+ "counter_top_y": 1.2,
+ "interaction": {
+  "bowl_center": [
+   0.550000011920929,
+   1.2,
+   -1.7799999713897705
+  ],
+  "bowl_radius": 0.098,
+  "vendor_right_wrist": [
+   0.648,
+   1.246,
+   -1.72
+  ],
+  "vendor_left_wrist_on_counter": [
+   0.12,
+   1.2165,
+   -1.62
+  ],
+  "customer_right_wrist": [
+   0.452,
+   1.246,
+   -1.84
+  ],
+  "note": "Both right hands hold the bowl rim from opposite sides (vendor +X, customer -X). Validator checks mesh proximity."
+ },
+ "review_targets": {
+  "counter": [
+   0.55,
+   1.2,
+   -1.8
+  ],
+  "vendor_face": [
+   0.3926,
+   1.7422,
+   -1.4827
+  ],
+  "customer_face": [
+   0.6509,
+   1.8276,
+   -2.1511
+  ],
+  "support": [
+   -2.5,
+   1.2,
+   -2.07
+  ],
+  "sign": [
+   0.0,
+   4.56,
+   -2.4
+  ],
+  "materials": {
+   "cladding_main": [
+    -3.45,
+    2.7,
+    -2.03
+   ],
+   "cladding_patch": [
+    3.5,
+    0.9,
+    -2.05
+   ],
+   "steel_structure": [
+    -2.5,
+    2.2,
+    -2.08
+   ],
+   "concrete": [
+    0.0,
+    0.15,
+    -3.6
+   ],
+   "equipment_steel": [
+    -1.2,
+    1.2,
+    -1.8
+   ],
+   "awning_fabric": [
+    0.0,
+    3.15,
+    -2.7
+   ],
+   "ceramic_food": [
+    0.550000011920929,
+    1.2,
+    -1.7799999713897705
+   ],
+   "rubber_menu": [
+    3.45,
+    1.55,
+    -2.07
+   ],
+   "sign_emissive": [
+    0.0,
+    4.56,
+    -2.42
+   ],
+   "skin_vendor": [
+    0.3926,
+    1.7422,
+    -1.4827
+   ],
+   "jacket_customer": [
+    0.66,
+    1.45,
+    -2.2
+   ],
+   "apron_vendor": [
+    0.4,
+    1.15,
+    -1.47
+   ]
+  }
+ },
+ "lighting": {
+  "note": "Proposed runtime local lights as DATA only (no lights in the GLBs). Diagnostic neutral setup = sun + sky; night = these anchors only.",
+  "anchors": [
+   {
+    "name": "sign_glow",
+    "position": [
+     0.0,
+     4.56,
+     -2.7
+    ],
+    "color": [
+     1.0,
+     0.2,
+     0.1
+    ],
+    "energy": 220,
+    "range": 6.0,
+    "shadow": true
+   },
+   {
+    "name": "counter_lamp",
+    "position": [
+     0.6,
+     3.55,
+     -1.2
+    ],
+    "color": [
+     1.0,
+     0.65,
+     0.3
+    ],
+    "energy": 120,
+    "range": 4.5,
+    "shadow": true
+   },
+   {
+    "name": "hood_lamp",
+    "position": [
+     -1.3,
+     2.05,
+     -0.7
+    ],
+    "color": [
+     1.0,
+     0.85,
+     0.6
+    ],
+    "energy": 100,
+    "range": 3.5,
+    "shadow": false
+   },
+   {
+    "name": "menu_lamp",
+    "position": [
+     3.33,
+     2.15,
+     -2.4
+    ],
+    "color": [
+     1.0,
+     0.65,
+     0.3
+    ],
+    "energy": 60,
+    "range": 2.8,
+    "shadow": false
+   },
+   {
+    "name": "door_lamp",
+    "position": [
+     -2.6,
+     2.4,
+     -2.3
+    ],
+    "color": [
+     1.0,
+     0.6,
+     0.25
+    ],
+    "energy": 60,
+    "range": 3.0,
+    "shadow": false
+   }
+  ]
+ },
+ "budgets": {
+  "shop_tris": "35k-70k",
+  "person_tris": "8k-18k",
+  "combined_tris": 120000,
+  "combined_surfaces": 20,
+  "texture_mib": 128
+ },
+ "costs": {
+  "tris": {
+   "redline_shop": 34828,
+   "ramen_vendor": 17836,
+   "ramen_customer": 17632
+  },
+  "combined_tris": 70296,
+  "surfaces": {
+   "redline_shop": 9,
+   "ramen_vendor": 6,
+   "ramen_customer": 5
+  },
+  "combined_surfaces": 20,
+  "texture_mib_mips": 57.0,
+  "texture_mib_working": 114.0,
+  "texture_assumptions": "uncompressed RGBA8 + full mip chain per distinct embedded image, x2 for the duplicated imported copy; VRAM-compressed imports will be smaller",
+  "shadow_light_cost": "not measured here: Godot candidate scene owns it"
+ },
+ "previews": [
+  "customer_back.png",
+  "customer_face.png",
+  "customer_front.png",
+  "hands_vendor.png",
+  "shop_approach_driver.png",
+  "shop_counter.png",
+  "shop_handoff.png",
+  "shop_handoff_top.png",
+  "shop_interior_service.png",
+  "shop_materials_menu.png",
+  "shop_night_approach.png",
+  "shop_night_counter.png",
+  "shop_sidewalk_34.png",
+  "shop_sidewalk_34_b.png",
+  "shop_sign_menu.png",
+  "shop_support_contact.png",
+  "vendor_34.png",
+  "vendor_face.png",
+  "vendor_front.png",
+  "vendor_side.png"
+ ],
+ "limitations": [
+  "static pose, no rig or LODs",
+  "faces use displaced-sphere heads with painted brows/lips; eyelids are tubes",
+  "no true glass/transparent sign lens (dark acrylic face)",
+  "AO + wear baked into COLOR_0 per vertex (multiplied over textures)",
+  "textures are procedural (numpy), not photographed or ComfyUI-generated"
+ ]
+}

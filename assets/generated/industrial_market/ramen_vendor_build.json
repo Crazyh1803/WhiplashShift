@@ -1,0 +1,163 @@
+{
+ "tris": 17836,
+ "glb_bytes": 5074056,
+ "seconds": 1.9,
+ "aabb": [
+  [
+   -0.4119,
+   0.0,
+   -0.5642
+  ],
+  [
+   0.3821,
+   1.7461,
+   0.2546
+  ]
+ ],
+ "tris_by_material": {
+  "trousers": 1808,
+  "leather": 624,
+  "shirt": 4564,
+  "skin": 7036,
+  "hair": 800,
+  "apron": 3004
+ },
+ "textures": {
+  "skin": {
+   "sizes": {
+    "albedo": 512,
+    "orm": 256,
+    "normal": 512
+   },
+   "files": {
+    "albedo": "assets/generated/industrial_market/textures/ramen_vendor/skin_albedo.png",
+    "orm": "assets/generated/industrial_market/textures/ramen_vendor/skin_orm.png",
+    "normal": "assets/generated/industrial_market/textures/ramen_vendor/skin_normal.png"
+   },
+   "seed": 18134,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "shirt": {
+   "sizes": {
+    "albedo": 512,
+    "orm": 256,
+    "normal": 512
+   },
+   "files": {
+    "albedo": "assets/generated/industrial_market/textures/ramen_vendor/shirt_albedo.png",
+    "orm": "assets/generated/industrial_market/textures/ramen_vendor/shirt_orm.png",
+    "normal": "assets/generated/industrial_market/textures/ramen_vendor/shirt_normal.png"
+   },
+   "seed": 20362,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "apron": {
+   "sizes": {
+    "albedo": 512,
+    "orm": 256,
+    "normal": 512
+   },
+   "files": {
+    "albedo": "assets/generated/industrial_market/textures/ramen_vendor/apron_albedo.png",
+    "orm": "assets/generated/industrial_market/textures/ramen_vendor/apron_orm.png",
+    "normal": "assets/generated/industrial_market/textures/ramen_vendor/apron_normal.png"
+   },
+   "seed": 20205,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "trousers": {
+   "sizes": {
+    "albedo": 512,
+    "orm": 256,
+    "normal": 512
+   },
+   "files": {
+    "albedo": "assets/generated/industrial_market/textures/ramen_vendor/trousers_albedo.png",
+    "orm": "assets/generated/industrial_market/textures/ramen_vendor/trousers_orm.png",
+    "normal": "assets/generated/industrial_market/textures/ramen_vendor/trousers_normal.png"
+   },
+   "seed": 27618,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "hair": {
+   "sizes": {
+    "albedo": 512,
+    "orm": 256,
+    "normal": 512
+   },
+   "files": {
+    "albedo": "assets/generated/industrial_market/textures/ramen_vendor/hair_albedo.png",
+    "orm": "assets/generated/industrial_market/textures/ramen_vendor/hair_orm.png",
+    "normal": "assets/generated/industrial_market/textures/ramen_vendor/hair_normal.png"
+   },
+   "seed": 17881,
+   "recipe": "<lambda>",
+   "params": {}
+  },
+  "leather": {
+   "sizes": {
+    "albedo": 512,
+    "orm": 256,
+    "normal": 512
+   },
+   "files": {
+    "albedo": "assets/generated/industrial_market/textures/ramen_vendor/leather_albedo.png",
+    "orm": "assets/generated/industrial_market/textures/ramen_vendor/leather_orm.png",
+    "normal": "assets/generated/industrial_market/textures/ramen_vendor/leather_normal.png"
+   },
+   "seed": 24295,
+   "recipe": "<lambda>",
+   "params": {}
+  }
+ },
+ "face_local": [
+  0.0,
+  0.048,
+  1.6032
+ ],
+ "eye_local": [
+  -0.0074,
+  0.1527,
+  1.5922
+ ],
+ "arms": {
+  "L": [
+   [
+    -0.183,
+    0.063,
+    1.389
+   ],
+   [
+    -0.3684,
+    0.057,
+    1.1454
+   ],
+   [
+    -0.28,
+    0.29,
+    1.0665
+   ]
+  ],
+  "R": [
+   [
+    0.183,
+    0.063,
+    1.389
+   ],
+   [
+    0.3396,
+    0.1492,
+    1.1403
+   ],
+   [
+    0.248,
+    0.39,
+    1.096
+   ]
+  ]
+ }
+}
