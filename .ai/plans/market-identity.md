@@ -7,3 +7,11 @@ Claude asset lead: improve the reusable person helper and regenerate all three n
 Codex integration: update honest decoded-asset and engine per-model caps up to50000, block cap220000 (only as needed for measured human/sign/support additions; retain infill instead of trading away density). Ground/handling/collisions unchanged. Update targeted tests to the explicit new budget; existing geometric, role, material and preservation assertions remain. Add market-detail inspection cameras and before/after evidence. Share the actual race scenery builder. Engine materials must preserve authored sign colors/emission and surface grime, without washing them out. Inspect neutral and runtime night, both sidewalk and driver scale. Record actual measured totals; distance LODs still not authored. Check frame timing only as a local rendering comparison, never claim full-race performance proof.
 
 Sequence: Qwen draft six short shop names with pictogram assignments; read-only design escalation for asset/budget/capture risks; one Claude asset delegation; Codex independent asset review; root integration and relevant ak-test suites; Claude independent integration review, fixes, commit/publish chat preview only. No main merge or assets/final promotion. Deliver images that demonstrate people, sign legibility and pillar structure, not just an aerial view.
+Shop wording draft was delegated to Qwen. Lead edited out brand-like suggestions and unclear wording. Use these original signs (ASCII):
+ROOT KITCHEN | steaming bowl / leaf | prepared food
+REDLINE RAMEN | noodle bowl / chopsticks | noodles
+BOLT & BREW | cup / steam | coffee
+ORBIT PANTRY | shopping basket / produce | groceries
+PATCH BAY | crossed wrench / gear | repairs
+RETHREAD | shirt / spool | clothing
+Some storefronts may use short invented glyph rows instead of English, but retain the unmistakable icon and distinct color/layout. English signs should be genuinely legible at sidewalk distance, not alphanumeric unit labels.
