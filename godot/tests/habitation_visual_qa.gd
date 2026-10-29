@@ -4,11 +4,17 @@ extends Node3D
 const MODEL := "res://assets/city/candidates/habitation_workshop.glb"
 # Matches the standalone prototype policy in validate_habitation_workshop.py::TRI_CAP.
 const PROTOTYPE_TRIANGLE_CAP := 30000
+const NEIGHBORHOOD_DIRECTORY := "res://assets/city/candidates/neighborhood/"
+# Keep selection and near-view policy aligned with validate_city_neighborhood.py.
+const NEIGHBORHOOD_IDS := ["market_habitat", "service_tenement", "freight_depot"]
+const NEIGHBORHOOD_TRIANGLE_CAP := 35000
 var _camera: Camera3D
 var _environment: WorldEnvironment
 var _box := AABB()
 var _directory := ""
 var _fail := 0
+var _asset_id := "habitation_workshop"
+var _review_targets: Dictionary = {}
 
 
 func _ready() -> void:
@@ -17,7 +23,32 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	var baseline := "--baseline" in OS.get_cmdline_user_args()
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--asset="):
+			_asset_id = argument.trim_prefix("--asset=")
+	var neighborhood := _asset_id in NEIGHBORHOOD_IDS
+	if (_asset_id != "habitation_workshop" and not neighborhood) or (baseline and neighborhood):
+		push_error("Unknown or conflicting architecture review selection: " + _asset_id)
+		get_tree().quit(1)
+		return
+	if neighborhood:
+		var manifest_path := NEIGHBORHOOD_DIRECTORY + "neighborhood_manifest.json"
+		var manifest: Variant = JSON.parse_string(FileAccess.get_file_as_string(manifest_path))
+		if not manifest is Dictionary or not manifest.get("assets") is Array:
+			push_error("Cannot read neighborhood manifest: " + manifest_path)
+			get_tree().quit(1)
+			return
+		for entry: Variant in manifest["assets"]:
+			if entry is Dictionary and entry.get("id") == _asset_id and entry.get("review_targets") is Dictionary:
+				_review_targets = entry["review_targets"]
+		for target: String in ["entry", "activity", "service"]:
+			if not _review_targets.has(target):
+				push_error("Neighborhood asset lacks review target: " + _asset_id + "/" + target)
+				get_tree().quit(1)
+				return
 	var folder := "city-habitation-baseline" if baseline else "city-habitation"
+	if neighborhood:
+		folder = "city-neighborhood/" + _asset_id
 	_directory = ProjectSettings.globalize_path("res://").path_join("../.ai/captures/" + folder).simplify_path()
 	var directory_error := DirAccess.make_dir_recursive_absolute(_directory)
 	if directory_error != OK:
@@ -25,6 +56,8 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	var model_path := "res://assets/city/kit/shutter_workshop.glb" if baseline else MODEL
+	if neighborhood:
+		model_path = NEIGHBORHOOD_DIRECTORY + _asset_id + ".glb"
 	var packed := load(model_path) as PackedScene
 	if packed == null:
 		push_error("Cannot load habitation review model: " + model_path)
@@ -62,11 +95,12 @@ func _ready() -> void:
 					material.vertex_color_use_as_albedo = true
 					mesh.set_surface_override_material(surface, material)
 					print("HABITATION_MATERIAL_ADAPT enabled authored vertex colors: ", material.resource_name)
-	if first or triangles <= 0 or triangles > PROTOTYPE_TRIANGLE_CAP:
+	var triangle_cap := NEIGHBORHOOD_TRIANGLE_CAP if neighborhood else PROTOTYPE_TRIANGLE_CAP
+	if first or triangles <= 0 or triangles > triangle_cap:
 		push_error("Habitation candidate geometry is missing or over budget")
 		get_tree().quit(1)
 		return
-	print("HABITATION_GEOMETRY meshes=%d triangles=%d colored_vertices=%d bounds=%s" % [meshes.size(), triangles, colored_vertices, _box])
+	print("HABITATION_GEOMETRY asset=%s meshes=%d triangles=%d colored_vertices=%d bounds=%s" % [_asset_id, meshes.size(), triangles, colored_vertices, _box])
 	_environment = WorldEnvironment.new()
 	add_child(_environment)
 	_camera = Camera3D.new()
@@ -120,14 +154,19 @@ func _studio() -> void:
 	await _capture("studio-street-1.6m")
 	var front_z := _box.position.z
 	var center := _box.get_center()
-	var entry := Vector3(center.x + _box.size.x * 0.27, 3.0, front_z)
+	var entry := _target("entry", Vector3(center.x + _box.size.x * 0.27, 3.0, front_z))
 	_camera.position = entry + Vector3(4.0, 1.0, -9.0)
 	_camera.look_at(entry, Vector3.UP)
 	await _capture("studio-entry-detail")
-	var habitation := Vector3(center.x - _box.size.x * 0.1, _box.size.y * 0.67, front_z + 1.0)
+	var habitation := _target("activity", Vector3(center.x - _box.size.x * 0.1, _box.size.y * 0.67, front_z + 1.0))
 	_camera.position = habitation + Vector3(-5.0, 1.0, -11.0)
 	_camera.look_at(habitation, Vector3.UP)
 	await _capture("studio-habitation-detail")
+	if not _review_targets.is_empty():
+		var service := _target("service", center)
+		_camera.position = service + Vector3(-8.0, 3.0, 11.0)
+		_camera.look_at(service, Vector3.UP)
+		await _capture("studio-service-detail")
 	key.free()
 	fill.free()
 
@@ -188,6 +227,21 @@ func _fit(direction: Vector3) -> void:
 func _street() -> void:
 	_camera.position = Vector3(_box.get_center().x + _box.size.x * 0.45, 1.6, _box.position.z - _box.size.x * 1.3)
 	_camera.look_at(Vector3(_box.get_center().x, _box.size.y * 0.35, _box.get_center().z), Vector3.UP)
+
+
+func _target(key: String, fallback: Vector3) -> Vector3:
+	if _review_targets.is_empty():
+		return fallback
+	var raw: Variant = _review_targets.get(key)
+	if raw is Array and raw.size() == 3:
+		var valid := true
+		for component: Variant in raw:
+			valid = valid and (component is float or component is int) and is_finite(float(component))
+		if valid:
+			return Vector3(float(raw[0]), float(raw[1]), float(raw[2]))
+	_fail += 1
+	push_error("Invalid architecture review target: " + _asset_id + "/" + key)
+	return fallback
 
 
 func _capture(label: String) -> void:
