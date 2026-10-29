@@ -33,14 +33,10 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	print("STREET_BLOCK_REVIEW triangles=%d placements=%d lights=%d" % [block.get_meta("triangle_count"), block.get_meta("placements").size(), block.get_meta("light_count")])
-	var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/city/candidates/neighborhood/neighborhood_manifest.json"))
-	for entry: Dictionary in manifest["assets"]:
-		if entry["id"] == "market_habitat":
-			var target: Array = entry["review_targets"]["activity"]
-			_market_activity = Vector3(target[0], target[1], target[2])
-	for placement: Dictionary in block.get_meta("placements"):
-		if placement["asset"] == "market_habitat":
-			_market_transform = placement["transform"]
+	if not _configure_market_review(block):
+		push_error("Market detail review requires a finite activity target and a placed market building")
+		get_tree().quit(1)
+		return
 	_environment = WorldEnvironment.new()
 	add_child(_environment)
 	_camera = Camera3D.new()
@@ -51,6 +47,32 @@ func _ready() -> void:
 	await _views()
 	print("STREET_BLOCK_VISUAL_QA failures=%d" % _fail)
 	get_tree().quit(1 if _fail else 0)
+
+
+func _configure_market_review(block: Node3D) -> bool:
+	var manifest: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://assets/city/candidates/neighborhood/neighborhood_manifest.json"))
+	if not manifest is Dictionary or not manifest.get("assets") is Array:
+		return false
+	var has_target := false
+	for entry: Variant in manifest["assets"]:
+		if not entry is Dictionary or entry.get("id") != "market_habitat":
+			continue
+		var targets: Variant = entry.get("review_targets")
+		if not targets is Dictionary:
+			return false
+		var target: Variant = targets.get("activity")
+		if not target is Array or target.size() != 3:
+			return false
+		for component: Variant in target:
+			if not (component is float or component is int) or not is_finite(float(component)):
+				return false
+		_market_activity = Vector3(target[0], target[1], target[2])
+		has_target = true
+	for placement: Dictionary in block.get_meta("placements", []):
+		if placement.get("asset") == "market_habitat" and placement.get("transform") is Transform3D:
+			_market_transform = placement["transform"]
+			return has_target
+	return false
 
 
 func _views() -> void:

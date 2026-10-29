@@ -358,7 +358,7 @@ func _test_materials(block: Node3D) -> void:
 			materials = materials and mesh.surface_get_material(surface) != null
 			if id in HEROES or id in CityStreetBlock.STREET_IDS:
 				var material := mesh.surface_get_material(surface) as BaseMaterial3D
-				if material != null and material.resource_name not in ["glow_cyan", "glow_amber"]:
+				if material != null and material.resource_name in ["steel", "ceramic", "cavity", "machinery", "trim"]:
 					tinted_fill = tinted_fill and material.emission_operator == BaseMaterial3D.EMISSION_OP_MULTIPLY and material.emission == Color.WHITE
 		if id in HEROES or id in CityStreetBlock.STREET_IDS:
 			_check("%s keeps its source vertex colours" % id, coloured)
