@@ -48,6 +48,15 @@ bells on reinforced external frames, cooling fins, bolted armor skirts and
 roof/quarter sensor blocks in bone cream or gunmetal. Rectangular glass tail
 arrays, segmented readouts and cyan status grids on rear fascia plates.
 
+## Inhabited city refinement
+
+The user-approved civilian-city direction is grounded, worn industrial science
+fiction, with close-range people, storefronts and supports matching the vehicles'
+construction and material credibility. Repaired machinery and small human comforts
+sit inside the existing dark biomechanical world. The distant skyline remains the
+reference for the far city. See [the vehicle-matched storefront benchmark](inhabited-city-benchmark.md)
+for the next small candidate scene and its review criteria.
+
 ## Acceptance and current scope
 
 Verify SSS plus dedicated normal/roughness maps for organics, no sun, and stable
