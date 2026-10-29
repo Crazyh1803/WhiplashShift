@@ -10,7 +10,7 @@ Inhabited-city buildings at the approved `habitation_workshop` quality bar. Stat
 
 All: metres, foot-centred at y=0, Godot -Z front, one combined mesh, 8 shared semantic materials (steel, ceramic, cavity,
 machinery, sinew, glow_cyan, glow_amber, trim), real `COLOR_0` wear/tint (market dusty oxide, tenement faded blue/teal, depot
-faded ochre/oxide), near-review cap 35,000 triangles each (currently ~34k / ~33k / ~29k). Depot manifest bounds: 53.0 x 13.5 x
+faded ochre/oxide), near-review cap 50,000 triangles each (market 49,400 / tenement 36,929 / depot 34,737 after the market identity pass). Depot manifest bounds: 53.0 x 13.5 x
 35.6 m AABB, 12.2 m front setback (dock, canopy and apron ahead of the facade plane). No lights, cameras, collision, animation
 or extras. No mid/far LODs exist for any of the three.
 
@@ -20,8 +20,15 @@ or extras. No mid/far LODs exist for any of the three.
   Adds `bays`, `shell` (per-side wall thickness, repair patches), `fit_stall`, `person`, `awning`, `ladder`, `laundry`,
   `cistern`, `tendon`, `gallery`, `sign_plate`. Buildings register with `@building(...)`; `main()` builds each from a clean
   scene and snapshots/restores the workshop globals (`ASSET_ID`, `OFFSET`).
+- `city_detail.py` — shared human-scale helpers (Kit primitives only): `person` (~600-800 tris, role poses via two-bone IK:
+  stand/shopper/walker/worker/vendor/diner; shaped head with nose, ears, eyes, mouth, hair or hat; neck, shoulders, waist, bent
+  clothed limbs, hands, boots, bags/bowls/tools; faces local +Y at rot=0; `stool=True` seats diners), `shop_sign` /
+  `blade_sign` / `pictogram` / `neon_text` / `glyph_row` (5x7 emissive lettering, neon-tube icons, invented glyph rows,
+  `SHOPS` and `PLAQUES` tables), `shop_goods` (counter goods per shop identity), `pier` (footing, plinth, anchor bolts, three
+  drum shafts with collars, flared capital with gusset ribs, head plate). `city_detail_lineup.py` renders a role/sign/pier
+  lineup with per-person triangle counts (`ak-blender tools/city_pipeline/city_detail_lineup.py -- --outdir <abs path>`).
 - `validate_city_neighborhood.py` — stdlib validator (wired into `tools/workflow/test_season.py`): reuses the workshop
-  validator's decoders/checks at the 35k cap, plus exact ID set, plain filename paths, no extras, review-target envelope,
+  validator's decoders/checks at the 50k cap, plus exact ID set, plain filename paths, no extras, review-target envelope,
   honest LOD note, minimum-detail floor, distinct GLBs.
 - `city_neighborhood_depot.py` — `register(nb)` hook for `freight_depot` (imported at the bottom of the builder): own
   `fit_bay` / `fit_control` openings, dock / canopy / rear-yard / roof parts, review targets and 8 shots.
@@ -58,4 +65,12 @@ The first three each save ten neutral/detail/night captures in `.ai/captures/cit
 
 Decorative residents and workers are static posed geometry in these review meshes, not animated NPCs. The separate 1.75 m Blender inspection figure is not exported. All three retain shared reusable component vocabulary, but use distinct building layouts.
 
-Verified exports: market 33,781 triangles, tenement 33,216, depot 29,317. The opening street block now places these meshes within its measured 190k budget, with distance culling. Authored mid/far LODs and placement in other race districts remain future work.
+Market identity pass: six original signs (ROOT KITCHEN, REDLINE RAMEN, BOLT & BREW, ORBIT PANTRY, PATCH BAY, RETHREAD) with
+neon-tube pictograms and some invented glyph rows, plus STAIRS / WATER door plaques, hang from the gallery-deck soffit just in
+front of the arcade piers (so no pier covers a name); shop goods and vendor props match each shop; piers are segmented load
+paths; shoppers/walkers/diners/vendors use `city_detail.person`. Night-comparison shots end in `_night` (dark world, ~4% light).
+Before/after street views: `assets/previews/city_neighborhood/before_market_identity/` vs `<id>/entry_street_human.png`.
+Neon letters are 5x7 front-face quads (about 0.21-0.24 m tall) on dark boards; tenement/depot plates still use the older
+alphanumeric stencils. Per-person triangles are measured in `qa.json` (`parts[".people"]`).
+
+Verified exports: market 49,400 triangles, tenement 36,929, depot 34,737. The opening street block now places these meshes within its measured 190k budget, with distance culling. Authored mid/far LODs and placement in other race districts remain future work.

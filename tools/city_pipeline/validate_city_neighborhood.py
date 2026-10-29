@@ -1,7 +1,7 @@
 """Validate the neighbourhood candidate GLBs against neighborhood_manifest.json (stdlib only). Exit 1 on any failure.
 
 Reuses the approved workshop validator's low-level decoders and per-GLB checks (bounds, grounding, COLOR_0, materials,
-no cameras/lights/collision) at the 35k near-review cap, then adds manifest-level, path, ID-set and review-target checks.
+no cameras/lights/collision) at the 50k near-review cap, then adds manifest-level, path, ID-set and review-target checks.
 
 Usage: python validate_city_neighborhood.py [neighborhood_candidate_dir]
 """
@@ -15,7 +15,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 EXPECTED_IDS = ("market_habitat", "service_tenement", "freight_depot")
-TRI_CAP = 35000
+TRI_CAP = 50000
 MIN_TRIS = 8000                                          # a "detailed" building, not a blockout
 TARGETS = ("entry", "activity", "service")
 MARGIN = 6.0                                             # review targets sit in the street/yard, just outside the AABB

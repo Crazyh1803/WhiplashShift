@@ -1,6 +1,6 @@
 {
-  "tris": 29317,
-  "verts": 21922,
+  "tris": 34737,
+  "verts": 25969,
   "lo": [
     -26.5,
     0.0,
@@ -12,42 +12,43 @@
     17.8
   ],
   "colors": {
-    "corners": 58495,
+    "corners": 69793,
     "min": 0.162,
-    "mean": 0.617,
+    "mean": 0.582,
     "max": 0.86,
-    "distinct": 1615
+    "distinct": 1975
   },
   "parts": {
     ".fit_door": 374,
-    ".fit_bay": 7982,
-    ".windows": 11792,
+    ".people": 6348,
+    ".fit_bay": 9846,
+    ".windows": 15314,
     ".armor": 2615,
     ".patches": 120,
     ".fit_louvre": 998,
     ".fit_slits": 450,
     ".breach": 162,
     ".fit_strip": 350,
-    "d_hall": 13942,
-    ".fit_control": 1092,
+    "d_hall": 15806,
+    ".fit_control": 2750,
     ".booth_roof": 64,
-    "d_booth": 1949,
+    "d_booth": 3607,
     ".dock_deck": 978,
     ".levelers": 420,
     ".canopy": 1052,
     ".dock_stairs": 632,
     ".apron": 252,
-    ".dock_goods": 1536,
-    "d_dock": 4870,
+    ".dock_goods": 2916,
+    "d_dock": 6250,
     ".track": 828,
     ".flatcar": 1202,
     ".gantry": 942,
     ".rear_services": 2148,
     "d_rear": 5120,
     ".left_services": 1154,
-    ".right_services": 524,
+    ".right_services": 1042,
     ".roof": 1758,
-    "d_sides_roof": 3436
+    "d_sides_roof": 3954
   },
   "cameras_lights": []
 }

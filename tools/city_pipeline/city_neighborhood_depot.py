@@ -159,7 +159,7 @@ def register(nb):
             sb(k, 0.2 + i * 0.35, 0.5 + i * 0.35, -t + 0.04, -t + 0.12, 1.55, 1.9, "trim")
         for i in range(n + 1):
             sb(k, (w * i / n) - 0.035, (w * i / n) + 0.035, -0.1, 0.06, 0.0, h, "machinery", skip=("zn", "zp"))
-        person(k, w * 0.55, -t + 1.05, 0.0, rng, pi, True)
+        person(k, w * 0.55, -t + 1.05, 0.0, rng, pi, True, stool=True)
         sb(k, w * 0.5 - 0.2, w * 0.5 + 0.2, -t + 0.9, -t + 1.3, 0.05, 0.1, "steel")
 
     # ------------------------------------------------------------------------ parts
