@@ -1,0 +1,565 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "sidewalk_panel",
+      "class": "paving",
+      "glb": "sidewalk_panel.glb",
+      "tris": 366,
+      "tri_cap": 450,
+      "size": {
+        "x": 6.0,
+        "y": 0.18,
+        "z": 4.0
+      },
+      "aabb": {
+        "min": [
+          -3.0,
+          0.0,
+          -2.0
+        ],
+        "max": [
+          3.0,
+          0.18,
+          2.0
+        ]
+      },
+      "footprint": {
+        "min": [
+          -3.0,
+          -2.0
+        ],
+        "max": [
+          3.0,
+          2.0
+        ]
+      },
+      "front_setback_m": 2.0,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "cavity",
+        "machinery",
+        "trim"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "vertex_colors": {
+        "attribute": "COLOR_0",
+        "role": "multiplies albedo: grime, scuffs, paint and repair tint"
+      },
+      "identity": "Six inset gray-brown paving slabs on a dark sub-base with settled heights, hairline cracks, a bolted steel expansion strip, a bright replacement slab with a bolted service plate and a row of tactile studs on the kerb edge.",
+      "style_note": "Weathered ceramic paving, dark metal strip, restrained oxide/teal repairs.",
+      "lod_strategy": "Single near mesh only. No mid/far LODs exist yet; street furniture is batched by the block builder.",
+      "provenance": {
+        "builder": "tools/city_pipeline/build_city_streets.py",
+        "helpers": "tools/city_pipeline/build_habitation_workshop.py",
+        "blender": "5.2.3 LTS",
+        "source_blend": "assets/generated/city_streets/sidewalk_panel/sidewalk_panel.blend",
+        "qa": "assets/generated/city_streets/sidewalk_panel/qa.json",
+        "previews": [
+          "assets/previews/city_streets/sidewalk_panel/three_quarter.png",
+          "assets/previews/city_streets/sidewalk_panel/top_detail.png",
+          "assets/previews/city_streets/sidewalk_panel/human_scale.png"
+        ],
+        "export": "bpy.ops.export_scene.gltf via workshop export_glb, before wire_vertex_colors"
+      },
+      "budget_note": "366 tris of the 450 cap, 5 semantic surfaces, COLOR_0 wear."
+    },
+    {
+      "id": "curb_segment",
+      "class": "paving",
+      "glb": "curb_segment.glb",
+      "tris": 118,
+      "tri_cap": 180,
+      "size": {
+        "x": 6.0,
+        "y": 0.2205,
+        "z": 0.2205
+      },
+      "aabb": {
+        "min": [
+          -3.0,
+          0.0,
+          -0.1103
+        ],
+        "max": [
+          3.0,
+          0.2205,
+          0.1103
+        ]
+      },
+      "footprint": {
+        "min": [
+          -3.0,
+          -0.1103
+        ],
+        "max": [
+          3.0,
+          0.1103
+        ]
+      },
+      "front_setback_m": 0.1102,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+      "surfaces": [
+        "ceramic",
+        "cavity",
+        "trim"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "vertex_colors": {
+        "attribute": "COLOR_0",
+        "role": "multiplies albedo: grime, scuffs, paint and repair tint"
+      },
+      "identity": "Chamfered kerb run of four 1.5 m stones with cut joints and slightly settled tops, faded ochre hazard dashes and chipped corners.",
+      "style_note": "Weathered ceramic with dark joints and faded paint.",
+      "lod_strategy": "Single near mesh only. No mid/far LODs exist yet; street furniture is batched by the block builder.",
+      "provenance": {
+        "builder": "tools/city_pipeline/build_city_streets.py",
+        "helpers": "tools/city_pipeline/build_habitation_workshop.py",
+        "blender": "5.2.3 LTS",
+        "source_blend": "assets/generated/city_streets/curb_segment/curb_segment.blend",
+        "qa": "assets/generated/city_streets/curb_segment/qa.json",
+        "previews": [
+          "assets/previews/city_streets/curb_segment/three_quarter.png",
+          "assets/previews/city_streets/curb_segment/road_side.png",
+          "assets/previews/city_streets/curb_segment/human_scale.png"
+        ],
+        "export": "bpy.ops.export_scene.gltf via workshop export_glb, before wire_vertex_colors"
+      },
+      "budget_note": "118 tris of the 180 cap, 3 semantic surfaces, COLOR_0 wear."
+    },
+    {
+      "id": "drain_cover",
+      "class": "fitting",
+      "glb": "drain_cover.glb",
+      "tris": 184,
+      "tri_cap": 300,
+      "size": {
+        "x": 1.2,
+        "y": 0.066,
+        "z": 0.7
+      },
+      "aabb": {
+        "min": [
+          -0.6,
+          0.0,
+          -0.35
+        ],
+        "max": [
+          0.6,
+          0.066,
+          0.35
+        ]
+      },
+      "footprint": {
+        "min": [
+          -0.6,
+          -0.35
+        ],
+        "max": [
+          0.6,
+          0.35
+        ]
+      },
+      "front_setback_m": 0.3499,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+      "surfaces": [
+        "steel",
+        "cavity",
+        "machinery",
+        "trim"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "vertex_colors": {
+        "attribute": "COLOR_0",
+        "role": "multiplies albedo: grime, scuffs, paint and repair tint"
+      },
+      "identity": "Cast steel storm-drain grating: flanged frame, eleven slotted bars over a dark sump, four bolts and a hinge lug.",
+      "style_note": "Dark metal with rust-brown grime and bright worn bar tops.",
+      "lod_strategy": "Single near mesh only. No mid/far LODs exist yet; street furniture is batched by the block builder.",
+      "provenance": {
+        "builder": "tools/city_pipeline/build_city_streets.py",
+        "helpers": "tools/city_pipeline/build_habitation_workshop.py",
+        "blender": "5.2.3 LTS",
+        "source_blend": "assets/generated/city_streets/drain_cover/drain_cover.blend",
+        "qa": "assets/generated/city_streets/drain_cover/qa.json",
+        "previews": [
+          "assets/previews/city_streets/drain_cover/three_quarter.png",
+          "assets/previews/city_streets/drain_cover/top_detail.png",
+          "assets/previews/city_streets/drain_cover/human_scale.png"
+        ],
+        "export": "bpy.ops.export_scene.gltf via workshop export_glb, before wire_vertex_colors"
+      },
+      "budget_note": "184 tris of the 300 cap, 4 semantic surfaces, COLOR_0 wear."
+    },
+    {
+      "id": "street_lamp",
+      "class": "furniture",
+      "glb": "street_lamp.glb",
+      "tris": 702,
+      "tri_cap": 1600,
+      "size": {
+        "x": 0.6,
+        "y": 7.88,
+        "z": 3.7633
+      },
+      "aabb": {
+        "min": [
+          -0.3,
+          0.0,
+          -1.8817
+        ],
+        "max": [
+          0.3,
+          7.88,
+          1.8817
+        ]
+      },
+      "footprint": {
+        "min": [
+          -0.3,
+          -1.8817
+        ],
+        "max": [
+          0.3,
+          1.8817
+        ]
+      },
+      "front_setback_m": 1.8816,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "cavity",
+        "machinery",
+        "glow_cyan",
+        "glow_amber",
+        "trim"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "vertex_colors": {
+        "attribute": "COLOR_0",
+        "role": "multiplies albedo: grime, scuffs, paint and repair tint"
+      },
+      "identity": "Eight-metre dark-metal lamp pole on an octagonal plinth with service hatch, riser conduit and collars; a curved arm carries a hooded amber luminaire over the carriageway, balanced by a banner boom with a faded hanging banner.",
+      "style_note": "Dark steel and ceramic plinth, brass collars, one amber lens, a small cyan status light.",
+      "lod_strategy": "Single near mesh only. No mid/far LODs exist yet; street furniture is batched by the block builder.",
+      "provenance": {
+        "builder": "tools/city_pipeline/build_city_streets.py",
+        "helpers": "tools/city_pipeline/build_habitation_workshop.py",
+        "blender": "5.2.3 LTS",
+        "source_blend": "assets/generated/city_streets/street_lamp/street_lamp.blend",
+        "qa": "assets/generated/city_streets/street_lamp/qa.json",
+        "previews": [
+          "assets/previews/city_streets/street_lamp/three_quarter.png",
+          "assets/previews/city_streets/street_lamp/side_arm.png",
+          "assets/previews/city_streets/street_lamp/head_detail.png",
+          "assets/previews/city_streets/street_lamp/base_human.png"
+        ],
+        "export": "bpy.ops.export_scene.gltf via workshop export_glb, before wire_vertex_colors"
+      },
+      "budget_note": "702 tris of the 1600 cap, 7 semantic surfaces, COLOR_0 wear."
+    },
+    {
+      "id": "bollard",
+      "class": "furniture",
+      "glb": "bollard.glb",
+      "tris": 260,
+      "tri_cap": 300,
+      "size": {
+        "x": 0.34,
+        "y": 1.115,
+        "z": 0.34
+      },
+      "aabb": {
+        "min": [
+          -0.17,
+          0.0,
+          -0.17
+        ],
+        "max": [
+          0.17,
+          1.115,
+          0.17
+        ]
+      },
+      "footprint": {
+        "min": [
+          -0.17,
+          -0.17
+        ],
+        "max": [
+          0.17,
+          0.17
+        ]
+      },
+      "front_setback_m": 0.17,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+      "surfaces": [
+        "steel",
+        "cavity",
+        "machinery",
+        "glow_cyan",
+        "glow_amber",
+        "trim"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "vertex_colors": {
+        "attribute": "COLOR_0",
+        "role": "multiplies albedo: grime, scuffs, paint and repair tint"
+      },
+      "identity": "Fat eight-sided steel bollard with a base flange, dome cap, glowing amber reflector band, worn hazard collar and dents.",
+      "style_note": "Dark metal, oxide scuffs, one amber band, tiny cyan pip.",
+      "lod_strategy": "Single near mesh only. No mid/far LODs exist yet; street furniture is batched by the block builder.",
+      "provenance": {
+        "builder": "tools/city_pipeline/build_city_streets.py",
+        "helpers": "tools/city_pipeline/build_habitation_workshop.py",
+        "blender": "5.2.3 LTS",
+        "source_blend": "assets/generated/city_streets/bollard/bollard.blend",
+        "qa": "assets/generated/city_streets/bollard/qa.json",
+        "previews": [
+          "assets/previews/city_streets/bollard/three_quarter.png",
+          "assets/previews/city_streets/bollard/side.png",
+          "assets/previews/city_streets/bollard/human_scale.png"
+        ],
+        "export": "bpy.ops.export_scene.gltf via workshop export_glb, before wire_vertex_colors"
+      },
+      "budget_note": "260 tris of the 300 cap, 6 semantic surfaces, COLOR_0 wear."
+    },
+    {
+      "id": "bench_planter",
+      "class": "furniture",
+      "glb": "bench_planter.glb",
+      "tris": 852,
+      "tri_cap": 1800,
+      "size": {
+        "x": 3.81,
+        "y": 1.5,
+        "z": 1.2
+      },
+      "aabb": {
+        "min": [
+          -1.905,
+          0.0,
+          -0.6
+        ],
+        "max": [
+          1.905,
+          1.5,
+          0.6
+        ]
+      },
+      "footprint": {
+        "min": [
+          -1.905,
+          -0.6
+        ],
+        "max": [
+          1.905,
+          0.6
+        ]
+      },
+      "front_setback_m": 0.6,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "machinery",
+        "glow_cyan",
+        "glow_amber",
+        "trim"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "vertex_colors": {
+        "attribute": "COLOR_0",
+        "role": "multiplies albedo: grime, scuffs, paint and repair tint"
+      },
+      "identity": "Street bench with slatted seat and backrest on cast steel supports, armrests and an under-seat cyan strip, fused to a raised planter box with a rim, bolt rows, soil, drip line, ground-cover and a small tree.",
+      "style_note": "Dark steel frames, warm worn slats with one teal replacement, greens, tiny amber and cyan lights.",
+      "lod_strategy": "Single near mesh only. No mid/far LODs exist yet; street furniture is batched by the block builder.",
+      "provenance": {
+        "builder": "tools/city_pipeline/build_city_streets.py",
+        "helpers": "tools/city_pipeline/build_habitation_workshop.py",
+        "blender": "5.2.3 LTS",
+        "source_blend": "assets/generated/city_streets/bench_planter/bench_planter.blend",
+        "qa": "assets/generated/city_streets/bench_planter/qa.json",
+        "previews": [
+          "assets/previews/city_streets/bench_planter/three_quarter.png",
+          "assets/previews/city_streets/bench_planter/front.png",
+          "assets/previews/city_streets/bench_planter/rear_three_quarter.png",
+          "assets/previews/city_streets/bench_planter/human_scale.png"
+        ],
+        "export": "bpy.ops.export_scene.gltf via workshop export_glb, before wire_vertex_colors"
+      },
+      "budget_note": "852 tris of the 1800 cap, 6 semantic surfaces, COLOR_0 wear."
+    },
+    {
+      "id": "refuse_station",
+      "class": "furniture",
+      "glb": "refuse_station.glb",
+      "tris": 936,
+      "tri_cap": 1800,
+      "size": {
+        "x": 3.0,
+        "y": 2.2,
+        "z": 1.5
+      },
+      "aabb": {
+        "min": [
+          -1.5,
+          -0.0,
+          -0.75
+        ],
+        "max": [
+          1.5,
+          2.2,
+          0.75
+        ]
+      },
+      "footprint": {
+        "min": [
+          -1.5,
+          -0.75
+        ],
+        "max": [
+          1.5,
+          0.75
+        ]
+      },
+      "front_setback_m": 0.75,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "cavity",
+        "machinery",
+        "glow_cyan",
+        "glow_amber",
+        "trim"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "vertex_colors": {
+        "attribute": "COLOR_0",
+        "role": "multiplies albedo: grime, scuffs, paint and repair tint"
+      },
+      "identity": "Open-fronted waste-sorting shelter: floor plate, four posts, louvred back wall with stencilled A/B/C chutes, canopy roof with drip lip, three wheeled bins (oxide, teal, gray) with lids and handles, status lights and a hanging tag.",
+      "style_note": "Dark metal shelter, painted bins, amber and cyan indicators.",
+      "lod_strategy": "Single near mesh only. No mid/far LODs exist yet; street furniture is batched by the block builder.",
+      "provenance": {
+        "builder": "tools/city_pipeline/build_city_streets.py",
+        "helpers": "tools/city_pipeline/build_habitation_workshop.py",
+        "blender": "5.2.3 LTS",
+        "source_blend": "assets/generated/city_streets/refuse_station/refuse_station.blend",
+        "qa": "assets/generated/city_streets/refuse_station/qa.json",
+        "previews": [
+          "assets/previews/city_streets/refuse_station/three_quarter.png",
+          "assets/previews/city_streets/refuse_station/front.png",
+          "assets/previews/city_streets/refuse_station/rear_three_quarter.png",
+          "assets/previews/city_streets/refuse_station/human_scale.png"
+        ],
+        "export": "bpy.ops.export_scene.gltf via workshop export_glb, before wire_vertex_colors"
+      },
+      "budget_note": "936 tris of the 1800 cap, 7 semantic surfaces, COLOR_0 wear."
+    },
+    {
+      "id": "alley_conduit",
+      "class": "overhead",
+      "glb": "alley_conduit.glb",
+      "tris": 1442,
+      "tri_cap": 1800,
+      "size": {
+        "x": 8.0,
+        "y": 4.5,
+        "z": 1.0095
+      },
+      "aabb": {
+        "min": [
+          -4.0,
+          0.0,
+          -0.5048
+        ],
+        "max": [
+          4.0,
+          4.5,
+          0.5048
+        ]
+      },
+      "footprint": {
+        "min": [
+          -4.0,
+          -0.5048
+        ],
+        "max": [
+          4.0,
+          0.5048
+        ]
+      },
+      "front_setback_m": 0.5047,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+      "surfaces": [
+        "steel",
+        "cavity",
+        "machinery",
+        "glow_cyan",
+        "glow_amber",
+        "trim"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "vertex_colors": {
+        "attribute": "COLOR_0",
+        "role": "multiplies albedo: grime, scuffs, paint and repair tint"
+      },
+      "identity": "Overhead utility run for an eight-metre alley: three portal frames with braced posts carry two fat pipes, a smaller flanged line and a cable tray with sagging cable drops, a junction box with amber and cyan lights and a faded hazard tag.",
+      "style_note": "Dark metal frames, ochre pipe tones, restrained oxide and teal repair colours.",
+      "lod_strategy": "Single near mesh only. No mid/far LODs exist yet; street furniture is batched by the block builder.",
+      "provenance": {
+        "builder": "tools/city_pipeline/build_city_streets.py",
+        "helpers": "tools/city_pipeline/build_habitation_workshop.py",
+        "blender": "5.2.3 LTS",
+        "source_blend": "assets/generated/city_streets/alley_conduit/alley_conduit.blend",
+        "qa": "assets/generated/city_streets/alley_conduit/qa.json",
+        "previews": [
+          "assets/previews/city_streets/alley_conduit/three_quarter.png",
+          "assets/previews/city_streets/alley_conduit/side_end.png",
+          "assets/previews/city_streets/alley_conduit/underside.png",
+          "assets/previews/city_streets/alley_conduit/human_scale.png"
+        ],
+        "export": "bpy.ops.export_scene.gltf via workshop export_glb, before wire_vertex_colors"
+      },
+      "budget_note": "1442 tris of the 1800 cap, 6 semantic surfaces, COLOR_0 wear."
+    }
+  ]
+}

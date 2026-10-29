@@ -1,0 +1,32 @@
+{
+  "tris": 118,
+  "verts": 112,
+  "lo": [
+    -3.0,
+    0.0,
+    -0.11
+  ],
+  "hi": [
+    3.0,
+    0.221,
+    0.11
+  ],
+  "colors": {
+    "corners": 220,
+    "min": 0.185,
+    "mean": 0.384,
+    "max": 1.0,
+    "distinct": 58
+  },
+  "surfaces": [
+    "ceramic",
+    "cavity",
+    "trim"
+  ],
+  "offset": [
+    -0.0,
+    -0.1103,
+    -0.0
+  ],
+  "cameras_lights": []
+}

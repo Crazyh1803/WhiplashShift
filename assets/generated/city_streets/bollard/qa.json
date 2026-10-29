@@ -1,0 +1,35 @@
+{
+  "tris": 260,
+  "verts": 193,
+  "lo": [
+    -0.17,
+    0.0,
+    -0.17
+  ],
+  "hi": [
+    0.17,
+    1.115,
+    0.17
+  ],
+  "colors": {
+    "corners": 524,
+    "min": 0.177,
+    "mean": 0.561,
+    "max": 1.0,
+    "distinct": 90
+  },
+  "surfaces": [
+    "steel",
+    "cavity",
+    "machinery",
+    "glow_cyan",
+    "glow_amber",
+    "trim"
+  ],
+  "offset": [
+    -0.0,
+    -0.0,
+    -0.0
+  ],
+  "cameras_lights": []
+}
