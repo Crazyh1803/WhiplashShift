@@ -172,7 +172,7 @@ func _set_view(index: int) -> void:
 			from = at + Vector3(0.8, 0.5, -3.2)
 		4, 5:
 			at = benchmark.target("vendor_face" if view_index == 4 else "customer_face")
-			from = at + Vector3(0.45, 0.05, -1.8 if view_index == 4 else 1.8)
+			from = at + (Vector3(-0.7, 0.05, -1.8) if view_index == 4 else Vector3(0.45, 0.05, 1.8))
 		6:
 			at = benchmark.target("support")
 			from = at + Vector3(1.7, 0.6, -3.0)

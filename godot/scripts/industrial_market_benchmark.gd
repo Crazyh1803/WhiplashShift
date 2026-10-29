@@ -32,7 +32,7 @@ func build() -> bool:
 		return false
 	manifest = raw
 	for placement: Variant in manifest["placements"]:
-		var id: String = placement["id"]
+		var id: String = placement["asset"]
 		if not ResourceLoader.exists(DIRECTORY + id + ".glb"):
 			return _fail("Missing benchmark asset: " + id)
 		var packed := load(DIRECTORY + id + ".glb") as PackedScene
@@ -131,7 +131,10 @@ func _skin_materials(instance: MeshInstance3D) -> void:
 
 
 func target(key: String) -> Vector3:
-	var value: Array = manifest["review_targets"][key]
+	var raw: Variant = manifest["review_targets"][key]
+	if raw is Dictionary:
+		raw = raw.get("cladding_main", raw.values()[0])
+	var value: Array = raw
 	return Vector3(value[0], value[1], value[2])
 
 
@@ -153,19 +156,22 @@ static func manifest_errors(value: Variant) -> Array[String]:
 		return ["Benchmark requires the shop, vendor and customer"]
 	var placed := {}
 	for placement: Variant in value["placements"]:
-		if not placement is Dictionary or placement.get("id") not in IDS or placed.has(placement["id"]):
+		if not placement is Dictionary or placement.get("asset") not in IDS or placed.has(placement["asset"]):
 			return ["Invalid or duplicate benchmark placement"]
 		if not is_vector(placement.get("position")) or not is_number(placement.get("yaw_degrees")):
 			return ["Benchmark placement requires a finite position and yaw"]
-		placed[placement["id"]] = true
+		placed[placement["asset"]] = true
 	if placed.size() != IDS.size():
 		return ["Benchmark requires all three placements"]
 	var targets: Variant = value.get("review_targets")
 	if not targets is Dictionary:
 		return ["Benchmark requires review targets"]
-	for key: String in ["counter", "vendor_face", "customer_face", "support", "sign", "materials"]:
+	for key: String in ["counter", "vendor_face", "customer_face", "support", "sign"]:
 		if not is_vector(targets.get(key)):
 			return ["Missing or invalid benchmark review target: " + key]
+	var material_targets: Variant = targets.get("materials")
+	if not material_targets is Dictionary or material_targets.is_empty() or not material_targets.values().all(is_vector):
+		return ["Benchmark requires finite material inspection targets"]
 	return []
 
 
