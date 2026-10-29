@@ -187,13 +187,17 @@ func _test_scenery(course: CourseDefinition) -> void:
 	var batches := scenery.find_children("*", "MultiMeshInstance3D", true, false)
 	var district := scenery.get_node_or_null("CityKit") as Node3D
 	var instances := 0
+	var street := scenery.get_node_or_null("CityStreetBlock") as Node3D
 	var legacy_batches := 0
+	var street_batches := 0
 	for batch: MultiMeshInstance3D in batches:
 		instances += batch.multimesh.instance_count
-		legacy_batches += int(district == null or not district.is_ancestor_of(batch))
-	var kit_batches := batches.size() - legacy_batches
-	_check("draw nodes bounded (%d meshes, %d legacy + %d kit batches)" % [meshes.size(), legacy_batches, kit_batches],
-		meshes.size() <= 24 and legacy_batches <= 12 and kit_batches <= 14)
+		street_batches += int(street != null and street.is_ancestor_of(batch))
+		legacy_batches += int((district == null or not district.is_ancestor_of(batch)) and (street == null or not street.is_ancestor_of(batch)))
+	var kit_batches := batches.size() - legacy_batches - street_batches
+	_check("street block exists with its own separate draw budget", street != null and street_batches >= 20)
+	_check("draw nodes bounded (%d meshes, %d legacy + %d kit + %d street batches)" % [meshes.size(), legacy_batches, kit_batches, street_batches],
+		meshes.size() <= 24 and legacy_batches <= 12 and kit_batches <= 14 and street_batches <= 24)
 	_check("instance count bounded (%d)" % instances, instances >= 300 and instances <= 4500)
 	_check("has crown, skyline, towers and street kit", scenery.has_node("Crown") and scenery.has_node("Skyline")
 		and scenery.has_node("Body") and scenery.has_node("Rib") and scenery.has_node("Wall") and scenery.has_node("Cyan") and scenery.has_node("Amber"))
@@ -333,7 +337,8 @@ func _test_authored_district(scenery: Node3D, course: CourseDefinition, district
 	var assets := {}
 	for placement: Dictionary in placements:
 		assets[placement["asset"]] = true
-	_check("authored district places many kit pieces (%d)" % placements.size(), placements.size() >= 60)
+	# The street block reserves the near quarter, so only the remaining quarter carries the older kit.
+	_check("authored district places a reduced set across all roles (%d)" % placements.size(), placements.size() >= CityKit.EXPECTED_IDS.size() and placements.size() <= 40)
 	_check("authored district uses all %d kit assets (%d)" % [CityKit.EXPECTED_IDS.size(), assets.size()], assets.size() == CityKit.EXPECTED_IDS.size())
 	_check("authored district stays inside its triangle budget (%d)" % int(district.get_meta("triangle_count")),
 		int(district.get_meta("triangle_count")) > 0 and int(district.get_meta("triangle_count")) <= CityDistrict.TRIANGLE_BUDGET)
