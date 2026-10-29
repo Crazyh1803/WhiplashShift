@@ -139,7 +139,7 @@ func target(key: String) -> Vector3:
 
 
 static func is_number(value: Variant) -> bool:
-	return (value is int or value is float) and is_finite(float(value))
+	return (value is int or value is float) and is_finite(float(value)) and absf(float(value)) < 1000.0
 
 
 static func manifest_errors(value: Variant) -> Array[String]:
