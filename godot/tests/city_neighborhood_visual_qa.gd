@@ -15,6 +15,7 @@ func _ready() -> void:
 		return
 	_capture_directory = ProjectSettings.globalize_path("res://../.ai/captures/city-street-block").simplify_path()
 	if DirAccess.make_dir_recursive_absolute(_capture_directory) != OK:
+		push_error("Cannot create street block capture directory: " + _capture_directory)
 		get_tree().quit(1)
 		return
 	_course = BlockCircuitData.build_course().geometry()

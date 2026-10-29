@@ -211,7 +211,7 @@ class _Kit extends RefCounted:
 				var accent := "cyan" if (station + int(side > 0.0)) % 2 == 0 else "amber"
 				parts.append(_part(accent, basis, origin, Vector3(3.9, 2.8, 0), Vector3(0.4, 0.4, 0.4)))
 				var accepted := _accept(parts, false)
-				if accepted and station % 10 == 0 and (station / 10 + int(side > 0.0)) % 2 == 0 and lights < CityScenery.MAX_LIGHTS - 3:
+				if (accepted or reserved_bounds.is_empty()) and station % 10 == 0 and (station / 10 + int(side > 0.0)) % 2 == 0 and lights < CityScenery.MAX_LIGHTS - 3:
 					_light(root, origin + basis * Vector3(3.9, 3.4, 0), accent, 18.0)
 			raw += 8.0
 			station += 1

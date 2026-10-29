@@ -70,7 +70,7 @@ static func mesh(id: String) -> ArrayMesh:
 		return null
 	var scene := packed.instantiate()
 	var found: Array[Dictionary] = []
-	_collect_meshes(scene, Transform3D.IDENTITY, found)
+	collect_static_meshes(scene, Transform3D.IDENTITY, found)
 	if found.size() != 1:
 		push_error("City asset must contain one static mesh: " + id)
 		scene.free()
@@ -104,12 +104,12 @@ static func mesh(id: String) -> ArrayMesh:
 	return combined
 
 
-static func _collect_meshes(node: Node, parent: Transform3D, found: Array[Dictionary]) -> void:
+static func collect_static_meshes(node: Node, parent: Transform3D, found: Array[Dictionary]) -> void:
 	var transform: Transform3D = parent * (node.transform if node is Node3D else Transform3D.IDENTITY)
 	if node is MeshInstance3D and node.mesh != null:
 		found.append({"mesh": node.mesh, "transform": transform})
 	for child in node.get_children():
-		_collect_meshes(child, transform, found)
+		collect_static_meshes(child, transform, found)
 
 
 static func material(semantic: String) -> Material:

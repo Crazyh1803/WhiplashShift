@@ -69,7 +69,7 @@ static func _load_assets() -> bool:
 			return false
 		var model := packed.instantiate()
 		var found: Array[Dictionary] = []
-		CityKit._collect_meshes(model, Transform3D.IDENTITY, found)
+		CityKit.collect_static_meshes(model, Transform3D.IDENTITY, found)
 		if found.size() != 1:
 			model.free()
 			return false
@@ -210,7 +210,8 @@ class _Builder extends RefCounted:
 			var material := ShaderMaterial.new()
 			material.shader = CityStreetBlock.GROUND_SHADER
 			material.set_shader_parameter("surface_style", style)
-			material.set_shader_parameter("surface_scale", Vector2(length, far - near))
+			if label in ["alley", "rear_lane", "yard"]:
+				material.set_shader_parameter("surface_scale", Vector2(length, far - near))
 			material.set_shader_parameter("lane_axis", 1 if label == "alley" else (2 if label == "rear_lane" else 0))
 			material.set_shader_parameter("parking_bays", label == "yard")
 			mesh.material = material
@@ -233,7 +234,7 @@ class _Builder extends RefCounted:
 		_surface("rear_lane", mid, side, length, 51.0, 59.0, -0.005, 0)
 		_surface("rear_verge", mid, side, length, 59.0, 63.0, 0.02, 3)
 		var reserve_xf := _xf(mid, side, _edge() + 33.3)
-		reservations.append(reserve_xf * AABB(Vector3(-length * 0.5, 0.0, -29.7), Vector3(length, 1.0, 59.4)))
+		reservations.append(_flat(reserve_xf * AABB(Vector3(-length * 0.5, 0.0, -29.7), Vector3(length, 1.0, 59.4))))
 		for alley: float in CityStreetBlock.ALLEYS:
 			# Lane insets rise above the yard, with short slopes over the pedestrian strip.
 			_surface("alley", alley, side, 8.0, 8.62, 59.0, 0.195, 0)

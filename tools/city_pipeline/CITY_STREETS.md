@@ -27,8 +27,7 @@ table). Kit total 4,860 tris. `front_setback_m` is the front half-depth of the f
   (validator table). The lamp's amber lens is an emissive material only; the block builder adds any real lights (budget <= 8).
 - Placement: lamp arm points to +Y (Godot -Z front); plan for the arm to face the road. Bench/planter, refuse station and
   conduit are symmetric about their footprint centres, drain and panel are flat decals-in-geometry sitting on the paved plane.
-- Heights above 0.18 m for the panel/drain are fixed; the block builder raises paving by 0.18 m, so place drains at the paved
-  level.
+- Panel geometry already reaches 0.18 m: place its base at y=0, not y=0.18. The continuous support surface ends at 0.16 m, below the slabs. Place street furniture on the walk at y=0.18; front drains sit in the lower gutter and service drains on the raised alley.
 
 ## Files
 - `build_city_streets.py` - builder. Imports the workshop module by path (never edited) and reuses Kit, colour, materials,
