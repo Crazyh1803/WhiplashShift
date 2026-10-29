@@ -15,3 +15,5 @@ sys.argv = ["validate"]
 with contextlib.redirect_stdout(buf):
     rc = VAL.main()
 report(rc=rc, out=buf.getvalue().strip().splitlines())
+if rc:
+    raise RuntimeError("Industrial market validation failed")

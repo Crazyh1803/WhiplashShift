@@ -354,7 +354,7 @@ def write_manifest():
     for a in VAL.ASSETS:
         pth = os.path.join(GEN, a + "_build.json")
         if not (os.path.isfile(pth) and os.path.isfile(os.path.join(CAND, a + ".glb"))):
-            return
+            raise FileNotFoundError("Manifest requires build record and GLB for " + a)
         with open(pth, encoding="utf-8") as fh:
             recs[a] = json.load(fh)
     assets, tex_dup, tex_one = [], 0.0, 0.0
