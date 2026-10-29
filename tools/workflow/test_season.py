@@ -26,7 +26,8 @@ def run_engine(args, timeout):
 
 
 def validate_city_kit():
-    for validator in ('validate_city_kit.py', 'validate_habitation_workshop.py', 'validate_city_neighborhood.py', 'validate_city_streets.py'):
+    for validator in ('validate_city_kit.py', 'validate_habitation_workshop.py', 'validate_city_neighborhood.py', 'validate_city_streets.py',
+                      'validate_industrial_market.py', 'test_validate_industrial_market.py'):
         result = subprocess.run([sys.executable, '-I', str(ROOT / 'tools' / 'city_pipeline' / validator)],
                                 cwd=ROOT, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=120)
         print(result.stdout + result.stderr, flush=True)
@@ -49,7 +50,7 @@ def main():
         'cpu_main', 'race_tests', 'course_cues_tests', 'camera_tests',
         'corner_tests', 'terrain_profile_tests', 'blackjack_refined_tests', 'blackjack_blueprint_tests',
         'consolidation_tests', 'nightshift_blueprint_tests', 'ramjet_blueprint_tests', 'boilerfang_blueprint_tests',
-        'helix_blueprint_tests', 'knifeedge_blueprint_tests'])
+        'helix_blueprint_tests', 'knifeedge_blueprint_tests', 'industrial_market_tests'])
     options = parser.parse_args()
     validate_city_kit()
     run_engine(['--headless', '--import', '--path', 'godot'], 180)
