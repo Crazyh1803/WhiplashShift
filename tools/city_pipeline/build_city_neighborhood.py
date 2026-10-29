@@ -1,4 +1,4 @@
-"""Inhabited City neighbourhood kit: market_habitat + service_tenement (freight_depot joins in a later pass).
+"""Inhabited City neighbourhood kit: market_habitat + service_tenement + freight_depot (the last lives in city_neighborhood_depot.py).
 
 Run (never the GUI):  ak-blender tools/city_pipeline/build_city_neighborhood.py -- [--no-render] [--size 1.0]
                       [--only market_habitat] [--only-shots a,b]
@@ -7,7 +7,7 @@ Reuses the approved habitation_workshop Kit / Wall / opening / stair / rail / pi
 never edited) and adds neighbourhood components. Design space is the workshop's: +Y facade (Godot -Z), +Z up, a root X
 mirror in the Kit. Each building registers itself with @building(...); the shared main() builds every registered
 building from a clean Blender scene, snapshotting/resetting the workshop module's per-asset globals (ASSET_ID, OFFSET).
-A later pass adds freight_depot by registering one more building (see city_neighborhood_depot.py hook at the bottom).
+freight_depot registers itself through the city_neighborhood_depot.py hook at the bottom.
 """
 import argparse
 import importlib.util
@@ -1006,7 +1006,7 @@ SHOTS["service_tenement"] = [
 ]
 
 sys.path.insert(0, _HERE)
-try:  # the later freight_depot pass defines register(module) there; it uses @building / SHOTS from this module
+try:  # freight_depot: register(module) uses @building / SHOTS / shared components from this module
     import city_neighborhood_depot
 except ImportError:
     city_neighborhood_depot = None

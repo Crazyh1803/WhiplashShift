@@ -141,6 +141,76 @@
       },
       "lod_strategy": "Near-review mesh only (this file). No mid/far LODs exist yet; a later pass could drop interiors, stencils, rails and window furniture, then keep volumes + roof silhouette.",
       "budget_note": "33216 tris of the 35000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
+    },
+    {
+      "id": "freight_depot",
+      "class": "building",
+      "glb": "freight_depot.glb",
+      "tris": 29317,
+      "aabb": {
+        "min": [
+          -31.3,
+          0.0,
+          -17.8
+        ],
+        "max": [
+          31.3,
+          13.5273,
+          17.8
+        ]
+      },
+      "footprint": {
+        "min": [
+          -31.3,
+          -17.8
+        ],
+        "max": [
+          31.3,
+          17.8
+        ]
+      },
+      "front_setback_m": 12.2,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; primary facade faces -Z",
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "cavity",
+        "machinery",
+        "sinew",
+        "glow_cyan",
+        "glow_amber",
+        "trim"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "vertex_colors": {
+        "attribute": "COLOR_0",
+        "role": "multiplies albedo: grime, streaks, paint and repair tint"
+      },
+      "identity": "Long low freight and logistics depot: a covered raised loading dock with ribbed bay openings onto working conveyor, rack and hoist interiors, a glazed control booth, monorail hoist, forklift and staged crates, a rear rail spur with flat car and portal gantry, power cells and lockers, and a roof service deck.",
+      "style_note": "Faded industrial ochre/oxide accents over chipped bone armour on shared dark steel; sparse tendon breaches; tiny amber/cyan warning lamps.",
+      "review_targets": {
+        "entry": [
+          4.7,
+          1.437,
+          -17.2
+        ],
+        "activity": [
+          1.9,
+          2.137,
+          -13.0
+        ],
+        "service": [
+          -6.7,
+          1.937,
+          18.4
+        ]
+      },
+      "lod_strategy": "Near-review mesh only (this file). No mid/far LODs exist yet; a later pass could drop interiors, stencils, rails and window furniture, then keep volumes + roof silhouette.",
+      "budget_note": "29317 tris of the 35000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
     }
   ]
 }
