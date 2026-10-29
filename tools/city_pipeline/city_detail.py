@@ -233,7 +233,9 @@ def _build(k, rng, role, seated, side, skin, shirt, trou, hair, style, female, h
         feet = {-1: Vector((-0.12, 0.0, ank)), 1: Vector((0.1, 0.1, ank))}
     # --- legs ------------------------------------------------------------------------------------------------------
     for sd in (-1, 1):
-        knee, ankle = solve2(hp[sd], feet[sd], 0.42, 0.40, Vector((sd * 0.12, 1.0, 0.1)))
+        knee, ankle = solve2(hp[sd], feet[sd], 0.42 if seated else 0.46, 0.40 if seated else 0.44, Vector((sd * 0.12, 1.0, 0.1)))
+        if not seated:
+            assert abs(ankle.z - feet[sd].z) < 1e-4, f"{role}: planted ankle cannot reach ground"
         with k.look(1.0, trou):
             limb(k, hp[sd], knee, 0.082, 0.064, "machinery", 6)
             limb(k, knee, ankle, 0.064, 0.05, "machinery", 6)
@@ -558,7 +560,8 @@ def _pot(k, x, y, z, r, h, tint, lid=True):
                 k.lathe([(r * 1.08, h + 0.02), (r * 0.9, h + 0.06), (r * 0.25, h + 0.1)], "steel", 8, False)
                 k.cyl(0.0, 0.0, h + 0.1, 0.03, 0.04, "steel", seg=5)
     for sd in (-1, 1):
-        k.box(x + sd * r * 1.03 - 0.025, x + sd * r * 1.03 + 0.025 + sd * 0.05, y - 0.02, y + 0.02, z + h * 0.7, z + h * 0.7 + 0.03, "steel")
+        hx = x + sd * (r * 1.03 + 0.025)
+        k.box(hx - 0.05, hx + 0.05, y - 0.02, y + 0.02, z + h * 0.7, z + h * 0.7 + 0.03, "steel")
 
 
 def shop_goods(k, shop, w, rng, zc=1.02, yc=0.1):

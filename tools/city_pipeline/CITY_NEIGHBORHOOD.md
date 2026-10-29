@@ -10,7 +10,7 @@ Inhabited-city buildings at the approved `habitation_workshop` quality bar. Stat
 
 All: metres, foot-centred at y=0, Godot -Z front, one combined mesh, 8 shared semantic materials (steel, ceramic, cavity,
 machinery, sinew, glow_cyan, glow_amber, trim), real `COLOR_0` wear/tint (market dusty oxide, tenement faded blue/teal, depot
-faded ochre/oxide), near-review cap 50,000 triangles each (market 49,400 / tenement 36,929 / depot 34,737 after the market identity pass). Depot manifest bounds: 53.0 x 13.5 x
+faded ochre/oxide), near-review cap 50,000 triangles each (market 49,448 / tenement 36,929 / depot 34,737 after the market identity pass). Depot manifest bounds: 53.0 x 13.5 x
 35.6 m AABB, 12.2 m front setback (dock, canopy and apron ahead of the facade plane). No lights, cameras, collision, animation
 or extras. No mid/far LODs exist for any of the three.
 
@@ -61,7 +61,7 @@ godot --path godot res://tests/habitation_visual_qa.tscn -- --asset=service_tene
 godot --path godot res://tests/habitation_visual_qa.tscn -- --asset=freight_depot
 godot --path godot res://tests/city_neighborhood_visual_qa.tscn
 ```
-The first three each save ten neutral/detail/night captures in `.ai/captures/city-neighborhood/`. The last scene now builds the actual production preview scenery and saves nine block views in `.ai/captures/city-street-block/`: overview, driver, shop sidewalk, workshop frontage, service alley and freight yard in neutral inspection light, plus driver/sidewalk/reverse night views using the game environment, local lamps and a camera headlight. Headless layout tests separately check full-course clearance, overlaps, budgets and preserved skyline.
+The first three each save ten neutral/detail/night captures in `.ai/captures/city-neighborhood/`. The last scene now builds the actual production preview scenery and saves seventeen block views in `.ai/captures/city-street-block/`: overview, driver, shop sidewalk, workshop frontage, service alley and freight yard in neutral inspection light, plus driver/sidewalk/reverse night views using the game environment, local lamps and a camera headlight. Eight additional market closeups show people, faces, signs and supports in neutral/night light. Headless layout tests separately check full-course clearance, overlaps, budgets and preserved skyline.
 
 Decorative residents and workers are static posed geometry in these review meshes, not animated NPCs. The separate 1.75 m Blender inspection figure is not exported. All three retain shared reusable component vocabulary, but use distinct building layouts.
 
@@ -73,4 +73,6 @@ Before/after street views: `assets/previews/city_neighborhood/before_market_iden
 Neon letters are 5x7 front-face quads (about 0.21-0.24 m tall) on dark boards; tenement/depot plates still use the older
 alphanumeric stencils. Per-person triangles are measured in `qa.json` (`parts[".people"]`).
 
-Verified exports: market 49,400 triangles, tenement 36,929, depot 34,737. The opening street block now places these meshes within its measured 190k budget, with distance culling. Authored mid/far LODs and placement in other race districts remain future work.
+Verified exports: market 49,448 triangles, tenement 36,929, depot 34,737. The opening street block now places these meshes within its 220k budget (217,639 triangles measured for the complete block), with distance culling. Authored mid/far LODs and placement in other race districts remain future work.
+
+Runtime material fill multiplies the final albedo, preserving skin/clothing tint and dark sign backings. Market cyan/amber neon reaches HDR strength 3.2, above the game glow threshold. Standing-leg reach is checked during generation so planted ankles reach their floor targets (walking poses deliberately lift one foot).

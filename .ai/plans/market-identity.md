@@ -15,3 +15,15 @@ ORBIT PANTRY | shopping basket / produce | groceries
 PATCH BAY | crossed wrench / gear | repairs
 RETHREAD | shirt / spool | clothing
 Some storefronts may use short invented glyph rows instead of English, but retain the unmistakable icon and distinct color/layout. English signs should be genuinely legible at sidewalk distance, not alphanumeric unit labels.
+
+
+## Completed evidence / dispositions
+Generated shared human-detail helpers and original shop signs, matching goods, supported front signage and continuous segmented piers. Regenerated all three models: market49448, tenement36929, depot34737 triangles;8surfaces each. Full block217639/220000,194placements,23batches,7infill structures,8street lamps. The extra30k allowance carries human/sign/structure detail and retains density; no added surface draws. Original14kit,8street assets and approved workshop GLB are byte-identical to d96793d.
+
+Asset lead reached the60-turn wrapper limit after generating, validating and committing the deliverables. Lead inspected the actual artifacts, integrated them, made the small independent-review fixes below, regenerated and verified. No asset work remains pending from that wrapper failure. Qwen drafted six names; lead removed brand echoes and edited the final original wording. First architecture escalation exhausted its15turn allowance; the focused retry returned actionable advice. Export COLOR_0 was proven by the decoder; retained two existing emissive semantic colors instead of adding a swatch texture/material.
+
+Reviews: Claude155840 APPROVE with MED policy mismatch while assets were in flight; resolved by merged50k builder/decoder policy and updated220k runtime/test/docs. LOW target/placement guards, named fill-material checks and failed-artifact removal done. Codex161301 APPROVE with MED standing-leg reach and LOW omitted left pot handle. Lead's small fixes use longer standing legs, assert every standing ankle reaches its role-specific target (walker lifted foot preserved), and ordered symmetric pot-handle bounds; regenerated all three and the role lineup. All standing roles in lineup and model builds pass the contact assertion. Lineup people are472-672tris (mean583), preserving faces/headwear/clothes/limb poses instead of block placeholders.
+
+ak-test after these fixes: four asset validators PASS; CityStreetBlock295/0, BlockCircuit97/0, CityKit383/0 (775 assertions). No collision, road, handling or skyline changes. Seventeen actual production-scene captures saved and inspected; people/faces/signs/supports are shown at close range as well as sidewalk/driver views. Static driver-night render sample before16.81ms, after16.77ms/120frames on this laptop; likely vsync limited, not a full race benchmark or evidence of more headroom. Preserved test transcript in .ai/captures/market-identity-headless.log; before views under .ai/captures/market-identity-before and permanent Blender before/after views in assets/previews/city_neighborhood.
+
+No authored distance LODs or animated NPCs are claimed. Final independent integration review and preview publication follow; no main merge or assets/final promotion.

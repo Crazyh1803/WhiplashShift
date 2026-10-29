@@ -121,6 +121,8 @@ func _views() -> void:
 func _market_details(mode: String) -> void:
 	_market_view(_market_activity + Vector3(-0.8, 0.35, -3.2), _market_activity + Vector3(0.0, 0.2, 0.3))
 	await _capture("market-person-" + mode)
+	_market_view(_market_activity + Vector3(0.0, 0.35, 1.0), _market_activity + Vector3(0.3, 0.25, -1.7))
+	await _capture("market-faces-" + mode)
 	_market_view(_market_activity + Vector3(-1.5, 0.35, -6.5), _market_activity + Vector3(0.0, 2.1, 0.0))
 	await _capture("market-sign-" + mode)
 	_market_view(Vector3(10.0, 1.7, -15.0), Vector3(10.0, 2.5, -8.8))

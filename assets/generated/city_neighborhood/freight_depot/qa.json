@@ -16,7 +16,7 @@
     "min": 0.162,
     "mean": 0.582,
     "max": 0.86,
-    "distinct": 1975
+    "distinct": 1974
   },
   "parts": {
     ".fit_door": 374,

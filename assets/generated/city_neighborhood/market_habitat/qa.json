@@ -1,6 +1,6 @@
 {
-  "tris": 49400,
-  "verts": 42727,
+  "tris": 49448,
+  "verts": 42759,
   "lo": [
     -17.214,
     0.0,
@@ -12,23 +12,23 @@
     11.045
   ],
   "colors": {
-    "corners": 99226,
+    "corners": 99322,
     "min": 0.128,
     "mean": 0.596,
     "max": 0.88,
-    "distinct": 2283
+    "distinct": 2278
   },
   "parts": {
     ".people": 11168,
-    ".fit_stall": 10327,
+    ".fit_stall": 10375,
     ".fit_entry": 322,
-    ".windows": 16853,
+    ".windows": 16901,
     ".armor": 4949,
     ".fit_louvre": 976,
     ".fit_slits": 360,
     ".fit_bars": 620,
     ".signage": 3826,
-    "m_ground": 17075,
+    "m_ground": 17123,
     ".arcade": 6898,
     "m_arcade": 6898,
     ".gallery": 5250,
