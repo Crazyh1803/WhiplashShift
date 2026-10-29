@@ -205,7 +205,7 @@ func _update_camera() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _capture_mode:
+	if _capture_mode or camera == null:
 		return
 	if event.is_action_pressed("ui_cancel"):
 		_back()
