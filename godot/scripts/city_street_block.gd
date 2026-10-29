@@ -212,6 +212,7 @@ class _Builder extends RefCounted:
 			material.set_shader_parameter("surface_style", style)
 			material.set_shader_parameter("surface_scale", Vector2(length, far - near))
 			material.set_shader_parameter("lane_axis", 1 if label == "alley" else (2 if label == "rear_lane" else 0))
+			material.set_shader_parameter("parking_bays", label == "yard")
 			mesh.material = material
 			mesh_sources[id] = mesh
 		transforms[id].append(xf)
@@ -230,7 +231,7 @@ class _Builder extends RefCounted:
 		_surface("front_path", mid, side, length, 8.62, 12.0, 0.18, 1)
 		_surface("yard", mid, side, length, 12.0, 51.0, -0.015, 2)
 		_surface("rear_lane", mid, side, length, 51.0, 59.0, -0.005, 0)
-		_surface("rear_verge", mid, side, length, 59.0, 63.0, 0.02, 2)
+		_surface("rear_verge", mid, side, length, 59.0, 63.0, 0.02, 3)
 		var reserve_xf := _xf(mid, side, _edge() + 33.3)
 		reservations.append(reserve_xf * AABB(Vector3(-length * 0.5, 0.0, -29.7), Vector3(length, 1.0, 59.4)))
 		for alley: float in CityStreetBlock.ALLEYS:
@@ -257,7 +258,7 @@ class _Builder extends RefCounted:
 			var at := _xf(s, side, edge + 5.5, 0.18)
 			if _place("street_lamp", at, "furniture"):
 				var lamp := OmniLight3D.new()
-				lamp.position = at * Vector3(0.0, 6.7, -0.2)
+				lamp.position = at * Vector3(0.0, 7.45, -1.65)
 				lamp.light_color = Color("ffd5a0") if side < 0.0 else Color("8bbfc7")
 				lamp.light_energy = 5.5
 				lamp.omni_range = 33.0
