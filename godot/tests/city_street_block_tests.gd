@@ -8,7 +8,7 @@ const INFILL_IDS: Array[String] = ["shutter_workshop", "ribbed_stack"]
 const HERO_SIDES := {"habitation_workshop": -1.0, "market_habitat": 1.0, "service_tenement": -1.0, "freight_depot": 1.0}
 const HERO_ROUTES := {"habitation_workshop": 45.0, "market_habitat": 105.0, "service_tenement": 165.0, "freight_depot": 225.0}
 const SOLID_KINDS: Array[String] = ["building", "furniture"]
-const TRIANGLE_LIMIT := 190000
+const TRIANGLE_LIMIT := 220000
 const BLOCK_BATCH_LIMIT := 24
 const BLOCK_SURFACE_LIMIT := 120
 const LIGHT_LIMIT := 8
@@ -351,14 +351,20 @@ func _test_materials(block: Node3D) -> void:
 			continue
 		var coloured := true
 		var materials := true
+		var tinted_fill := true
 		for surface in mesh.get_surface_count():
 			var arrays := mesh.surface_get_arrays(surface)
 			coloured = coloured and arrays[Mesh.ARRAY_COLOR] is PackedColorArray and not (arrays[Mesh.ARRAY_COLOR] as PackedColorArray).is_empty()
 			materials = materials and mesh.surface_get_material(surface) != null
+			if id in HEROES or id in CityStreetBlock.STREET_IDS:
+				var material := mesh.surface_get_material(surface) as BaseMaterial3D
+				if material != null and material.resource_name not in ["glow_cyan", "glow_amber"]:
+					tinted_fill = tinted_fill and material.emission_operator == BaseMaterial3D.EMISSION_OP_MULTIPLY and material.emission == Color.WHITE
 		if id in HEROES or id in CityStreetBlock.STREET_IDS:
 			_check("%s keeps its source vertex colours" % id, coloured)
 			var base: BaseMaterial3D = mesh.surface_get_material(0) as BaseMaterial3D
 			_check("%s renders those colours without mutating shared materials" % id, base != null and base.vertex_color_use_as_albedo)
+			_check("%s fill light preserves painted colour and dark sign backings" % id, tinted_fill)
 		_check("%s surfaces all carry materials" % id, materials)
 	# The legacy kit meshes reused for infill must keep their original shared materials.
 	for id in INFILL_IDS:

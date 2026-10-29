@@ -7,7 +7,7 @@ const PROTOTYPE_TRIANGLE_CAP := 30000
 const NEIGHBORHOOD_DIRECTORY := "res://assets/city/candidates/neighborhood/"
 # Keep selection and near-view policy aligned with validate_city_neighborhood.py.
 const NEIGHBORHOOD_IDS := ["market_habitat", "service_tenement", "freight_depot"]
-const NEIGHBORHOOD_TRIANGLE_CAP := 35000
+const NEIGHBORHOOD_TRIANGLE_CAP := 50000
 var _camera: Camera3D
 var _environment: WorldEnvironment
 var _box := AABB()

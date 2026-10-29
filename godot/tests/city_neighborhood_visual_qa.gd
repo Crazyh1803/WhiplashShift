@@ -6,6 +6,8 @@ var _camera: Camera3D
 var _environment: WorldEnvironment
 var _capture_directory := ""
 var _fail := 0
+var _market_transform := Transform3D.IDENTITY
+var _market_activity := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -31,6 +33,14 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	print("STREET_BLOCK_REVIEW triangles=%d placements=%d lights=%d" % [block.get_meta("triangle_count"), block.get_meta("placements").size(), block.get_meta("light_count")])
+	var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/city/candidates/neighborhood/neighborhood_manifest.json"))
+	for entry: Dictionary in manifest["assets"]:
+		if entry["id"] == "market_habitat":
+			var target: Array = entry["review_targets"]["activity"]
+			_market_activity = Vector3(target[0], target[1], target[2])
+	for placement: Dictionary in block.get_meta("placements"):
+		if placement["asset"] == "market_habitat":
+			_market_transform = placement["transform"]
 	_environment = WorldEnvironment.new()
 	add_child(_environment)
 	_camera = Camera3D.new()
@@ -68,6 +78,7 @@ func _views() -> void:
 	await _capture("service-alley-neutral")
 	_view(210.0, 1.0, 56.0, 2.0, 225.0, 34.0, 4.0)
 	await _capture("freight-yard-neutral")
+	await _market_details("neutral")
 	key.free()
 	_environment.environment = TrackMaterials.environment()
 	var headlight := OmniLight3D.new()
@@ -78,8 +89,36 @@ func _views() -> void:
 	await _capture("driver-night")
 	_view(94.0, 1.0, 7.0, 1.75, 110.0, 24.0, 5.0)
 	await _capture("market-sidewalk-night")
+	await _market_details("night")
+	_driver(70.0, false)
+	await _frame_sample()
 	_driver(260.0, true)
 	await _capture("reverse-night")
+
+
+func _market_details(mode: String) -> void:
+	_market_view(_market_activity + Vector3(-0.8, 0.35, -3.2), _market_activity + Vector3(0.0, 0.2, 0.3))
+	await _capture("market-person-" + mode)
+	_market_view(_market_activity + Vector3(-1.5, 0.35, -6.5), _market_activity + Vector3(0.0, 2.1, 0.0))
+	await _capture("market-sign-" + mode)
+	_market_view(Vector3(10.0, 1.7, -15.0), Vector3(10.0, 2.5, -8.8))
+	await _capture("market-support-" + mode)
+
+
+func _market_view(from: Vector3, to: Vector3) -> void:
+	_camera.position = _market_transform * from
+	_camera.look_at(_market_transform * to, Vector3.UP)
+
+
+func _frame_sample() -> void:
+	for frame in 30:
+		await get_tree().process_frame
+	var started := Time.get_ticks_usec()
+	for frame in 120:
+		await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+	var elapsed := float(Time.get_ticks_usec() - started) / 1000.0
+	print("STREET_BLOCK_RENDER_SAMPLE frames=120 ms_per_frame=%.2f; static driver-night view, not a full race benchmark" % (elapsed / 120.0))
 
 
 func _point(s: float, side: float, lateral: float, height: float) -> Vector3:

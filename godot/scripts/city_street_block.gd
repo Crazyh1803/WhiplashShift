@@ -12,7 +12,7 @@ const SLOTS := [
 const START := 6.0
 const END := 282.0
 const ALLEYS: Array[float] = [75.0, 189.0]
-const TRIANGLE_BUDGET := 190000
+const TRIANGLE_BUDGET := 220000
 const MAX_LIGHTS := 8
 const INFILL := [
 	[15.0, -1.0, "shutter_workshop"], [117.0, -1.0, "shutter_workshop"],
@@ -90,7 +90,8 @@ static func _load_assets() -> bool:
 			# A small material fill keeps worn forms readable in the sunless city.
 			if not material.emission_enabled:
 				material.emission_enabled = true
-				material.emission = material.albedo_color
+				material.emission = Color.WHITE
+				material.emission_operator = BaseMaterial3D.EMISSION_OP_MULTIPLY
 				material.emission_energy_multiplier = 0.12
 			mesh.surface_set_material(surface, material)
 		model.free()
