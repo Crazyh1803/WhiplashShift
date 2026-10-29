@@ -151,11 +151,19 @@ func _night() -> void:
 	service.omni_range = 24.0
 	service.shadow_enabled = true
 	add_child(service)
+	for level: float in [0.44, 0.72]:
+		var gallery := OmniLight3D.new()
+		gallery.position = Vector3(center.x - _box.size.x * 0.12, _box.size.y * level, _box.position.z + 2.0)
+		gallery.light_color = Color("ffc17c")
+		gallery.light_energy = 4.0
+		gallery.omni_range = 15.0
+		gallery.shadow_enabled = true
+		add_child(gallery)
 	var headlight := OmniLight3D.new()
 	headlight.light_energy = 2.0
 	headlight.omni_range = 45.0
 	_camera.add_child(headlight)
-	print("QA_NIGHT project environment; three local yard lamps plus camera headlight; no ambient or sun")
+	print("QA_NIGHT project environment; five local yard/gallery lamps plus camera headlight; no ambient or sun")
 	_street()
 	await _capture("night-street-1.6m")
 	_fit(Vector3(0.9, 0.4, -1.0))

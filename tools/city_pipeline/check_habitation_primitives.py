@@ -61,6 +61,6 @@ for rn, rot in (("plain", {}), ("rotated", {"rx": 1.1, "rz": 0.4}), ("flipy", {"
     check("solid/" + rn, [(1.0, 0.0), (1.0, 2.0)], True, rot, solid_exp)
     check("reversed/" + rn, [(1.0, 2.0), (1.0, 0.0)], True, rot, solid_exp)
     check("cone/" + rn, [(0.0, 2.0), (1.0, 0.0)], True, rot, cone_exp)
-print("AK: primitive_normal_failures=%d" % len(bad))
-for b in bad[:10]:
-    print("AK: BAD", b)
+ns["report"](primitive_normal_failures=len(bad), failures=[str(b) for b in bad[:10]])
+if bad:
+    raise RuntimeError("Habitation primitive winding checks failed")

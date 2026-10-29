@@ -18,7 +18,7 @@ stepped habitation modules above it, and service structure on the sides and rear
   tied into the wall stand-offs; roof landscapes (dish, chimney, HVAC, tank deck, skylights).
 
 ## Numbers (from `habitation_workshop_manifest.json`, verified against GLB bytes)
-- Triangles: 26689 (prototype cap 30000). Single mesh, 8 semantic materials: steel, ceramic, cavity, machinery,
+- Triangles: 26789 (prototype cap 30000). Single mesh, 8 semantic materials: steel, ceramic, cavity, machinery,
   sinew, glow_cyan, glow_amber, trim. `COLOR_0` carries grime, streaks and repair tint (multiplies albedo).
 - Origin: foot-centred. Footprint centre at x/z 0, lowest point y = 0. Offset is baked into the mesh.
 - Bounds (glTF space, metres): x -18.125..18.125, y 0..29.35, z -12.6..12.6 (36.25 wide, 25.2 deep, 29.35 tall).
@@ -38,6 +38,7 @@ Run from the repo root:
     ak-blender tools/city_pipeline/build_habitation_workshop.py -- --no-render  # export only
     ak-blender tools/city_pipeline/build_habitation_workshop.py -- --only-shots front_studio,closeup_airlock
     python tools/city_pipeline/validate_habitation_workshop.py                  # also run by ak-test
+    ak-blender tools/city_pipeline/check_habitation_primitives.py               # normals, nonzero exit on failure
 
 The build is deterministic: rebuilding gives a byte-identical GLB.
 
@@ -55,7 +56,7 @@ active and `export_all_vertex_colors=False`; otherwise `COLOR_0` is flat white a
 The Godot review scene preserves embedded PBR materials and enables vertex-color albedo on a local material
 copy when an imported material has it disabled (observed on steel). This preserves the authored wear without
 changing the GLB or shared material resources. The review uses neutral studio lighting and, separately, the
-project's night environment with three local yard lamps and a camera headlight. It does not place the asset on
+project's night environment with five local yard/gallery lamps and a camera headlight. It does not place the asset on
 the track; production material integration and LODs remain a later step.
 
 ## Not yet built
