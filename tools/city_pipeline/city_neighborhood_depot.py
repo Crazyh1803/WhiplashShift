@@ -232,7 +232,8 @@ def register(nb):
             pipe_run(k, [(x0 + 1.0, 8.0, 0.5), (x1 - 1.0, 8.0, 0.5)], 0.07, "machinery", 3.0)
             hazard_floor(k, x0 + 0.2, x1 - 0.2, DY1 - 0.55, DY1 - 0.1, ZD, 38)
         with k.part(".levelers"):
-            for x in BAY_X:
+            for face_x in BAY_X:
+                x = HB[0] + face_x
                 sb(k, x + 0.2, x + BAY_W - 0.2, 5.0, 6.8, ZD, ZD + 0.06, "steel")
                 for bx in (x + 0.4, x + BAY_W - 0.4):
                     sb(k, bx - 0.05, bx + 0.05, 6.8, 6.95, ZD, ZD + 0.1, "trim")

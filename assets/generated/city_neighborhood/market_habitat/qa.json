@@ -1,6 +1,6 @@
 {
-  "tris": 33971,
-  "verts": 26571,
+  "tris": 33781,
+  "verts": 26443,
   "lo": [
     -17.214,
     0.0,
@@ -12,11 +12,11 @@
     11.045
   ],
   "colors": {
-    "corners": 67703,
+    "corners": 67323,
     "min": 0.16,
-    "mean": 0.625,
+    "mean": 0.624,
     "max": 0.88,
-    "distinct": 1523
+    "distinct": 1517
   },
   "parts": {
     ".fit_stall": 5554,
@@ -27,16 +27,16 @@
     ".fit_slits": 360,
     ".fit_bars": 620,
     "m_ground": 9900,
-    ".arcade": 1756,
-    "m_arcade": 1756,
+    ".arcade": 1564,
+    "m_arcade": 1564,
     ".gallery": 3210,
     "m_galleries": 3210,
     ".fit_door": 352,
     ".fit_shutter": 2440,
     ".fit_strip": 440,
     "m_upper": 10125,
-    ".terrace": 2452,
-    "m_terrace": 2452,
+    ".terrace": 2454,
+    "m_terrace": 2454,
     ".rear": 2734,
     "m_rear": 2822,
     ".sides": 1740,

@@ -29,3 +29,15 @@ Manifest: version 1, status `candidate-review`, assets with stable id/class/glb/
 - Run new decoded-vertex validator through ak-test and wire it into the normal runner. Verify cap, grounded/centred origins, actual/declared bounds, color data and semantics, path/ID completeness and absence of runtime extras. Reuse existing low-level checks rather than another unchecked reader.
 - Engine capture per model: neutral front/rear/roof, entry/activity and driver-height views; separate night lighting study using local lamps and no sun/ambient. Honor vertex-color albedo as in the approved capture setup. Produce a coherent street-study overview and low-camera views with clear road envelopes.
 - Run relevant original City/Block Circuit regressions, independent review, resolve findings, commit and publish to this chat branch. Deliver three new models, a useful neighborhood image and honest review/production status.
+
+## Delivered and verified (2026-10-29)
+All three models built, regenerated after geometry fixes, and inspected in Blender studio renders and Godot. Final triangles: market 33,781; tenement 33,216; depot 29,317. Eight semantic materials each. The approved workshop and all fourteen production-kit GLBs remain byte-identical to 45547eb (git diff verified).
+
+`ak-test` ran the three decoded-geometry validators and CityKit/BlockCircuit suites: 338 + 73 assertions passed. Final Vulkan captures: ten per new asset, zero failures each. Street study: four buildings plus eight props, all twelve bounds checked, no overlaps, building clearance 12 m and prop clearance >=6.84 m, six captures, zero failures. Studio and night images inspected; the study is intentionally sparse to review the models, not a finished race district.
+
+Independent review dispositions:
+- Claude integration reviews 082945 and 084640: APPROVE. Added all-four requirement, early track failure, validated bounds, clear directory names and secondary shadow limits. The target-presence invariant already determines neighborhood mode; no extra state needed. Depot completeness resolved by final delivery. Task provenance artifacts intentionally tracked.
+- Codex first-assets review 083947: APPROVE; all three MED fixed: removed duplicate gallery deck, horizontal supported terrace canopy, elevated cistern legs attached to their platforms. Regenerated all outputs.
+- Codex depot review 085212: APPROVE; MED dock-leveler facade-local coordinate conversion fixed using HB[0], then regenerated. Final depot bounds are 53 x 13.5273 x 35.6 m. Inspected levelers now aligned with bays.
+
+Delegations: Claude first two assets, Claude depot, Claude read-only design escalation and integration review, Codex independent asset reviews; ak-blender generated all models and studio renders; Qwen drafted the initial capture commit subject. No main merge; publish tested chat preview only.

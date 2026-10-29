@@ -6,7 +6,7 @@
       "id": "market_habitat",
       "class": "building",
       "glb": "market_habitat.glb",
-      "tris": 33971,
+      "tris": 33781,
       "aabb": {
         "min": [
           -17.214,
@@ -70,7 +70,7 @@
         ]
       },
       "lod_strategy": "Near-review mesh only (this file). No mid/far LODs exist yet; a later pass could drop interiors, stencils, rails and window furniture, then keep volumes + roof silhouette.",
-      "budget_note": "33971 tris of the 35000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
+      "budget_note": "33781 tris of the 35000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
     },
     {
       "id": "service_tenement",
@@ -149,23 +149,23 @@
       "tris": 29317,
       "aabb": {
         "min": [
-          -31.3,
+          -26.5,
           0.0,
           -17.8
         ],
         "max": [
-          31.3,
+          26.5,
           13.5273,
           17.8
         ]
       },
       "footprint": {
         "min": [
-          -31.3,
+          -26.5,
           -17.8
         ],
         "max": [
-          31.3,
+          26.5,
           17.8
         ]
       },
@@ -194,17 +194,17 @@
       "style_note": "Faded industrial ochre/oxide accents over chipped bone armour on shared dark steel; sparse tendon breaches; tiny amber/cyan warning lamps.",
       "review_targets": {
         "entry": [
-          4.7,
+          -0.1,
           1.437,
           -17.2
         ],
         "activity": [
-          1.9,
+          -2.9,
           2.137,
           -13.0
         ],
         "service": [
-          -6.7,
+          -11.5,
           1.937,
           18.4
         ]
