@@ -2052,4 +2052,5 @@ def main():
         report(done="render")
 
 
-main()
+if __name__ == "__main__":
+    main()

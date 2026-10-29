@@ -1,0 +1,51 @@
+{
+  "tris": 33216,
+  "verts": 26440,
+  "lo": [
+    -11.865,
+    0.0,
+    -10.345
+  ],
+  "hi": [
+    11.865,
+    36.807,
+    10.345
+  ],
+  "colors": {
+    "corners": 66452,
+    "min": 0.176,
+    "mean": 0.759,
+    "max": 0.957,
+    "distinct": 1596
+  },
+  "parts": {
+    ".fit_strip": 224,
+    ".fit_entry": 244,
+    ".windows": 7962,
+    ".armor": 7269,
+    ".fit_bars": 1122,
+    ".fit_slits": 1268,
+    ".patches": 1170,
+    ".fit_shutter": 2202,
+    ".street": 316,
+    "t_ground": 4194,
+    ".fit_door": 880,
+    ".fit_louvre": 238,
+    ".fit_porthole": 476,
+    ".gallery": 2280,
+    ".bridges": 616,
+    ".roofs": 24,
+    "t_wings": 13969,
+    ".spine": 1154,
+    ".lift": 1493,
+    "t_spine": 2647,
+    ".rear": 2534,
+    "t_service": 6604,
+    ".maint": 2914,
+    "t_maintenance": 2914,
+    ".left": 1818,
+    ".roof": 1070,
+    "t_left_roof": 2888
+  },
+  "cameras_lights": []
+}

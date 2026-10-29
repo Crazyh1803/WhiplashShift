@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "status": "candidate-review",
+  "assets": [
+    {
+      "id": "market_habitat",
+      "class": "building",
+      "glb": "market_habitat.glb",
+      "tris": 33971,
+      "aabb": {
+        "min": [
+          -17.214,
+          0.0,
+          -11.045
+        ],
+        "max": [
+          17.214,
+          20.7051,
+          11.045
+        ]
+      },
+      "footprint": {
+        "min": [
+          -17.214,
+          -11.045
+        ],
+        "max": [
+          17.214,
+          11.045
+        ]
+      },
+      "front_setback_m": 6.245,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; primary facade faces -Z",
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "cavity",
+        "machinery",
+        "sinew",
+        "glow_cyan",
+        "glow_amber",
+        "trim"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "vertex_colors": {
+        "attribute": "COLOR_0",
+        "role": "multiplies albedo: grime, streaks, paint and repair tint"
+      },
+      "identity": "Broad low corner arcade: recessed street stalls with counters, shelves and dispensers under cloth canopies; upper residential galleries with laundry, a communal terrace with cisterns, and a stepped corner tower.",
+      "style_note": "Dusty oxide and cloth accents over chipped bone armour; warm occupied windows.",
+      "review_targets": {
+        "entry": [
+          5.253,
+          1.405,
+          -6.2
+        ],
+        "activity": [
+          8.764,
+          1.305,
+          -6.2
+        ],
+        "service": [
+          7.886,
+          1.905,
+          11.4
+        ]
+      },
+      "lod_strategy": "Near-review mesh only (this file). No mid/far LODs exist yet; a later pass could drop interiors, stencils, rails and window furniture, then keep volumes + roof silhouette.",
+      "budget_note": "33971 tris of the 35000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
+    },
+    {
+      "id": "service_tenement",
+      "class": "building",
+      "glb": "service_tenement.glb",
+      "tris": 33216,
+      "aabb": {
+        "min": [
+          -11.8655,
+          0.0,
+          -10.3446
+        ],
+        "max": [
+          11.8655,
+          36.8073,
+          10.3446
+        ]
+      },
+      "footprint": {
+        "min": [
+          -11.8655,
+          -10.3446
+        ],
+        "max": [
+          11.8655,
+          10.3446
+        ]
+      },
+      "front_setback_m": 2.0892,
+      "origin": "foot-centred: footprint centre at xz 0, base at y 0; primary facade faces -Z",
+      "surfaces": [
+        "steel",
+        "ceramic",
+        "cavity",
+        "machinery",
+        "sinew",
+        "glow_cyan",
+        "glow_amber",
+        "trim"
+      ],
+      "reuse_worlds": [
+        "city",
+        "underworks",
+        "foundry"
+      ],
+      "vertex_colors": {
+        "attribute": "COLOR_0",
+        "role": "multiplies albedo: grime, streaks, paint and repair tint"
+      },
+      "identity": "Narrow tall block of stacked inhabited rooms and deep recessed galleries wrapped round a segmented life-support spine and an open lift core; rear filtration bank under a supported deck and an exterior maintenance tower.",
+      "style_note": "Faded blue/teal repair panels over chipped bone armour on dark steel; sparse tendons; tiny cyan/amber lamps.",
+      "review_targets": {
+        "entry": [
+          1.133,
+          1.407,
+          -9.655
+        ],
+        "activity": [
+          6.033,
+          1.407,
+          -9.655
+        ],
+        "service": [
+          1.233,
+          1.907,
+          11.345
+        ]
+      },
+      "lod_strategy": "Near-review mesh only (this file). No mid/far LODs exist yet; a later pass could drop interiors, stencils, rails and window furniture, then keep volumes + roof silhouette.",
+      "budget_note": "33216 tris of the 35000 near-review cap, 8 materials, COLOR_0 wear. Review-scene budget only; production district budgets are unchanged."
+    }
+  ]
+}

@@ -26,7 +26,7 @@ def run_engine(args, timeout):
 
 
 def validate_city_kit():
-    for validator in ('validate_city_kit.py', 'validate_habitation_workshop.py'):
+    for validator in ('validate_city_kit.py', 'validate_habitation_workshop.py', 'validate_city_neighborhood.py'):
         result = subprocess.run([sys.executable, '-I', str(ROOT / 'tools' / 'city_pipeline' / validator)],
                                 cwd=ROOT, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=120)
         print(result.stdout + result.stderr, flush=True)
