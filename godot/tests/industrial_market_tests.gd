@@ -290,9 +290,7 @@ func _test_materials(benchmark: IndustrialMarketBenchmark) -> void:
 				# baked vertex colours
 				var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
 				_check("%s has one baked COLOR_0 per vertex" % label, colors.size() == vertices.size())
-				if not material.vertex_color_use_as_albedo:
-					# Observed importer behaviour, reported to the lead rather than asserted: the first material of each model does not get the flag.
-					print("KNOWN_DEFECT: %s imported without vertex_color_use_as_albedo" % label)
+				_check("%s imports with vertex_color_use_as_albedo" % label, material.vertex_color_use_as_albedo)
 				var colors_valid := true
 				for color in colors:
 					colors_valid = colors_valid and is_finite(color.r + color.g + color.b + color.a) and color.r >= 0.0 and color.g >= 0.0 and color.b >= 0.0 and maxf(maxf(color.r, color.g), color.b) <= 1.0
@@ -310,9 +308,7 @@ func _test_materials(benchmark: IndustrialMarketBenchmark) -> void:
 				else:
 					_check("%s has no SSS override" % label, instance.get_surface_override_material(surface) == null and not active.subsurf_scatter_enabled)
 		_check("%s GLB material order %s matches manifest" % [id, seen], seen == names)
-		if shade_high - shade_low <= 0.05:
-			# Observed: the baked AO/wear is exported as COLOR_1 and COLOR_0 is flat white, so Godot imports no wear at all.
-			print("KNOWN_DEFECT: %s imported COLOR_0 is a flat fill (%.3f..%.3f)" % [id, shade_low, shade_high])
+		_check("%s imported COLOR_0 carries the baked wear (%.3f..%.3f)" % [id, shade_low, shade_high], shade_high - shade_low > 0.05)
 	var sign_material: BaseMaterial3D
 	for instance in _meshes(benchmark.models["redline_shop"]):
 		for surface in instance.mesh.get_surface_count():
@@ -358,11 +354,8 @@ func _test_authored_uvs() -> void:
 				high = high.max(uv)
 			_check("%s authored UVs: one finite UV per vertex" % label, finite and uvs.size() == (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() and uvs.size() > 0)
 			var spans := high.x - low.x > 0.01 and high.y - low.y > 0.01
-			if _texcoord_sets(state.get_json(), mesh.get_surface_name(surface)).has(1):
-				# Observed: these maps are authored on TEXCOORD_1, which Godot's importer does not apply to albedo/normal/ORM; TEXCOORD_0 is constant.
-				print("KNOWN_DEFECT: %s samples its maps from TEXCOORD_1; TEXCOORD_0 spans %s..%s" % [label, low, high])
-			else:
-				_check("%s authored UVs span a real area (%s..%s)" % [label, low, high], spans)
+			_check("%s samples its maps from TEXCOORD_0 only" % label, not _texcoord_sets(state.get_json(), mesh.get_surface_name(surface)).has(1))
+			_check("%s authored UVs span a real area (%s..%s)" % [label, low, high], spans)
 			var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
 			_check("%s authored COLOR_0 per vertex" % label, colors.size() == uvs.size())
 		_check("%s authored surface names %s match the manifest" % [id, names], names == _entry(id)["surfaces"])
