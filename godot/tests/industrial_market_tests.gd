@@ -64,6 +64,8 @@ func _test_manifest_validation() -> void:
 			{"version": 1, "assets": [], "placements": {}}, {"version": 1, "assets": [], "placements": []}]:
 		_rejects("root %s" % [var_to_str(root)], root)
 	# assets
+	for version: Variant in ["1", {}, [], true, null]:
+		_rejects("mistyped version %s" % [var_to_str(version)], _mutated(func(m: Dictionary) -> void: m["version"] = version))
 	_rejects("missing asset", _mutated(func(m: Dictionary) -> void: m["assets"].pop_back()))
 	_rejects("duplicate asset", _mutated(func(m: Dictionary) -> void: m["assets"][2] = m["assets"][1].duplicate(true)))
 	_rejects("unknown asset id", _mutated(func(m: Dictionary) -> void: m["assets"][0]["id"] = "other_shop"))
@@ -72,7 +74,7 @@ func _test_manifest_validation() -> void:
 	_rejects("numeric asset id", _mutated(func(m: Dictionary) -> void: m["assets"][0]["id"] = 7))
 	_rejects("missing asset filename", _mutated(func(m: Dictionary) -> void: m["assets"][0].erase("glb")))
 	for filename: Variant in ["../redline_shop.glb", "/redline_shop.glb", "C:/redline_shop.glb", "C:\\redline_shop.glb", "sub/redline_shop.glb",
-			"..\\redline_shop.glb", "ramen_vendor.glb", "redline_shop.GLB", "res://redline_shop.glb", "", null]:
+			"..\\redline_shop.glb", "ramen_vendor.glb", "redline_shop.GLB", "res://redline_shop.glb", "", null, 1, false, {}, []]:
 		_rejects("asset filename %s" % [var_to_str(filename)], _mutated(func(m: Dictionary) -> void: m["assets"][0]["glb"] = filename))
 	# placements
 	_rejects("missing placement", _mutated(func(m: Dictionary) -> void: m["placements"].pop_back()))
@@ -571,6 +573,10 @@ func _test_failure_recovery() -> void:
 	_check("failure reports the benchmark errors to the menu", GameSession.menu_error.begins_with("Industrial market review: ") and "forced benchmark failure" in GameSession.menu_error)
 	_check("failure builds no controls, world or camera", viewer.get_node_or_null("ReviewControls") == null and viewer.camera == null and viewer.key == null
 		and viewer.local_lights.is_empty() and viewer.find_children("*", "Camera3D", true, false).is_empty())
+	var wheel := InputEventMouseButton.new()
+	wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+	wheel.pressed = true
+	viewer._unhandled_input(wheel)
 	_check("the process is still running and the failed benchmark is parented for cleanup", is_instance_valid(viewer) and viewer.benchmark.get_parent() == viewer)
 	viewer.free()
 	GameSession.menu_error = saved

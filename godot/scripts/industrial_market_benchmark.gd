@@ -143,13 +143,13 @@ static func is_number(value: Variant) -> bool:
 
 
 static func manifest_errors(value: Variant) -> Array[String]:
-	if not value is Dictionary or value.get("version") != 1 or not value.get("assets") is Array or not value.get("placements") is Array:
+	if not value is Dictionary or not is_number(value.get("version")) or float(value["version"]) != 1.0 or not value.get("assets") is Array or not value.get("placements") is Array:
 		return ["Invalid industrial market manifest"]
 	var assets := {}
 	for entry: Variant in value["assets"]:
 		if not entry is Dictionary or not entry.get("id") is String or entry["id"] not in IDS or assets.has(entry["id"]):
 			return ["Invalid or duplicate benchmark asset id"]
-		if entry.get("glb") != entry["id"] + ".glb":
+		if not entry.get("glb") is String or entry["glb"] != entry["id"] + ".glb":
 			return ["Benchmark GLBs must use their approved plain filenames"]
 		assets[entry["id"]] = true
 	if assets.size() != IDS.size():
