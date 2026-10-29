@@ -33,8 +33,9 @@ def main():
     zp = os.path.join(work, "bundle.zip")
     if os.path.exists(zp):
         with open(zp, "rb") as cached:
-            if hashlib.sha256(cached.read()).hexdigest() != SHA:
-                os.remove(zp)
+            valid_cache = hashlib.sha256(cached.read()).hexdigest() == SHA
+        if not valid_cache:
+            os.remove(zp)
     if not os.path.exists(zp):
         with urllib.request.urlopen(URL, timeout=60) as response:
             payload = response.read(64 * 1024 * 1024 + 1)
