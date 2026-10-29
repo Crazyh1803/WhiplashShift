@@ -62,15 +62,22 @@ class _Placer extends RefCounted:
 	var placements: Array[Dictionary] = []
 	var rejected: Array[Dictionary] = []
 	var triangles := 0
+	var has_street_block := false
 
 	func _init(p_course: CourseDefinition, legacy: Node3D) -> void:
 		course = p_course
 		quarter = course.total_length * CityDistrict.FRACTION
 		entries = CityKit.entries()
+		var block := legacy.get_node_or_null("CityStreetBlock")
+		if block != null:
+			has_street_block = true
+			for bounds: AABB in block.get_meta("reserved_bounds", []):
+				obstacles.append(_flat(bounds))
 		_collect_obstacles(legacy)
 
 	func populate(root: Node3D) -> void:
-		_place_landmark("relay_tower", [[145.0, -1.0, 12.0], [150.0, 1.0, 16.0], [175.0, -1.0, 22.0]])
+		var relay_slots := [[315.0, -1.0, 14.0], [335.0, -1.0, 22.0], [375.0, -1.0, 30.0]] if has_street_block else [[145.0, -1.0, 12.0], [150.0, 1.0, 16.0], [175.0, -1.0, 22.0]]
+		_place_landmark("relay_tower", relay_slots)
 		_place_landmark("exchange_hall", [[345.0, 1.0, 15.0], [325.0, 1.0, 24.0], [305.0, -1.0, 28.0]])
 		_place_landmark("pump_citadel", [[455.0, -1.0, 20.0], [440.0, -1.0, 30.0], [425.0, 1.0, 30.0]])
 		for station in 35:
@@ -160,6 +167,8 @@ class _Placer extends RefCounted:
 		if crown != null:
 			obstacles.append(AABB(crown.position - Vector3(48.0, 0.0, 48.0), Vector3(96.0, 1.0, 96.0)))
 		for node: Node in legacy.find_children("*", "MultiMeshInstance3D", true, false):
+			if node.has_meta("street_block_piece"):
+				continue
 			var local: AABB = node.get_meta("city_local_aabb", CityScenery.UNIT_BOX)
 			for transform: Transform3D in node.get_meta("city_transforms", []):
 				obstacles.append(_flat(transform * local))

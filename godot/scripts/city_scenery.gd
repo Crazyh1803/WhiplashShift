@@ -22,7 +22,13 @@ static func build(parent: Node3D, course: CourseDefinition, use_city_kit: bool =
 	var root := Node3D.new()
 	root.name = "CityScenery"
 	parent.add_child(root)
-	_Kit.new(course, use_city_kit).populate(root)
+	var block: Node3D = CityStreetBlock.build(root, course) if use_city_kit else null
+	var reserved: Array[AABB] = []
+	var block_lights := 0
+	if block != null:
+		reserved.assign(block.get_meta("reserved_bounds", []))
+		block_lights = int(block.get_meta("light_count", 0))
+	_Kit.new(course, use_city_kit, reserved, block_lights).populate(root)
 	root.set_meta("authored_quarter", use_city_kit)
 	if use_city_kit:
 		CityDistrict.build(root, course)
@@ -77,9 +83,12 @@ class _Kit extends RefCounted:
 	var sinew_count := 0
 	var materials := {}
 	var box := BoxMesh.new()
+	var reserved_bounds: Array[AABB] = []
 
-	func _init(p_course: CourseDefinition, use_city_kit: bool) -> void:
+	func _init(p_course: CourseDefinition, use_city_kit: bool, reserved: Array[AABB] = [], existing_lights: int = 0) -> void:
 		course = p_course
+		reserved_bounds = reserved
+		lights = existing_lights
 		replace_first_quarter = use_city_kit
 		rng.seed = CityScenery.SEED
 		for key in ["body", "rib", "wall", "post", "cyan", "amber", "sinew", "skyline", "windows", "crown_rib"]:
@@ -171,6 +180,9 @@ class _Kit extends RefCounted:
 		if CityScenery.road_clearance(bounds, course) < CityScenery.ROAD_CLEARANCE:
 			return false
 		var flat := AABB(Vector3(bounds.position.x, 0, bounds.position.z), Vector3(bounds.size.x, 1, bounds.size.z)).grow(1.0)
+		for reserved: AABB in reserved_bounds:
+			if flat.intersects(reserved):
+				return false
 		if own_overlap:
 			for other in footprints:
 				if other.intersects(flat):
@@ -198,8 +210,8 @@ class _Kit extends RefCounted:
 						_part("post", basis, origin, Vector3(3.9, 1.3, 0), Vector3(0.8, 2.6, 0.8))]
 				var accent := "cyan" if (station + int(side > 0.0)) % 2 == 0 else "amber"
 				parts.append(_part(accent, basis, origin, Vector3(3.9, 2.8, 0), Vector3(0.4, 0.4, 0.4)))
-				_accept(parts, false)
-				if station % 10 == 0 and (station / 10 + int(side > 0.0)) % 2 == 0 and lights < CityScenery.MAX_LIGHTS - 3:
+				var accepted := _accept(parts, false)
+				if accepted and station % 10 == 0 and (station / 10 + int(side > 0.0)) % 2 == 0 and lights < CityScenery.MAX_LIGHTS - 3:
 					_light(root, origin + basis * Vector3(3.9, 3.4, 0), accent, 18.0)
 			raw += 8.0
 			station += 1
