@@ -210,6 +210,7 @@ class _Builder extends RefCounted:
 			var material := ShaderMaterial.new()
 			material.shader = CityStreetBlock.GROUND_SHADER
 			material.set_shader_parameter("surface_style", style)
+			# Only painted lanes and yards use local scale; plain paving uses world coordinates.
 			if label in ["alley", "rear_lane", "yard"]:
 				material.set_shader_parameter("surface_scale", Vector2(length, far - near))
 			material.set_shader_parameter("lane_axis", 1 if label == "alley" else (2 if label == "rear_lane" else 0))

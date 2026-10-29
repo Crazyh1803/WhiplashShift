@@ -48,3 +48,11 @@ python tools/city_pipeline/validate_city_streets.py
 `--size` is a resolution **scale** (0.25-2.0), never pixels; anything else fails fast. `--only` rebuilds a subset and merges
 into the existing manifest. Author every `Kit.box` with ordered (min, max) bounds: reversed extents are silently dropped.
 The builder also fails if a measured size misses the plan table or a model exceeds its cap.
+
+
+## Block Circuit preview
+`CityStreetBlock` uses the same layout in the race and the review scene. The opening 6-282 m now contains the four detailed buildings plus six budgeted existing-kit infill structures. Sidewalks have curbs, gutters/drains, benches/planters, bollards and eight real street lamps. Service streets at 75/189 m connect to rear lanes beneath conduit portals; concrete entry aprons, a marked freight yard, repaired asphalt, faded parking bays and darker soil verges replace the black void. No new colliders or changes to the road/rails/handling.
+
+The complete block is 188,639 triangles including every ground strip and repeated object, across 23 batches and 193 placement records (190,000 cap). Nearby older CityDistrict geometry is kept outside explicit block reservations; its remaining 22 pieces still cover all 14 old kit roles, at 62,128 triangles. Distant skyline and Crown transforms remain unchanged. Small furniture culls at 230 m, buildings/ground at 420 m; all ten CityScenery lamps are shadowless and stay inside the shared 12 cap. These are bounded near-detail assets; no authored distance LODs are claimed.
+
+Run `ak-test` with `TEST_CMD="python tools/workflow/test_season.py --scenes city_street_block_tests block_circuit_tests city_kit_tests"` for validators and headless checks. For nine rendered views use `TEST_CMD="godot --path godot res://tests/city_neighborhood_visual_qa.tscn"`. Captures are in `.ai/captures/city-street-block/`; two selected views are also saved beside the street-model preview directories.

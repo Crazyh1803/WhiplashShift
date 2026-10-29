@@ -1,7 +1,6 @@
 # City neighbourhood kit (candidate review)
 
-Inhabited-city buildings at the approved `habitation_workshop` quality bar. Status: `candidate-review`; nothing here is
-wired into runtime City worlds yet. Production placement, LODs and district budgets are separate work.
+Inhabited-city buildings at the approved `habitation_workshop` quality bar. Status: `candidate-review`. All four now appear in Block Circuit's preview street block through `CityStreetBlock`; other tracks retain their scenery. See `CITY_STREETS.md` for placement and budgets. Authored distance LODs remain future work.
 
 | id | read | key features |
 |---|---|---|
@@ -55,8 +54,8 @@ godot --path godot res://tests/habitation_visual_qa.tscn -- --asset=service_tene
 godot --path godot res://tests/habitation_visual_qa.tscn -- --asset=freight_depot
 godot --path godot res://tests/city_neighborhood_visual_qa.tscn
 ```
-The first three each save ten neutral/detail/night captures. The street study saves six views with all four buildings on canonical Block Circuit geometry, checking full-course road clearance and pairwise footprint overlap. Captures go to `.ai/captures/city-neighborhood/`. Studio lighting exposes geometry; night views deliberately use only local lamps and the camera headlight. They are lighting studies, not the final race lighting grade.
+The first three each save ten neutral/detail/night captures in `.ai/captures/city-neighborhood/`. The last scene now builds the actual production preview scenery and saves nine block views in `.ai/captures/city-street-block/`: overview, driver, shop sidewalk, workshop frontage, service alley and freight yard in neutral inspection light, plus driver/sidewalk/reverse night views using the game environment, local lamps and a camera headlight. Headless layout tests separately check full-course clearance, overlaps, budgets and preserved skyline.
 
 Decorative residents and workers are static posed geometry in these review meshes, not animated NPCs. The separate 1.75 m Blender inspection figure is not exported. All three retain shared reusable component vocabulary, but use distinct building layouts.
 
-Verified exports: market 33,781 triangles, tenement 33,216, depot 29,317. Production use still needs distance LODs and district placement/budget work.
+Verified exports: market 33,781 triangles, tenement 33,216, depot 29,317. The opening street block now places these meshes within its measured 190k budget, with distance culling. Authored mid/far LODs and placement in other race districts remain future work.
