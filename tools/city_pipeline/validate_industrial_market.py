@@ -146,6 +146,11 @@ def analyze(path):
             for p in js["meshes"][n["mesh"]]["primitives"]:
                 at = p["attributes"]
                 pos = accessor(js, binary, at["POSITION"], "VEC3")
+                if "COLOR_0" not in at:
+                    raise ValueError("primitive missing baked AO/wear COLOR_0")
+                colors = accessor(js, binary, at["COLOR_0"])
+                if len(colors) != len(pos) or any(len(row) not in (3, 4) or any(not math.isfinite(c) or not 0 <= c <= 1 for c in row) for row in colors):
+                    raise ValueError("invalid baked AO/wear COLOR_0")
                 if not all(math.isfinite(c) for r in pos for c in r):
                     raise ValueError("non-finite POSITION")
                 if "NORMAL" not in at or "TEXCOORD_0" not in at:
