@@ -127,7 +127,8 @@ func _test_placements(course: CourseDefinition, district: Node3D) -> void:
 	var rejected: Array = district.get_meta("rejected_slots", [])
 	var quarter := course.total_length * CityDistrict.FRACTION
 	_check("quarter length meta matches 25 percent", is_equal_approx(float(district.get_meta("quarter_length", 0.0)), quarter))
-	_check("district places a substantive set (%d)" % placements.size(), placements.size() >= 60)
+	# The street block reserves the near quarter, leaving the older kit a reduced but complete set.
+	_check("district places a substantive set (%d)" % placements.size(), placements.size() >= CityKit.EXPECTED_IDS.size() and placements.size() <= 40)
 	var counts := {}
 	for placement: Dictionary in placements:
 		counts[placement["asset"]] = int(counts.get(placement["asset"], 0)) + 1
@@ -135,8 +136,11 @@ func _test_placements(course: CourseDefinition, district: Node3D) -> void:
 		_check("%s is placed at least once" % id, int(counts.get(id, 0)) >= 1)
 	for id in LANDMARKS:
 		_check("landmark %s is placed exactly once (%d)" % [id, int(counts.get(id, 0))], int(counts.get(id, 0)) == 1)
+	var prop_total := 0
 	for id in CityDistrict.PROPS:
-		_check("prop %s is placed repeatedly (%d)" % [id, int(counts.get(id, 0))], int(counts.get(id, 0)) >= 2)
+		_check("prop %s is still placed (%d)" % [id, int(counts.get(id, 0))], int(counts.get(id, 0)) >= 1)
+		prop_total += int(counts.get(id, 0))
+	_check("props still repeat across the remaining quarter (%d)" % prop_total, prop_total >= 2 * CityDistrict.PROPS.size() - 4)
 	var unexpected := {}
 	for slot: Dictionary in rejected:
 		var reason := String(slot["reason"])
@@ -288,11 +292,15 @@ func _test_legacy_preserved(course: CourseDefinition, legacy: Node3D) -> void:
 	var old_root := CityScenery.build(old_host, course, false)
 	_check("flag controls authored quarter metadata", old_root.get_meta("authored_quarter") == false and legacy.get_meta("authored_quarter") == true and old_root.get_node_or_null("CityKit") == null)
 	var quarter := course.total_length * CityDistrict.FRACTION
-	var old_batches := _batches(old_root, null)
-	var new_batches := _batches(legacy, legacy.get_node("CityKit"))
+	var old_batches := _batches(old_root, [])
+	var street := legacy.get_node_or_null("CityStreetBlock")
+	_check("street block is present beside the district", street != null)
+	var new_batches := _batches(legacy, [legacy.get_node("CityKit"), street])
 	_check("legacy batch count stays within %d (old %d, new %d)" % [LEGACY_BATCH_LIMIT, old_batches.size(), new_batches.size()], old_batches.size() <= LEGACY_BATCH_LIMIT and new_batches.size() <= LEGACY_BATCH_LIMIT)
 	_check("legacy batch names are unchanged", old_batches.keys() == new_batches.keys())
-	var untouched: Array[String] = ["Wall", "Post", "Skyline", "Windows", "CrownRib"]
+	# Wall and Post near the street are now removed by the block's reservation, so only the
+	# distant silhouettes must stay byte-identical; Wall/Post removals are checked below.
+	var untouched: Array[String] = ["Skyline", "Windows", "CrownRib"]
 	for batch_name: String in old_batches:
 		var old_set := _counts(old_batches[batch_name])
 		var new_set := _counts(new_batches.get(batch_name, []))
@@ -318,18 +326,21 @@ func _test_legacy_preserved(course: CourseDefinition, legacy: Node3D) -> void:
 			_check("%s survivors all lie outside the replaced quarter" % batch_name, kept_ok)
 		if batch_name == "Body":
 			_check("old Body towers occupied the replaced quarter (%d removed)" % removed, removed > 0)
-	var old_lights := _light_signature(old_root)
-	_check("legacy lights are unchanged (%d)" % old_lights.size(), old_lights == _light_signature(legacy))
+	var old_lights := _light_signature(old_root, null)
+	var new_lights := _light_signature(legacy, street)
+	var lights_kept := new_lights.all(func(light: String) -> bool: return old_lights.has(light))
+	_check("remaining legacy lights are unchanged old lights (%d of %d)" % [new_lights.size(), old_lights.size()], lights_kept)
+	_check("block lamps share the 12 light cap with legacy lights", legacy.find_children("*", "OmniLight3D", true, false).size() <= CityScenery.MAX_LIGHTS)
 	var old_crown := old_root.get_node_or_null("Crown") as Node3D
 	var new_crown := legacy.get_node_or_null("Crown") as Node3D
 	_check("legacy Crown is unchanged", old_crown != null and new_crown != null and old_crown.position == new_crown.position and old_crown.get_child_count() == new_crown.get_child_count())
 	old_host.free()
 
 
-func _batches(root: Node, exclude: Node) -> Dictionary:
+func _batches(root: Node, excluded: Array) -> Dictionary:
 	var out := {}
 	for batch: MultiMeshInstance3D in root.find_children("*", "MultiMeshInstance3D", true, false):
-		if exclude != null and exclude.is_ancestor_of(batch):
+		if excluded.any(func(node: Node) -> bool: return node != null and node.is_ancestor_of(batch)):
 			continue
 		out[String(batch.name)] = batch.get_meta("city_transforms", [])
 	return out
@@ -343,9 +354,11 @@ func _counts(transforms: Array) -> Dictionary:
 	return out
 
 
-func _light_signature(root: Node) -> Array:
+func _light_signature(root: Node, exclude: Node) -> Array:
 	var out: Array = []
 	for light: OmniLight3D in root.find_children("*", "OmniLight3D", true, false):
+		if exclude != null and exclude.is_ancestor_of(light):
+			continue
 		out.append(var_to_str([light.position, light.light_color, light.omni_range]))
 	return out
 
