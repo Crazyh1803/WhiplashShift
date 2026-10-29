@@ -1,6 +1,6 @@
 {
-  "tris": 26689,
-  "verts": 20697,
+  "tris": 26789,
+  "verts": 20769,
   "lo": [
     -18.125,
     0.0,
@@ -12,7 +12,7 @@
     12.6
   ],
   "colors": {
-    "corners": 53499,
+    "corners": 53699,
     "min": 0.168,
     "mean": 0.789,
     "max": 1.0,
@@ -23,7 +23,7 @@
     "podium_front_armor": 586,
     "podium_lintels": 496,
     "bay_a": 2358,
-    "bay_b": 1598,
+    "bay_b": 1610,
     "airlock": 582,
     "terrace": 1342,
     "stair_front": 742,
@@ -41,8 +41,8 @@
     "module_m2": 2579,
     "module_m3": 1507,
     "module_support": 668,
-    "filter_tower": 1898,
-    "right_alley": 1775,
+    "filter_tower": 1914,
+    "right_alley": 1847,
     "rear_service": 2209,
     "damage_breach": 907,
     "roof_m3": 528,
