@@ -352,6 +352,7 @@ func _test_materials(block: Node3D) -> void:
 		var coloured := true
 		var materials := true
 		var tinted_fill := true
+		var neon_visible := true
 		for surface in mesh.get_surface_count():
 			var arrays := mesh.surface_get_arrays(surface)
 			coloured = coloured and arrays[Mesh.ARRAY_COLOR] is PackedColorArray and not (arrays[Mesh.ARRAY_COLOR] as PackedColorArray).is_empty()
@@ -360,11 +361,15 @@ func _test_materials(block: Node3D) -> void:
 				var material := mesh.surface_get_material(surface) as BaseMaterial3D
 				if material != null and material.resource_name in ["steel", "ceramic", "cavity", "machinery", "trim"]:
 					tinted_fill = tinted_fill and material.emission_operator == BaseMaterial3D.EMISSION_OP_MULTIPLY and material.emission == Color.WHITE
+				if id == "market_habitat" and material != null and material.resource_name in ["glow_cyan", "glow_amber"]:
+					neon_visible = neon_visible and material.emission_energy_multiplier > TrackMaterials.environment().glow_hdr_threshold
 		if id in HEROES or id in CityStreetBlock.STREET_IDS:
 			_check("%s keeps its source vertex colours" % id, coloured)
 			var base: BaseMaterial3D = mesh.surface_get_material(0) as BaseMaterial3D
 			_check("%s renders those colours without mutating shared materials" % id, base != null and base.vertex_color_use_as_albedo)
 			_check("%s fill light preserves painted colour and dark sign backings" % id, tinted_fill)
+		if id == "market_habitat":
+			_check("market neon clears the game environment bloom threshold", neon_visible)
 		_check("%s surfaces all carry materials" % id, materials)
 	# The legacy kit meshes reused for infill must keep their original shared materials.
 	for id in INFILL_IDS:

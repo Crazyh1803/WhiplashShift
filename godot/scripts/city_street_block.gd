@@ -93,6 +93,8 @@ static func _load_assets() -> bool:
 				material.emission = Color.WHITE
 				material.emission_operator = BaseMaterial3D.EMISSION_OP_MULTIPLY
 				material.emission_energy_multiplier = 0.12
+			elif id == "market_habitat" and material.resource_name in ["glow_cyan", "glow_amber"]:
+				material.emission_energy_multiplier = maxf(material.emission_energy_multiplier, 3.2)
 			mesh.surface_set_material(surface, material)
 		model.free()
 		meshes[id] = mesh
