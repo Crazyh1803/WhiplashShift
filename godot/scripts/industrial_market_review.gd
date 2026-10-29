@@ -6,6 +6,7 @@ var camera: Camera3D
 var environment: WorldEnvironment
 var key: DirectionalLight3D
 var local_lights: Array[Light3D] = []
+var lighting_label: Label
 var view_index := 0
 var night := false
 var focus := Vector3(0.0, 1.5, -1.0)
@@ -122,6 +123,8 @@ func _set_lighting(value: bool) -> void:
 	key.visible = not night
 	for light: Light3D in local_lights:
 		light.visible = night
+	if lighting_label != null:
+		lighting_label.text = "NIGHT // proposed street-light study" if night else "NEUTRAL // diagnostic inspection"
 
 
 func _build_controls() -> void:
@@ -150,6 +153,9 @@ func _build_controls() -> void:
 	lighting.text = "Night street lighting"
 	lighting.toggled.connect(_set_lighting)
 	column.add_child(lighting)
+	lighting_label = Label.new()
+	lighting_label.name = "LightingSetup"
+	column.add_child(lighting_label)
 	var hint := Label.new()
 	hint.text = "Right-drag to orbit • Wheel to zoom • Esc to menu"
 	column.add_child(hint)
