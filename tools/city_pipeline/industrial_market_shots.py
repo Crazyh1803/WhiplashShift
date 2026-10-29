@@ -28,6 +28,7 @@ p.add_argument("--set", default="people")
 p.add_argument("--outdir", default=PREV)
 p.add_argument("--only", default="")
 p.add_argument("--res", type=int, default=900)
+p.add_argument("--clay", action="store_true", help="people shots with one neutral clay material (anatomy check on the exported mesh)")
 A = args(p)
 os.makedirs(A.outdir, exist_ok=True)
 
@@ -45,8 +46,26 @@ SHOTS = {
         ("customer_face", "ramen_customer", (-0.25, 1.1, 1.74), (0, 0.0, 1.70), 85),
         ("customer_back", "ramen_customer", (-1.6, -2.6, 1.3), (0, 0, 0.95), 50),
         ("hands_vendor", "ramen_vendor", (0.65, 1.15, 1.35), (0.12, 0.45, 1.0), 70),
+        ("hands_customer", "ramen_customer", (0.7, 1.0, 1.45), (0.2, 0.45, 1.1), 70),
+        ("vendor_34_head", "ramen_vendor", (1.0, 1.0, 1.72), (0, 0.0, 1.62), 80),
+        ("customer_34_head", "ramen_customer", (-1.0, 1.0, 1.78), (0, 0.0, 1.70), 80),
+        ("boots_customer", "ramen_customer", (0.9, 1.3, 0.45), (0, 0, 0.12), 60),
+        ("shoes_vendor", "ramen_vendor", (0.9, 1.3, 0.4), (0, -0.05, 0.08), 60),
     ],
 }
+
+
+def clay(objs):
+    """Replace every material with one neutral grey clay so the real exported mesh anatomy can be judged without textures."""
+    mat = bpy.data.materials.new("clay")
+    mat.use_nodes = True
+    b = mat.node_tree.nodes["Principled BSDF"]
+    b.inputs["Base Color"].default_value = (0.62, 0.58, 0.55, 1)
+    b.inputs["Roughness"].default_value = 0.75
+    for o in objs:
+        if o.type == "MESH":
+            o.data.materials.clear()
+            o.data.materials.append(mat)
 
 
 def run_people():
@@ -55,13 +74,15 @@ def run_people():
             continue
         R.reset()
         sc = R.setup((A.res, int(A.res * 0.78)))
-        R.import_glb(os.path.join(CAND, asset + ".glb"))
+        objs = R.import_glb(os.path.join(CAND, asset + ".glb"))
+        if A.clay:
+            clay(objs)
         # floor card
         bpy.ops.mesh.primitive_plane_add(size=8, location=(0, 0, -0.002))
         R.studio_lights()
         # the shop/people frame is Blender-front +Y; cameras given in person space
         R.camera(cam, tgt, lens)
-        R.render(os.path.join(A.outdir, f"{name}.png"))
+        R.render(os.path.join(A.outdir, f"{name}{'_clay' if A.clay else ''}.png"))
 
 
 SHOP = [  # name, camera (shop space, Blender), target, lens, night

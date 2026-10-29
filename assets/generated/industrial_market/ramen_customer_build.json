@@ -1,42 +1,27 @@
 {
- "tris": 17632,
- "glb_bytes": 3937720,
- "seconds": 1.7,
+ "tris": 26040,
+ "glb_bytes": 4167196,
+ "seconds": 12.3,
  "aabb": [
   [
-   -0.2749,
-   0.0,
-   -0.6423
+   -0.2838,
+   0.0002,
+   -0.5597
   ],
   [
-   0.3277,
-   1.8305,
-   0.1845
+   0.3013,
+   1.8206,
+   0.2013
   ]
  ],
  "tris_by_material": {
-  "trousers": 2192,
-  "leather": 1704,
-  "jacket": 6148,
-  "skin": 6388,
-  "hair": 1200
+  "trousers": 2432,
+  "jacket": 6098,
+  "leather": 3376,
+  "hair": 1100,
+  "skin": 13034
  },
  "textures": {
-  "skin": {
-   "sizes": {
-    "albedo": 512,
-    "orm": 256,
-    "normal": 512
-   },
-   "files": {
-    "albedo": "assets/generated/industrial_market/textures/ramen_customer/skin_albedo.png",
-    "orm": "assets/generated/industrial_market/textures/ramen_customer/skin_orm.png",
-    "normal": "assets/generated/industrial_market/textures/ramen_customer/skin_normal.png"
-   },
-   "seed": 22513,
-   "recipe": "<lambda>",
-   "params": {}
-  },
   "jacket": {
    "sizes": {
     "albedo": 512,
@@ -69,9 +54,9 @@
   },
   "hair": {
    "sizes": {
-    "albedo": 512,
+    "albedo": 256,
     "orm": 256,
-    "normal": 512
+    "normal": 256
    },
    "files": {
     "albedo": "assets/generated/industrial_market/textures/ramen_customer/hair_albedo.png",
@@ -96,51 +81,68 @@
    "seed": 29282,
    "recipe": "<lambda>",
    "params": {}
+  },
+  "skin": {
+   "sizes": {
+    "albedo": 1024,
+    "orm": 512,
+    "normal": 512
+   },
+   "files": {
+    "albedo": "assets/generated/industrial_market/textures/ramen_customer/skin_albedo.png",
+    "orm": "assets/generated/industrial_market/textures/ramen_customer/skin_orm.png",
+    "normal": "assets/generated/industrial_market/textures/ramen_customer/skin_normal.png"
+   },
+   "seed": 47,
+   "recipe": "industrial_market_skin.bake (3D-function bake on the Human Base Meshes smart-project atlas)",
+   "params": {
+    "tone": "(0.7, 0.54, 0.45)"
+   }
   }
  },
  "face_local": [
-  0.0,
-  0.045,
-  1.683
+  0.016,
+  0.1069,
+  1.6897
  ],
  "eye_local": [
-  0.0091,
-  0.1489,
-  1.6776
+  0.016,
+  0.1189,
+  1.6897
  ],
  "arms": {
   "L": [
    [
-    -0.1876,
-    0.058,
-    1.4544
+    -0.1725,
+    -0.0326,
+    1.4134
    ],
    [
-    -0.2181,
-    0.0314,
-    1.1366
+    -0.2056,
+    -0.0184,
+    1.1536
    ],
    [
-    -0.2304,
-    0.0372,
-    0.8633
+    -0.2232,
+    0.0223,
+    0.9156
    ]
   ],
   "R": [
    [
-    0.1876,
-    0.058,
-    1.4544
+    0.1933,
+    -0.0435,
+    1.4134
    ],
    [
-    0.2864,
-    0.217,
-    1.1944
+    0.2111,
+    0.1717,
+    1.2646
    ],
    [
-    0.208,
-    0.46,
-    1.096
+    0.2057,
+    0.3822,
+    1.145
    ]
   ]
  }

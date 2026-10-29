@@ -125,21 +125,6 @@
    }
   },
   "ramen_vendor": {
-   "skin": {
-    "sizes": {
-     "albedo": 512,
-     "orm": 256,
-     "normal": 512
-    },
-    "files": {
-     "albedo": "assets/generated/industrial_market/textures/ramen_vendor/skin_albedo.png",
-     "orm": "assets/generated/industrial_market/textures/ramen_vendor/skin_orm.png",
-     "normal": "assets/generated/industrial_market/textures/ramen_vendor/skin_normal.png"
-    },
-    "seed": 18134,
-    "recipe": "<lambda>",
-    "params": {}
-   },
    "shirt": {
     "sizes": {
      "albedo": 512,
@@ -187,9 +172,9 @@
    },
    "hair": {
     "sizes": {
-     "albedo": 512,
+     "albedo": 256,
      "orm": 256,
-     "normal": 512
+     "normal": 256
     },
     "files": {
      "albedo": "assets/generated/industrial_market/textures/ramen_vendor/hair_albedo.png",
@@ -214,24 +199,26 @@
     "seed": 24295,
     "recipe": "<lambda>",
     "params": {}
-   }
-  },
-  "ramen_customer": {
+   },
    "skin": {
     "sizes": {
-     "albedo": 512,
-     "orm": 256,
+     "albedo": 1024,
+     "orm": 512,
      "normal": 512
     },
     "files": {
-     "albedo": "assets/generated/industrial_market/textures/ramen_customer/skin_albedo.png",
-     "orm": "assets/generated/industrial_market/textures/ramen_customer/skin_orm.png",
-     "normal": "assets/generated/industrial_market/textures/ramen_customer/skin_normal.png"
+     "albedo": "assets/generated/industrial_market/textures/ramen_vendor/skin_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_vendor/skin_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_vendor/skin_normal.png"
     },
-    "seed": 22513,
-    "recipe": "<lambda>",
-    "params": {}
-   },
+    "seed": 31,
+    "recipe": "industrial_market_skin.bake (3D-function bake on the Human Base Meshes smart-project atlas)",
+    "params": {
+     "tone": "(0.53, 0.39, 0.31)"
+    }
+   }
+  },
+  "ramen_customer": {
    "jacket": {
     "sizes": {
      "albedo": 512,
@@ -264,9 +251,9 @@
    },
    "hair": {
     "sizes": {
-     "albedo": 512,
+     "albedo": 256,
      "orm": 256,
-     "normal": 512
+     "normal": 256
     },
     "files": {
      "albedo": "assets/generated/industrial_market/textures/ramen_customer/hair_albedo.png",
@@ -291,6 +278,23 @@
     "seed": 29282,
     "recipe": "<lambda>",
     "params": {}
+   },
+   "skin": {
+    "sizes": {
+     "albedo": 1024,
+     "orm": 512,
+     "normal": 512
+    },
+    "files": {
+     "albedo": "assets/generated/industrial_market/textures/ramen_customer/skin_albedo.png",
+     "orm": "assets/generated/industrial_market/textures/ramen_customer/skin_orm.png",
+     "normal": "assets/generated/industrial_market/textures/ramen_customer/skin_normal.png"
+    },
+    "seed": 47,
+    "recipe": "industrial_market_skin.bake (3D-function bake on the Human Base Meshes smart-project atlas)",
+    "params": {
+     "tone": "(0.7, 0.54, 0.45)"
+    }
    }
   }
  }

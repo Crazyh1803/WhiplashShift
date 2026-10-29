@@ -271,17 +271,17 @@
   {
    "id": "ramen_vendor",
    "glb": "ramen_vendor.glb",
-   "tris": 17836,
+   "tris": 27756,
    "aabb": {
     "min": [
-     -0.4119,
-     0.0,
-     -0.5642
+     -0.3545,
+     0.0002,
+     -0.5297
     ],
     "max": [
-     0.3821,
-     1.7461,
-     0.2546
+     0.321,
+     1.7357,
+     0.2508
     ]
    },
    "surfaces": [
@@ -293,29 +293,29 @@
     "leather"
    ],
    "tris_by_surface": {
-    "skin": 7036,
-    "shirt": 4564,
+    "skin": 13712,
+    "shirt": 6016,
     "apron": 3004,
-    "trousers": 1808,
-    "hair": 800,
-    "leather": 624
+    "trousers": 2456,
+    "hair": 696,
+    "leather": 1872
    },
    "textures": [
     {
      "material": "skin",
      "slot": "baseColor",
      "embedded": true,
-     "width": 512,
-     "height": 512,
-     "glb_bytes": 89390
+     "width": 1024,
+     "height": 1024,
+     "glb_bytes": 299604
     },
     {
      "material": "skin",
      "slot": "metallicRoughness",
      "embedded": true,
-     "width": 256,
-     "height": 256,
-     "glb_bytes": 42752
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 58362
     },
     {
      "material": "skin",
@@ -323,7 +323,7 @@
      "embedded": true,
      "width": 512,
      "height": 512,
-     "glb_bytes": 297332
+     "glb_bytes": 261550
     },
     {
      "material": "shirt",
@@ -347,7 +347,7 @@
      "embedded": true,
      "width": 512,
      "height": 512,
-     "glb_bytes": 754913
+     "glb_bytes": 721076
     },
     {
      "material": "apron",
@@ -371,7 +371,7 @@
      "embedded": true,
      "width": 512,
      "height": 512,
-     "glb_bytes": 754205
+     "glb_bytes": 726592
     },
     {
      "material": "trousers",
@@ -395,15 +395,15 @@
      "embedded": true,
      "width": 512,
      "height": 512,
-     "glb_bytes": 748026
+     "glb_bytes": 706080
     },
     {
      "material": "hair",
      "slot": "baseColor",
      "embedded": true,
-     "width": 512,
-     "height": 512,
-     "glb_bytes": 8006
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 2475
     },
     {
      "material": "hair",
@@ -411,15 +411,15 @@
      "embedded": true,
      "width": 256,
      "height": 256,
-     "glb_bytes": 1495
+     "glb_bytes": 1482
     },
     {
      "material": "hair",
      "slot": "normal",
      "embedded": true,
-     "width": 512,
-     "height": 512,
-     "glb_bytes": 15338
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 2964
     },
     {
      "material": "leather",
@@ -443,11 +443,11 @@
      "embedded": true,
      "width": 512,
      "height": 512,
-     "glb_bytes": 583275
+     "glb_bytes": 375928
     }
    ],
-   "texture_mib_mips": 18.0,
-   "texture_mib_with_import_copy": 36.0,
+   "texture_mib_mips": 21.0,
+   "texture_mib_with_import_copy": 42.0,
    "identity": "Ramen vendor: stocky cook in rolled-sleeve work shirt, canvas apron and headband, handing a bowl across the counter",
    "source_blend": "assets/generated/industrial_market/ramen_vendor.blend",
    "source_textures": [
@@ -475,17 +475,17 @@
   {
    "id": "ramen_customer",
    "glb": "ramen_customer.glb",
-   "tris": 17632,
+   "tris": 26040,
    "aabb": {
     "min": [
-     -0.2749,
-     0.0,
-     -0.6423
+     -0.2838,
+     0.0002,
+     -0.5597
     ],
     "max": [
-     0.3277,
-     1.8305,
-     0.1845
+     0.3013,
+     1.8206,
+     0.2013
     ]
    },
    "surfaces": [
@@ -496,28 +496,28 @@
     "leather"
    ],
    "tris_by_surface": {
-    "skin": 6388,
-    "jacket": 6148,
-    "trousers": 2192,
-    "hair": 1200,
-    "leather": 1704
+    "skin": 13034,
+    "jacket": 6098,
+    "trousers": 2432,
+    "hair": 1100,
+    "leather": 3376
    },
    "textures": [
     {
      "material": "skin",
      "slot": "baseColor",
      "embedded": true,
-     "width": 512,
-     "height": 512,
-     "glb_bytes": 91709
+     "width": 1024,
+     "height": 1024,
+     "glb_bytes": 309914
     },
     {
      "material": "skin",
      "slot": "metallicRoughness",
      "embedded": true,
-     "width": 256,
-     "height": 256,
-     "glb_bytes": 42828
+     "width": 512,
+     "height": 512,
+     "glb_bytes": 61957
     },
     {
      "material": "skin",
@@ -525,7 +525,7 @@
      "embedded": true,
      "width": 512,
      "height": 512,
-     "glb_bytes": 296241
+     "glb_bytes": 268790
     },
     {
      "material": "jacket",
@@ -549,7 +549,7 @@
      "embedded": true,
      "width": 512,
      "height": 512,
-     "glb_bytes": 758671
+     "glb_bytes": 720420
     },
     {
      "material": "trousers",
@@ -573,15 +573,15 @@
      "embedded": true,
      "width": 512,
      "height": 512,
-     "glb_bytes": 735624
+     "glb_bytes": 689310
     },
     {
      "material": "hair",
      "slot": "baseColor",
      "embedded": true,
-     "width": 512,
-     "height": 512,
-     "glb_bytes": 8476
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 2606
     },
     {
      "material": "hair",
@@ -589,15 +589,15 @@
      "embedded": true,
      "width": 256,
      "height": 256,
-     "glb_bytes": 1497
+     "glb_bytes": 1487
     },
     {
      "material": "hair",
      "slot": "normal",
      "embedded": true,
-     "width": 512,
-     "height": 512,
-     "glb_bytes": 14345
+     "width": 256,
+     "height": 256,
+     "glb_bytes": 2879
     },
     {
      "material": "leather",
@@ -621,11 +621,11 @@
      "embedded": true,
      "width": 512,
      "height": 512,
-     "glb_bytes": 583943
+     "glb_bytes": 375188
     }
    ],
-   "texture_mib_mips": 15.0,
-   "texture_mib_with_import_copy": 30.0,
+   "texture_mib_mips": 18.0,
+   "texture_mib_with_import_copy": 36.0,
    "identity": "Ramen customer: slim diner in a hooded work jacket and cargo trousers, taking the bowl at the counter",
    "source_blend": "assets/generated/industrial_market/ramen_customer.blend",
    "source_textures": [
@@ -701,9 +701,9 @@
   ],
   "bowl_radius": 0.098,
   "vendor_right_wrist": [
-   0.648,
-   1.246,
-   -1.72
+   0.6429,
+   1.2628,
+   -1.6877
   ],
   "vendor_left_wrist_on_counter": [
    0.12,
@@ -711,9 +711,9 @@
    -1.62
   ],
   "customer_right_wrist": [
-   0.452,
-   1.246,
-   -1.84
+   0.4543,
+   1.295,
+   -1.9178
   ],
   "note": "Both right hands hold the bowl rim from opposite sides (vendor +X, customer -X). Validator checks mesh proximity."
  },
@@ -724,14 +724,14 @@
    -1.8
   ],
   "vendor_face": [
-   0.3926,
-   1.7422,
-   -1.4827
+   0.3842,
+   1.7585,
+   -1.4208
   ],
   "customer_face": [
-   0.6509,
-   1.8276,
-   -2.1511
+   0.644,
+   1.8397,
+   -2.1811
   ],
   "support": [
    -2.5,
@@ -790,9 +790,9 @@
     -2.42
    ],
    "skin_vendor": [
-    0.3926,
-    1.7422,
-    -1.4827
+    0.3842,
+    1.7585,
+    -1.4208
    ],
    "jacket_customer": [
     0.66,
@@ -891,9 +891,19 @@
    }
   ]
  },
+ "human_base": {
+  "source": "Blender Human Base Meshes v1.4.1 (CC0), realistic male/female body at multires level 0, retained as the static source blend",
+  "provenance": "assets/generated/industrial_market/sources/PROVENANCE.json",
+  "bodies": {
+   "ramen_vendor": "male",
+   "ramen_customer": "female"
+  },
+  "method": "capsule-bone skinning (industrial_market_rig.py) with FK/2-bone IK pose baked into the exported vertices; garments, boots and hair fitted to the rest-pose anatomy and skinned with the same weights; skin atlas baked from the real mesh UVs; eyes = base eyeball spheres with an atlas eye tile",
+  "person_tris_note": "raised from 8-18k: real face/hand topology (~21k tris base body incl. head and hands) cannot fit 18k once garments are added; covered body faces are removed"
+ },
  "budgets": {
   "shop_tris": "35k-70k",
-  "person_tris": "8k-18k",
+  "person_tris": "<=40k each (adult base-human topology)",
   "combined_tris": 120000,
   "combined_surfaces": 20,
   "texture_mib": 128
@@ -901,26 +911,38 @@
  "costs": {
   "tris": {
    "redline_shop": 34828,
-   "ramen_vendor": 17836,
-   "ramen_customer": 17632
+   "ramen_vendor": 27756,
+   "ramen_customer": 26040
   },
-  "combined_tris": 70296,
+  "combined_tris": 88624,
   "surfaces": {
    "redline_shop": 9,
    "ramen_vendor": 6,
    "ramen_customer": 5
   },
   "combined_surfaces": 20,
-  "texture_mib_mips": 57.0,
-  "texture_mib_working": 114.0,
+  "texture_mib_mips": 63.0,
+  "texture_mib_working": 126.0,
   "texture_assumptions": "uncompressed RGBA8 + full mip chain per distinct embedded image, x2 for the duplicated imported copy; VRAM-compressed imports will be smaller",
   "shadow_light_cost": "not measured here: Godot candidate scene owns it"
  },
  "previews": [
+  "boots_customer.png",
+  "boots_customer_clay.png",
+  "customer_34_head.png",
+  "customer_34_head_clay.png",
   "customer_back.png",
+  "customer_back_clay.png",
   "customer_face.png",
+  "customer_face_clay.png",
   "customer_front.png",
+  "customer_front_clay.png",
+  "hands_customer.png",
+  "hands_customer_clay.png",
   "hands_vendor.png",
+  "hands_vendor_clay.png",
+  "shoes_vendor.png",
+  "shoes_vendor_clay.png",
   "shop_approach_driver.png",
   "shop_counter.png",
   "shop_handoff.png",
@@ -934,13 +956,23 @@
   "shop_sign_menu.png",
   "shop_support_contact.png",
   "vendor_34.png",
+  "vendor_34_clay.png",
+  "vendor_34_head.png",
+  "vendor_34_head_clay.png",
   "vendor_face.png",
+  "vendor_face_clay.png",
   "vendor_front.png",
-  "vendor_side.png"
+  "vendor_front_clay.png",
+  "vendor_side.png",
+  "vendor_side_clay.png"
  ],
  "limitations": [
-  "static pose, no rig or LODs",
-  "faces use displaced-sphere heads with painted brows/lips; eyelids are tubes",
+  "static baked pose, no rig or LODs",
+  "faces/hands are the unmodified Human Base Meshes anatomy (generic adult; expression is neutral, mouth closed, no teeth/tongue, no eyelash cards); brows, lips, stubble, nails and freckles are painted into the baked skin atlas",
+  "eyes are the base eyeball spheres turned towards the other person (max ~22 deg from head direction); eyelids are the base mesh and do not follow",
+  "hair is a thin clumped shell (+ one ponytail tube), not strand/cards",
+  "skin has no subsurface in glTF; the Godot post-import override should enable it",
+  "cloth folds are procedural displacement on the garment shells, not simulated",
   "no true glass/transparent sign lens (dark acrylic face)",
   "AO + wear baked into COLOR_0 per vertex (multiplied over textures)",
   "textures are procedural (numpy), not photographed or ComfyUI-generated"

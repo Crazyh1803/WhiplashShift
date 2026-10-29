@@ -63,10 +63,7 @@ def make_tex(asset, name, fn, **kw):
     n = 256 if A.fast else kw.pop("n", 512)
     alb, rough, metal, height = fn(n, rng)
     nstr = kw.pop("nstr", 3.0)
-    atlas = kw.pop("atlas", None)
-    if atlas:
-        alb, rough, height = TX.paint_skin_atlas(alb, rough, height, rng=rng, **atlas)
-    d = os.path.join(TEXD, asset)
+    d =os.path.join(TEXD, asset)
     paths, sizes = TX.write_set(d, name, alb, rough, metal, height, nstr=nstr, alb_n=n, orm_n=n // 2 if n > 256 else n, nrm_n=n)
     TEX_LOG[(asset, name)] = {"sizes": sizes, "files": {k: os.path.relpath(v, ROOT).replace("\\", "/") for k, v in paths.items()},
                               "seed": int(seed), "recipe": fn.__name__ if hasattr(fn, "__name__") else "lambda", "params": {k: str(v) for k, v in kw.items()}}
@@ -81,148 +78,197 @@ def person_specs():
     vr = pr((BOWL.x + 0.098, BOWL.y - 0.06), VENDOR_POS, 0)
     cr = pr((BOWL.x - 0.098, BOWL.y + 0.06), CUSTOMER_POS, 180)
     vl = pr((0.12, 1.62), VENDOR_POS, 0)
-    uvs = {"top": 2.6, "trousers": 2.6}
+    grip = dict(f=(0, 1, 0), n=(-1, 0, 0), curls=[(0.50, 0.85, 0.7), (0.55, 0.9, 0.72), (0.58, 0.9, 0.72), (0.6, 0.9, 0.7)],
+                thumb=[(-0.2, 0.6, 0.7), (-0.7, 0.5, 0.2), (-0.8, 0.3, -0.4)])
+    flat = dict(f=(0.12, 1, 0), n=(0, 0, -1), curls=PP_FLAT, thumb=[(0.7, 0.7, 0), (0.5, 0.9, 0), (0.3, 1, 0)])
+    relaxed = dict(f=(0.0, 0.25, -1), n=(1, 0, 0), curls=PP_RELAXED, thumb=[(0.2, 0.5, -0.8), (0.1, 0.6, -0.8), (0, 0.7, -0.7)])
+    # gaze: each person looks at the other's face (person-local metres); the eyeballs turn at most ~22 deg from the head direction
     vendor = dict(
-        id="ramen_vendor", H=1.72, hipw=1.04, thigh=1.04, hem=1.03, waist=(0.164, 0.120, 0.170, 0.124), chest_d=1.05, shoulder_w=0.192, arm=1.04,
-        pelvis=(-0.012, -0.02), lean=0.06, weight="L", head_off=(0.0, 0.0, -0.005), head_tilt=(math.radians(-6), math.radians(4)),
-        feet={"L": (-0.115, -0.16, math.radians(9)), "R": (0.135, -0.13, math.radians(-14))},
-        skull=dict(w=1.05, jaw=1.0, brow=1.1, nose=1.05, lip=1.0),
-        mat=dict(skin="skin", top="shirt", trousers="trousers", leather="leather", hair="hair", cloth2="apron"),
-        torso_folds=[(0.60 * 1.72, 0.05, 0.006, 2 * math.pi / 0.09, math.pi / 2, 0.9, 0.0), (0.665 * 1.72, 0.05, 0.005, 2 * math.pi / 0.08, math.pi / 2 + 0.4, 0.7, 1.0),
-                     (0.52 * 1.72, 0.04, 0.007, 2 * math.pi / 0.07, 0.0, 1.6, 0.5)],
-        arms={"R": dict(wrist=(vr.x, vr.y, bowl_z), pole=(0.7, -0.4, -0.6), sleeve_t=0.5, cuff_roll=0.5),
-              "L": dict(wrist=(vl.x - 0.0, vl.y, COUNTER_TOP - FLOOR + 0.0165), pole=(-0.7, -0.4, -0.6), sleeve_t=0.5, cuff_roll=0.5)},
-        hands={"R": dict(f=(0, 1, 0), n=(-1, 0, 0), curls=[(0.2, 0.45, 0.35), (0.24, 0.5, 0.38), (0.27, 0.52, 0.4), (0.3, 0.55, 0.4)],
-                         thumb=[(-0.2, 0.6, 0.7), (-0.7, 0.5, 0.2), (-0.8, 0.3, -0.4)]),
-               "L": dict(f=(0.12, 1, 0), n=(0, 0, -1), curls=PP.FLAT, thumb=[(0.7, 0.7, 0), (0.5, 0.9, 0), (0.3, 1, 0)])},
-        uvs=uvs, boot=0.0, hair_thick=0.006, hair_back=0.0,
+        id="ramen_vendor", body="male", H=1.72, seed=11, hem=0.50, neck_cut=0.826, cuff=0.068, sleeve_t=0.32, top_ease=0.010, top_drop=0.9, trousers_ease=0.017,
+        fold_amp=1.0, boot_top=None, boot_ease=0.007, hair_thick=0.011, hairline=0.07, ponytail=False,
+        mat=dict(skin="skin", top="shirt", trousers="trousers", leather="leather", hair="hair", cloth2="apron"), dress=dress_vendor,
+        pose=dict(lean_angle=0.05, pelvis_shift=(-0.012, -0.02, 0.0), pelvis_yaw=0.03, head_tilt=(-0.07, 0.07), ankle_lift=0.02,
+                  feet={"L": (-0.115, -0.16, math.radians(9)), "R": (0.135, -0.13, math.radians(-14))}, weight="L",
+                  arms={"R": dict(wrist=(vr.x, vr.y, bowl_z), pole=(0.7, -0.4, -0.6), hand=grip),
+                        "L": dict(wrist=(vl.x - 0.0, vl.y, COUNTER_TOP - FLOOR + 0.0165), pole=(-0.7, -0.4, -0.6), hand=flat)}),
+        gaze=(0.26, 1.2, 1.64),
     )
     customer = dict(
-        id="ramen_customer", H=1.80, hipw=0.97, thigh=0.98, hem=1.0, waist=(0.141, 0.098, 0.15, 0.103), chest_d=1.0, shoulder_w=0.188, arm=0.98,
-        pelvis=(0.012, 0.0), lean=0.055, weight="R", head_off=(0.0, 0.0, 0.0), head_tilt=(math.radians(-3), math.radians(-5)),
-        feet={"L": (-0.12, 0.0, math.radians(12)), "R": (0.115, -0.09, math.radians(-8))},
-        skull=dict(w=0.97, jaw=0.88, brow=0.85, nose=0.92, lip=1.12),
-        mat=dict(skin="skin", top="jacket", trousers="trousers", leather="leather", hair="hair"),
-        torso_folds=[(0.60 * 1.8, 0.05, 0.007, 2 * math.pi / 0.1, math.pi / 2, 1.0, 0.3), (0.52 * 1.8, 0.045, 0.008, 2 * math.pi / 0.08, math.pi / 2, 1.2, 0.0),
-                     (0.70 * 1.8, 0.05, 0.005, 2 * math.pi / 0.09, math.pi, 0.8, 0.0)],
-        arms={"R": dict(wrist=(cr.x, cr.y, bowl_z), pole=(0.7, -0.5, -0.5), sleeve_t=1.0, cuff_roll=0.93),
-              "L": dict(wrist=(-0.235, 0.035, 0.80), pole=(-0.4, -0.8, -0.2), sleeve_t=1.0, cuff_roll=0.93)},
-        hands={"R": dict(f=(0, 1, 0), n=(-1, 0, 0), curls=[(0.2, 0.45, 0.35), (0.24, 0.5, 0.38), (0.27, 0.52, 0.4), (0.3, 0.55, 0.4)],
-                         thumb=[(-0.2, 0.6, 0.7), (-0.7, 0.5, 0.2), (-0.8, 0.3, -0.4)]),
-               "L": dict(f=(0.0, 0.25, -1), n=(1, 0, 0), curls=PP.RELAXED, thumb=[(0.2, 0.5, -0.8), (0.1, 0.6, -0.8), (0, 0.7, -0.7)])},
-        uvs=uvs, boot=0.19, ponytail=True, hair_thick=0.009, hair_back=0.0,
+        id="ramen_customer", body="female", H=1.80, seed=23, hem=0.53, neck_cut=0.826, cuff=0.105, sleeve_t=0.93, top_ease=0.021, top_drop=0.5, trousers_ease=0.016,
+        fold_amp=1.0, boot_top=0.145, boot_ease=0.008, shaft_ease=0.016, hair_thick=0.012, hairline=0.066, ponytail=True,
+        mat=dict(skin="skin", top="jacket", trousers="trousers", leather="leather", hair="hair"), dress=dress_customer,
+        pose=dict(lean_angle=0.045, pelvis_shift=(0.012, 0.0, 0.0), pelvis_yaw=-0.03, head_tilt=(-0.04, -0.06), ankle_lift=0.02,
+                  feet={"L": (-0.12, 0.0, math.radians(12)), "R": (0.115, -0.09, math.radians(-8))}, weight="R",
+                  arms={"R": dict(wrist=(cr.x, cr.y, bowl_z), pole=(0.7, -0.5, -0.5), hand=grip),
+                        "L": dict(wrist=(-0.235, 0.035, 0.80), pole=(-0.4, -0.8, -0.2), hand=relaxed)}),
+        gaze=(-0.12, 1.2, 1.62),
     )
     return vendor, customer
 
 
+PP_FLAT = [(0.04, 0.10, 0.08), (0.03, 0.09, 0.08), (0.03, 0.10, 0.08), (0.05, 0.12, 0.1)]
+PP_RELAXED = [(0.30, 0.50, 0.38), (0.36, 0.56, 0.42), (0.44, 0.62, 0.46), (0.52, 0.66, 0.5)]
+
+
 def person_textures(asset):
     v = asset == "ramen_vendor"
-    skin_tone = (0.60, 0.41, 0.31) if v else (0.74, 0.55, 0.43)
     t = {}
-    t["skin"] = make_tex(asset, "skin", lambda n, r: TX.r_skin(n, r, skin_tone, ruddy=1.0), n=512, nstr=1.2,
-                         atlas=dict(tone=skin_tone, stubble=0.8 if v else 0.0, iris=(0.2, 0.11, 0.05) if v else (0.1, 0.2, 0.22),
-                                    brow=(0.07, 0.05, 0.04) if v else (0.16, 0.07, 0.04), lip=(0.5, 0.25, 0.22) if v else (0.62, 0.32, 0.3), freckle=0.0 if v else 0.8))
     if v:
-        t["shirt"] = make_tex(asset, "shirt", lambda n, r: TX.r_cloth(n, r, (0.17, 0.21, 0.27), weave=110, wear=0.35, streak=0.2, stain=0.4), nstr=3.0)
-        t["apron"] = make_tex(asset, "apron", lambda n, r: TX.r_cloth(n, r, (0.5, 0.45, 0.34), weave=70, twill=False, wear=0.2, stain=0.8, streak=0.3), nstr=3.5)
-        t["trousers"] = make_tex(asset, "trousers", lambda n, r: TX.r_cloth(n, r, (0.12, 0.115, 0.095), weave=120, wear=0.45, stain=0.3), nstr=3.0)
-        t["hair"] = make_tex(asset, "hair", lambda n, r: TX.r_hair(n, r, (0.13, 0.1, 0.08)), nstr=2.0)
-        t["leather"] = make_tex(asset, "leather", lambda n, r: TX.r_leather(n, r, (0.09, 0.065, 0.045)), nstr=2.5)
+        t["shirt"] = make_tex(asset, "shirt", lambda n, r: TX.r_cloth(n, r, (0.17, 0.21, 0.27), weave=110, wear=0.35, streak=0.2, stain=0.4), nstr=1.6)
+        t["apron"] = make_tex(asset, "apron", lambda n, r: TX.r_cloth(n, r, (0.5, 0.45, 0.34), weave=70, twill=False, wear=0.2, stain=0.8, streak=0.3), nstr=2.0)
+        t["trousers"] = make_tex(asset, "trousers", lambda n, r: TX.r_cloth(n, r, (0.12, 0.115, 0.095), weave=120, wear=0.45, stain=0.3), nstr=1.6)
+        t["hair"] = make_tex(asset, "hair", lambda n, r: TX.r_hair(n, r, (0.13, 0.1, 0.08)), n=256, nstr=1.2)       # 256 px: keeps the 128 MiB budget with 1k skin atlases
+        t["leather"] = make_tex(asset, "leather", lambda n, r: TX.r_leather(n, r, (0.09, 0.065, 0.045)), nstr=0.8)
     else:
-        t["jacket"] = make_tex(asset, "jacket", lambda n, r: TX.r_cloth(n, r, (0.14, 0.2, 0.21), weave=90, twill=False, wear=0.3, streak=0.25, stain=0.2), nstr=3.0)
-        t["trousers"] = make_tex(asset, "trousers", lambda n, r: TX.r_cloth(n, r, (0.09, 0.095, 0.105), weave=130, wear=0.4, stain=0.25, streak=0.15), nstr=3.0)
-        t["hair"] = make_tex(asset, "hair", lambda n, r: TX.r_hair(n, r, (0.2, 0.08, 0.045)), nstr=2.0)
-        t["leather"] = make_tex(asset, "leather", lambda n, r: TX.r_leather(n, r, (0.1, 0.07, 0.05), scuff=0.55), nstr=2.5)
+        t["jacket"] = make_tex(asset, "jacket", lambda n, r: TX.r_cloth(n, r, (0.14, 0.2, 0.21), weave=90, twill=False, wear=0.3, streak=0.25, stain=0.2), nstr=1.6)
+        t["trousers"] = make_tex(asset, "trousers", lambda n, r: TX.r_cloth(n, r, (0.09, 0.095, 0.105), weave=130, wear=0.4, stain=0.25, streak=0.15), nstr=1.6)
+        t["hair"] = make_tex(asset, "hair", lambda n, r: TX.r_hair(n, r, (0.2, 0.08, 0.045)), n=256, nstr=1.2)
+        t["leather"] = make_tex(asset, "leather", lambda n, r: TX.r_leather(n, r, (0.1, 0.07, 0.05), scuff=0.55), nstr=0.8)
     return t
 
 
-PRM = {  # roughness/metal factors are multiplied by the ORM texture in glTF; base factors stay 1
-}
+def bake_skin_textures(asset, fig, m):
+    """Skin atlas baked from the real mesh (rest pose): albedo 1024, ORM 512, subtle normal 512."""
+    import industrial_market_skin as SK
+    v = asset == "ramen_vendor"
+    res = 512 if A.fast else 1024
+    tone = (0.53, 0.39, 0.31) if v else (0.70, 0.54, 0.45)
+    m.bm.verts.index_update()
+    m.bm.normal_update()
+    faces = [f for f, _ in fig.skin_faces]
+    nmax = max(vt.index for fc in faces for vt in fc.verts) + 1
+    Pm = np.zeros((nmax, 3))
+    Nm = np.zeros((nmax, 3))
+    for fc in faces:
+        for vt in fc.verts:
+            Pm[vt.index] = vt.co[:]
+            Nm[vt.index] = vt.normal[:]
+    flist = [tuple(vt.index for vt in fc.verts) for fc in faces]
+    loopuv = [[tuple(lp[m.uv].uv) for lp in fc.loops] for fc in faces]
+    pos, nrm, mask = SK.raster(flist, loopuv, Pm, Nm, res)
+    rng = np.random.default_rng(31 if v else 47)
+    nails = []                           # fingertips (rest pose) for nails; the dorsal side opposes the rest palm normal
+    for sd, k in ((1, "R"), (-1, "L")):
+        mir = np.ones(3) if sd == 1 else np.array([-1, 1, 1.0])
+        f0, n0 = fig.rig.hf_rest[k]
+        for chain in list(fig.rig.fingers_rest) + [fig.rig.thumb_rest]:
+            j = [p * mir for p in chain]
+            nails.append((j[3], unit_np(j[3] - j[2]), -n0))
+    lm = dict(eye_mid=fig.eye_mid, s=fig.s)
+    iris = (0.20, 0.11, 0.05) if v else (0.10, 0.20, 0.22)
+    alb, rough, h = SK.bake(res, pos, nrm, mask, lm, rng, tone, stubble=0.8 if v else 0.0, freckle=0.0 if v else 0.8,
+                            brow=(0.07, 0.05, 0.04) if v else (0.16, 0.07, 0.04), lip=(0.5, 0.25, 0.22) if v else (0.62, 0.32, 0.3), nail_joints=nails,
+                            seed=5 if v else 9)
+    u0, v0, u1, v1 = SK.EYE_RECT                       # eye tile (atlas square) painted over the baked image
+    r0, r1, c0, c1 = int(res - v1 * res), int(res - v0 * res), int(u0 * res), int(u1 * res)
+    ea, er = SK.paint_eye(c1 - c0, iris, rng)
+    alb[r0:r1, c0:c1] = ea
+    rough[r0:r1, c0:c1] = er
+    mask[r0:r1, c0:c1] = True
+    h[r0:r1, c0:c1] = 0.5
+    alb, rough, h = SK.dilate(alb, mask), SK.dilate(rough, mask), SK.dilate(h, mask)
+    nm = SK.normal_map(h, mask, amp=0.045)
+    arrs = {"albedo": alb, "orm": TX.resize(np.stack([np.full_like(rough, 0.95), rough, np.zeros_like(rough)], -1), res // 2), "normal": TX.resize(nm, res // 2)}
+    d = os.path.join(TEXD, asset)
+    os.makedirs(d, exist_ok=True)
+    paths, sizes = {}, {}
+    for k_, arr in arrs.items():
+        p_ = os.path.join(d, f"skin_{k_}.png")
+        with open(p_, "wb") as fh:
+            fh.write(TX.png_bytes(arr))
+        paths[k_] = p_
+        sizes[k_] = arr.shape[0]
+    TEX_LOG[(asset, "skin")] = {"sizes": sizes, "files": {k_: os.path.relpath(v_, ROOT).replace("\\", "/") for k_, v_ in paths.items()}, "seed": 31 if v else 47,
+                                "recipe": "industrial_market_skin.bake (3D-function bake on the Human Base Meshes smart-project atlas)", "params": {"tone": str(tone)}}
+    return paths
 
 
-def make_person(P, with_dress):
+def unit_np(v):
+    return v / max(np.linalg.norm(v), 1e-9)
+
+
+def make_person(P):
     asset = P["id"]
     tex = person_textures(asset)
-    names = list(tex.keys())
-    mats = {n: C.make_material(n, tex=tex[n]) for n in names}
+    names = ["skin"] + list(tex.keys())
     m = C.Mesh(names)
-    for n in names:
-        pass
-    info = PP.build_person(m, P)
-    with_dress(m, P, info)
-    # UVs for everything not authored (cloth strips, soles, accessories)
-    C.box_uv(m, {n: 2.6 for n in names})
-    m.finish_normals()
-    return m, mats, tex, info
+    fig = PP.build_person(m, P)
+    tex["skin"] = bake_skin_textures(asset, fig, m)
+    mats = {n: C.make_material(n, tex=tex[n], normal_strength=(0.7 if n == "skin" else 1.0)) for n in names}
+    pose = dict(P["pose"])                              # bake the pose into the vertices; eyes turn towards the other person's face
+    fig.solve_pelvis(pose, pose["weight"])
+    info = fig.pose(pose, gaze=P["gaze"])
+    C.box_uv(m, {n: 2.6 for n in names})                # UVs for everything not authored (cloth strips, soles, accessories)
+    import bmesh
+    bmesh.ops.recalc_face_normals(m.bm, faces=[f for f in m.bm.faces if f not in fig.mine])
+    eyes = np.mean([v.co[:] for fe, _ in fig.eye_faces for fc in fe for v in fc.verts], 0)
+    out = {"face_world": eyes, "eye_surf": eyes + np.array([0.0, 0.012, 0.0]),
+           "arms": {k: (info[f"shoulder{k}"], info[f"elbow{k}"], info[f"wrist{k}"]) for k in ("L", "R")}}
+    return m, mats, tex, out
 
 
-def dress_vendor(m, P, info):
+def dress_vendor(fig, m, P):
+    import mathutils
+    H, s = P["H"], fig.s
     sk = D.Skin(m)
+    D.apron(m, sk, H, "apron", 0.0, "apron", ties=True)
+    c, rx, ry = PP.neck_ring(fig, P["neck_cut"] * H + 0.004)
+    D.collar(m, V((c.x, c.y, 0)), rx + 0.016, ry + 0.012, P["neck_cut"] * H + 0.006, 0.018, 0.007, "shirt", a0=-160, a1=160, lean=0.0)
+    em = fig.eye_mid
+    zb = em[2] + 0.052 * s                                       # band sits on the forehead just below the hairline
+    ring = fig.P[(np.abs(fig.P[:, 2] - zb) < 0.006 * s) & fig.is_head]
+    cx, cy = 0.5 * (ring[:, 0].min() + ring[:, 0].max()), 0.5 * (ring[:, 1].min() + ring[:, 1].max())
+    hx, hy = 0.5 * (ring[:, 0].max() - ring[:, 0].min()), 0.5 * (ring[:, 1].max() - ring[:, 1].min())
+    D.headband(m, V((cx, cy, zb)), mathutils.Matrix.Identity(4), "shirt", rx=hx + 0.014, ry=hy + 0.012, z=0.0)
+
+
+def dress_customer(fig, m, P):
     H = P["H"]
-    D.apron(m, sk, H, "apron", P["lean"], "apron", ties=True)
-    D.collar(m, V((0, P["lean"] - 0.004, 0)), 0.060, 0.055, 0.845 * H, 0.018, 0.007, "shirt", a0=-160, a1=160, lean=0.0)
-    # bandana
-    head_c = V((P["head_off"][0], 0.012 + P["lean"] * 0.6 + P["head_off"][1], 0.935 * H + P["head_off"][2]))
-    tilt = Matrix.Rotation(P["head_tilt"][0], 4, "X") @ Matrix.Rotation(P["head_tilt"][1], 4, "Z")
-    D.headband(m, head_c, tilt, "shirt")
-
-
-def dress_customer(m, P, info):
     sk = D.Skin(m)
-    H = P["H"]
-    lean = P["lean"]
+    c, rx, ry = PP.neck_ring(fig, P["neck_cut"] * H + 0.004)
+    zc = P["neck_cut"] * H
     # hood roll, stand collar, zip, hand pockets, chest pocket, cargo pockets
-    hood = [V((s * 0.095, 0.045 + lean, 0.838 * H)) for s in (-1, 1)]
-    m.tube([V((-0.105, 0.05 + lean, 0.835 * H)), V((-0.12, -0.02 + lean, 0.835 * H)), V((-0.075, -0.085 + lean, 0.845 * H)), V((0, -0.098 + lean, 0.848 * H)),
-            V((0.075, -0.085 + lean, 0.845 * H)), V((0.12, -0.02 + lean, 0.835 * H)), V((0.105, 0.05 + lean, 0.835 * H))],
-           [0.026, 0.031, 0.035, 0.036, 0.035, 0.031, 0.026], "jacket", seg=12, samples=26, ratio=0.9, up=V((0, 0, 1)), uv=("cloth", 1.6))
-    D.collar(m, V((0, lean - 0.004, 0)), 0.064, 0.060, 0.856 * H, 0.026, 0.009, "jacket", a0=-150, a1=150)
-    # zip tape
+    m.tube([V((c.x - rx - 0.03, c.y + 0.02, zc + 0.002)), V((c.x - rx - 0.04, c.y - 0.04, zc + 0.002)), V((c.x - 0.6 * rx, c.y - ry - 0.07, zc + 0.012)),
+            V((c.x, c.y - ry - 0.085, zc + 0.016)), V((c.x + 0.6 * rx, c.y - ry - 0.07, zc + 0.012)), V((c.x + rx + 0.04, c.y - 0.04, zc + 0.002)),
+            V((c.x + rx + 0.03, c.y + 0.02, zc + 0.002))],
+           [0.024, 0.029, 0.033, 0.034, 0.033, 0.029, 0.024], "jacket", seg=12, samples=26, ratio=0.9, up=V((0, 0, 1)), uv=("cloth", 1.6))
+    D.collar(m, V((c.x, c.y, 0)), rx + 0.022, ry + 0.02, zc + 0.012, 0.026, 0.009, "jacket", a0=-150, a1=150)
+    zt, zb = zc - 0.004, 0.50 * H
+
     def zip_fn(i, j, nu=2, nv=26):
-        z = 0.838 * H - (0.838 * H - 0.452 * H) * j / nv
-        x = (i / nu * 2 - 1) * 0.011
+        z = zt - (zt - zb) * j / nv
+        x = c.x + (i / nu * 2 - 1) * 0.011
         y = sk.y(x, z)
         return V((x, (y if y is not None else 0.1) + 0.0035, z))
     PP.thick_sheet(m, zip_fn, 2, 26, 0.003, "leather")
-    m.box(V((0, (sk.y(0, 0.62 * H) or 0.1) + 0.012, 0.62 * H)), (0.012, 0.01, 0.03), "leather", bevel=0.002)
-    for s in (-1, 1):
-        def pk(i, j, s=s, nu=6, nv=3):
-            u = (i / nu - 0.5) * 0.15
-            z = 0.505 * H - 0.045 * j / nv - 0.015 * (i / nu)
-            x = s * 0.125 + u
+    m.box(V((c.x, (sk.y(c.x, 0.70 * H) or 0.1) + 0.012, 0.70 * H)), (0.012, 0.01, 0.03), "leather", bevel=0.002)
+    for sd in (-1, 1):
+        def pk(i, j, sd=sd, nu=6, nv=3):
+            x = sd * 0.135 + (i / nu - 0.5) * 0.15
+            z = 0.565 * H - 0.045 * j / nv - 0.015 * (i / nu)
             y = sk.y(x, z)
-            return V((x, (y if y is not None else 0.1) + 0.006 + 0.004 * j / nv, z))
-        PP.thick_sheet(m, pk, 6, 3, 0.004, "jacket", flip=(s < 0))
-        def cp(i, j, s=s, nu=5, nv=4):
-            u = (i / nu - 0.5) * 0.115
-            z = 0.51 * H - 0.12 * j / nv + 0.0 if False else 0.455 * H - 0.0
-            return V((0, 0, 0))
-        # cargo pocket on the thigh with flap
-        def cargo(i, j, s=s, nu=6, nv=6):
-            x = s * 0.115 + (i / nu - 0.5) * 0.15
-            z = 0.40 * H - 0.17 * j / nv
+            return V((x, (y if y is not None else 0.1) + 0.004 + 0.004 * j / nv, z))
+        PP.thick_sheet(m, pk, 6, 3, 0.004, "jacket", flip=(sd < 0))
+
+        def cargo(i, j, sd=sd, nu=6, nv=6):
+            x = sd * 0.125 + (i / nu - 0.5) * 0.15
+            z = 0.42 * H - 0.17 * j / nv
             y = sk.y(x, z)
-            return V((x, (y if y is not None else 0.1) + 0.010 + 0.003 * j / nv, z))
-        PP.thick_sheet(m, cargo, 6, 6, 0.004, "trousers", flip=(s < 0))
-        # hem drawcord end
-    cz = 0.662 * H
+            return V((x, (y if y is not None else 0.1) + 0.008 + 0.003 * j / nv, z))
+        PP.thick_sheet(m, cargo, 6, 6, 0.004, "trousers", flip=(sd < 0))
+
     def chest(i, j, nu=4, nv=3):
-        x = 0.085 + (i / nu - 0.5) * 0.1
-        z = cz - 0.07 * j / nv
+        x = 0.095 + (i / nu - 0.5) * 0.1
+        z = 0.74 * H - 0.07 * j / nv
         y = sk.y(x, z)
         return V((x, (y if y is not None else 0.1) + 0.006, z))
     PP.thick_sheet(m, chest, 4, 3, 0.004, "jacket", flip=False)
-    # hem band loop
-    D.ring_loop(m, V((P["pelvis"][0] * 0.9, P["pelvis"][1] + 0.004, 0)), 0.2 * H / 1.75 * 1.0, 0.14 * H / 1.75, info["hem_z"] + 0.012, 0.012, "jacket", ratio=0.9, a0=0, a1=345, uvs=1.6)
-
-
-BUILDERS = {"vendor": ("ramen_vendor", dress_vendor), "customer": ("ramen_customer", dress_customer)}
 
 
 def finish_person(key):
     t0 = time.time()
     P = person_specs()[0 if key == "vendor" else 1]
-    m, mats, tex, info = make_person(P, BUILDERS[key][1])
+    m, mats, tex, info = make_person(P)
     asset = P["id"]
     C.ray_ao(m, rays=6 if A.fast else 12, dist=0.22, floor=0.55)
     ob = C.commit(m, asset, [mats[n] for n in m.mats])
@@ -406,13 +452,21 @@ def write_manifest():
         "lighting": {"note": "Proposed runtime local lights as DATA only (no lights in the GLBs). Diagnostic neutral setup = sun + sky; night = these anchors only.",
                      "anchors": [{"name": n, "position": [p[0], p[2], -p[1]], "color": list(c), "energy": e, "range": r, "shadow": n in ("sign_glow", "counter_lamp")}
                                  for n, p, c, e, r in anchors]},
-        "budgets": {"shop_tris": "35k-70k", "person_tris": "8k-18k", "combined_tris": 120000, "combined_surfaces": 20, "texture_mib": 128},
+        "human_base": {"source": "Blender Human Base Meshes v1.4.1 (CC0), realistic male/female body at multires level 0, retained as the static source blend",
+                       "provenance": "assets/generated/industrial_market/sources/PROVENANCE.json", "bodies": {"ramen_vendor": "male", "ramen_customer": "female"},
+                       "method": "capsule-bone skinning (industrial_market_rig.py) with FK/2-bone IK pose baked into the exported vertices; garments, boots and hair fitted to the "
+                                 "rest-pose anatomy and skinned with the same weights; skin atlas baked from the real mesh UVs; eyes = base eyeball spheres with an atlas eye tile",
+                       "person_tris_note": "raised from 8-18k: real face/hand topology (~21k tris base body incl. head and hands) cannot fit 18k once garments are added; covered body faces are removed"},
+        "budgets": {"shop_tris": "35k-70k", "person_tris": "<=40k each (adult base-human topology)", "combined_tris": 120000, "combined_surfaces": 20, "texture_mib": 128},
         "costs": {"tris": {a["id"]: a["tris"] for a in assets}, "combined_tris": sum(a["tris"] for a in assets), "surfaces": {a["id"]: len(a["surfaces"]) for a in assets},
                   "combined_surfaces": sum(len(a["surfaces"]) for a in assets), "texture_mib_mips": round(tex_one, 3), "texture_mib_working": round(tex_dup, 3),
                   "texture_assumptions": "uncompressed RGBA8 + full mip chain per distinct embedded image, x2 for the duplicated imported copy; VRAM-compressed imports will be smaller",
                   "shadow_light_cost": "not measured here: Godot candidate scene owns it"},
         "previews": sorted(os.listdir(PREV)) if os.path.isdir(PREV) else [],
-        "limitations": ["static pose, no rig or LODs", "faces use displaced-sphere heads with painted brows/lips; eyelids are tubes", "no true glass/transparent sign lens (dark acrylic face)",
+        "limitations": ["static baked pose, no rig or LODs", "faces/hands are the unmodified Human Base Meshes anatomy (generic adult; expression is neutral, mouth closed, no teeth/tongue, no eyelash cards); "
+                        "brows, lips, stubble, nails and freckles are painted into the baked skin atlas", "eyes are the base eyeball spheres turned towards the other person (max ~22 deg from head direction); eyelids are the base mesh and do not follow",
+                        "hair is a thin clumped shell (+ one ponytail tube), not strand/cards", "skin has no subsurface in glTF; the Godot post-import override should enable it", "cloth folds are procedural displacement on the garment shells, not simulated",
+                        "no true glass/transparent sign lens (dark acrylic face)",
                         "AO + wear baked into COLOR_0 per vertex (multiplied over textures)", "textures are procedural (numpy), not photographed or ComfyUI-generated"]}
     with open(os.path.join(CAND, "benchmark_manifest.json"), "w", encoding="utf-8") as fh:
         json.dump(man, fh, indent=1)
