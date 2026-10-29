@@ -19,7 +19,7 @@ var _out := ""
 func _ready() -> void:
 	_capture_mode = "--capture" in OS.get_cmdline_user_args()
 	_out = ProjectSettings.globalize_path("res://../.ai/captures/industrial-market").simplify_path()
-	benchmark = IndustrialMarketBenchmark.new()
+	benchmark = _create_benchmark()
 	add_child(benchmark)
 	if not benchmark.build():
 		var message := "Industrial market review: " + "; ".join(benchmark.errors)
@@ -37,6 +37,10 @@ func _ready() -> void:
 	if _capture_mode:
 		var success := await _captures()
 		get_tree().quit(0 if success else 1)
+
+
+func _create_benchmark() -> IndustrialMarketBenchmark:
+	return IndustrialMarketBenchmark.new()
 
 
 func _build_world() -> void:
