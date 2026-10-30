@@ -1,0 +1,4031 @@
+{
+ "version": 2,
+ "status": "candidate-review",
+ "coordinate_system": {
+  "units": "metres",
+  "up": "+Y",
+  "front": "-Z",
+  "building_origin": "front-centre foot",
+  "street_origin": "foot-centred",
+  "blender_source": "Z-up, front +Y"
+ },
+ "texture_binding": {
+  "mode": "shared external texture URIs",
+  "base_dir": "godot/assets/city/realism/",
+  "rule": "every GLB image is textures/<material>_<slot>.png; no embedded images; one Godot import per file, deduplicated by path",
+  "channels": {
+   "albedo": "sRGB RGB",
+   "orm": "R occlusion, G roughness, B metallic (glTF metallicRoughness uses G/B)",
+   "normal": "OpenGL +Y tangent space, TANGENT exported",
+   "emissive": "sRGB, sign_atlas only (glyphs and icons)"
+  },
+  "vertex_color": "COLOR_0 multiplies albedo (AO x wear); TEXCOORD_0 is the only UV set",
+  "uv_density": "tiles per metre in each material's uv_per_m (world-projected box UVs)"
+ },
+ "emission_whitelist": [
+  "sign_atlas",
+  "lamp_glass"
+ ],
+ "sign_atlas": {
+  "tile_px": [
+   512,
+   128
+  ],
+  "grid": [
+   2,
+   8
+  ],
+  "signs": [
+   {
+    "index": 0,
+    "text": "NOODLES",
+    "icon": "bowl"
+   },
+   {
+    "index": 1,
+    "text": "TOOL HIRE",
+    "icon": "wrench"
+   },
+   {
+    "index": 2,
+    "text": "LAUNDRY",
+    "icon": "drop"
+   },
+   {
+    "index": 3,
+    "text": "FREIGHT",
+    "icon": "box"
+   },
+   {
+    "index": 4,
+    "text": "ELECTRICITY",
+    "icon": "bolt"
+   },
+   {
+    "index": 5,
+    "text": "WATER",
+    "icon": "drop"
+   },
+   {
+    "index": 6,
+    "text": "TRANSIT",
+    "icon": "arrow"
+   },
+   {
+    "index": 7,
+    "text": "HOUSING",
+    "icon": "key"
+   },
+   {
+    "index": 8,
+    "text": "GARAGE",
+    "icon": "gear"
+   },
+   {
+    "index": 9,
+    "text": "PLUMBING",
+    "icon": "drop"
+   },
+   {
+    "index": 10,
+    "text": "MACHINERY",
+    "icon": "gear"
+   },
+   {
+    "index": 11,
+    "text": "CAR WASH",
+    "icon": "drop"
+   },
+   {
+    "index": 12,
+    "text": "POST OFFICE",
+    "icon": "box"
+   },
+   {
+    "index": 13,
+    "text": "HEATING",
+    "icon": "bolt"
+   },
+   {
+    "index": 14,
+    "text": "PARTS 24",
+    "icon": "gear"
+   },
+   {
+    "index": 15,
+    "text": "OPEN",
+    "icon": "arrow"
+   }
+  ],
+  "text_source": "ak-qwen draft, filtered to mundane words"
+ },
+ "materials": {
+  "steel_structure": {
+   "uv_per_m": 1.0,
+   "factors": {
+    "base_color": [
+     0.15,
+     0.16,
+     0.18
+    ],
+    "roughness": 0.55,
+    "metallic": 0.7
+   },
+   "albedo": "textures/steel_structure_albedo.png",
+   "orm": "textures/steel_structure_orm.png",
+   "normal": "textures/steel_structure_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "cladding_corrugated": {
+   "uv_per_m": 0.6,
+   "factors": {
+    "base_color": [
+     0.28,
+     0.33,
+     0.32
+    ],
+    "roughness": 0.6,
+    "metallic": 0.45
+   },
+   "albedo": "textures/cladding_corrugated_albedo.png",
+   "orm": "textures/cladding_corrugated_orm.png",
+   "normal": "textures/cladding_corrugated_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "cladding_patch": {
+   "uv_per_m": 0.8,
+   "factors": {
+    "base_color": [
+     0.5,
+     0.33,
+     0.12
+    ],
+    "roughness": 0.6,
+    "metallic": 0.4
+   },
+   "albedo": "textures/cladding_patch_albedo.png",
+   "orm": "textures/cladding_patch_orm.png",
+   "normal": "textures/cladding_patch_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "concrete": {
+   "uv_per_m": 0.4,
+   "factors": {
+    "base_color": [
+     0.36,
+     0.35,
+     0.33
+    ],
+    "roughness": 0.85,
+    "metallic": 0.0
+   },
+   "albedo": "textures/concrete_albedo.png",
+   "orm": "textures/concrete_orm.png",
+   "normal": "textures/concrete_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "brick": {
+   "uv_per_m": 0.5,
+   "factors": {
+    "base_color": [
+     0.36,
+     0.17,
+     0.11
+    ],
+    "roughness": 0.9,
+    "metallic": 0.0
+   },
+   "albedo": "textures/brick_albedo.png",
+   "orm": "textures/brick_orm.png",
+   "normal": "textures/brick_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "render_plaster": {
+   "uv_per_m": 0.35,
+   "factors": {
+    "base_color": [
+     0.5,
+     0.47,
+     0.4
+    ],
+    "roughness": 0.9,
+    "metallic": 0.0
+   },
+   "albedo": "textures/render_plaster_albedo.png",
+   "orm": "textures/render_plaster_orm.png",
+   "normal": "textures/render_plaster_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "roof_membrane": {
+   "uv_per_m": 0.3,
+   "factors": {
+    "base_color": [
+     0.09,
+     0.09,
+     0.09
+    ],
+    "roughness": 0.9,
+    "metallic": 0.0
+   },
+   "albedo": "textures/roof_membrane_albedo.png",
+   "orm": "textures/roof_membrane_orm.png",
+   "normal": "textures/roof_membrane_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "paving": {
+   "uv_per_m": 0.35,
+   "factors": {
+    "base_color": [
+     0.24,
+     0.24,
+     0.24
+    ],
+    "roughness": 0.85,
+    "metallic": 0.0
+   },
+   "albedo": "textures/paving_albedo.png",
+   "orm": "textures/paving_orm.png",
+   "normal": "textures/paving_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "equipment_steel": {
+   "uv_per_m": 1.0,
+   "factors": {
+    "base_color": [
+     0.5,
+     0.52,
+     0.55
+    ],
+    "roughness": 0.4,
+    "metallic": 0.85
+   },
+   "albedo": "textures/equipment_steel_albedo.png",
+   "orm": "textures/equipment_steel_orm.png",
+   "normal": "textures/equipment_steel_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "glass_window": {
+   "uv_per_m": 0.7,
+   "factors": {
+    "base_color": [
+     0.05,
+     0.08,
+     0.1
+    ],
+    "roughness": 0.15,
+    "metallic": 0.1
+   },
+   "albedo": "textures/glass_window_albedo.png",
+   "orm": "textures/glass_window_orm.png",
+   "normal": "textures/glass_window_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "fabric_awning": {
+   "uv_per_m": 0.45,
+   "factors": {
+    "base_color": [
+     0.45,
+     0.1,
+     0.08
+    ],
+    "roughness": 0.85,
+    "metallic": 0.0
+   },
+   "albedo": "textures/fabric_awning_albedo.png",
+   "orm": "textures/fabric_awning_orm.png",
+   "normal": "textures/fabric_awning_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "plastic_rubber": {
+   "uv_per_m": 1.5,
+   "factors": {
+    "base_color": [
+     0.06,
+     0.07,
+     0.07
+    ],
+    "roughness": 0.6,
+    "metallic": 0.0
+   },
+   "albedo": "textures/plastic_rubber_albedo.png",
+   "orm": "textures/plastic_rubber_orm.png",
+   "normal": "textures/plastic_rubber_normal.png",
+   "emission": {
+    "allowed": false,
+    "strength": 0.0,
+    "source": null
+   }
+  },
+  "sign_atlas": {
+   "uv_per_m": 1.0,
+   "factors": {
+    "base_color": [
+     1,
+     1,
+     1
+    ],
+    "roughness": 0.4,
+    "metallic": 0.0
+   },
+   "albedo": "textures/sign_atlas_albedo.png",
+   "orm": "textures/sign_atlas_orm.png",
+   "emissive": "textures/sign_atlas_emissive.png",
+   "emission": {
+    "allowed": true,
+    "strength": 2.0,
+    "source": "emissive texture (glyphs/icons only)"
+   }
+  },
+  "lamp_glass": {
+   "uv_per_m": 1.0,
+   "factors": {
+    "base_color": [
+     0.9,
+     0.85,
+     0.6
+    ],
+    "roughness": 0.2,
+    "metallic": 0.0
+   },
+   "emission": {
+    "allowed": true,
+    "strength": 3.0,
+    "source": "emissive factor"
+   }
+  }
+ },
+ "assets": [
+  {
+   "id": "habitation_workshop",
+   "role": "building",
+   "district_role": "housing+workshop",
+   "glb": "habitation_workshop.glb",
+   "tris": 18704,
+   "aabb": {
+    "min": [
+     -12.04,
+     0.0,
+     -1.704
+    ],
+    "max": [
+     12.04,
+     16.4,
+     18.06
+    ]
+   },
+   "footprint": {
+    "min": [
+     -12.0,
+     0.0
+    ],
+    "max": [
+     12.0,
+     18.0
+    ]
+   },
+   "front_setback_m": 2.05,
+   "materials": [
+    "brick",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "fabric_awning",
+    "glass_window",
+    "lamp_glass",
+    "plastic_rubber",
+    "render_plaster",
+    "roof_membrane",
+    "sign_atlas",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "brick",
+    "render_plaster",
+    "roof_membrane",
+    "equipment_steel",
+    "glass_window",
+    "fabric_awning",
+    "plastic_rubber",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 7660,
+    "cladding_corrugated": 2076,
+    "cladding_patch": 240,
+    "concrete": 1516,
+    "brick": 2356,
+    "render_plaster": 640,
+    "roof_membrane": 608,
+    "equipment_steel": 2552,
+    "glass_window": 368,
+    "fabric_awning": 180,
+    "plastic_rubber": 436,
+    "sign_atlas": 48,
+    "lamp_glass": 24
+   },
+   "identity": "Three storeys of patched render and brick housing over a four-bay steel-framed workshop floor: half-raised shutter, barred display window, bolted cladding repairs, balconies with laundry, roof tanks.",
+   "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
+   "glb_bytes": 1804476,
+   "lod1_glb": "habitation_workshop_lod1.glb",
+   "lod1_tris": 692,
+   "lod1_aabb": {
+    "min": [
+     -12.0,
+     0.0,
+     -1.3
+    ],
+    "max": [
+     12.0,
+     16.0,
+     18.0
+    ]
+   },
+   "lod1_surfaces": [
+    "steel_structure",
+    "render_plaster",
+    "roof_membrane"
+   ],
+   "lod1_tris_by_surface": {
+    "steel_structure": 268,
+    "render_plaster": 248,
+    "roof_membrane": 176
+   },
+   "lod1_glb_bytes": 55696,
+   "protrusions": {
+    "front": 1.704,
+    "left": 0.04,
+    "right": 0.04,
+    "back": 0.06
+   },
+   "frontage_m": 24.0,
+   "depth_m": 18.0,
+   "height_m": 16.4,
+   "entrances": [
+    {
+     "id": "habitation_workshop_entrance_0",
+     "kind": "shutter",
+     "position": [
+      -9.0,
+      0.3,
+      -0.0
+     ],
+     "width": 2.4,
+     "height": 2.8
+    },
+    {
+     "id": "habitation_workshop_entrance_1",
+     "kind": "personnel",
+     "position": [
+      -1.15,
+      0.3,
+      -0.0
+     ],
+     "width": 1.0,
+     "height": 2.1
+    },
+    {
+     "id": "habitation_workshop_entrance_2",
+     "kind": "shutter",
+     "position": [
+      8.0,
+      0.3,
+      -0.0
+     ],
+     "width": 2.8,
+     "height": 2.8
+    },
+    {
+     "id": "habitation_workshop_entrance_3",
+     "kind": "personnel",
+     "position": [
+      10.65,
+      0.3,
+      -0.0
+     ],
+     "width": 1.0,
+     "height": 2.1
+    }
+   ],
+   "light_anchors": [
+    {
+     "id": "habitation_workshop_light_0",
+     "kind": "sign",
+     "position": [
+      -9.0,
+      4.15,
+      -0.64
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "habitation_workshop_light_1",
+     "kind": "fixture",
+     "position": [
+      -1.15,
+      2.7,
+      -0.38
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 7.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "habitation_workshop_light_2",
+     "kind": "service",
+     "position": [
+      5.2,
+      2.6,
+      -0.3
+     ],
+     "direction": [
+      0,
+      -0.3,
+      -1
+     ],
+     "color": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "range_m": 3.5,
+     "energy": 0.5,
+     "shadow": false
+    },
+    {
+     "id": "habitation_workshop_light_3",
+     "kind": "fixture",
+     "position": [
+      10.65,
+      2.7,
+      -0.38
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 7.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "habitation_workshop_light_4",
+     "kind": "sign",
+     "position": [
+      8.0,
+      4.175,
+      -0.64
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "habitation_workshop_light_5",
+     "kind": "window",
+     "position": [
+      -6.0,
+      8.2,
+      -0.5
+     ],
+     "direction": [
+      0,
+      0,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.75,
+      0.4
+     ],
+     "range_m": 4.0,
+     "energy": 0.5,
+     "shadow": false
+    },
+    {
+     "id": "habitation_workshop_light_6",
+     "kind": "window",
+     "position": [
+      6.0,
+      8.2,
+      -0.5
+     ],
+     "direction": [
+      0,
+      0,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.75,
+      0.4
+     ],
+     "range_m": 4.0,
+     "energy": 0.5,
+     "shadow": false
+    },
+    {
+     "id": "habitation_workshop_light_7",
+     "kind": "sign",
+     "position": [
+      11.4,
+      6.1,
+      -0.6
+     ],
+     "direction": [
+      0.5,
+      -0.4,
+      -0.3
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.6
+     ],
+     "range_m": 4.5,
+     "energy": 0.6,
+     "shadow": false
+    },
+    {
+     "id": "habitation_workshop_light_8",
+     "kind": "street",
+     "position": [
+      -11.5,
+      3.4,
+      -0.8
+     ],
+     "direction": [
+      0.2,
+      -0.4,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 9.0,
+     "energy": 1.2,
+     "shadow": false
+    },
+    {
+     "id": "habitation_workshop_light_9",
+     "kind": "street",
+     "position": [
+      11.5,
+      3.4,
+      -0.8
+     ],
+     "direction": [
+      -0.2,
+      -0.4,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 9.0,
+     "energy": 1.2,
+     "shadow": false
+    },
+    {
+     "id": "habitation_workshop_light_10",
+     "kind": "shop_spot",
+     "position": [
+      -9.0,
+      3.9,
+      -1.4
+     ],
+     "direction": [
+      0,
+      -0.6,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.85,
+      0.6
+     ],
+     "range_m": 10.0,
+     "energy": 1.6,
+     "shadow": true
+    }
+   ],
+   "signs": [
+    {
+     "tile": 8,
+     "text": "GARAGE"
+    },
+    {
+     "tile": 14,
+     "text": "PARTS 24"
+    },
+    {
+     "tile": 7,
+     "text": "HOUSING",
+     "blade": true
+    }
+   ],
+   "source_blend": "assets/generated/city_realism/blends/habitation_workshop.blend",
+   "previews": [
+    "assets/previews/city_realism/habitation_workshop_front.png",
+    "assets/previews/city_realism/habitation_workshop_night.png",
+    "assets/previews/city_realism/habitation_workshop_street.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 38,
+    "use_points": 8,
+    "polished_contacts": 2
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      21898
+     ],
+     [
+      2.4,
+      18704
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "market_habitat",
+   "role": "building",
+   "district_role": "market+housing",
+   "glb": "market_habitat.glb",
+   "tris": 19106,
+   "aabb": {
+    "min": [
+     -9.04,
+     0.0,
+     -1.954
+    ],
+    "max": [
+     9.04,
+     13.34,
+     16.06
+    ]
+   },
+   "footprint": {
+    "min": [
+     -9.0,
+     0.0
+    ],
+    "max": [
+     9.0,
+     16.0
+    ]
+   },
+   "front_setback_m": 2.3,
+   "materials": [
+    "brick",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "fabric_awning",
+    "glass_window",
+    "lamp_glass",
+    "plastic_rubber",
+    "render_plaster",
+    "roof_membrane",
+    "sign_atlas",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "brick",
+    "render_plaster",
+    "roof_membrane",
+    "equipment_steel",
+    "glass_window",
+    "fabric_awning",
+    "plastic_rubber",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 6644,
+    "cladding_corrugated": 716,
+    "cladding_patch": 356,
+    "concrete": 1580,
+    "brick": 4716,
+    "render_plaster": 20,
+    "roof_membrane": 1152,
+    "equipment_steel": 2000,
+    "glass_window": 240,
+    "fabric_awning": 708,
+    "plastic_rubber": 710,
+    "sign_atlas": 60,
+    "lamp_glass": 204
+   },
+   "identity": "Open market arcade on a steel colonnade with mixed canvas stall awnings, produce crates and bulb strings under two brick housing floors with laundry poles and roof tanks.",
+   "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
+   "glb_bytes": 1674992,
+   "lod1_glb": "market_habitat_lod1.glb",
+   "lod1_tris": 380,
+   "lod1_aabb": {
+    "min": [
+     -9.0,
+     0.0,
+     -1.8
+    ],
+    "max": [
+     9.0,
+     12.8,
+     16.0
+    ]
+   },
+   "lod1_surfaces": [
+    "steel_structure",
+    "brick",
+    "roof_membrane"
+   ],
+   "lod1_tris_by_surface": {
+    "steel_structure": 120,
+    "brick": 164,
+    "roof_membrane": 96
+   },
+   "lod1_glb_bytes": 35284,
+   "protrusions": {
+    "front": 1.954,
+    "left": 0.04,
+    "right": 0.04,
+    "back": 0.06
+   },
+   "frontage_m": 18.0,
+   "depth_m": 16.0,
+   "height_m": 13.34,
+   "entrances": [
+    {
+     "id": "market_habitat_entrance_0",
+     "kind": "personnel",
+     "position": [
+      6.95,
+      0.0,
+      2.3
+     ],
+     "width": 1.1,
+     "height": 2.2
+    },
+    {
+     "id": "market_habitat_entrance_1",
+     "kind": "arcade",
+     "position": [
+      -2.1,
+      0.0,
+      -0.0
+     ],
+     "width": 4.0,
+     "height": 3.5
+    },
+    {
+     "id": "market_habitat_entrance_2",
+     "kind": "arcade",
+     "position": [
+      2.1,
+      0.0,
+      -0.0
+     ],
+     "width": 4.0,
+     "height": 3.5
+    }
+   ],
+   "light_anchors": [
+    {
+     "id": "market_habitat_light_0",
+     "kind": "fixture",
+     "position": [
+      6.95,
+      2.5,
+      1.92
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 7.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "market_habitat_light_1",
+     "kind": "shop_spot",
+     "position": [
+      -6.3,
+      3.4,
+      -0.9
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.3
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.5
+     ],
+     "range_m": 6.5,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "market_habitat_light_2",
+     "kind": "shop_spot",
+     "position": [
+      -2.1,
+      3.4,
+      -0.9
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.3
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.5
+     ],
+     "range_m": 6.5,
+     "energy": 1.0,
+     "shadow": true
+    },
+    {
+     "id": "market_habitat_light_3",
+     "kind": "shop_spot",
+     "position": [
+      2.1,
+      3.4,
+      -0.9
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.3
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.5
+     ],
+     "range_m": 6.5,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "market_habitat_light_4",
+     "kind": "shop_spot",
+     "position": [
+      6.3,
+      3.4,
+      -0.9
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.3
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.5
+     ],
+     "range_m": 6.5,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "market_habitat_light_5",
+     "kind": "sign",
+     "position": [
+      -7.8,
+      2.8,
+      -0.7
+     ],
+     "direction": [
+      0.5,
+      -0.4,
+      -0.3
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.6
+     ],
+     "range_m": 4.5,
+     "energy": 0.6,
+     "shadow": false
+    },
+    {
+     "id": "market_habitat_light_6",
+     "kind": "sign",
+     "position": [
+      8.9,
+      2.8,
+      -0.7
+     ],
+     "direction": [
+      0.5,
+      -0.4,
+      -0.3
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.6
+     ],
+     "range_m": 4.5,
+     "energy": 0.6,
+     "shadow": false
+    },
+    {
+     "id": "market_habitat_light_7",
+     "kind": "sign",
+     "position": [
+      0.0,
+      4.02,
+      -0.49
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "market_habitat_light_8",
+     "kind": "street",
+     "position": [
+      -8.7,
+      3.3,
+      -1.0
+     ],
+     "direction": [
+      0.2,
+      -0.4,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.5
+     ],
+     "range_m": 9.0,
+     "energy": 1.1,
+     "shadow": false
+    }
+   ],
+   "signs": [
+    {
+     "tile": 0,
+     "text": "NOODLES",
+     "blade": true
+    },
+    {
+     "tile": 2,
+     "text": "LAUNDRY",
+     "blade": true
+    },
+    {
+     "tile": 15,
+     "text": "OPEN"
+    }
+   ],
+   "source_blend": "assets/generated/city_realism/blends/market_habitat.blend",
+   "previews": [
+    "assets/previews/city_realism/market_habitat_front.png",
+    "assets/previews/city_realism/market_habitat_night.png",
+    "assets/previews/city_realism/market_habitat_street.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 33,
+    "use_points": 6,
+    "polished_contacts": 1
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      19106
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "service_tenement",
+   "role": "building",
+   "district_role": "housing+services",
+   "glb": "service_tenement.glb",
+   "tris": 15978,
+   "aabb": {
+    "min": [
+     -6.1,
+     0.0,
+     -1.49
+    ],
+    "max": [
+     6.1,
+     17.54,
+     14.06
+    ]
+   },
+   "footprint": {
+    "min": [
+     -6.0,
+     0.0
+    ],
+    "max": [
+     6.0,
+     14.0
+    ]
+   },
+   "front_setback_m": 1.8,
+   "materials": [
+    "brick",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "fabric_awning",
+    "glass_window",
+    "lamp_glass",
+    "plastic_rubber",
+    "render_plaster",
+    "roof_membrane",
+    "sign_atlas",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "brick",
+    "render_plaster",
+    "roof_membrane",
+    "equipment_steel",
+    "glass_window",
+    "fabric_awning",
+    "plastic_rubber",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 5380,
+    "cladding_corrugated": 1120,
+    "cladding_patch": 180,
+    "concrete": 1424,
+    "brick": 5588,
+    "render_plaster": 20,
+    "roof_membrane": 608,
+    "equipment_steel": 1132,
+    "glass_window": 312,
+    "fabric_awning": 48,
+    "plastic_rubber": 118,
+    "sign_atlas": 36,
+    "lamp_glass": 12
+   },
+   "identity": "Narrow five-storey brick tenement with an external steel fire stair, shop shutter and stair door, corbelled cornice, chimney stacks and roof tank.",
+   "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
+   "glb_bytes": 1337060,
+   "lod1_glb": "service_tenement_lod1.glb",
+   "lod1_tris": 444,
+   "lod1_aabb": {
+    "min": [
+     -6.0,
+     0.0,
+     -1.45
+    ],
+    "max": [
+     6.0,
+     17.2,
+     14.0
+    ]
+   },
+   "lod1_surfaces": [
+    "steel_structure",
+    "brick",
+    "roof_membrane"
+   ],
+   "lod1_tris_by_surface": {
+    "steel_structure": 60,
+    "brick": 288,
+    "roof_membrane": 96
+   },
+   "lod1_glb_bytes": 38592,
+   "protrusions": {
+    "front": 1.49,
+    "left": 0.1,
+    "right": 0.1,
+    "back": 0.06
+   },
+   "frontage_m": 12.0,
+   "depth_m": 14.0,
+   "height_m": 17.54,
+   "entrances": [
+    {
+     "id": "service_tenement_entrance_0",
+     "kind": "shutter",
+     "position": [
+      -3.0,
+      0.0,
+      -0.0
+     ],
+     "width": 3.2,
+     "height": 2.9
+    },
+    {
+     "id": "service_tenement_entrance_1",
+     "kind": "personnel",
+     "position": [
+      1.55,
+      0.0,
+      -0.0
+     ],
+     "width": 1.1,
+     "height": 2.3
+    }
+   ],
+   "light_anchors": [
+    {
+     "id": "service_tenement_light_0",
+     "kind": "fixture",
+     "position": [
+      1.55,
+      2.6,
+      -0.38
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 7.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "service_tenement_light_1",
+     "kind": "service",
+     "position": [
+      2.9,
+      1.8,
+      -0.3
+     ],
+     "direction": [
+      0,
+      -0.3,
+      -1
+     ],
+     "color": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "range_m": 3.5,
+     "energy": 0.5,
+     "shadow": false
+    },
+    {
+     "id": "service_tenement_light_2",
+     "kind": "sign",
+     "position": [
+      -3.0,
+      2.85,
+      -0.59
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "service_tenement_light_3",
+     "kind": "sign",
+     "position": [
+      -5.4,
+      5.5,
+      -0.65
+     ],
+     "direction": [
+      0.5,
+      -0.4,
+      -0.3
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.6
+     ],
+     "range_m": 4.5,
+     "energy": 0.6,
+     "shadow": false
+    },
+    {
+     "id": "service_tenement_light_4",
+     "kind": "street",
+     "position": [
+      -5.2,
+      3.3,
+      -0.9
+     ],
+     "direction": [
+      0.2,
+      -0.5,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 8.0,
+     "energy": 1.1,
+     "shadow": false
+    },
+    {
+     "id": "service_tenement_light_5",
+     "kind": "window",
+     "position": [
+      -1.3,
+      5.2,
+      -0.3
+     ],
+     "direction": [
+      0,
+      0,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.5
+     ],
+     "range_m": 3.5,
+     "energy": 0.4,
+     "shadow": false
+    }
+   ],
+   "signs": [
+    {
+     "tile": 2,
+     "text": "LAUNDRY"
+    },
+    {
+     "tile": 7,
+     "text": "HOUSING",
+     "blade": true
+    }
+   ],
+   "source_blend": "assets/generated/city_realism/blends/service_tenement.blend",
+   "previews": [
+    "assets/previews/city_realism/service_tenement_front.png",
+    "assets/previews/city_realism/service_tenement_night.png",
+    "assets/previews/city_realism/service_tenement_street.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 27,
+    "use_points": 2,
+    "polished_contacts": 1
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      15978
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "freight_depot",
+   "role": "building",
+   "district_role": "freight",
+   "glb": "freight_depot.glb",
+   "tris": 18314,
+   "aabb": {
+    "min": [
+     -12.8354,
+     0.0,
+     -3.804
+    ],
+    "max": [
+     12.8354,
+     10.45,
+     22.5
+    ]
+   },
+   "footprint": {
+    "min": [
+     -12.0,
+     0.0
+    ],
+    "max": [
+     12.0,
+     22.0
+    ]
+   },
+   "front_setback_m": 4.15,
+   "materials": [
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "glass_window",
+    "lamp_glass",
+    "paving",
+    "plastic_rubber",
+    "roof_membrane",
+    "sign_atlas",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "roof_membrane",
+    "paving",
+    "equipment_steel",
+    "glass_window",
+    "plastic_rubber",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 3852,
+    "cladding_corrugated": 8764,
+    "cladding_patch": 388,
+    "concrete": 1744,
+    "roof_membrane": 20,
+    "paving": 608,
+    "equipment_steel": 1860,
+    "glass_window": 216,
+    "plastic_rubber": 802,
+    "sign_atlas": 12,
+    "lamp_glass": 48
+   },
+   "identity": "Corrugated portal-frame depot on a raised concrete dock: four dock doors at different heights, bumpers, levellers, cantilever canopy, office annex, ridge ventilator.",
+   "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
+   "glb_bytes": 1386904,
+   "lod1_glb": "freight_depot_lod1.glb",
+   "lod1_tris": 860,
+   "lod1_aabb": {
+    "min": [
+     -12.4,
+     0.0,
+     -3.3
+    ],
+    "max": [
+     12.4,
+     9.8,
+     22.4
+    ]
+   },
+   "lod1_surfaces": [
+    "cladding_corrugated",
+    "concrete",
+    "roof_membrane"
+   ],
+   "lod1_tris_by_surface": {
+    "cladding_corrugated": 452,
+    "concrete": 388,
+    "roof_membrane": 20
+   },
+   "lod1_glb_bytes": 49300,
+   "protrusions": {
+    "front": 3.804,
+    "left": 0.835,
+    "right": 0.835,
+    "back": 0.5
+   },
+   "frontage_m": 24.0,
+   "depth_m": 22.0,
+   "height_m": 10.45,
+   "entrances": [
+    {
+     "id": "freight_depot_entrance_0",
+     "kind": "shutter",
+     "position": [
+      -8.8,
+      1.1,
+      -0.0
+     ],
+     "width": 3.4,
+     "height": 3.4
+    },
+    {
+     "id": "freight_depot_entrance_1",
+     "kind": "shutter",
+     "position": [
+      -2.9,
+      1.1,
+      -0.0
+     ],
+     "width": 3.4,
+     "height": 3.4
+    },
+    {
+     "id": "freight_depot_entrance_2",
+     "kind": "dock",
+     "position": [
+      2.9,
+      0.0,
+      -0.0
+     ],
+     "width": 3.4,
+     "height": 3.4
+    },
+    {
+     "id": "freight_depot_entrance_3",
+     "kind": "shutter",
+     "position": [
+      8.8,
+      1.1,
+      -0.0
+     ],
+     "width": 3.4,
+     "height": 3.4
+    }
+   ],
+   "light_anchors": [
+    {
+     "id": "freight_depot_light_0",
+     "kind": "fixture",
+     "position": [
+      -8.8,
+      4.95,
+      -0.63
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 10.0,
+     "energy": 1.0,
+     "shadow": true
+    },
+    {
+     "id": "freight_depot_light_1",
+     "kind": "fixture",
+     "position": [
+      -2.9,
+      4.95,
+      -0.63
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 10.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "freight_depot_light_2",
+     "kind": "shop_spot",
+     "position": [
+      2.9,
+      4.3,
+      1.5
+     ],
+     "direction": [
+      0,
+      -0.5,
+      -1
+     ],
+     "color": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "range_m": 9.0,
+     "energy": 1.5,
+     "shadow": true
+    },
+    {
+     "id": "freight_depot_light_3",
+     "kind": "fixture",
+     "position": [
+      2.9,
+      4.95,
+      -0.63
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 10.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "freight_depot_light_4",
+     "kind": "fixture",
+     "position": [
+      8.8,
+      4.95,
+      -0.63
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 10.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "freight_depot_light_5",
+     "kind": "sign",
+     "position": [
+      0.0,
+      7.0,
+      -0.59
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "freight_depot_light_6",
+     "kind": "service",
+     "position": [
+      -5.9,
+      3.1,
+      -0.3
+     ],
+     "direction": [
+      0,
+      -0.3,
+      -1
+     ],
+     "color": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "range_m": 3.5,
+     "energy": 0.5,
+     "shadow": false
+    },
+    {
+     "id": "freight_depot_light_7",
+     "kind": "street",
+     "position": [
+      -12.0,
+      5.6,
+      -1.0
+     ],
+     "direction": [
+      0.3,
+      -0.5,
+      -1
+     ],
+     "color": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "range_m": 11.0,
+     "energy": 1.2,
+     "shadow": false
+    },
+    {
+     "id": "freight_depot_light_8",
+     "kind": "street",
+     "position": [
+      12.0,
+      5.6,
+      -1.0
+     ],
+     "direction": [
+      -0.3,
+      -0.5,
+      -1
+     ],
+     "color": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "range_m": 11.0,
+     "energy": 1.2,
+     "shadow": false
+    }
+   ],
+   "signs": [
+    {
+     "tile": 3,
+     "text": "FREIGHT"
+    }
+   ],
+   "source_blend": "assets/generated/city_realism/blends/freight_depot.blend",
+   "previews": [
+    "assets/previews/city_realism/freight_depot_front.png",
+    "assets/previews/city_realism/freight_depot_night.png",
+    "assets/previews/city_realism/freight_depot_street.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 8,
+    "use_points": 8,
+    "polished_contacts": 0
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      18314
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "redline_shop",
+   "role": "building",
+   "district_role": "market/food",
+   "glb": "redline_shop.glb",
+   "tris": 9844,
+   "aabb": {
+    "min": [
+     -6.04,
+     -0.0067,
+     -1.868
+    ],
+    "max": [
+     6.04,
+     9.54,
+     12.06
+    ]
+   },
+   "footprint": {
+    "min": [
+     -6.0,
+     0.0
+    ],
+    "max": [
+     6.0,
+     12.0
+    ]
+   },
+   "front_setback_m": 2.2,
+   "materials": [
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "fabric_awning",
+    "glass_window",
+    "lamp_glass",
+    "paving",
+    "plastic_rubber",
+    "render_plaster",
+    "roof_membrane",
+    "sign_atlas",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "render_plaster",
+    "roof_membrane",
+    "paving",
+    "equipment_steel",
+    "glass_window",
+    "fabric_awning",
+    "plastic_rubber",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 3138,
+    "cladding_corrugated": 1952,
+    "cladding_patch": 212,
+    "concrete": 768,
+    "render_plaster": 192,
+    "roof_membrane": 320,
+    "paving": 104,
+    "equipment_steel": 2056,
+    "glass_window": 116,
+    "fabric_awning": 260,
+    "plastic_rubber": 558,
+    "sign_atlas": 36,
+    "lamp_glass": 132
+   },
+   "identity": "Lower-cost conversion of the approved Redline Ramen counter shop: H-column frame on plinths, header beam, cladding with repairs, red awning, counter, cooking hood and duct, flat above.",
+   "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
+   "glb_bytes": 913256,
+   "lod1_glb": "redline_shop_lod1.glb",
+   "lod1_tris": 332,
+   "lod1_aabb": {
+    "min": [
+     -6.0,
+     0.0,
+     -1.7
+    ],
+    "max": [
+     6.0,
+     8.4,
+     12.0
+    ]
+   },
+   "lod1_surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "roof_membrane"
+   ],
+   "lod1_tris_by_surface": {
+    "steel_structure": 44,
+    "cladding_corrugated": 192,
+    "roof_membrane": 96
+   },
+   "lod1_glb_bytes": 32472,
+   "protrusions": {
+    "front": 1.868,
+    "left": 0.04,
+    "right": 0.04,
+    "back": 0.06
+   },
+   "frontage_m": 12.0,
+   "depth_m": 12.0,
+   "height_m": 9.54,
+   "entrances": [
+    {
+     "id": "redline_shop_entrance_0",
+     "kind": "service_counter",
+     "position": [
+      0.0,
+      1.2,
+      -0.0
+     ],
+     "width": 6.8,
+     "height": 1.9
+    },
+    {
+     "id": "redline_shop_entrance_1",
+     "kind": "personnel",
+     "position": [
+      4.45,
+      0.3,
+      -0.0
+     ],
+     "width": 0.9,
+     "height": 2.1
+    }
+   ],
+   "light_anchors": [
+    {
+     "id": "redline_shop_light_0",
+     "kind": "window",
+     "position": [
+      0.0,
+      3.65,
+      2.0
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.2
+     ],
+     "color": [
+      1.0,
+      0.9,
+      0.7
+     ],
+     "range_m": 5.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "redline_shop_light_1",
+     "kind": "fixture",
+     "position": [
+      4.45,
+      2.7,
+      -0.38
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 7.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "redline_shop_light_2",
+     "kind": "shop_spot",
+     "position": [
+      0.0,
+      2.9,
+      0.4
+     ],
+     "direction": [
+      0,
+      -0.6,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.85,
+      0.6
+     ],
+     "range_m": 6.0,
+     "energy": 1.4,
+     "shadow": true
+    },
+    {
+     "id": "redline_shop_light_3",
+     "kind": "sign",
+     "position": [
+      0.0,
+      4.25,
+      -0.59
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "redline_shop_light_4",
+     "kind": "sign",
+     "position": [
+      6.1,
+      2.7,
+      -0.7
+     ],
+     "direction": [
+      0.5,
+      -0.4,
+      -0.3
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.6
+     ],
+     "range_m": 4.5,
+     "energy": 0.6,
+     "shadow": false
+    },
+    {
+     "id": "redline_shop_light_5",
+     "kind": "service",
+     "position": [
+      -4.4,
+      3.0,
+      -0.3
+     ],
+     "direction": [
+      0,
+      -0.3,
+      -1
+     ],
+     "color": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "range_m": 3.5,
+     "energy": 0.5,
+     "shadow": false
+    },
+    {
+     "id": "redline_shop_light_6",
+     "kind": "fixture",
+     "position": [
+      -4.6,
+      3.5,
+      -0.48
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 8.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "redline_shop_light_7",
+     "kind": "fixture",
+     "position": [
+      4.6,
+      2.95,
+      -0.48
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 8.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "redline_shop_light_8",
+     "kind": "street",
+     "position": [
+      0.0,
+      4.3,
+      -1.2
+     ],
+     "direction": [
+      0,
+      -0.5,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.45,
+      0.25
+     ],
+     "range_m": 9.0,
+     "energy": 1.3,
+     "shadow": false
+    }
+   ],
+   "signs": [
+    {
+     "tile": 0,
+     "text": "NOODLES"
+    },
+    {
+     "tile": 0,
+     "text": "NOODLES",
+     "blade": true
+    }
+   ],
+   "source_blend": "assets/generated/city_realism/blends/redline_shop.blend",
+   "previews": [
+    "assets/previews/city_realism/redline_shop_front.png",
+    "assets/previews/city_realism/redline_shop_night.png",
+    "assets/previews/city_realism/redline_shop_street.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 14,
+    "use_points": 3,
+    "polished_contacts": 1
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      9844
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "row_workshop",
+   "role": "building",
+   "district_role": "workshops",
+   "glb": "row_workshop.glb",
+   "tris": 10076,
+   "aabb": {
+    "min": [
+     -12.35,
+     0.0,
+     -2.4
+    ],
+    "max": [
+     12.35,
+     8.68,
+     16.0
+    ]
+   },
+   "footprint": {
+    "min": [
+     -12.0,
+     0.0
+    ],
+    "max": [
+     12.0,
+     16.0
+    ]
+   },
+   "front_setback_m": 2.7,
+   "materials": [
+    "brick",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "glass_window",
+    "lamp_glass",
+    "plastic_rubber",
+    "sign_atlas",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "brick",
+    "equipment_steel",
+    "glass_window",
+    "plastic_rubber",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 1944,
+    "cladding_corrugated": 2444,
+    "cladding_patch": 100,
+    "concrete": 744,
+    "brick": 2508,
+    "equipment_steel": 1040,
+    "glass_window": 664,
+    "plastic_rubber": 560,
+    "sign_atlas": 48,
+    "lamp_glass": 24
+   },
+   "identity": "Row of four brick/clad workshop units under a sawtooth roof, each with its own shutter or doors, signs, stock and flues.",
+   "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
+   "glb_bytes": 821652,
+   "lod1_glb": "row_workshop_lod1.glb",
+   "lod1_tris": 572,
+   "lod1_aabb": {
+    "min": [
+     -12.3,
+     0.0,
+     -2.4
+    ],
+    "max": [
+     12.3,
+     6.9,
+     16.0
+    ]
+   },
+   "lod1_surfaces": [
+    "steel_structure",
+    "brick",
+    "roof_membrane"
+   ],
+   "lod1_tris_by_surface": {
+    "steel_structure": 172,
+    "brick": 224,
+    "roof_membrane": 176
+   },
+   "lod1_glb_bytes": 44828,
+   "protrusions": {
+    "front": 2.4,
+    "left": 0.35,
+    "right": 0.35,
+    "back": 0.0
+   },
+   "frontage_m": 24.0,
+   "depth_m": 16.0,
+   "height_m": 8.68,
+   "entrances": [
+    {
+     "id": "row_workshop_entrance_0",
+     "kind": "shutter",
+     "position": [
+      -9.0,
+      0.0,
+      -0.0
+     ],
+     "width": 3.6,
+     "height": 3.4
+    },
+    {
+     "id": "row_workshop_entrance_1",
+     "kind": "personnel",
+     "position": [
+      -2.4,
+      0.0,
+      -0.0
+     ],
+     "width": 1.0,
+     "height": 2.3
+    },
+    {
+     "id": "row_workshop_entrance_2",
+     "kind": "personnel",
+     "position": [
+      -1.2,
+      0.0,
+      -0.0
+     ],
+     "width": 0.9,
+     "height": 2.3
+    },
+    {
+     "id": "row_workshop_entrance_3",
+     "kind": "shutter",
+     "position": [
+      3.0,
+      0.0,
+      -0.0
+     ],
+     "width": 4.2,
+     "height": 3.3
+    },
+    {
+     "id": "row_workshop_entrance_4",
+     "kind": "personnel",
+     "position": [
+      10.1,
+      0.0,
+      -0.0
+     ],
+     "width": 1.0,
+     "height": 2.3
+    }
+   ],
+   "light_anchors": [
+    {
+     "id": "row_workshop_light_0",
+     "kind": "sign",
+     "position": [
+      -9.0,
+      3.975,
+      -0.59
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "row_workshop_light_1",
+     "kind": "fixture",
+     "position": [
+      -2.4,
+      2.6,
+      -0.38
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 7.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "row_workshop_light_2",
+     "kind": "sign",
+     "position": [
+      -3.0,
+      4.05,
+      -0.59
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "row_workshop_light_3",
+     "kind": "sign",
+     "position": [
+      3.0,
+      4.05,
+      -0.59
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "row_workshop_light_4",
+     "kind": "fixture",
+     "position": [
+      10.1,
+      2.6,
+      -0.38
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 7.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "row_workshop_light_5",
+     "kind": "sign",
+     "position": [
+      9.0,
+      4.05,
+      -0.59
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "row_workshop_light_6",
+     "kind": "street",
+     "position": [
+      -3.0,
+      3.8,
+      -1.1
+     ],
+     "direction": [
+      0,
+      -0.5,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.5
+     ],
+     "range_m": 9.0,
+     "energy": 1.1,
+     "shadow": false
+    },
+    {
+     "id": "row_workshop_light_7",
+     "kind": "street",
+     "position": [
+      9.0,
+      3.8,
+      -1.1
+     ],
+     "direction": [
+      0,
+      -0.5,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.8,
+      0.5
+     ],
+     "range_m": 9.0,
+     "energy": 1.1,
+     "shadow": false
+    },
+    {
+     "id": "row_workshop_light_8",
+     "kind": "shop_spot",
+     "position": [
+      3.0,
+      3.2,
+      -0.8
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.3
+     ],
+     "color": [
+      1.0,
+      0.7,
+      0.4
+     ],
+     "range_m": 6.0,
+     "energy": 1.2,
+     "shadow": true
+    }
+   ],
+   "signs": [
+    {
+     "tile": 8,
+     "text": "GARAGE"
+    },
+    {
+     "tile": 1,
+     "text": "TOOL HIRE"
+    },
+    {
+     "tile": 10,
+     "text": "MACHINERY"
+    },
+    {
+     "tile": 14,
+     "text": "PARTS 24"
+    }
+   ],
+   "source_blend": "assets/generated/city_realism/blends/row_workshop.blend",
+   "previews": [
+    "assets/previews/city_realism/row_workshop_front.png",
+    "assets/previews/city_realism/row_workshop_night.png",
+    "assets/previews/city_realism/row_workshop_street.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 13,
+    "use_points": 2,
+    "polished_contacts": 3
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      10076
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "utility_substation",
+   "role": "building",
+   "district_role": "utility",
+   "glb": "utility_substation.glb",
+   "tris": 11342,
+   "aabb": {
+    "min": [
+     -9.04,
+     0.0,
+     -1.8
+    ],
+    "max": [
+     9.0,
+     9.2,
+     20.06
+    ]
+   },
+   "footprint": {
+    "min": [
+     -9.0,
+     0.0
+    ],
+    "max": [
+     9.0,
+     20.0
+    ]
+   },
+   "front_setback_m": 2.1,
+   "materials": [
+    "brick",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "glass_window",
+    "lamp_glass",
+    "paving",
+    "plastic_rubber",
+    "roof_membrane",
+    "sign_atlas",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "brick",
+    "roof_membrane",
+    "paving",
+    "equipment_steel",
+    "glass_window",
+    "plastic_rubber",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 3246,
+    "cladding_patch": 260,
+    "concrete": 2436,
+    "brick": 3328,
+    "roof_membrane": 608,
+    "paving": 36,
+    "equipment_steel": 1088,
+    "glass_window": 12,
+    "plastic_rubber": 280,
+    "sign_atlas": 24,
+    "lamp_glass": 24
+   },
+   "identity": "Brick control building with blast door and louvres beside a fenced transformer yard: radiator-finned transformer with ribbed bushings, insulator gantry, cable tray, floodlight.",
+   "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
+   "glb_bytes": 900016,
+   "lod1_glb": "utility_substation_lod1.glb",
+   "lod1_tris": 556,
+   "lod1_aabb": {
+    "min": [
+     -9.0,
+     0.0,
+     -0.5
+    ],
+    "max": [
+     9.0,
+     7.4,
+     20.0
+    ]
+   },
+   "lod1_surfaces": [
+    "steel_structure",
+    "brick",
+    "roof_membrane"
+   ],
+   "lod1_tris_by_surface": {
+    "steel_structure": 156,
+    "brick": 224,
+    "roof_membrane": 176
+   },
+   "lod1_glb_bytes": 45284,
+   "protrusions": {
+    "front": 1.8,
+    "left": 0.04,
+    "right": 0.0,
+    "back": 0.06
+   },
+   "frontage_m": 18.0,
+   "depth_m": 20.0,
+   "height_m": 9.2,
+   "entrances": [
+    {
+     "id": "utility_substation_entrance_0",
+     "kind": "service",
+     "position": [
+      -6.0,
+      0.0,
+      -0.0
+     ],
+     "width": 3.0,
+     "height": 3.2
+    },
+    {
+     "id": "utility_substation_entrance_1",
+     "kind": "personnel",
+     "position": [
+      -1.1,
+      0.0,
+      -0.0
+     ],
+     "width": 1.0,
+     "height": 2.3
+    }
+   ],
+   "light_anchors": [
+    {
+     "id": "utility_substation_light_0",
+     "kind": "fixture",
+     "position": [
+      -1.1,
+      2.6,
+      -0.38
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 7.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "utility_substation_light_1",
+     "kind": "sign",
+     "position": [
+      -6.0,
+      4.55,
+      -0.54
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "utility_substation_light_2",
+     "kind": "sign",
+     "position": [
+      5.7,
+      2.4,
+      -0.99
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "utility_substation_light_3",
+     "kind": "fixture",
+     "position": [
+      8.2,
+      5.9,
+      2.0
+     ],
+     "direction": [
+      -0.3,
+      -0.7,
+      -1
+     ],
+     "color": [
+      0.85,
+      0.9,
+      1.0
+     ],
+     "range_m": 12.0,
+     "energy": 1.8,
+     "shadow": true
+    },
+    {
+     "id": "utility_substation_light_4",
+     "kind": "street",
+     "position": [
+      -7.0,
+      3.5,
+      -0.6
+     ],
+     "direction": [
+      0,
+      -0.4,
+      -1
+     ],
+     "color": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "range_m": 9.0,
+     "energy": 1.0,
+     "shadow": false
+    }
+   ],
+   "signs": [
+    {
+     "tile": 4,
+     "text": "ELECTRICITY"
+    },
+    {
+     "tile": 4,
+     "text": "ELECTRICITY"
+    }
+   ],
+   "source_blend": "assets/generated/city_realism/blends/utility_substation.blend",
+   "previews": [
+    "assets/previews/city_realism/utility_substation_front.png",
+    "assets/previews/city_realism/utility_substation_night.png",
+    "assets/previews/city_realism/utility_substation_street.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 8,
+    "use_points": 2,
+    "polished_contacts": 1
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      11342
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "transit_depot",
+   "role": "building",
+   "district_role": "transit",
+   "glb": "transit_depot.glb",
+   "tris": 14842,
+   "aabb": {
+    "min": [
+     -12.3,
+     0.0,
+     -3.85
+    ],
+    "max": [
+     12.85,
+     11.88,
+     22.4
+    ]
+   },
+   "footprint": {
+    "min": [
+     -12.0,
+     0.0
+    ],
+    "max": [
+     12.0,
+     22.0
+    ]
+   },
+   "front_setback_m": 4.15,
+   "materials": [
+    "brick",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "glass_window",
+    "lamp_glass",
+    "paving",
+    "plastic_rubber",
+    "render_plaster",
+    "roof_membrane",
+    "sign_atlas",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "brick",
+    "render_plaster",
+    "roof_membrane",
+    "paving",
+    "equipment_steel",
+    "glass_window",
+    "plastic_rubber",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 3764,
+    "cladding_corrugated": 6614,
+    "cladding_patch": 292,
+    "concrete": 268,
+    "brick": 320,
+    "render_plaster": 20,
+    "roof_membrane": 20,
+    "paving": 776,
+    "equipment_steel": 2096,
+    "glass_window": 52,
+    "plastic_rubber": 536,
+    "sign_atlas": 24,
+    "lamp_glass": 60
+   },
+   "identity": "Two-bay vehicle hall with raised grilles and hazard-striped thresholds beside a cantilever passenger shelter with bench, kiosk, timetable, stop pole and clock.",
+   "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
+   "glb_bytes": 1053708,
+   "lod1_glb": "transit_depot_lod1.glb",
+   "lod1_tris": 480,
+   "lod1_aabb": {
+    "min": [
+     -12.3,
+     0.0,
+     -3.4
+    ],
+    "max": [
+     12.3,
+     10.6,
+     22.4
+    ]
+   },
+   "lod1_surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "roof_membrane"
+   ],
+   "lod1_tris_by_surface": {
+    "steel_structure": 76,
+    "cladding_corrugated": 384,
+    "roof_membrane": 20
+   },
+   "lod1_glb_bytes": 31268,
+   "protrusions": {
+    "front": 3.85,
+    "left": 0.3,
+    "right": 0.85,
+    "back": 0.4
+   },
+   "frontage_m": 24.0,
+   "depth_m": 22.0,
+   "height_m": 11.88,
+   "entrances": [
+    {
+     "id": "transit_depot_entrance_0",
+     "kind": "vehicle_bay",
+     "position": [
+      -7.9,
+      0.0,
+      -0.0
+     ],
+     "width": 5.4,
+     "height": 5.2
+    },
+    {
+     "id": "transit_depot_entrance_1",
+     "kind": "vehicle_bay",
+     "position": [
+      -0.1,
+      0.0,
+      -0.0
+     ],
+     "width": 5.4,
+     "height": 5.2
+    },
+    {
+     "id": "transit_depot_entrance_2",
+     "kind": "personnel",
+     "position": [
+      9.4,
+      0.0,
+      -0.2
+     ],
+     "width": 1.1,
+     "height": 2.3
+    }
+   ],
+   "light_anchors": [
+    {
+     "id": "transit_depot_light_0",
+     "kind": "shop_spot",
+     "position": [
+      -7.9,
+      4.8,
+      2.0
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.2
+     ],
+     "color": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "range_m": 10.0,
+     "energy": 1.8,
+     "shadow": true
+    },
+    {
+     "id": "transit_depot_light_1",
+     "kind": "fixture",
+     "position": [
+      -10.3,
+      5.85,
+      -0.58
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 10.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "transit_depot_light_2",
+     "kind": "shop_spot",
+     "position": [
+      -0.1,
+      4.8,
+      2.0
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.2
+     ],
+     "color": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "range_m": 10.0,
+     "energy": 1.8,
+     "shadow": false
+    },
+    {
+     "id": "transit_depot_light_3",
+     "kind": "fixture",
+     "position": [
+      -2.5,
+      5.85,
+      -0.58
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 10.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "transit_depot_light_4",
+     "kind": "sign",
+     "position": [
+      -7.9,
+      6.3,
+      -0.59
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "transit_depot_light_5",
+     "kind": "sign",
+     "position": [
+      7.9,
+      4.0,
+      -3.84
+     ],
+     "direction": [
+      0,
+      -0.2,
+      -1
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.55
+     ],
+     "range_m": 6.0,
+     "energy": 0.8,
+     "shadow": false
+    },
+    {
+     "id": "transit_depot_light_6",
+     "kind": "fixture",
+     "position": [
+      8.0,
+      3.5,
+      -3.53
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 8.0,
+     "energy": 1.0,
+     "shadow": false
+    },
+    {
+     "id": "transit_depot_light_7",
+     "kind": "street",
+     "position": [
+      -8.0,
+      5.8,
+      -1.0
+     ],
+     "direction": [
+      0.3,
+      -0.5,
+      -1
+     ],
+     "color": [
+      0.9,
+      0.95,
+      1.0
+     ],
+     "range_m": 11.0,
+     "energy": 1.3,
+     "shadow": false
+    },
+    {
+     "id": "transit_depot_light_8",
+     "kind": "shop_spot",
+     "position": [
+      8.0,
+      3.4,
+      -1.8
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.5
+     ],
+     "color": [
+      1.0,
+      0.9,
+      0.7
+     ],
+     "range_m": 8.0,
+     "energy": 1.6,
+     "shadow": true
+    }
+   ],
+   "signs": [
+    {
+     "tile": 6,
+     "text": "TRANSIT"
+    },
+    {
+     "tile": 6,
+     "text": "TRANSIT"
+    }
+   ],
+   "source_blend": "assets/generated/city_realism/blends/transit_depot.blend",
+   "previews": [
+    "assets/previews/city_realism/transit_depot_front.png",
+    "assets/previews/city_realism/transit_depot_night.png",
+    "assets/previews/city_realism/transit_depot_street.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 10,
+    "use_points": 6,
+    "polished_contacts": 1
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      14842
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "sidewalk_panel",
+   "role": "street",
+   "district_role": "paving",
+   "glb": "sidewalk_panel.glb",
+   "tris": 1108,
+   "aabb": {
+    "min": [
+     -3.0,
+     0.0,
+     -2.0
+    ],
+    "max": [
+     3.0,
+     0.21,
+     2.0
+    ]
+   },
+   "footprint": {
+    "min": [
+     -3.0,
+     -2.0
+    ],
+    "max": [
+     3.0,
+     2.0
+    ]
+   },
+   "front_setback_m": 2.0,
+   "materials": [
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "paving",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "paving",
+    "equipment_steel"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 128,
+    "cladding_patch": 580,
+    "concrete": 96,
+    "paving": 192,
+    "equipment_steel": 112
+   },
+   "identity": "Six settled paving slabs, steel expansion strip, bolted service plate, tactile studs and a bright replacement patch.",
+   "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+   "glb_bytes": 112940,
+   "entrances": [],
+   "light_anchors": [],
+   "signs": [],
+   "source_blend": "assets/generated/city_realism/blends/sidewalk_panel.blend",
+   "previews": [
+    "assets/previews/city_realism/sidewalk_panel_front.png",
+    "assets/previews/city_realism/sidewalk_panel_night.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 0,
+    "use_points": 2,
+    "polished_contacts": 0
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      1108
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "curb_segment",
+   "role": "street",
+   "district_role": "paving",
+   "glb": "curb_segment.glb",
+   "tris": 248,
+   "aabb": {
+    "min": [
+     -3.0,
+     0.0,
+     -0.112
+    ],
+    "max": [
+     3.0,
+     0.226,
+     0.1
+    ]
+   },
+   "footprint": {
+    "min": [
+     -3.0,
+     -0.112
+    ],
+    "max": [
+     3.0,
+     0.1
+    ]
+   },
+   "front_setback_m": 0.112,
+   "materials": [
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "paving",
+    "plastic_rubber",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "paving",
+    "equipment_steel",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 36,
+    "cladding_patch": 24,
+    "concrete": 36,
+    "paving": 36,
+    "equipment_steel": 80,
+    "plastic_rubber": 36
+   },
+   "identity": "Kerb with steel edge angle, joints, gutter lip and worn no-parking paint.",
+   "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+   "glb_bytes": 33176,
+   "entrances": [],
+   "light_anchors": [],
+   "signs": [],
+   "source_blend": "assets/generated/city_realism/blends/curb_segment.blend",
+   "previews": [
+    "assets/previews/city_realism/curb_segment_front.png",
+    "assets/previews/city_realism/curb_segment_night.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 0,
+    "use_points": 0,
+    "polished_contacts": 0
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      248
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "drain_cover",
+   "role": "street",
+   "district_role": "drainage",
+   "glb": "drain_cover.glb",
+   "tris": 248,
+   "aabb": {
+    "min": [
+     -0.6,
+     0.0,
+     -0.35
+    ],
+    "max": [
+     0.6,
+     0.066,
+     0.35
+    ]
+   },
+   "footprint": {
+    "min": [
+     -0.6,
+     -0.35
+    ],
+    "max": [
+     0.6,
+     0.35
+    ]
+   },
+   "front_setback_m": 0.35,
+   "materials": [
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "plastic_rubber",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 80,
+    "cladding_patch": 12,
+    "concrete": 12,
+    "equipment_steel": 132,
+    "plastic_rubber": 12
+   },
+   "identity": "Cast frame with parallel grate bars and lifting eyes over a dark sump.",
+   "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+   "glb_bytes": 37004,
+   "entrances": [],
+   "light_anchors": [],
+   "signs": [],
+   "source_blend": "assets/generated/city_realism/blends/drain_cover.blend",
+   "previews": [
+    "assets/previews/city_realism/drain_cover_front.png",
+    "assets/previews/city_realism/drain_cover_night.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 0,
+    "use_points": 1,
+    "polished_contacts": 0
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      248
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "street_lamp",
+   "role": "street",
+   "district_role": "lighting",
+   "glb": "street_lamp.glb",
+   "tris": 704,
+   "aabb": {
+    "min": [
+     -0.35,
+     0.0,
+     -1.9
+    ],
+    "max": [
+     0.35,
+     7.8891,
+     0.35
+    ]
+   },
+   "footprint": {
+    "min": [
+     -0.35,
+     -1.9
+    ],
+    "max": [
+     0.35,
+     0.35
+    ]
+   },
+   "front_setback_m": 1.9,
+   "materials": [
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "lamp_glass",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 412,
+    "cladding_patch": 12,
+    "concrete": 12,
+    "equipment_steel": 256,
+    "lamp_glass": 12
+   },
+   "identity": "7.9 m column on base plate and bolts with hand-hole cover, sleeve joint, banner bracket, cranked arm and lensed luminaire.",
+   "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+   "glb_bytes": 72832,
+   "entrances": [],
+   "light_anchors": [
+    {
+     "id": "street_lamp_light_0",
+     "kind": "street",
+     "position": [
+      0.0,
+      7.5,
+      -1.7
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.15
+     ],
+     "color": [
+      1.0,
+      0.82,
+      0.55
+     ],
+     "range_m": 14.0,
+     "energy": 2.4,
+     "shadow": false
+    }
+   ],
+   "signs": [],
+   "source_blend": "assets/generated/city_realism/blends/street_lamp.blend",
+   "previews": [
+    "assets/previews/city_realism/street_lamp_front.png",
+    "assets/previews/city_realism/street_lamp_night.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 1,
+    "use_points": 1,
+    "polished_contacts": 0
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      704
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "bollard",
+   "role": "street",
+   "district_role": "protection",
+   "glb": "bollard.glb",
+   "tris": 312,
+   "aabb": {
+    "min": [
+     -0.17,
+     0.0,
+     -0.17
+    ],
+    "max": [
+     0.17,
+     1.115,
+     0.17
+    ]
+   },
+   "footprint": {
+    "min": [
+     -0.17,
+     -0.17
+    ],
+    "max": [
+     0.17,
+     0.17
+    ]
+   },
+   "front_setback_m": 0.17,
+   "materials": [
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 100,
+    "cladding_patch": 44,
+    "concrete": 44,
+    "equipment_steel": 124
+   },
+   "identity": "Concrete-filled steel crash bollard on a bolted base plate with reflective band.",
+   "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+   "glb_bytes": 38056,
+   "entrances": [],
+   "light_anchors": [],
+   "signs": [],
+   "source_blend": "assets/generated/city_realism/blends/bollard.blend",
+   "previews": [
+    "assets/previews/city_realism/bollard_front.png",
+    "assets/previews/city_realism/bollard_night.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 0,
+    "use_points": 1,
+    "polished_contacts": 0
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      312
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "bench_planter",
+   "role": "street",
+   "district_role": "street furniture",
+   "glb": "bench_planter.glb",
+   "tris": 1236,
+   "aabb": {
+    "min": [
+     -1.95,
+     0.0,
+     -0.75
+    ],
+    "max": [
+     1.95,
+     1.1992,
+     0.65
+    ]
+   },
+   "footprint": {
+    "min": [
+     -1.95,
+     -0.75
+    ],
+    "max": [
+     1.95,
+     0.65
+    ]
+   },
+   "front_setback_m": 0.75,
+   "materials": [
+    "cladding_patch",
+    "concrete",
+    "paving",
+    "plastic_rubber",
+    "render_plaster",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "render_plaster",
+    "paving",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 72,
+    "cladding_patch": 12,
+    "concrete": 40,
+    "render_plaster": 900,
+    "paving": 36,
+    "plastic_rubber": 176
+   },
+   "identity": "Concrete planter with shrubs and a steel-framed slatted bench.",
+   "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+   "glb_bytes": 93980,
+   "entrances": [],
+   "light_anchors": [],
+   "signs": [],
+   "source_blend": "assets/generated/city_realism/blends/bench_planter.blend",
+   "previews": [
+    "assets/previews/city_realism/bench_planter_front.png",
+    "assets/previews/city_realism/bench_planter_night.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 0,
+    "use_points": 0,
+    "polished_contacts": 0
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      1236
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "refuse_station",
+   "role": "street",
+   "district_role": "services",
+   "glb": "refuse_station.glb",
+   "tris": 764,
+   "aabb": {
+    "min": [
+     -1.5,
+     0.0,
+     -0.75
+    ],
+    "max": [
+     1.5,
+     2.2285,
+     0.75
+    ]
+   },
+   "footprint": {
+    "min": [
+     -1.5,
+     -0.75
+    ],
+    "max": [
+     1.5,
+     0.75
+    ]
+   },
+   "front_setback_m": 0.75,
+   "materials": [
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "plastic_rubber",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 416,
+    "cladding_patch": 12,
+    "concrete": 20,
+    "equipment_steel": 88,
+    "plastic_rubber": 228
+   },
+   "identity": "Steel mesh cage with three wheeled bins, hinged lids, hose bib and drip tray.",
+   "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+   "glb_bytes": 88172,
+   "entrances": [],
+   "light_anchors": [],
+   "signs": [],
+   "source_blend": "assets/generated/city_realism/blends/refuse_station.blend",
+   "previews": [
+    "assets/previews/city_realism/refuse_station_front.png",
+    "assets/previews/city_realism/refuse_station_night.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 0,
+    "use_points": 1,
+    "polished_contacts": 0
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      764
+     ]
+    ],
+    "ao_rays": 10
+   }
+  },
+  {
+   "id": "alley_conduit",
+   "role": "street",
+   "district_role": "utility",
+   "glb": "alley_conduit.glb",
+   "tris": 1854,
+   "aabb": {
+    "min": [
+     -4.134,
+     0.0,
+     -0.52
+    ],
+    "max": [
+     4.134,
+     4.515,
+     0.234
+    ]
+   },
+   "footprint": {
+    "min": [
+     -4.134,
+     -0.52
+    ],
+    "max": [
+     4.134,
+     0.234
+    ]
+   },
+   "front_setback_m": 0.52,
+   "materials": [
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "lamp_glass",
+    "plastic_rubber",
+    "steel_structure"
+   ],
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "plastic_rubber",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 904,
+    "cladding_patch": 184,
+    "concrete": 24,
+    "equipment_steel": 564,
+    "plastic_rubber": 166,
+    "lamp_glass": 12
+   },
+   "identity": "Alley-crossing steel gantry carrying conduit, pipes, junction boxes and a sagging cable.",
+   "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
+   "glb_bytes": 198328,
+   "entrances": [],
+   "light_anchors": [
+    {
+     "id": "alley_conduit_light_0",
+     "kind": "fixture",
+     "position": [
+      0.0,
+      2.95,
+      -0.43
+     ],
+     "direction": [
+      0,
+      -0.9,
+      -0.4
+     ],
+     "color": [
+      1.0,
+      0.78,
+      0.45
+     ],
+     "range_m": 7.0,
+     "energy": 1.0,
+     "shadow": false
+    }
+   ],
+   "signs": [],
+   "source_blend": "assets/generated/city_realism/blends/alley_conduit.blend",
+   "previews": [
+    "assets/previews/city_realism/alley_conduit_front.png",
+    "assets/previews/city_realism/alley_conduit_night.png"
+   ],
+   "wear": {
+    "COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
+    "drip_sources": 2,
+    "use_points": 3,
+    "polished_contacts": 0
+   },
+   "build": {
+    "refine_attempts": [
+     [
+      1.7,
+      1854
+     ]
+    ],
+    "ao_rays": 10
+   }
+  }
+ ],
+ "costs": {
+  "unique_geometry_tris": 124680,
+  "buildings_lod0_tris": 118206,
+  "buildings_lod1_tris": 4316,
+  "streets_tris": 6474,
+  "library_materials": 14,
+  "unique_textures": 39,
+  "texture_mib_mips": 60.0,
+  "texture_assumptions": "RGBA8 + full mip chain per distinct PNG, no VRAM compression, shared by path (one copy regardless of how many GLBs use it)",
+  "glb_bytes_total": 10899276
+ },
+ "untouched": {
+  "godot/assets/city/candidates/industrial_market/redline_shop.glb": "bcc65e9d7065737d75ce92d7c03293c82c1a58fd78e9dd371976a81034caaced",
+  "godot/assets/city/candidates/industrial_market/ramen_vendor.glb": "99e32948ececde80452836d8f5f5f033efd5e04931b7da5afe31adf2f07882c1",
+  "godot/assets/city/candidates/industrial_market/ramen_customer.glb": "a6b4de0fa48a29a8eb57fa481f2e0e58c5392aa7c853e23ec5e103d948dad0d8",
+  "godot/assets/city/candidates/industrial_market/benchmark_manifest.json": "879fc8d412e8540289e3c5431a77c482aefb3586e32c465aacebe34b40234038",
+  "godot/assets/city/streets/street_kit_manifest.json": "815c54e73bfba668676d8e9068adf5f5357f477856df09537b1cbd2109fb51d2",
+  "godot/assets/city/kit/city_kit_manifest.json": "39421ff18c61987090f41b127c62061b52e294cca03c561b1503c63863fdb18b"
+ },
+ "lineup_previews": [
+  "assets/previews/city_realism/lineup_buildings_neutral.png",
+  "assets/previews/city_realism/lineup_buildings_night.png",
+  "assets/previews/city_realism/lineup_buildings_b_neutral.png",
+  "assets/previews/city_realism/lineup_buildings_b_night.png",
+  "assets/previews/city_realism/lineup_streets_neutral.png",
+  "assets/previews/city_realism/lineup_streets_night.png"
+ ],
+ "limitations": [
+  "procedural numpy textures, not photographic",
+  "box-projected world UVs (no unwrapped islands), so repeats show on very large faces",
+  "no interiors behind windows or bays beyond a dark hull",
+  "LOD1 is a massing proxy of walls, roof and trim only",
+  "COLOR_0 wear is per vertex on faces refined to 1.7-8 m cells, finer grime comes from textures",
+  "signs use a 16-tile 1024 atlas; text is mundane filler"
+ ]
+}
