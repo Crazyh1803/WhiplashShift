@@ -63,12 +63,16 @@ class _Placer extends RefCounted:
 	var rejected: Array[Dictionary] = []
 	var triangles := 0
 	var has_street_block := false
+	var converted_city := false
 
 	func _init(p_course: CourseDefinition, legacy: Node3D) -> void:
 		course = p_course
 		quarter = course.total_length * CityDistrict.FRACTION
 		entries = CityKit.entries()
 		var block := legacy.get_node_or_null("CityStreetBlock")
+		if legacy.has_node("CityRealism"):
+			block = legacy.get_node("CityRealism")
+			converted_city = true
 		if block != null:
 			has_street_block = true
 			for bounds: AABB in block.get_meta("reserved_bounds", []):
@@ -80,6 +84,9 @@ class _Placer extends RefCounted:
 		_place_landmark("relay_tower", relay_slots)
 		_place_landmark("exchange_hall", [[345.0, 1.0, 15.0], [325.0, 1.0, 24.0], [305.0, -1.0, 28.0]])
 		_place_landmark("pump_citadel", [[455.0, -1.0, 20.0], [440.0, -1.0, 30.0], [425.0, 1.0, 30.0]])
+		if converted_city:
+			_finish(root)
+			return
 		for station in 35:
 			var s := 18.0 + 14.0 * station
 			_place(CityDistrict.PROPS[station % CityDistrict.PROPS.size()], s, -1.0 if station % 2 == 0 else 1.0, 9.0)
@@ -95,6 +102,9 @@ class _Placer extends RefCounted:
 			var s := 85.0 + 110.0 * station
 			for side: float in [-1.0, 1.0]:
 				_place(CityDistrict.BUILDINGS[(station + 1) % CityDistrict.BUILDINGS.size()], s, side, 46.0)
+		_finish(root)
+
+	func _finish(root: Node3D) -> void:
 		for id: String in transforms:
 			_batch(root, id)
 		root.set_meta("quarter_length", quarter)

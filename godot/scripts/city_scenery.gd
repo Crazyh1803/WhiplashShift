@@ -14,7 +14,7 @@ const FACADE_SHADER := preload("res://shaders/city_facade.gdshader")
 const UNIT_BOX := AABB(Vector3(-0.5, -0.5, -0.5), Vector3.ONE)
 
 
-static func build(parent: Node3D, course: CourseDefinition, use_city_kit: bool = true) -> Node3D:
+static func build(parent: Node3D, course: CourseDefinition, use_city_kit: bool = true, use_realism: bool = true) -> Node3D:
 	course = course.geometry()
 	use_city_kit = use_city_kit and course.course_id == "block_circuit"
 	if use_city_kit:
@@ -22,14 +22,18 @@ static func build(parent: Node3D, course: CourseDefinition, use_city_kit: bool =
 	var root := Node3D.new()
 	root.name = "CityScenery"
 	parent.add_child(root)
-	var block: Node3D = CityStreetBlock.build(root, course) if use_city_kit else null
+	var block: Node3D = CityRealism.build(root, course) if use_city_kit and use_realism else null
+	var converted := block != null
+	if block == null and use_city_kit:
+		block = CityStreetBlock.build(root, course)
 	var reserved: Array[AABB] = []
 	var block_lights := 0
 	if block != null:
 		reserved.assign(block.get_meta("reserved_bounds", []))
 		block_lights = int(block.get_meta("light_count", 0))
-	_Kit.new(course, use_city_kit, reserved, block_lights).populate(root)
+	_Kit.new(course, use_city_kit, reserved, block_lights, converted).populate(root)
 	root.set_meta("authored_quarter", use_city_kit)
+	root.set_meta("converted_city", converted)
 	if use_city_kit:
 		CityDistrict.build(root, course)
 	return root
@@ -84,11 +88,13 @@ class _Kit extends RefCounted:
 	var materials := {}
 	var box := BoxMesh.new()
 	var reserved_bounds: Array[AABB] = []
+	var converted_city := false
 
-	func _init(p_course: CourseDefinition, use_city_kit: bool, reserved: Array[AABB] = [], existing_lights: int = 0) -> void:
+	func _init(p_course: CourseDefinition, use_city_kit: bool, reserved: Array[AABB] = [], existing_lights: int = 0, converted: bool = false) -> void:
 		course = p_course
 		reserved_bounds = reserved
 		lights = existing_lights
+		converted_city = converted
 		replace_first_quarter = use_city_kit
 		rng.seed = CityScenery.SEED
 		for key in ["body", "rib", "wall", "post", "cyan", "amber", "sinew", "skyline", "windows", "crown_rib"]:
@@ -172,7 +178,7 @@ class _Kit extends RefCounted:
 			merged = merged.merge(part[1] * CityScenery.UNIT_BOX)
 		return merged
 
-	func _accept(parts: Array, own_overlap: bool = true, emit_geometry: bool = true) -> bool:
+	func _accept(parts: Array, own_overlap: bool = true, emit_geometry: bool = true, preserve_far: bool = false) -> bool:
 		var bounds := _bounds(parts)
 		if absf(bounds.position.x) > CityScenery.WORLD_LIMIT or absf(bounds.end.x) > CityScenery.WORLD_LIMIT \
 				or absf(bounds.position.z) > CityScenery.WORLD_LIMIT or absf(bounds.end.z) > CityScenery.WORLD_LIMIT:
@@ -181,7 +187,7 @@ class _Kit extends RefCounted:
 			return false
 		var flat := AABB(Vector3(bounds.position.x, 0, bounds.position.z), Vector3(bounds.size.x, 1, bounds.size.z)).grow(1.0)
 		for reserved: AABB in reserved_bounds:
-			if flat.intersects(reserved):
+			if not preserve_far and flat.intersects(reserved):
 				return false
 		if own_overlap:
 			for other in footprints:
@@ -210,7 +216,7 @@ class _Kit extends RefCounted:
 						_part("post", basis, origin, Vector3(3.9, 1.3, 0), Vector3(0.8, 2.6, 0.8))]
 				var accent := "cyan" if (station + int(side > 0.0)) % 2 == 0 else "amber"
 				parts.append(_part(accent, basis, origin, Vector3(3.9, 2.8, 0), Vector3(0.4, 0.4, 0.4)))
-				var accepted := _accept(parts, false)
+				var accepted := _accept(parts, false, not converted_city)
 				if (accepted or reserved_bounds.is_empty()) and station % 10 == 0 and (station / 10 + int(side > 0.0)) % 2 == 0 and lights < CityScenery.MAX_LIGHTS - 3:
 					_light(root, origin + basis * Vector3(3.9, 3.4, 0), accent, 18.0)
 			raw += 8.0
@@ -248,7 +254,7 @@ class _Kit extends RefCounted:
 		var fz := rng.randf_range(15.0, 24.0)
 		var basis := _basis(at["dir"])
 		var offset: float = float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET + gap + fz * 0.5
-		_accept(_tower_parts(basis, at["pos"] + basis * Vector3(0, 0, offset * side), side, fx, fz, height, detailed, index), true, emit_geometry)
+		_accept(_tower_parts(basis, at["pos"] + basis * Vector3(0, 0, offset * side), side, fx, fz, height, detailed, index), true, emit_geometry and (not converted_city or gap >= 38.0), converted_city and gap >= 38.0)
 
 	func _tower_parts(basis: Basis, origin: Vector3, side: float, fx: float, fz: float, h: float, detailed: bool, index: int) -> Array:
 		var parts: Array = [_part("body", basis, origin, Vector3(0, h * 0.5, 0), Vector3(fx, h, fz)),
