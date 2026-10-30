@@ -27,7 +27,8 @@ def run_engine(args, timeout):
 
 def validate_city_kit():
     for validator in ('validate_city_kit.py', 'validate_habitation_workshop.py', 'validate_city_neighborhood.py', 'validate_city_streets.py',
-                      'validate_industrial_market.py', 'test_validate_industrial_market.py'):
+                      'validate_industrial_market.py', 'test_validate_industrial_market.py',
+                      'validate_city_families.py', 'test_validate_city_families.py'):
         result = subprocess.run([sys.executable, '-I', str(ROOT / 'tools' / 'city_pipeline' / validator)],
                                 cwd=ROOT, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=120)
         print(result.stdout + result.stderr, flush=True)
@@ -41,7 +42,7 @@ def main():
     parser.add_argument('--menu-capture', action='store_true')
     parser.add_argument('--scenes', nargs='+', default=[
         'season_codec_tests', 'race_modes_tests', 'reverse_race_tests', 'main_menu_visual_qa',
-        'city_street_block_tests', 'block_circuit_tests', 'city_kit_tests', 'season_course_tests', 'vehicle_audio_tests', 'vehicle_feedback_tests',
+        'city_street_block_tests', 'block_circuit_tests', 'city_kit_tests', 'city_realism_tests','season_course_tests', 'vehicle_audio_tests', 'vehicle_feedback_tests',
         'vehicle_effects_tests', 'bodywork_visual_tests', 'test_main', 'viscera_response_tests',
         'rubble_response_tests', 'armor_response_tests', 'coolant_response_tests', 'effluent_response_tests',
         'ichor_response_tests', 'track_visual_tests', 'viscera_pit_tests', 'boulder_motion_tests',

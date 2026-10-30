@@ -31,7 +31,7 @@ func _ready() -> void:
 	_test_detectors()
 	var host := Node3D.new()
 	add_child(host)
-	var scenery := CityScenery.build(host, _course)
+	var scenery := CityScenery.build(host, _course, true, false)
 	var block := scenery.get_node_or_null("CityStreetBlock") as Node3D
 	_check("street block is built beside the legacy scenery", block != null and block.get_parent() == scenery and scenery.get_meta("authored_quarter") == true)
 	if block != null:
@@ -490,13 +490,13 @@ func _test_repeatability(block: Node3D) -> void:
 	var first := _signature(block)
 	var host := Node3D.new()
 	add_child(host)
-	var repeat := CityScenery.build(host, _course).get_node("CityStreetBlock") as Node3D
+	var repeat := CityScenery.build(host, _course, true, false).get_node("CityStreetBlock") as Node3D
 	_check("repeated build produces an identical block", first == _signature(repeat))
 	host.free()
 	var reversed := CourseCatalog.build_course("block_circuit", true)
 	var reverse_host := Node3D.new()
 	add_child(reverse_host)
-	var reverse_block := CityScenery.build(reverse_host, reversed).get_node_or_null("CityStreetBlock") as Node3D
+	var reverse_block := CityScenery.build(reverse_host, reversed, true, false).get_node_or_null("CityStreetBlock") as Node3D
 	_check("reverse direction builds the same canonical block", reverse_block != null and first == _signature(reverse_block))
 	reverse_host.free()
 
@@ -516,7 +516,7 @@ func _test_fallbacks(host: Node3D) -> void:
 	_check("other courses get neither street block nor authored district", not other_scenery.has_node("CityStreetBlock") and not other_scenery.has_node("CityKit") and other_scenery.get_meta("authored_quarter") == false)
 	var saved: Dictionary = CityKit._entries
 	CityKit._entries = {}
-	var unavailable := CityScenery.build(host, _course)
+	var unavailable := CityScenery.build(host, _course, true, false)
 	_check("unavailable kit gives the complete old scenery with no block", not unavailable.has_node("CityStreetBlock") and not unavailable.has_node("CityKit") and unavailable.has_node("Body"))
 	CityKit._entries = saved
 	var old_walls := _legacy_transforms(flagged, "Wall")

@@ -174,10 +174,10 @@ func _test_surfaces(course: CourseDefinition) -> void:
 func _test_scenery(course: CourseDefinition) -> void:
 	var host := Node3D.new()
 	add_child(host)
-	var scenery := CityScenery.build(host, course)
+	var scenery := CityScenery.build(host, course, true, false)
 	var second_host := Node3D.new()
 	add_child(second_host)
-	var repeat := CityScenery.build(second_host, course)
+	var repeat := CityScenery.build(second_host, course, true, false)
 	_check("scenery has no collision objects", scenery.find_children("*", "CollisionObject3D", true, false).is_empty())
 	var lights := scenery.find_children("*", "OmniLight3D", true, false)
 	_check("light budget stays 6-12 and shadowless (%d)" % lights.size(), lights.size() >= 6 and lights.size() <= CityScenery.MAX_LIGHTS
