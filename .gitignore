@@ -17,3 +17,6 @@ __pycache__/
 
 .ai/delegations/
 .ai/last-blender.log
+
+.ai/bounded-selftest.log
+.ai/city-realism-qa.log
