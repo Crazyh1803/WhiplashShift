@@ -48,6 +48,14 @@ func populate(use_ground: bool = true) -> void:
 			if index % 17 == 8:
 				_place("alley_conduit", s, side, "prop", 11.0)
 
+	if ground_enabled:
+		var covered := float(int(course.total_length / 16.0)) * 16.0
+		var remainder := course.total_length - covered
+		if remainder > 0.01:
+			for side: float in [-1.0, 1.0]:
+				_ground(covered + remainder * 0.5, side, remainder)
+				_street_fabric(covered + remainder * 0.5, side, remainder)
+
 	for station in 8:
 		for q in 4:
 			for side: float in [-1.0, 1.0]:
@@ -63,7 +71,7 @@ func transform_at(s: float, side: float, lateral: float) -> Transform3D:
 	return Transform3D(Basis.looking_at(-normal, Vector3.UP), at["pos"] + normal * lateral)
 
 
-func _ground(s: float, side: float) -> void:
+func _ground(s: float, side: float, length: float = 16.1) -> void:
 	if not CityRealismCatalog.meshes.has("sidewalk_panel"):
 		return
 	var mesh: Mesh = CityRealismCatalog.meshes["sidewalk_panel"]
@@ -71,7 +79,7 @@ func _ground(s: float, side: float) -> void:
 	var at := CityDistrict.sample(course, s)
 	var edge := float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
 	var xf := transform_at(s, side, edge + 6.75)
-	xf.basis = xf.basis.scaled_local(Vector3(16.1 / bounds.size.x, 1.0, 5.5 / bounds.size.z))
+	xf.basis = xf.basis.scaled_local(Vector3(length / bounds.size.x, 1.0, 5.5 / bounds.size.z))
 	_try_add("sidewalk_panel", s, side, "ground", xf, false)
 
 
@@ -87,21 +95,23 @@ func _curb(s: float, side: float) -> void:
 	_try_add("curb_segment", s, side, "ground", xf, false)
 
 
-func _street_fabric(s: float, side: float) -> void:
+func _street_fabric(s: float, side: float, length: float = 16.0) -> void:
 	var edge := float(CityDistrict.sample(course, s)["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
-	if not _flat_tile("road_apron", s, side, edge + 0.12 + float(CityRealismCatalog.GROUND_DEPTHS["road_apron"]) * 0.5, 16.0, "apron") and not rejected.is_empty() and rejected.back()["reason"] == "road_clearance":
-		for offset: float in [-4.0, 4.0]:
-			var at := CityDistrict.sample(course, s + offset)
-			var half_edge := float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
-			if not _flat_tile("road_apron", s + offset, side, half_edge + 0.12 + float(CityRealismCatalog.GROUND_DEPTHS["road_apron"]) * 0.5, 8.0, "apron") and not rejected.is_empty() and rejected.back()["reason"] == "road_clearance":
-				for shift: float in [-2.0, 2.0]:
-					var at_quarter := CityDistrict.sample(course, s + offset + shift)
-					var quarter_edge := float(at_quarter["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
-					_flat_tile("road_apron", s + offset + shift, side, quarter_edge + 0.12 + float(CityRealismCatalog.GROUND_DEPTHS["road_apron"]) * 0.5, 4.0, "apron")
-	_flat_tile("service_lane", s, side, edge + 9.5 + float(CityRealismCatalog.GROUND_DEPTHS["service_lane"]) * 0.5)
+	_apron(s, side, length)
+	_flat_tile("service_lane", s, side, edge + 9.5 + float(CityRealismCatalog.GROUND_DEPTHS["service_lane"]) * 0.5, length)
 	var quarter := mini(3, int(s / course.total_length * 4.0))
 	var yard := "loading_yard" if quarter in [1, 2] else "utility_verge"
-	_flat_tile(yard, s, side, edge + 9.5 + float(CityRealismCatalog.GROUND_DEPTHS["service_lane"]) + float(CityRealismCatalog.GROUND_DEPTHS[yard]) * 0.5)
+	_flat_tile(yard, s, side, edge + 9.5 + float(CityRealismCatalog.GROUND_DEPTHS["service_lane"]) + float(CityRealismCatalog.GROUND_DEPTHS[yard]) * 0.5, length)
+
+
+func _apron(s: float, side: float, length: float) -> void:
+	var edge := float(CityDistrict.sample(course, s)["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
+	var lateral := edge + 0.12 + float(CityRealismCatalog.GROUND_DEPTHS["road_apron"]) * 0.5
+	if _flat_tile("road_apron", s, side, lateral, length, "apron"):
+		return
+	if length > 2.0 and not rejected.is_empty() and rejected.back()["reason"] == "road_clearance":
+		for offset: float in [-0.25, 0.25]:
+			_apron(s + offset * length, side, length * 0.5)
 
 
 func _flat_tile(id: String, s: float, side: float, lateral: float, length: float = 16.0, role: String = "ground") -> bool:
