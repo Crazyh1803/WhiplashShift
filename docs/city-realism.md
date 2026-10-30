@@ -14,7 +14,7 @@ Shared textures supply colour, surface roughness, metal response and normals. Ve
 
 Near scenery is merged by material in 48m route chunks. Detailed chunks reach 140m; building silhouettes reach 450m. Both use 10m fade margins and paired culling bounds. Actors reach 60m. A camera-nearest pool provides nine local lights and two shadowed shop spots, plus the preserved crown beacon (12 city light nodes).
 
-Godot imports geometry without extracting/recombining the GLB textures. `CityRealismCatalog` binds the shared library by material name, preserving UV0, vertex colours and tangents. This prevents scene import from replacing shared PNG sidecars and their UIDs.
+Runtime GLBs contain geometry and named material stubs. The textured source exports remain outside the Godot project in `assets/generated/city_realism/textured_exports/`. `CityRealismCatalog` binds the shared library by material name, preserving UV0, vertex colours and tangents. Scene import therefore has no image references to load or reimport; the shared PNGs keep their import settings and UIDs.
 
 The converted source has 899,920 placed triangles, with quarter counts 236,420 / 224,152 / 200,556 / 238,792 before the separately budgeted people. There are 29 detailed buildings, 492 pavement/curb pieces and 178 other street pieces. The sampled conservative view peaks at 205,644 triangles and 113 material surfaces, including fading chunks; limits are 320,000 and 160. These are scenery geometry measurements, not a frame-rate guarantee.
 
