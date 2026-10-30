@@ -10,19 +10,73 @@ ROOT = Path(__file__).resolve().parents[2]
 ERROR = re.compile(r'(^ERROR:|SCRIPT ERROR:|Parse Error:)', re.MULTILINE)
 
 
-def run_engine(args, timeout):
+def run_bounded(command, log, timeout):
+    """Run a child with a hard timeout; on expiry it is killed and reaped before raising."""
+    log.parent.mkdir(exist_ok=True)
+    with log.open('w', encoding='utf-8') as output:
+        child = subprocess.Popen(command, cwd=ROOT, stdout=output, stderr=subprocess.STDOUT)
+        try:
+            code = child.wait(timeout=timeout)
+        except BaseException:
+            child.kill()
+            child.wait()
+            raise
+    return code, log.read_text(encoding='utf-8', errors='replace')
+
+
+def find_engine():
     engine = os.environ.get('GODOT_BIN') or shutil.which('godot')
     if not engine:
         raise RuntimeError('Godot is not on PATH; set GODOT_BIN to its executable.')
-    log = ROOT / '.ai' / 'season-engine.log'
-    log.parent.mkdir(exist_ok=True)
-    with log.open('w', encoding='utf-8') as output:
-        result = subprocess.run([engine, *args], cwd=ROOT, stdout=output,
-                                stderr=subprocess.STDOUT, timeout=timeout)
-    report = log.read_text(encoding='utf-8', errors='replace')
+    return engine
+
+
+def run_engine(args, timeout):
+    code, report = run_bounded([find_engine(), *args], ROOT / '.ai' / 'season-engine.log', timeout)
     print(report, flush=True)
-    if result.returncode or ERROR.search(report):
+    if code or ERROR.search(report):
         raise RuntimeError(f'Godot check failed: {args}')
+
+
+def selftest_run_bounded():
+    """A child that outlives its timeout must be killed and reaped, not left running."""
+    holder = {}
+    original = subprocess.Popen
+
+    def spy(*args, **kwargs):
+        holder['child'] = original(*args, **kwargs)
+        return holder['child']
+
+    subprocess.Popen = spy
+    try:
+        run_bounded([sys.executable, '-I', '-c', 'import time; time.sleep(60)'], ROOT / '.ai' / 'bounded-selftest.log', 2)
+    except subprocess.TimeoutExpired:
+        pass
+    else:
+        raise RuntimeError('run_bounded did not time out a hung child')
+    finally:
+        subprocess.Popen = original
+    if holder['child'].poll() is None:
+        raise RuntimeError('run_bounded left a timed-out child running')
+    print('PASS: run_bounded kills and reaps a hung child', flush=True)
+
+
+def check_city_realism_qa():
+    """Exit-code contract of the QA scene: 0 healthy, 1 with --selftest-fail, no captures unflagged."""
+    engine = find_engine()
+    base = [engine, '--headless', '--fixed-fps', '120', '--path', 'godot', 'res://tests/city_realism_qa.tscn']
+    log = ROOT / '.ai' / 'city-realism-qa.log'
+    code, report = run_bounded(base, log, 300)
+    print(report, flush=True)
+    if code != 0 or 'CITY_REALISM_QA: 0 failures' not in report:
+        raise RuntimeError(f'City QA healthy run failed (exit {code})')
+    if 'CITY_CAPTURE' in report:
+        raise RuntimeError('City QA wrote captures without --capture')
+    code, report = run_bounded([*base, '--', '--selftest-fail'], log, 300)
+    print(report, flush=True)
+    if code != 1 or 'CITY_REALISM_QA: 1 failures' not in report:
+        raise RuntimeError(f'City QA --selftest-fail did not exit 1 through its own check (exit {code})')
+    print('PASS: city QA exits 0 healthy, 1 on --selftest-fail, no captures without --capture', flush=True)
 
 
 def validate_city_kit():
@@ -54,6 +108,7 @@ def main():
         'helix_blueprint_tests', 'knifeedge_blueprint_tests', 'industrial_market_tests'])
     options = parser.parse_args()
     validate_city_kit()
+    selftest_run_bounded()
     run_engine(['--headless', '--import', '--path', 'godot'], 180)
     if options.menu_capture:
         run_engine(['--path', 'godot', 'res://tests/main_menu_visual_qa.tscn', '--', '--capture'], 180)
@@ -65,6 +120,8 @@ def main():
             print(f'CHECK {scene}', flush=True)
             run_engine(['--headless', '--fixed-fps', '120', '--path', 'godot',
                         f'res://tests/{scene}.tscn'], 900 if scene in ('race_tests', 'season_course_tests', 'cpu_main', 'reverse_race_tests') else 300)
+            if scene == 'city_realism_tests':
+                check_city_realism_qa()
     return 0
 
 

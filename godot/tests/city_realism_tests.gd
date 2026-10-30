@@ -12,6 +12,7 @@ const SURFACE_LIMIT := 160
 const ACTOR_LIMIT := 110000
 const LIGHT_LIMIT := 12
 const CHUNK := 48.0
+const VERTEX_CELL := 0.02
 const TEXTURE_DIRECTORY := "res://assets/city/realism/textures/"
 const SOURCE_GLBS: Array[String] = ["ramen_vendor.glb", "ramen_customer.glb", "redline_shop.glb"]
 
@@ -240,6 +241,8 @@ func _test_chunks() -> void:
 		_check_once(unique_names.size() == names.size() and unique_names.size() == expected.size(), "%s merges one surface per shared material (%d surfaces, %d materials)" % [chunk.name, names.size(), expected.size()], index)
 		_check_once(IndustrialMarketBenchmark.count_triangles(mesh) == tris, "%s triangle count equals the placed source meshes (%d)" % [chunk.name, tris], index)
 		_check_once(chunk.multimesh.instance_count == 1, "%s is one merged instance" % chunk.name, index)
+		var drift := _merged_mismatches(chunk, chunk.global_transform)
+		_check_once(drift == 0, "%s merged world vertices match the transformed source meshes (%d unmatched cells)" % [chunk.name, drift], index)
 		_check_once(chunk.visibility_range_fade_mode == GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF and chunk.visibility_range_end_margin == 10.0, "%s fades SELF over 10 m" % chunk.name, index)
 		_check_once(is_far == (chunk.visibility_range_begin == 140.0) and chunk.visibility_range_end == (450.0 if is_far else 140.0), "%s ranges are 0-140 near / 140-450 far" % chunk.name, index)
 		_check_once(chunk.visibility_range_begin_margin == (10.0 if is_far else 0.0), "%s begin margin" % chunk.name, index)
@@ -250,10 +253,64 @@ func _test_chunks() -> void:
 	for chunk: MultiMeshInstance3D in far:
 		var twin: MultiMeshInstance3D = by_name.get(chunk.name.replace("_far", "_near"))
 		_check_once(twin != null and twin.multimesh.custom_aabb == chunk.multimesh.custom_aabb and twin.position.is_equal_approx(chunk.position), "%s has the identical origin and custom AABB as its near batch" % chunk.name, 0)
+	var displaced := Transform3D(Basis.IDENTITY, Vector3(0.5, 0, 0))
+	_check("detector: a chunk displaced 0.5 m from its sources is reported", not _chunks.is_empty() and _merged_mismatches(_chunks[0], _chunks[0].global_transform * displaced) > 0)
 	var all_ids := 0
 	for chunk: MultiMeshInstance3D in near:
 		all_ids += (chunk.get_meta("placements") as Array).size()
 	_check("near batches hold every placement exactly once (%d of %d)" % [all_ids, _placements.size()], all_ids == _placements.size())
+
+
+## Per-material sets of quantised world-space vertex cells for a chunk's records (source meshes
+## through each record's own transform) or for its merged mesh (through `world`).
+func _vertex_cells(chunk: MultiMeshInstance3D, world: Transform3D, merged: bool) -> Dictionary:
+	var cells := {}
+	var sources: Array = []
+	if merged:
+		sources.append([chunk.multimesh.mesh, world])
+	else:
+		var is_far: bool = chunk.get_meta("lod") == 1
+		var root := _converted.global_transform
+		for record: Dictionary in chunk.get_meta("placements"):
+			sources.append([CityRealismCatalog.meshes[record["id"] + ("@far" if is_far else "")], root * (record["transform"] as Transform3D)])
+	for pair: Array in sources:
+		var mesh: Mesh = pair[0]
+		var xf: Transform3D = pair[1]
+		for surface in mesh.get_surface_count():
+			var key: String = mesh.surface_get_material(surface).resource_name
+			if not cells.has(key):
+				cells[key] = {}
+			var bucket: Dictionary = cells[key]
+			for vertex: Vector3 in (mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX] as PackedVector3Array):
+				bucket[Vector3i((xf * vertex / VERTEX_CELL).round())] = true
+	return cells
+
+
+func _cell_present(bucket: Dictionary, cell: Vector3i) -> bool:
+	if bucket.has(cell):
+		return true
+	for x in range(-1, 2):
+		for y in range(-1, 2):
+			for z in range(-1, 2):
+				if bucket.has(cell + Vector3i(x, y, z)):
+					return true
+	return false
+
+
+## Number of quantised vertex cells present in only one of merged / independently transformed
+## sources (either direction, per material). Zero means the merged geometry sits where it should.
+func _merged_mismatches(chunk: MultiMeshInstance3D, world: Transform3D) -> int:
+	var expected := _vertex_cells(chunk, world, false)
+	var actual := _vertex_cells(chunk, world, true)
+	var bad := 0
+	for key: String in expected.keys() + actual.keys():
+		var want: Dictionary = expected.get(key, {})
+		var have: Dictionary = actual.get(key, {})
+		for cell: Vector3i in have:
+			bad += 0 if _cell_present(want, cell) else 1
+		for cell: Vector3i in want:
+			bad += 0 if _cell_present(have, cell) else 1
+	return bad
 
 
 func _quarter(s: float) -> int:
@@ -713,21 +770,9 @@ func _test_qa_script() -> void:
 	_check("QA reports failures through exit code 1, not editor-only assert()", assertions == 0 and "quit(1" in source and "quit(1 if" in source)
 	_check("QA creates its capture directory only when capturing", unguarded_directory == 0 and "make_dir_recursive_absolute" in source)
 	_check("QA validates budgets, captures and failures", "NEAR_BUDGET" in source and "SURFACE_BUDGET" in source and "_failures" in source)
-	var passing := _run_qa([])
-	_check("QA scene exits 0 on a healthy city (exit %d)" % passing[0], passing[0] == 0 and "CITY_REALISM_QA: 0 failures" in passing[1])
-	var failing := _run_qa(["--selftest-fail"])
-	_check("QA scene exits 1 through its own check, not by timing out (exit %d)" % failing[0], failing[0] == 1 and "CITY_REALISM_QA: 1 failures" in failing[1])
-	_check("QA does not write capture images without --capture", not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path("res://../assets/previews/city_realism/in_game")) or passing[1].find("CITY_CAPTURE") < 0)
-
-
-func _run_qa(extra: Array) -> Array:
-	var output: Array = []
-	var arguments: Array = ["--headless", "--fixed-fps", "120", "--path", ProjectSettings.globalize_path("res://"), "res://tests/city_realism_qa.tscn"]
-	if not extra.is_empty():
-		arguments.append("--")
-		arguments.append_array(extra)
-	var code := OS.execute(OS.get_executable_path(), PackedStringArray(arguments), output, true)
-	return [code, "\n".join(output)]
+	_check("QA declares a --selftest-fail path", "--selftest-fail" in source)
+	# The exit codes (0 healthy, 1 --selftest-fail) and the absence of captures without
+	# --capture are exercised by tools/workflow/test_season.py under a strict timeout.
 
 
 # --- detector self-tests -------------------------------------------------------------------
