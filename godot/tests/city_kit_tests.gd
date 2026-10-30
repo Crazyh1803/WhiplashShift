@@ -28,11 +28,11 @@ func _ready() -> void:
 		_check("route sampling round-trips at %.1f" % distance, absf(CityDistrict.route_distance(course, sampled["pos"]) - distance) < 0.01)
 	var saved_entries: Dictionary = CityKit._entries
 	CityKit._entries = {}
-	var fallback := CityScenery.build(host, course)
+	var fallback := CityScenery.build(host, course, true, false)
 	_check("unavailable kit preserves legacy scenery", not fallback.get_meta("authored_quarter") and not fallback.has_node("CityKit") and fallback.has_node("Body"))
 	fallback.free()
 	CityKit._entries = saved_entries
-	var legacy := CityScenery.build(host, course)
+	var legacy := CityScenery.build(host, course, true, false)
 	var district := legacy.get_node_or_null("CityKit") as Node3D
 	_check("district root exists beside legacy scenery", district != null and district.get_parent() == legacy)
 	if district != null:
@@ -263,7 +263,7 @@ func _test_determinism(course: CourseDefinition, district: Node3D) -> void:
 	var first := _placement_signature(district)
 	var repeat_host := Node3D.new()
 	add_child(repeat_host)
-	var repeat := CityScenery.build(repeat_host, course).get_node("CityKit") as Node3D
+	var repeat := CityScenery.build(repeat_host, course, true, false).get_node("CityKit") as Node3D
 	_check("repeated build produces identical placements", first == _placement_signature(repeat))
 	_check("repeated build produces identical rejections", var_to_str(district.get_meta("rejected_slots")) == var_to_str(repeat.get_meta("rejected_slots")))
 	repeat_host.free()
@@ -271,7 +271,7 @@ func _test_determinism(course: CourseDefinition, district: Node3D) -> void:
 	_check("reverse course reuses canonical geometry", reversed != null and reversed.is_reverse and reversed.geometry() != reversed and reversed.geometry().total_length == course.total_length)
 	var reverse_host := Node3D.new()
 	add_child(reverse_host)
-	var reverse_district := CityScenery.build(reverse_host, reversed).get_node("CityKit") as Node3D
+	var reverse_district := CityScenery.build(reverse_host, reversed, true, false).get_node("CityKit") as Node3D
 	_check("reverse-direction canonical world is identical", first == _placement_signature(reverse_district))
 	reverse_host.free()
 
