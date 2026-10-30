@@ -34,7 +34,7 @@ static func build(parent: Node3D, input: CourseDefinition) -> Node3D:
 				var direction := _vector(anchor.get("direction", anchor.get("dir", [0, -1, 0.01])))
 				if direction == Vector3.INF or direction.is_zero_approx():
 					direction = Vector3(0, -1, 0.01)
-				lights.anchors.append({"position": xf * _vector(anchor.get("pos", anchor.get("position"))), "direction": xf.basis * direction, "color": Color("ffd2a0") if id != "utility_substation" else Color("b4d3e0"), "energy": 5.0, "range": 25.0, "shadow": false})
+				lights.anchors.append({"position": xf * _vector(anchor.get("pos", anchor.get("position"))), "direction": xf.basis * direction, "color": Color("ffd2a0") if id != "utility_substation" else Color("b4d3e0"), "energy": minf(4.0, float(anchor.get("energy", 1.0)) * 2.0), "range": maxf(8.0, float(anchor.get("range_m", 16.0))), "shadow": false})
 		if id == "street_lamp" and entry.get("light_anchors", []).is_empty():
 			lights.anchors.append({"position": (placement["transform"] as Transform3D) * Vector3(0, 5.5, 0), "energy": 6.0, "range": 26.0, "shadow": false})
 	for key: String in batches:
@@ -127,7 +127,7 @@ static func _actors(root: Node3D, buildings: Array, lights: CityRealismLighting)
 		root.add_child(group)
 		var xf: Transform3D = placement["transform"]
 		var anchor: Dictionary = sockets["light"]
-		lights.anchors.append({"position": xf * _vector(anchor["position"]), "direction": xf.basis * _vector(anchor["direction"]), "shadow": true, "energy": 9.0, "range": 12.0})
+		lights.anchors.append({"position": xf * _vector(anchor["position"]), "direction": xf.basis * _vector(anchor["direction"]), "shadow": true, "energy": 5.0, "range": 10.0})
 		count += 1
 	root.set_meta("actor_pairs", count)
 
