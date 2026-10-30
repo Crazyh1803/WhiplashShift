@@ -27,3 +27,12 @@ The converted source has 899,920 placed triangles, with quarter counts 236,420 /
 Use `ak-test` with the normal project command, which includes the asset validators and full-city regression scene. The source build is `ak-blender tools/city_pipeline/build_city_families.py -- --skip-tex`. See `tools/city_pipeline/CITY_REALISM.md` for asset conventions and texture recipes.
 
 Converted assets remain candidates awaiting user art review. The approved original ramen benchmark is retained. People are static, distant LODs are simplified massing, and housing windows/depot bays have limited interiors. Street details are culled with the near chunks. The explicit `CityScenery.build(..., true, false)` mode retains the earlier scenery for comparison and regression coverage; unavailable converted assets use that fallback automatically.
+
+
+## Delivery verification
+
+Final targeted `ak-test`: city realism 227/0 headless, original street block295/0, city kit383/0, Block Circuit97/0, ramen benchmark762/0 and menu746/0. The asset validators, 17 city-family Python tests and 13 benchmark Python tests pass. Python QA healthy/failure exit checks and timeout kill/reap self-test pass.
+
+A separate actual Vulkan run of the city suite passes228/0, including a deliberately displaced MultiMesh instance. The rendering server defers buffer updates: that detector waits two frames and frame_post_draw after mutation/restoration. The Dummy headless server ignores instance-transform setters, so the renderer-specific mutation runs only with a real display driver. All other source-versus-merged vertex comparisons remain active headless.
+
+The converted model/texture caches were removed and rebuilt successfully. A forced scene reimport and a newly generated row-workshop asset also imported successfully. Shared PNG sidecars have no diff after these checks. All17 final Godot captures save successfully and pass content checks. Independent runtime, asset, binding and test reviews are APPROVE; findings are resolved in `.ai/reviews/city-realism-disposition.md`.
