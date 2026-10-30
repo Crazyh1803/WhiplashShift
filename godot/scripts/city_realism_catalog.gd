@@ -6,6 +6,7 @@ const MANIFEST := DIRECTORY + "city_families_manifest.json"
 const FAMILIES: Array[String] = ["habitation_workshop", "market_habitat", "service_tenement", "freight_depot", "redline_shop", "row_workshop", "utility_substation", "transit_depot"]
 const STREETS: Array[String] = ["sidewalk_panel", "curb_segment", "drain_cover", "street_lamp", "bollard", "bench_planter", "refuse_station", "alley_conduit"]
 const GROUND_DIRECTORY := "res://assets/city/ground/"
+const GROUND_CAPS := {"road_apron": 24, "service_lane": 40, "loading_yard": 64, "utility_verge": 64}
 const GROUND: Array[String] = ["road_apron", "service_lane", "loading_yard", "utility_verge"]
 static var entries: Dictionary = {}
 static var materials: Dictionary = {}
@@ -102,6 +103,11 @@ static func _load_ground() -> void:
 		if mesh == null:
 			push_warning("Optional ground kit unavailable: " + error)
 			error = ""
+			return
+		var box := mesh.get_aabb()
+		var depth := 3.8 if id == "road_apron" else 10.0 if id == "service_lane" else 14.0
+		var centred := absf(box.position.x + 8.05) < 0.02 and absf(box.end.x - 8.05) < 0.02 and absf(box.position.z + depth * 0.5) < 0.02 and absf(box.end.z - depth * 0.5) < 0.02
+		if not centred or not box.position.is_finite() or not box.size.is_finite() or box.size.x < 0.01 or box.size.z < 0.01 or box.position.y < -0.001 or box.end.y > 0.035 or mesh.get_surface_count() > 3 or IndustrialMarketBenchmark.count_triangles(mesh) > GROUND_CAPS[id]:
 			return
 		prepared[id] = mesh
 	for id: String in GROUND:
