@@ -161,10 +161,14 @@ def validate(root=ROOT, rebuild=True):
         if rebuild:
             import build_city_ground as B
             rt, tx, _ = B.build_asset(aid)
-            if rt != open(path, "rb").read():
-                pr.append(f"{aid}: runtime GLB differs from a fresh rebuild")
-            if tx != open(os.path.join(root, "assets", "generated", "city_ground", "textured_exports", aid + ".glb"), "rb").read():
-                pr.append(f"{aid}: textured source differs from a fresh rebuild")
+            with open(path, "rb") as f:
+                if rt != f.read():
+                    pr.append(f"{aid}: runtime GLB differs from a fresh rebuild")
+            tpath = os.path.join(root, "assets", "generated", "city_ground", "textured_exports", aid + ".glb")
+            if os.path.isfile(tpath):                                  # a missing source is already reported by check_textured
+                with open(tpath, "rb") as f:
+                    if tx != f.read():
+                        pr.append(f"{aid}: textured source differs from a fresh rebuild")
     return pr
 
 

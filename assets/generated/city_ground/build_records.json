@@ -7,8 +7,8 @@
    "concrete",
    "plastic_rubber"
   ],
-  "runtime_sha256": "15842c7b8f2baf8f194e099121778b768bb0480fe5e1644ee26b63a8efe4b55a",
-  "textured_sha256": "76bedd653c210bc0135f9a41337519fe5f505d1d7618b88a97db477b05d1bc46"
+  "runtime_sha256": "f6c09a595d549c4832569b48bf31ad00f27b2ae2611194da0902fdd2fcac4443",
+  "textured_sha256": "b34d21ce14a971615d15a9a7d418e86d9b66d9344046a436d40b54da163023fd"
  },
  "service_lane": {
   "polygons": 20,

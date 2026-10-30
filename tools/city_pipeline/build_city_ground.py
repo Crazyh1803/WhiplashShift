@@ -102,7 +102,7 @@ def road_apron():
         quad("cladding_patch", rect(-3.4, -0.4, -1.78, -1.64), L1, light=0.68, amp=0.18),
         quad("cladding_patch", rect(0.8, 3.8, -1.78, -1.64), L1, light=0.9, amp=0.12),
         quad("concrete", rect(-6.5, -2.0, -0.8, -0.25), L2, light=0.5, amp=0.12),                             # tyre oil smear
-        quad("concrete", rot(5.6, 1.6, 2.4, 0.4, 0.03), L1, tint=GREEN, light=0.85, amp=0.15),               # weed fringe at the sidewalk edge
+        quad("concrete", rot(5.6, 1.6, 2.4, 0.4, 0.03), L2, tint=GREEN, light=0.85, amp=0.15),               # weed fringe at the sidewalk edge
     ]
 
 
