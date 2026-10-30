@@ -1,0 +1,10 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+CITY_REALISM_COUNTS { "sidewalk_panel": 251, "curb_segment": 41, "road_apron": 256, "service_lane": 260, "utility_verge": 130, "street_lamp": 52, "bollard": 38, "drain_cover": 44, "refuse_station": 14, "alley_conduit": 16, "bench_planter": 14, "loading_yard": 130, "market_habitat": 5, "habitation_workshop": 4, "freight_depot": 4, "transit_depot": 4, "service_tenement": 3, "redline_shop": 2, "row_workshop": 5, "utility_substation": 2 } roles={ "ground": 812, "apron": 256, "prop": 134, "detail": 44, "building": 29 } rejected={ "road_clearance": 118, "solid_overlap": 11, "curve": 12, "triangle_budget": 12 } tris=882204 quarters=[231008, 219592, 198012, 233592]
+CITY_RENDER_WINDOW peak_triangles=223986 peak_surfaces=113
+ERROR: CITY_REALISM_QA FAIL: requested self-test failure
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _check (res://tests/city_realism_qa.gd:120)
+       [1] _ready (res://tests/city_realism_qa.gd:61)
+CITY_REALISM_QA: 1 failures
