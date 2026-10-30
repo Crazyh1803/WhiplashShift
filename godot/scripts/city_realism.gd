@@ -107,8 +107,8 @@ static func _actors(root: Node3D, buildings: Array, lights: CityRealismLighting)
 			break
 		if placement["id"] != "redline_shop":
 			continue
-		var sockets: Dictionary = CityRealismCatalog.entries["redline_shop"].get("actor_sockets", {})
-		if not sockets.has("vendor") or not sockets.has("customer"):
+		var sockets: Variant = CityRealismCatalog.entries["redline_shop"].get("actor_sockets", {})
+		if not sockets is Dictionary or not sockets.has("vendor") or not sockets.has("customer"):
 			continue
 		var models := _actor_models(sockets)
 		if models.size() != 2:

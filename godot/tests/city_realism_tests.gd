@@ -651,6 +651,8 @@ func _skip_case(label: String, mutate: Callable) -> void:
 
 
 func _test_actor_failures() -> void:
+	_skip_case("null socket block", func(e: Dictionary) -> void: e["actor_sockets"] = null)
+	_skip_case("socket block is a string", func(e: Dictionary) -> void: e["actor_sockets"] = "counter")
 	_skip_case("missing socket block", func(e: Dictionary) -> void: e.erase("actor_sockets"))
 	_skip_case("missing vendor", func(e: Dictionary) -> void: e["actor_sockets"].erase("vendor"))
 	_skip_case("vendor socket is not a dictionary", func(e: Dictionary) -> void: e["actor_sockets"]["vendor"] = "front")
