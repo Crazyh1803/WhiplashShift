@@ -15,6 +15,7 @@ var rejected: Array[Dictionary] = []
 var solids: Array[PackedVector2Array] = []
 var rendering_groups: Dictionary = {}
 var sample_positions := PackedVector3Array()
+var ground_enabled := false
 var triangles := 0
 var quarter_triangles: Array[int] = [0, 0, 0, 0]
 
@@ -25,13 +26,17 @@ func _init(input: CourseDefinition) -> void:
 		sample_positions.append(CityDistrict.sample(course, float(s))["pos"] + Vector3.UP * 1.5)
 
 
-func populate() -> void:
+func populate(use_ground: bool = true) -> void:
+	ground_enabled = use_ground and CityRealismCatalog.ground_available()
 	var quarter := course.total_length / 4.0
 	for index in int(course.total_length / 16.0):
 		var s := 8.0 + 16.0 * index
 		for side: float in [-1.0, 1.0]:
 			_ground(s, side)
-			_curb(s, side)
+			if not ground_enabled or index % 6 == 0:
+				_curb(s, side)
+			if ground_enabled:
+				_street_fabric(s, side)
 			if index % 5 == 1:
 				_place("street_lamp", s, side, "prop", 4.5)
 			if index % 9 == 4:
@@ -82,6 +87,27 @@ func _curb(s: float, side: float) -> void:
 	_try_add("curb_segment", s, side, "ground", xf, false)
 
 
+func _street_fabric(s: float, side: float) -> void:
+	var edge := float(CityDistrict.sample(course, s)["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
+	if not _flat_tile("road_apron", s, side, edge + 2.02, 16.0, "apron") and rejected.back()["reason"] == "road_clearance":
+		for offset: float in [-4.0, 4.0]:
+			var at := CityDistrict.sample(course, s + offset)
+			var half_edge := float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
+			_flat_tile("road_apron", s + offset, side, half_edge + 2.02, 8.0, "apron")
+	_flat_tile("service_lane", s, side, edge + 14.5)
+	var quarter := mini(3, int(s / course.total_length * 4.0))
+	var yard := "loading_yard" if quarter in [1, 2] else "utility_verge"
+	_flat_tile(yard, s, side, edge + 26.5)
+
+
+func _flat_tile(id: String, s: float, side: float, lateral: float, length: float = 16.0, role: String = "ground") -> bool:
+	var mesh: Mesh = CityRealismCatalog.meshes[id]
+	var bounds := mesh.get_aabb()
+	var xf := transform_at(s, side, lateral)
+	xf.basis = xf.basis.scaled_local(Vector3(length / bounds.size.x, 1, 1))
+	return _try_add(id, s, side, role, xf, false)
+
+
 func _place(id: String, s: float, side: float, role: String, setback: float) -> void:
 	if not CityRealismCatalog.meshes.has(id):
 		return
@@ -103,7 +129,8 @@ func _try_add(id: String, s: float, side: float, role: String, xf: Transform3D, 
 	var q := mini(3, int(s / course.total_length * 4.0))
 	var cost := int(CityRealismCatalog.costs[id]["tris"])
 	var reason := ""
-	if clearance(polygon, course) < CityScenery.ROAD_CLEARANCE:
+	var required_clearance := 0.05 if id == "road_apron" and role == "apron" else CityScenery.ROAD_CLEARANCE
+	if clearance(polygon, course) < required_clearance:
 		reason = "road_clearance"
 	elif triangles + cost > GLOBAL_BUDGET or quarter_triangles[q] + cost > QUARTER_BUDGET:
 		reason = "triangle_budget"

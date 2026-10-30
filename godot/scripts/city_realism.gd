@@ -48,6 +48,7 @@ static func build(parent: Node3D, input: CourseDefinition) -> Node3D:
 			_batch(root, far_records, true, bounds)
 	_actors(root, buildings, lights)
 	root.add_child(lights)
+	root.set_meta("ground_fabric", layout.ground_enabled)
 	root.set_meta("placements", layout.placements)
 	root.set_meta("reserved_bounds", layout.reservations)
 	root.set_meta("rejected_slots", layout.rejected)

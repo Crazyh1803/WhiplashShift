@@ -5,6 +5,8 @@ const DIRECTORY := "res://assets/city/realism/"
 const MANIFEST := DIRECTORY + "city_families_manifest.json"
 const FAMILIES: Array[String] = ["habitation_workshop", "market_habitat", "service_tenement", "freight_depot", "redline_shop", "row_workshop", "utility_substation", "transit_depot"]
 const STREETS: Array[String] = ["sidewalk_panel", "curb_segment", "drain_cover", "street_lamp", "bollard", "bench_planter", "refuse_station", "alley_conduit"]
+const GROUND_DIRECTORY := "res://assets/city/ground/"
+const GROUND: Array[String] = ["road_apron", "service_lane", "loading_yard", "utility_verge"]
 static var entries: Dictionary = {}
 static var materials: Dictionary = {}
 static var meshes: Dictionary = {}
@@ -72,7 +74,44 @@ static func available() -> bool:
 				names.append(mesh.surface_get_material(surface).resource_name)
 			costs[key] = {"tris": IndustrialMarketBenchmark.count_triangles(mesh), "surfaces": mesh.get_surface_count(), "materials": names}
 	entries = catalog
+	_load_ground()
 	return true
+
+
+static func ground_available() -> bool:
+	return GROUND.all(func(id: String) -> bool: return entries.has(id) and meshes.has(id) and costs.has(id))
+
+
+static func _load_ground() -> void:
+	var path := GROUND_DIRECTORY + "city_ground_manifest.json"
+	if not FileAccess.file_exists(path):
+		return
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if not data is Dictionary or not IndustrialMarketBenchmark.is_number(data.get("version")) or data["version"] != 1 or not data.get("assets") is Array:
+		return
+	var additions := {}
+	for raw: Variant in data["assets"]:
+		if not raw is Dictionary or not raw.get("id") is String or raw["id"] not in GROUND or additions.has(raw["id"]) or raw.get("glb") != raw["id"] + ".glb":
+			return
+		additions[raw["id"]] = raw
+	if additions.size() != GROUND.size():
+		return
+	var prepared := {}
+	for id: String in GROUND:
+		var mesh := _load_mesh(GROUND_DIRECTORY + String(additions[id]["glb"]))
+		if mesh == null:
+			push_warning("Optional ground kit unavailable: " + error)
+			error = ""
+			return
+		prepared[id] = mesh
+	for id: String in GROUND:
+		var mesh: ArrayMesh = prepared[id]
+		var names: Array[String] = []
+		for surface in mesh.get_surface_count():
+			names.append(mesh.surface_get_material(surface).resource_name)
+		entries[id] = additions[id]
+		meshes[id] = mesh
+		costs[id] = {"tris": IndustrialMarketBenchmark.count_triangles(mesh), "surfaces": mesh.get_surface_count(), "materials": names}
 
 
 static func _safe_path(value: Variant) -> bool:
