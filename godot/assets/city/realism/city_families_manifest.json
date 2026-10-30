@@ -475,7 +475,7 @@
    },
    "identity": "Three storeys of patched render and brick housing over a four-bay steel-framed workshop floor: half-raised shutter, barred display window, bolted cladding repairs, balconies with laundry, roof tanks.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 1804476,
+   "glb_bytes": 1804672,
    "lod1_glb": "habitation_workshop_lod1.glb",
    "lod1_tris": 692,
    "lod1_aabb": {
@@ -846,7 +846,7 @@
    "role": "building",
    "district_role": "market+housing",
    "glb": "market_habitat.glb",
-   "tris": 19106,
+   "tris": 19358,
    "aabb": {
     "min": [
      -9.04,
@@ -904,8 +904,8 @@
     "steel_structure": 6644,
     "cladding_corrugated": 716,
     "cladding_patch": 356,
-    "concrete": 1580,
-    "brick": 4716,
+    "concrete": 1448,
+    "brick": 5100,
     "render_plaster": 20,
     "roof_membrane": 1152,
     "equipment_steel": 2000,
@@ -917,7 +917,7 @@
    },
    "identity": "Open market arcade on a steel colonnade with mixed canvas stall awnings, produce crates and bulb strings under two brick housing floors with laundry poles and roof tanks.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 1674992,
+   "glb_bytes": 1685100,
    "lod1_glb": "market_habitat_lod1.glb",
    "lod1_tris": 380,
    "lod1_aabb": {
@@ -1219,7 +1219,7 @@
     "refine_attempts": [
      [
       1.7,
-      19106
+      19358
      ]
     ],
     "ao_rays": 10
@@ -1301,7 +1301,7 @@
    },
    "identity": "Narrow five-storey brick tenement with an external steel fire stair, shop shutter and stair door, corbelled cornice, chimney stacks and roof tank.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 1337060,
+   "glb_bytes": 1337256,
    "lod1_glb": "service_tenement_lod1.glb",
    "lod1_tris": 444,
    "lod1_aabb": {
@@ -1597,7 +1597,7 @@
    },
    "identity": "Corrugated portal-frame depot on a raised concrete dock: four dock doors at different heights, bumpers, levellers, cantilever canopy, office annex, ridge ventilator.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 1386904,
+   "glb_bytes": 1387104,
    "lod1_glb": "freight_depot_lod1.glb",
    "lod1_tris": 860,
    "lod1_aabb": {
@@ -1982,7 +1982,7 @@
    },
    "identity": "Lower-cost conversion of the approved Redline Ramen counter shop: H-column frame on plinths, header beam, cladding with repairs, red awning, counter, cooking hood and duct, flat above.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 919812,
+   "glb_bytes": 920008,
    "lod1_glb": "redline_shop_lod1.glb",
    "lod1_tris": 332,
    "lod1_aabb": {
@@ -2421,7 +2421,7 @@
    },
    "identity": "Row of four brick/clad workshop units under a sawtooth roof, each with its own shutter or doors, signs, stock and flues.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 821652,
+   "glb_bytes": 821852,
    "lod1_glb": "row_workshop_lod1.glb",
    "lod1_tris": 572,
    "lod1_aabb": {
@@ -2823,7 +2823,7 @@
    },
    "identity": "Brick control building with blast door and louvres beside a fenced transformer yard: radiator-finned transformer with ribbed bushings, insulator gantry, cable tray, floodlight.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 900016,
+   "glb_bytes": 900212,
    "lod1_glb": "utility_substation_lod1.glb",
    "lod1_tris": 556,
    "lod1_aabb": {
@@ -3102,7 +3102,7 @@
    },
    "identity": "Two-bay vehicle hall with raised grilles and hazard-striped thresholds beside a cantilever passenger shelter with bench, kiosk, timetable, stop pole and clock.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 1053708,
+   "glb_bytes": 1053904,
    "lod1_glb": "transit_depot_lod1.glb",
    "lod1_tris": 480,
    "lod1_aabb": {
@@ -3690,7 +3690,7 @@
    },
    "identity": "7.9 m column on base plate and bolts with hand-hole cover, sleeve joint, banner bracket, cranked arm and lensed luminaire.",
    "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
-   "glb_bytes": 72832,
+   "glb_bytes": 72956,
    "entrances": [],
    "light_anchors": [
     {
@@ -4024,7 +4024,7 @@
    },
    "identity": "Alley-crossing steel gantry carrying conduit, pipes, junction boxes and a sagging cable.",
    "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
-   "glb_bytes": 198328,
+   "glb_bytes": 198452,
    "entrances": [],
    "light_anchors": [
     {
@@ -4074,15 +4074,15 @@
   }
  ],
  "costs": {
-  "unique_geometry_tris": 124724,
-  "buildings_lod0_tris": 118250,
+  "unique_geometry_tris": 124976,
+  "buildings_lod0_tris": 118502,
   "buildings_lod1_tris": 4316,
   "streets_tris": 6474,
   "library_materials": 14,
   "unique_textures": 39,
   "texture_mib_mips": 60.0,
   "texture_assumptions": "RGBA8 + full mip chain per distinct PNG, no VRAM compression, shared by path (one copy regardless of how many GLBs use it)",
-  "glb_bytes_total": 10905832
+  "glb_bytes_total": 10917568
  },
  "untouched": {
   "godot/assets/city/candidates/industrial_market/redline_shop.glb": "bcc65e9d7065737d75ce92d7c03293c82c1a58fd78e9dd371976a81034caaced",

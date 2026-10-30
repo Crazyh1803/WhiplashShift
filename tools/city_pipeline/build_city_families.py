@@ -121,10 +121,10 @@ def lib_material(name, lib):
         nt.links.new(nm.outputs["Normal"], b.inputs["Normal"])
     if name == "sign_atlas":
         nt.links.new(img("emissive", False).outputs["Color"], b.inputs["Emission Color"])
-        b.inputs["Emission Strength"].default_value = 1.0
+        b.inputs["Emission Strength"].default_value = T.EMISSIVE[name]
     if name == "lamp_glass":
         b.inputs["Emission Color"].default_value = (1.0, 0.82, 0.5, 1)
-        b.inputs["Emission Strength"].default_value = 1.0
+        b.inputs["Emission Strength"].default_value = T.EMISSIVE[name]
     return m
 
 
@@ -238,57 +238,6 @@ def export(ob, path):
     externalize(path)
 
 
-def compute_tangents(js, binary):
-    """Per-vertex tangents (xyz + handedness w) from POSITION/NORMAL/TEXCOORD_0 for every primitive whose material has a normal map.
-    The Blender exporter does not write TANGENT here, so the importer would otherwise derive them. Bitangent = direction of increasing
-    Blender v (glTF v is flipped), w = sign(dot(cross(n, t), bitangent))."""
-    VIM = VAL.VIM
-    out = {}
-    for mi, mesh in enumerate(js["meshes"]):
-        for pi, prim in enumerate(mesh["primitives"]):
-            mat = js["materials"][prim["material"]]
-            if "normalTexture" not in mat:
-                continue
-            at = prim["attributes"]
-            pos = VIM.accessor(js, binary, at["POSITION"])
-            nrm = VIM.accessor(js, binary, at["NORMAL"])
-            uv = VIM.accessor(js, binary, at["TEXCOORD_0"])
-            idx = [r[0] for r in VIM.accessor(js, binary, prim["indices"])]
-            tan = [[0.0, 0.0, 0.0] for _ in pos]
-            bit = [[0.0, 0.0, 0.0] for _ in pos]
-            for t in range(0, len(idx), 3):
-                i0, i1, i2 = idx[t], idx[t + 1], idx[t + 2]
-                p0, p1, p2 = pos[i0], pos[i1], pos[i2]
-                e1 = [p1[k] - p0[k] for k in range(3)]
-                e2 = [p2[k] - p0[k] for k in range(3)]
-                du1, dv1 = uv[i1][0] - uv[i0][0], -(uv[i1][1] - uv[i0][1])
-                du2, dv2 = uv[i2][0] - uv[i0][0], -(uv[i2][1] - uv[i0][1])
-                det = du1 * dv2 - du2 * dv1
-                if abs(det) < 1e-12:
-                    continue
-                r = 1.0 / det
-                for i in (i0, i1, i2):
-                    for k in range(3):
-                        tan[i][k] += (e1[k] * dv2 - e2[k] * dv1) * r
-                        bit[i][k] += (e2[k] * du1 - e1[k] * du2) * r
-            res = []
-            for i, n in enumerate(nrm):
-                tv = tan[i]
-                d = sum(n[k] * tv[k] for k in range(3))
-                t = [tv[k] - n[k] * d for k in range(3)]
-                ln = math.sqrt(sum(c * c for c in t))
-                if ln < 1e-9:
-                    a = (1.0, 0.0, 0.0) if abs(n[0]) < 0.9 else (0.0, 1.0, 0.0)
-                    d = sum(n[k] * a[k] for k in range(3))
-                    t = [a[k] - n[k] * d for k in range(3)]
-                    ln = math.sqrt(sum(c * c for c in t))
-                t = [c / ln for c in t]
-                cr = (n[1] * t[2] - n[2] * t[1], n[2] * t[0] - n[0] * t[2], n[0] * t[1] - n[1] * t[0])
-                res.append((t[0], t[1], t[2], 1.0 if sum(cr[k] * bit[i][k] for k in range(3)) >= 0 else -1.0))
-            out[(mi, pi)] = res
-    return out
-
-
 def externalize(path):
     """Rewrite the GLB so every image is a shared external URI (textures/<name>.png) and the embedded bytes are dropped."""
     data = open(path, "rb").read()
@@ -302,7 +251,7 @@ def externalize(path):
         elif ctype == b"BIN\x00":
             binary = body
         off += 8 + clen
-    extra_tangents = compute_tangents(js, binary)
+    extra_tangents = VAL.compute_tangents(js, binary)
     image_views = {im["bufferView"] for im in js.get("images", []) if "bufferView" in im}
     for im in js.get("images", []):
         stem = os.path.splitext(im.get("name", ""))[0]
