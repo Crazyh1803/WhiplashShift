@@ -127,7 +127,8 @@ def build_habitation_workshop(c):
 def build_market_habitat(c):
     W, D, GH, FH = 18.0, 16.0, 4.0, 3.2
     top = GH + 2 * FH
-    hull(c, W, D, top, "brick")
+    bx(c, -W / 2, W / 2, -D, -T, GH, top, "brick")                                       # upper housing hull
+    bx(c, -W / 2, W / 2, -D, -2.6, 0.0, GH, "brick")                                     # ground hull starts behind the recessed arcade wall: the colonnade stays open
     sides(c, W, D, top, "brick")
     # arcade: columns on the front line, recessed back wall with doors, ceiling slab with a front beam
     xs = [-8.4 + 4.2 * i for i in range(5)]

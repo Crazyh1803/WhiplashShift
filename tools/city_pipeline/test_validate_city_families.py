@@ -82,6 +82,73 @@ class CityRealism(unittest.TestCase):
             del next(a for a in man["assets"] if a["id"] == "redline_shop")["actor_sockets"]
         self.assertTrue(any("actor_sockets missing" in e for e in self._mutated(bad)))
 
+    @staticmethod
+    def _quad(us):
+        """One glTF-space quad facing +Z; v = 1 - y (image top at +y, as the Blender exporter writes it); us = per-vertex u."""
+        import struct
+        pos = [(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)]
+        uv = [(us[i], 1.0 - p[1]) for i, p in enumerate(pos)]
+        blob = b"".join(struct.pack("<3f", *p) for p in pos) + b"".join(struct.pack("<3f", 0, 0, 1) for _ in pos)
+        blob += b"".join(struct.pack("<2f", *t) for t in uv) + struct.pack("<6H", 0, 1, 2, 0, 2, 3)
+        blob += b"\0\0"
+        js = {"materials": [{"normalTexture": {"index": 0}}], "meshes": [{"primitives": [{"attributes": {"POSITION": 0, "NORMAL": 1, "TEXCOORD_0": 2}, "indices": 3, "material": 0}]}],
+              "bufferViews": [{"buffer": 0, "byteOffset": 0, "byteLength": 48}, {"buffer": 0, "byteOffset": 48, "byteLength": 48}, {"buffer": 0, "byteOffset": 96, "byteLength": 32},
+                              {"buffer": 0, "byteOffset": 128, "byteLength": 12}],
+              "accessors": [{"bufferView": 0, "componentType": 5126, "count": 4, "type": "VEC3"}, {"bufferView": 1, "componentType": 5126, "count": 4, "type": "VEC3"},
+                            {"bufferView": 2, "componentType": 5126, "count": 4, "type": "VEC2"}, {"bufferView": 3, "componentType": 5123, "count": 6, "type": "SCALAR"}]}
+        return js, blob
+
+    def test_tangent_handedness_from_exported_uv(self):
+        # unmirrored: u grows with +x, v grows downward -> tangent +x, bitangent cross(n, t) * w = +y = up the image, w = +1
+        js, blob = self._quad([0, 1, 1, 0])
+        t = V.compute_tangents(js, blob)[(0, 0)]
+        for tx, ty, tz, w in t:
+            self.assertAlmostEqual(tx, 1.0, places=5)
+            self.assertEqual(w, 1.0)
+        # mirrored in u: tangent follows +u (-x) and the handedness flips
+        js2, blob2 = self._quad([1, 0, 0, 1])
+        for tx, ty, tz, w in V.compute_tangents(js2, blob2)[(0, 0)]:
+            self.assertAlmostEqual(tx, -1.0, places=5)
+            self.assertEqual(w, -1.0)
+
+    def test_tangent_frame_check_catches_reversed_handedness(self):
+        import struct
+        js, blob = self._quad([0, 1, 1, 0])
+        good = V.compute_tangents(js, blob)[(0, 0)]
+
+        def with_tangents(rows):
+            b = bytes(blob) + b"".join(struct.pack("<4f", *r) for r in rows)
+            j = json.loads(json.dumps(js))
+            j["bufferViews"].append({"buffer": 0, "byteOffset": len(blob), "byteLength": 64})
+            j["accessors"].append({"bufferView": 4, "componentType": 5126, "count": 4, "type": "VEC4"})
+            j["meshes"][0]["primitives"][0]["attributes"]["TANGENT"] = 4
+            return j, b
+        self.assertEqual(V.tangent_frame_errors(*with_tangents(good)), 0)
+        self.assertGreater(V.tangent_frame_errors(*with_tangents([(a, b, c, -w) for a, b, c, w in good])), 0)
+
+    def test_shipped_tangents_and_emissive_strengths(self):
+        man = V.load_manifest(V.DEFAULT_DIR)
+        for a in man["assets"]:
+            an = V.analyze(os.path.join(V.DEFAULT_DIR, a["glb"]))
+            self.assertEqual(an["tangent_bad"], 0, a["id"])
+            for m in an["materials"]:
+                if m["name"] in V.EMISSIVE_WHITELIST:
+                    self.assertAlmostEqual(m["emissive_strength"], man["materials"][m["name"]]["emission"]["strength"], places=3, msg=a["id"])
+
+    def test_market_arcade_is_open(self):
+        """No brick surface may sit inside the arcade volume between the colonnade and the recessed back wall (glTF: front z=0, depth +z)."""
+        an = V.analyze(os.path.join(V.DEFAULT_DIR, "market_habitat.glb"))
+        js, binary = an["js"], V.VIM.read_glb(os.path.join(V.DEFAULT_DIR, "market_habitat.glb"))[1]
+        for mesh in js["meshes"]:
+            for prim in mesh["primitives"]:
+                if js["materials"][prim["material"]]["name"] != "brick":
+                    continue
+                pos = V.VIM.accessor(js, binary, prim["attributes"]["POSITION"])
+                idx = [r[0] for r in V.VIM.accessor(js, binary, prim["indices"])]
+                for t in range(0, len(idx), 3):
+                    c = [sum(pos[idx[t + j]][k] for j in range(3)) / 3 for k in range(3)]
+                    self.assertFalse(abs(c[0]) < 8.8 and 0.1 < c[2] < 2.2 and c[1] < 3.6, f"brick inside the arcade at {c}")
+
     def test_rejects_missing_texture_and_bad_lod(self):
         def bad(man):
             man["materials"]["brick"]["albedo"] = "textures/missing.png"

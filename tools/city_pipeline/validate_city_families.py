@@ -37,6 +37,99 @@ def png_dims(path):
         return VIM.png_info(f.read(32))
 
 
+def compute_tangents(js, binary):
+    """Per-vertex TANGENT (xyz + w) for every primitive whose material has a normal map, from the EXPORTED glTF POSITION/NORMAL/TEXCOORD_0.
+    glTF v grows downwards and the normal map's green (+Y) points up the image, so the bitangent is the direction of DEcreasing glTF v;
+    with bitangent = cross(n, t) * w this gives w = +1 for an unmirrored mapping (u right, v down). UV0 is used as exported: no extra flip."""
+    out = {}
+    for mi, mesh in enumerate(js["meshes"]):
+        for pi, prim in enumerate(mesh["primitives"]):
+            if "normalTexture" not in js["materials"][prim["material"]]:
+                continue
+            at = prim["attributes"]
+            pos = VIM.accessor(js, binary, at["POSITION"])
+            nrm = VIM.accessor(js, binary, at["NORMAL"])
+            uv = VIM.accessor(js, binary, at["TEXCOORD_0"])
+            idx = [r[0] for r in VIM.accessor(js, binary, prim["indices"])]
+            tan = [[0.0, 0.0, 0.0] for _ in pos]
+            bit = [[0.0, 0.0, 0.0] for _ in pos]          # direction of decreasing glTF v
+            for t in range(0, len(idx), 3):
+                i0, i1, i2 = idx[t], idx[t + 1], idx[t + 2]
+                e1 = [pos[i1][k] - pos[i0][k] for k in range(3)]
+                e2 = [pos[i2][k] - pos[i0][k] for k in range(3)]
+                du1, dv1 = uv[i1][0] - uv[i0][0], uv[i1][1] - uv[i0][1]
+                du2, dv2 = uv[i2][0] - uv[i0][0], uv[i2][1] - uv[i0][1]
+                det = du1 * dv2 - du2 * dv1
+                if abs(det) < 1e-12:
+                    continue
+                r = 1.0 / det
+                for i in (i0, i1, i2):
+                    for k in range(3):
+                        tan[i][k] += (e1[k] * dv2 - e2[k] * dv1) * r         # dP/du
+                        bit[i][k] -= (e2[k] * du1 - e1[k] * du2) * r         # -dP/dv
+            res = []
+            for i, n in enumerate(nrm):
+                tv = tan[i]
+                d = sum(n[k] * tv[k] for k in range(3))
+                t = [tv[k] - n[k] * d for k in range(3)]
+                ln = math.sqrt(sum(c * c for c in t))
+                if ln < 1e-9:
+                    a = (1.0, 0.0, 0.0) if abs(n[0]) < 0.9 else (0.0, 1.0, 0.0)
+                    d = sum(n[k] * a[k] for k in range(3))
+                    t = [a[k] - n[k] * d for k in range(3)]
+                    ln = math.sqrt(sum(c * c for c in t))
+                t = [c / ln for c in t]
+                cr = (n[1] * t[2] - n[2] * t[1], n[2] * t[0] - n[0] * t[2], n[0] * t[1] - n[1] * t[0])
+                res.append((t[0], t[1], t[2], 1.0 if sum(cr[k] * bit[i][k] for k in range(3)) >= 0 else -1.0))
+            out[(mi, pi)] = res
+    return out
+
+
+def tangent_frame_errors(js, binary, limit=4000):
+    """Independent check of TANGENT in a decoded GLB: for each normal-mapped triangle, solve the UV->position mapping by Cramer's rule on the
+    triangle plane and require t . dP/du > 0 and cross(n, t) * w . dP/dv < 0 (bitangent = up the image). Returns the number of violating vertices."""
+    bad = 0
+    for mesh in js["meshes"]:
+        for prim in mesh["primitives"]:
+            at = prim["attributes"]
+            if "TANGENT" not in at or "material" not in prim or "normalTexture" not in js["materials"][prim["material"]]:
+                continue
+            pos = VIM.accessor(js, binary, at["POSITION"])
+            nrm = VIM.accessor(js, binary, at["NORMAL"])
+            uv = VIM.accessor(js, binary, at["TEXCOORD_0"])
+            tan = VIM.accessor(js, binary, at["TANGENT"], "VEC4")
+            idx = [r[0] for r in VIM.accessor(js, binary, prim["indices"])]
+            for t in range(0, min(len(idx), limit * 3), 3):
+                a, b, c = idx[t], idx[t + 1], idx[t + 2]
+                e1 = [pos[b][k] - pos[a][k] for k in range(3)]
+                e2 = [pos[c][k] - pos[a][k] for k in range(3)]
+                fn = (e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0])
+                if math.sqrt(sum(x * x for x in fn)) < 1e-6:
+                    continue
+                # in-plane UV gradients: world vectors g_u, g_v with g_u . e = du(e), g_v . e = dv(e) (solved in the e1/e2 basis)
+                d1 = (uv[b][0] - uv[a][0], uv[b][1] - uv[a][1])
+                d2 = (uv[c][0] - uv[a][0], uv[c][1] - uv[a][1])
+                g11, g12, g22 = sum(x * x for x in e1), sum(e1[k] * e2[k] for k in range(3)), sum(x * x for x in e2)
+                det = g11 * g22 - g12 * g12
+                if abs(det) < 1e-12:
+                    continue
+                def grad(s1, s2):
+                    ca = (s1 * g22 - s2 * g12) / det
+                    cb = (s2 * g11 - s1 * g12) / det
+                    return [ca * e1[k] + cb * e2[k] for k in range(3)]
+                gu, gv = grad(d1[0], d2[0]), grad(d1[1], d2[1])
+                if sum(x * x for x in gu) < 1e-12 or sum(x * x for x in gv) < 1e-12:
+                    continue
+                # gradients point toward increasing u / v; dP/du ~ gu, dP/dv-direction (increasing v) ~ gv
+                for i in (a, b, c):
+                    n, tv = nrm[i], tan[i]
+                    cr = (n[1] * tv[2] - n[2] * tv[1], n[2] * tv[0] - n[0] * tv[2], n[0] * tv[1] - n[1] * tv[0])
+                    bt = [cr[k] * tv[3] for k in range(3)]
+                    if sum(tv[k] * gu[k] for k in range(3)) <= 0 or sum(bt[k] * gv[k] for k in range(3)) >= 0:
+                        bad += 1
+    return bad
+
+
 def analyze(path):
     """Decode a GLB. Returns dict: tris, aabb, surfaces [{material, tris, uv_span, color_min/max, has_tangent, tex}], flags, node info."""
     js, binary = VIM.read_glb(path)
@@ -131,6 +224,7 @@ def analyze(path):
     out["tris"] = tris_total
     out["aabb"] = {"min": [round(v, 4) for v in lo], "max": [round(v, 4) for v in hi]}
     out["surfaces"] = surfaces
+    out["tangent_bad"] = tangent_frame_errors(js, binary)
     mats = []
     for m in js.get("materials", []):
         pbr = m.get("pbrMetallicRoughness", {})
@@ -144,6 +238,7 @@ def analyze(path):
             im = js["images"][t["source"]]
             tex[slot] = {"uri": im.get("uri"), "embedded": "bufferView" in im}
         mats.append({"name": m.get("name"), "tex": tex, "emissive_factor": m.get("emissiveFactor", [0, 0, 0]),
+                     "emissive_strength": m.get("extensions", {}).get("KHR_materials_emissive_strength", {}).get("emissiveStrength", 1.0),
                      "base_factor": pbr.get("baseColorFactor", [1, 1, 1, 1]), "unlit": "KHR_materials_unlit" in m.get("extensions", {})})
     out["materials"] = mats
     out["image_count"] = len(js.get("images", []))
@@ -155,6 +250,8 @@ def check_geometry(label, an, manifest_dir, lib):
     """Per-GLB checks independent of the manifest entry."""
     for p in an["problems"]:
         err(p)
+    if an["tangent_bad"]:
+        err(f"{label}: {an['tangent_bad']} vertices with TANGENT frame inconsistent with UV0 (tangent along +u, bitangent up the image)")
     if an["mesh_instances"] != 1:
         err(f"{label}: expected exactly 1 mesh instance, found {an['mesh_instances']}")
     for s in an["surfaces"]:
@@ -204,6 +301,10 @@ def check_geometry(label, an, manifest_dir, lib):
             err(f"{label}/{m['name']}: emissive on a non-whitelisted material")
         if m["name"] in EMISSIVE_WHITELIST and not emits:
             err(f"{label}/{m['name']}: whitelisted emissive material does not emit")
+        if m["name"] in EMISSIVE_WHITELIST:
+            want = li.get("emission", {}).get("strength")
+            if want is None or abs(m["emissive_strength"] - want) > 1e-3:
+                err(f"{label}/{m['name']}: exported emissive strength {m['emissive_strength']} != manifest {want}")
     if an["image_count"] and any(t["embedded"] for m in an["materials"] for t in m["tex"].values()):
         err(f"{label}: embedded images present")
 
