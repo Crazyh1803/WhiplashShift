@@ -46,7 +46,7 @@ func _ready() -> void:
 	_test_catalog()
 	_test_imports()
 	_test_materials()
-	_test_chunks()
+	await _test_chunks()
 	_test_budgets()
 	_test_render_windows()
 	_test_coverage()
@@ -255,10 +255,19 @@ func _test_chunks() -> void:
 		_check_once(twin != null and twin.multimesh.custom_aabb == chunk.multimesh.custom_aabb and twin.position.is_equal_approx(chunk.position), "%s has the identical origin and custom AABB as its near batch" % chunk.name, 0)
 	var displaced := Transform3D(Basis.IDENTITY, Vector3(0.5, 0, 0))
 	_check("detector: a chunk displaced 0.5 m from its sources is reported", not _chunks.is_empty() and _merged_mismatches(_chunks[0], _chunks[0].global_transform * displaced) > 0)
-	var original_instance := _chunks[0].multimesh.get_instance_transform(0)
-	_chunks[0].multimesh.set_instance_transform(0, original_instance * displaced)
-	_check("detector: a displaced MultiMesh instance is reported", _merged_mismatches(_chunks[0], _chunks[0].global_transform) > 0)
-	_chunks[0].multimesh.set_instance_transform(0, original_instance)
+	if DisplayServer.get_name() != "headless":
+		var original_instance := _chunks[0].multimesh.get_instance_transform(0)
+		_chunks[0].multimesh.set_instance_transform(0, original_instance * displaced)
+		for frame in 2:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		_check("detector: a displaced MultiMesh instance is reported", _merged_mismatches(_chunks[0], _chunks[0].global_transform) > 0)
+		_chunks[0].multimesh.set_instance_transform(0, original_instance)
+		for frame in 2:
+			await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+	else:
+		print("RENDER_CHECK: MultiMesh mutation detector requires the rendered city test; Dummy transform setters are no-ops")
 	var all_ids := 0
 	for chunk: MultiMeshInstance3D in near:
 		all_ids += (chunk.get_meta("placements") as Array).size()
