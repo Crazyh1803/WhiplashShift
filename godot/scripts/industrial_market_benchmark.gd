@@ -66,7 +66,7 @@ func build() -> bool:
 			instances.append(model)
 		for instance: MeshInstance3D in instances:
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-			_skin_materials(instance)
+			_prepare_materials(instance)
 		models[id] = model
 		mesh_bounds[id] = bounds
 	if models.size() != IDS.size() or triangle_count > TRIANGLE_CAP or surface_count > SURFACE_CAP:
@@ -116,18 +116,20 @@ func _add_vehicle() -> void:
 	set_meta("vehicle_reference", {"id": "blackjack", "rig": spec["visual"]["rig"], "scene": spec["visual"]["scene"], "customization": spec["customization"]})
 
 
-func _skin_materials(instance: MeshInstance3D) -> void:
+func _prepare_materials(instance: MeshInstance3D) -> void:
 	if instance.mesh == null:
 		return
 	for surface in instance.mesh.get_surface_count():
 		var material := instance.get_active_material(surface) as BaseMaterial3D
-		if material == null or not "skin" in material.resource_name.to_lower():
+		if material == null:
 			continue
-		var skin := material.duplicate() as BaseMaterial3D
-		skin.subsurf_scatter_enabled = true
-		skin.subsurf_scatter_skin_mode = true
-		skin.subsurf_scatter_strength = 0.08
-		instance.set_surface_override_material(surface, skin)
+		var prepared := material.duplicate() as BaseMaterial3D
+		prepared.vertex_color_use_as_albedo = not instance.mesh.surface_get_arrays(surface)[Mesh.ARRAY_COLOR].is_empty()
+		if "skin" in material.resource_name.to_lower():
+			prepared.subsurf_scatter_enabled = true
+			prepared.subsurf_scatter_skin_mode = true
+			prepared.subsurf_scatter_strength = 0.08
+		instance.set_surface_override_material(surface, prepared)
 
 
 func target(key: String) -> Vector3:

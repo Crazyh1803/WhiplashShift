@@ -292,7 +292,7 @@ func _test_materials(benchmark: IndustrialMarketBenchmark) -> void:
 				# baked vertex colours
 				var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
 				_check("%s has one baked COLOR_0 per vertex" % label, colors.size() == vertices.size())
-				_check("%s imports with vertex_color_use_as_albedo" % label, material.vertex_color_use_as_albedo)
+				_check("%s effective material uses vertex colors without changing shared resource" % label, instance.get_active_material(surface).vertex_color_use_as_albedo and instance.get_active_material(surface) != material)
 				var colors_valid := true
 				for color in colors:
 					colors_valid = colors_valid and is_finite(color.r + color.g + color.b + color.a) and color.r >= 0.0 and color.g >= 0.0 and color.b >= 0.0 and maxf(maxf(color.r, color.g), color.b) <= 1.0
@@ -308,7 +308,7 @@ func _test_materials(benchmark: IndustrialMarketBenchmark) -> void:
 						and active.subsurf_scatter_enabled and active.subsurf_scatter_skin_mode and is_equal_approx(active.subsurf_scatter_strength, 0.08)
 						and active.albedo_texture == material.albedo_texture)
 				else:
-					_check("%s has no SSS override" % label, instance.get_surface_override_material(surface) == null and not active.subsurf_scatter_enabled)
+					_check("%s wear override has no SSS" % label, instance.get_surface_override_material(surface) != material and not active.subsurf_scatter_enabled)
 		_check("%s GLB material order %s matches manifest" % [id, seen], seen == names)
 		_check("%s imported COLOR_0 carries the baked wear (%.3f..%.3f)" % [id, shade_low, shade_high], shade_high - shade_low > 0.05)
 	var sign_material: BaseMaterial3D
