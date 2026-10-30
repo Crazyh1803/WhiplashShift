@@ -29,10 +29,12 @@ class GroundKit(unittest.TestCase):
     def test_stale_manifest_is_rejected(self):
         tmp = self.copy_root()
         path = os.path.join(tmp, "godot", "assets", "city", "ground", "city_ground_manifest.json")
-        man = json.load(open(path, encoding="utf-8"))
+        with open(path, encoding="utf-8") as f:
+            man = json.load(f)
         man["assets"][0]["tris"] += 2
         man["assets"][1]["aabb"]["max"][1] = 0.2
-        json.dump(man, open(path, "w", encoding="utf-8"))
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(man, f)
         problems = V.validate(tmp, rebuild=False)
         self.assertTrue(any("road_apron: manifest tris" in p for p in problems), problems)
         self.assertTrue(any("service_lane: manifest aabb" in p for p in problems), problems)
@@ -52,6 +54,13 @@ class GroundKit(unittest.TestCase):
         shutil.copyfile(src, os.path.join(tmp, "godot", "assets", "city", "ground", "utility_verge.glb"))
         problems = V.validate(tmp, rebuild=False)
         self.assertTrue(any("utility_verge: runtime GLB carries images" in p for p in problems), problems)
+
+    def test_missing_textured_source_is_reported_on_rebuild(self):
+        tmp = self.copy_root()
+        os.remove(os.path.join(tmp, "assets", "generated", "city_ground", "textured_exports", "road_apron.glb"))
+        problems = V.validate(tmp, rebuild=True)
+        self.assertTrue(any("road_apron: textured source" in p and "is missing" in p for p in problems), problems)
+        self.assertFalse(any("road_apron: textured source differs" in p for p in problems), problems)
 
 
 if __name__ == "__main__":
