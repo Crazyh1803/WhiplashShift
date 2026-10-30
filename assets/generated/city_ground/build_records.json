@@ -1,0 +1,46 @@
+{
+ "road_apron": {
+  "polygons": 12,
+  "tris": 24,
+  "surfaces": [
+   "cladding_patch",
+   "concrete",
+   "plastic_rubber"
+  ],
+  "runtime_sha256": "15842c7b8f2baf8f194e099121778b768bb0480fe5e1644ee26b63a8efe4b55a",
+  "textured_sha256": "76bedd653c210bc0135f9a41337519fe5f505d1d7618b88a97db477b05d1bc46"
+ },
+ "service_lane": {
+  "polygons": 20,
+  "tris": 40,
+  "surfaces": [
+   "concrete",
+   "paving",
+   "plastic_rubber"
+  ],
+  "runtime_sha256": "55da6574dd8c12b2f52f1e89f521a2fafa9c9342f252e55678dc13e94586c48d",
+  "textured_sha256": "f6bf151773118d9af06fd42593610654c105f0ee288fee252eb8ba243dc836d6"
+ },
+ "loading_yard": {
+  "polygons": 30,
+  "tris": 60,
+  "surfaces": [
+   "cladding_patch",
+   "concrete",
+   "plastic_rubber"
+  ],
+  "runtime_sha256": "4c58ba02dfde5d4108ae3c167f34c4c546ad81b80f3455b7eac4bd608c7c185a",
+  "textured_sha256": "96204150d4725981d54a9c3f8a31a0cf7ad9e09dc286ab07995c9477fa6f7bfa"
+ },
+ "utility_verge": {
+  "polygons": 29,
+  "tris": 58,
+  "surfaces": [
+   "concrete",
+   "paving",
+   "equipment_steel"
+  ],
+  "runtime_sha256": "96e4de8113560a6bef58fa6e7dda5b856a6921c7a8982d2c2d28c6db8d5a54ff",
+  "textured_sha256": "fe438ba9a610917dd36b17028334f658aaa34a7bf14ae12d2cb83bdff0ce0cc5"
+ }
+}

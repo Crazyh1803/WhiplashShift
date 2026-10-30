@@ -1,0 +1,276 @@
+{
+ "version": 1,
+ "status": "candidate-review",
+ "coordinate_system": {
+  "units": "metres",
+  "up": "+Y",
+  "front": "-Z",
+  "origin": "XZ footprint centre, foot y=0",
+  "width_m": 16.1
+ },
+ "shared_library": {
+  "manifest": "godot/assets/city/realism/city_families_manifest.json",
+  "base_dir": "godot/assets/city/realism/",
+  "materials": [
+   "cladding_patch",
+   "concrete",
+   "equipment_steel",
+   "paving",
+   "plastic_rubber"
+  ],
+  "rule": "geometry-only GLBs: each material stub carries extras.library_binding equal to its exact name; load the shared library material by that name. No images, textures, samplers, lights or new material ids."
+ },
+ "limits": {
+  "width_m": 16.1,
+  "depth_m": {
+   "road_apron": 3.8,
+   "service_lane": 10.0,
+   "loading_yard": 14.0,
+   "utility_verge": 14.0
+  },
+  "tri_caps": {
+   "road_apron": 24,
+   "service_lane": 40,
+   "loading_yard": 64,
+   "utility_verge": 64
+  },
+  "max_surfaces": 3,
+  "y_max_m": 0.03,
+  "uv": "TEXCOORD_0 world-projected (x, z) x library uv_per_m",
+  "tangent": "canonical: bitangent follows increasing exported V"
+ },
+ "costs": {
+  "tris": 182,
+  "glb_bytes_total": 35280
+ },
+ "assets": [
+  {
+   "id": "road_apron",
+   "role": "ground",
+   "ground_role": "roadside apron",
+   "glb": "road_apron.glb",
+   "tris": 24,
+   "tri_cap": 24,
+   "aabb": {
+    "min": [
+     -8.05,
+     0.0,
+     -1.9
+    ],
+    "max": [
+     8.05,
+     0.02,
+     1.9
+    ]
+   },
+   "footprint": {
+    "min": [
+     -8.05,
+     -1.9
+    ],
+    "max": [
+     8.05,
+     1.9
+    ]
+   },
+   "width_m": 16.1,
+   "depth_m": 3.8,
+   "y_range_m": [
+    0.0,
+    0.02
+   ],
+   "surfaces": [
+    "cladding_patch",
+    "concrete",
+    "plastic_rubber"
+   ],
+   "surface_cap": 3,
+   "tris_by_surface": {
+    "cladding_patch": 6,
+    "concrete": 10,
+    "plastic_rubber": 8
+   },
+   "polygons": 12,
+   "identity": "Repaired road shoulder between rail and sidewalk: a dark longitudinal drain channel, a black bitumen patch, a fresh bright slab, sealed cracks, broken yellow edge line and a tyre oil smear.",
+   "origin": "footprint centred on XZ, foot at y=0 (recessed drain channels only), front faces -Z; runs along X",
+   "glb_bytes": 6284,
+   "textured_source": "assets/generated/city_ground/textured_exports/road_apron.glb",
+   "vertex_color": "COLOR_0 multiplies albedo: large-scale mottling, gutter grime, paint and weed tints",
+   "previews": [
+    "assets/previews/city_ground/lineup_ground_neutral.png",
+    "assets/previews/city_ground/lineup_ground_night.png"
+   ]
+  },
+  {
+   "id": "service_lane",
+   "role": "ground",
+   "ground_role": "back lane",
+   "glb": "service_lane.glb",
+   "tris": 40,
+   "tri_cap": 40,
+   "aabb": {
+    "min": [
+     -8.05,
+     0.0,
+     -5.0
+    ],
+    "max": [
+     8.05,
+     0.025,
+     5.0
+    ]
+   },
+   "footprint": {
+    "min": [
+     -8.05,
+     -5.0
+    ],
+    "max": [
+     8.05,
+     5.0
+    ]
+   },
+   "width_m": 16.1,
+   "depth_m": 10.0,
+   "y_range_m": [
+    0.0,
+    0.025
+   ],
+   "surfaces": [
+    "concrete",
+    "paving",
+    "plastic_rubber"
+   ],
+   "surface_cap": 3,
+   "tris_by_surface": {
+    "concrete": 26,
+    "paving": 4,
+    "plastic_rubber": 10
+   },
+   "polygons": 20,
+   "identity": "Worn service lane with a central drainage gutter, polished wheel tracks, paving and bitumen repairs, sealed cracks, faded edge dashes and weedy kerb edges.",
+   "origin": "footprint centred on XZ, foot at y=0 (recessed drain channels only), front faces -Z; runs along X",
+   "glb_bytes": 8156,
+   "textured_source": "assets/generated/city_ground/textured_exports/service_lane.glb",
+   "vertex_color": "COLOR_0 multiplies albedo: large-scale mottling, gutter grime, paint and weed tints",
+   "previews": [
+    "assets/previews/city_ground/lineup_ground_neutral.png",
+    "assets/previews/city_ground/lineup_ground_night.png"
+   ]
+  },
+  {
+   "id": "loading_yard",
+   "role": "ground",
+   "ground_role": "loading yard",
+   "glb": "loading_yard.glb",
+   "tris": 60,
+   "tri_cap": 64,
+   "aabb": {
+    "min": [
+     -8.05,
+     0.0,
+     -7.0
+    ],
+    "max": [
+     8.05,
+     0.025,
+     7.0
+    ]
+   },
+   "footprint": {
+    "min": [
+     -8.05,
+     -7.0
+    ],
+    "max": [
+     8.05,
+     7.0
+    ]
+   },
+   "width_m": 16.1,
+   "depth_m": 14.0,
+   "y_range_m": [
+    0.0,
+    0.025
+   ],
+   "surfaces": [
+    "cladding_patch",
+    "concrete",
+    "plastic_rubber"
+   ],
+   "surface_cap": 3,
+   "tris_by_surface": {
+    "cladding_patch": 16,
+    "concrete": 34,
+    "plastic_rubber": 10
+   },
+   "polygons": 30,
+   "identity": "Six settled concrete yard slabs on a dark sub-base with a drain channel, yellow bay dividers and stop bar, pedestrian lanes, pallet and forklift wear, oil, cracks and hazard hatching.",
+   "origin": "footprint centred on XZ, foot at y=0 (recessed drain channels only), front faces -Z; runs along X",
+   "glb_bytes": 10544,
+   "textured_source": "assets/generated/city_ground/textured_exports/loading_yard.glb",
+   "vertex_color": "COLOR_0 multiplies albedo: large-scale mottling, gutter grime, paint and weed tints",
+   "previews": [
+    "assets/previews/city_ground/lineup_ground_neutral.png",
+    "assets/previews/city_ground/lineup_ground_night.png"
+   ]
+  },
+  {
+   "id": "utility_verge",
+   "role": "ground",
+   "ground_role": "utility verge",
+   "glb": "utility_verge.glb",
+   "tris": 58,
+   "tri_cap": 64,
+   "aabb": {
+    "min": [
+     -8.05,
+     0.0,
+     -7.0
+    ],
+    "max": [
+     8.05,
+     0.023,
+     7.0
+    ]
+   },
+   "footprint": {
+    "min": [
+     -8.05,
+     -7.0
+    ],
+    "max": [
+     8.05,
+     7.0
+    ]
+   },
+   "width_m": 16.1,
+   "depth_m": 14.0,
+   "y_range_m": [
+    0.0,
+    0.023
+   ],
+   "surfaces": [
+    "concrete",
+    "paving",
+    "equipment_steel"
+   ],
+   "surface_cap": 3,
+   "tris_by_surface": {
+    "concrete": 34,
+    "paving": 12,
+    "equipment_steel": 12
+   },
+   "polygons": 29,
+   "identity": "Gravel and soil utility verge with a drainage swale, steel cover plates in dark frames, a cable trench, stepping slabs, pale kerb strips, ruts and weed tufts.",
+   "origin": "footprint centred on XZ, foot at y=0 (recessed drain channels only), front faces -Z; runs along X",
+   "glb_bytes": 10296,
+   "textured_source": "assets/generated/city_ground/textured_exports/utility_verge.glb",
+   "vertex_color": "COLOR_0 multiplies albedo: large-scale mottling, gutter grime, paint and weed tints",
+   "previews": [
+    "assets/previews/city_ground/lineup_ground_neutral.png",
+    "assets/previews/city_ground/lineup_ground_night.png"
+   ]
+  }
+ ]
+}
