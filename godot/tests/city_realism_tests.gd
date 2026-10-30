@@ -255,6 +255,10 @@ func _test_chunks() -> void:
 		_check_once(twin != null and twin.multimesh.custom_aabb == chunk.multimesh.custom_aabb and twin.position.is_equal_approx(chunk.position), "%s has the identical origin and custom AABB as its near batch" % chunk.name, 0)
 	var displaced := Transform3D(Basis.IDENTITY, Vector3(0.5, 0, 0))
 	_check("detector: a chunk displaced 0.5 m from its sources is reported", not _chunks.is_empty() and _merged_mismatches(_chunks[0], _chunks[0].global_transform * displaced) > 0)
+	var original_instance := _chunks[0].multimesh.get_instance_transform(0)
+	_chunks[0].multimesh.set_instance_transform(0, original_instance * displaced)
+	_check("detector: a displaced MultiMesh instance is reported", _merged_mismatches(_chunks[0], _chunks[0].global_transform) > 0)
+	_chunks[0].multimesh.set_instance_transform(0, original_instance)
 	var all_ids := 0
 	for chunk: MultiMeshInstance3D in near:
 		all_ids += (chunk.get_meta("placements") as Array).size()
@@ -267,7 +271,7 @@ func _vertex_cells(chunk: MultiMeshInstance3D, world: Transform3D, merged: bool)
 	var cells := {}
 	var sources: Array = []
 	if merged:
-		sources.append([chunk.multimesh.mesh, world])
+		sources.append([chunk.multimesh.mesh, world * chunk.multimesh.get_instance_transform(0)])
 	else:
 		var is_far: bool = chunk.get_meta("lod") == 1
 		var root := _converted.global_transform

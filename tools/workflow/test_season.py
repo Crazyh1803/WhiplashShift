@@ -68,7 +68,7 @@ def check_city_realism_qa():
     log = ROOT / '.ai' / 'city-realism-qa.log'
     code, report = run_bounded(base, log, 300)
     print(report, flush=True)
-    if code != 0 or 'CITY_REALISM_QA: 0 failures' not in report:
+    if code != 0 or ERROR.search(report) or 'CITY_REALISM_QA: 0 failures' not in report:
         raise RuntimeError(f'City QA healthy run failed (exit {code})')
     if 'CITY_CAPTURE' in report:
         raise RuntimeError('City QA wrote captures without --capture')
