@@ -27,14 +27,14 @@ ak-blender tools/city_pipeline/validate_city_families.py                       #
 - Materials (library, `emission_whitelist` = `sign_atlas`, `lamp_glass` only): steel_structure, cladding_corrugated, cladding_patch, concrete, brick, render_plaster, roof_membrane,
   paving, equipment_steel, glass_window, fabric_awning, plastic_rubber, sign_atlas, lamp_glass. Foliage colour is carried in COLOR_0 on render_plaster.
 - Textures: albedo/ORM/normal 512 px (ORM R=occlusion, G=roughness, B=metallic; normals OpenGL +Y); sign_atlas albedo + emissive 1024, ORM 512, no normal. 39 images, 60 MiB with mips (RGBA8, no compression).
-- Vertex data: TEXCOORD_0 = world-projected box UV (tiles per metre in `uv_per_m`; atlas tiles explicit for signs), COLOR_0 = AO x wear (splash band, rain streaks, use-point grime, polished contacts, sun fade). TANGENT is computed and written by the build (Blender 5.2 does not export it).
+- Vertex data: TEXCOORD_0 = world-projected box UV (tiles per metre in `uv_per_m`; atlas tiles explicit for signs), COLOR_0 = AO x wear (splash band, rain streaks, use-point grime, polished contacts, sun fade). TANGENT is computed and written by the build (Blender 5.2 does not export it): t = dP/du, bitangent = cross(n, t) * w follows increasing exported V (unmirrored +X/-V quad with +Z normal: w = -1; mirrored U: w = +1).
 - Sockets (glTF coordinates): `entrances` (kind, position, width, height), `light_anchors` (street / fixture / shop_spot / sign / window / service with direction, colour, range, energy hint, shadow flag; data only).
 - `redline_shop.actor_sockets` (glTF coordinates, shop frame): `vendor`/`customer` `position` = floor point between the actor's feet (the actor GLB origin), `yaw_degrees` about +Y (vendor 0 faces the street, customer 180), same convention as benchmark_manifest placements. Both stand on a 0.15 m floor (kitchen floor + customer apron), `counter_top_y` 1.2 (1.05 m above the feet), `bowl` = hand-off point, `light` = the `service` light anchor aimed at it. Vendor works in a 1.5 m bay of the counter. Closeups with the real actor GLBs: `ak-blender tools/city_pipeline/city_realism_actor_shots.py` -> `assets/previews/city_realism/redline_shop_actors_*.png`.
 - Sign text is a mundane word list drafted with ak-qwen; one letter is dead on a few signs on purpose (e.g. GAR GE).
 
 ## Measured costs
-Building LOD0 tris: habitation_workshop 18,704; market_habitat 19,106; service_tenement 15,978; freight_depot 18,314; redline_shop 9,844; row_workshop 10,076;
-utility_substation 11,342; transit_depot 14,842 (sum 118,206). LOD1 316-860 tris each, 3 surfaces. Streets 6,474 tris total (bench_planter 1,236 ... bollard 312). Unique source geometry 124,680 tris.
+Building LOD0 tris: habitation_workshop 18,704; market_habitat 19,358; service_tenement 15,978; freight_depot 18,314; redline_shop 9,888; row_workshop 10,076;
+utility_substation 11,342; transit_depot 14,842 (sum 118,502). LOD1 332-860 tris each, 3 surfaces. Streets 6,474 tris total (bench_planter 1,236 ... bollard 312). Unique source geometry 124,976 tris.
 GLB sizes 0.8-1.8 MB (LOD0), 31-56 KB (LOD1). Shared textures 60.0 MiB regardless of instance count. LOD0 surface counts 10-13 per building.
 
 ## Limitations

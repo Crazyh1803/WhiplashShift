@@ -39,8 +39,9 @@ def png_dims(path):
 
 def compute_tangents(js, binary):
     """Per-vertex TANGENT (xyz + w) for every primitive whose material has a normal map, from the EXPORTED glTF POSITION/NORMAL/TEXCOORD_0.
-    glTF v grows downwards and the normal map's green (+Y) points up the image, so the bitangent is the direction of DEcreasing glTF v;
-    with bitangent = cross(n, t) * w this gives w = +1 for an unmirrored mapping (u right, v down). UV0 is used as exported: no extra flip."""
+    glTF defines the bitangent as cross(n, t) * w and the tangent basis follows the EXPORTED UV derivatives (MikkTSpace): t = dP/du and the
+    bitangent is the direction of INcreasing exported v. An unmirrored quad (u with +X, exported v against +Y, n = +Z) therefore has w = -1 and a
+    mirrored u has w = +1. UV0 is used as exported: no extra flip."""
     out = {}
     for mi, mesh in enumerate(js["meshes"]):
         for pi, prim in enumerate(mesh["primitives"]):
@@ -52,7 +53,7 @@ def compute_tangents(js, binary):
             uv = VIM.accessor(js, binary, at["TEXCOORD_0"])
             idx = [r[0] for r in VIM.accessor(js, binary, prim["indices"])]
             tan = [[0.0, 0.0, 0.0] for _ in pos]
-            bit = [[0.0, 0.0, 0.0] for _ in pos]          # direction of decreasing glTF v
+            bit = [[0.0, 0.0, 0.0] for _ in pos]          # direction of increasing exported v
             for t in range(0, len(idx), 3):
                 i0, i1, i2 = idx[t], idx[t + 1], idx[t + 2]
                 e1 = [pos[i1][k] - pos[i0][k] for k in range(3)]
@@ -66,7 +67,7 @@ def compute_tangents(js, binary):
                 for i in (i0, i1, i2):
                     for k in range(3):
                         tan[i][k] += (e1[k] * dv2 - e2[k] * dv1) * r         # dP/du
-                        bit[i][k] -= (e2[k] * du1 - e1[k] * du2) * r         # -dP/dv
+                        bit[i][k] += (e2[k] * du1 - e1[k] * du2) * r         # +dP/dv
             res = []
             for i, n in enumerate(nrm):
                 tv = tan[i]
@@ -87,7 +88,7 @@ def compute_tangents(js, binary):
 
 def tangent_frame_errors(js, binary, limit=4000):
     """Independent check of TANGENT in a decoded GLB: for each normal-mapped triangle, solve the UV->position mapping by Cramer's rule on the
-    triangle plane and require t . dP/du > 0 and cross(n, t) * w . dP/dv < 0 (bitangent = up the image). Returns the number of violating vertices."""
+    triangle plane and require t . dP/du > 0 and cross(n, t) * w . dP/dv > 0 (bitangent follows increasing exported v). Returns the number of violating vertices."""
     bad = 0
     for mesh in js["meshes"]:
         for prim in mesh["primitives"]:
@@ -125,7 +126,7 @@ def tangent_frame_errors(js, binary, limit=4000):
                     n, tv = nrm[i], tan[i]
                     cr = (n[1] * tv[2] - n[2] * tv[1], n[2] * tv[0] - n[0] * tv[2], n[0] * tv[1] - n[1] * tv[0])
                     bt = [cr[k] * tv[3] for k in range(3)]
-                    if sum(tv[k] * gu[k] for k in range(3)) <= 0 or sum(bt[k] * gv[k] for k in range(3)) >= 0:
+                    if sum(tv[k] * gu[k] for k in range(3)) <= 0 or sum(bt[k] * gv[k] for k in range(3)) <= 0:
                         bad += 1
     return bad
 
@@ -527,8 +528,12 @@ def validate(d=DEFAULT_DIR):
     # ---- legacy assets untouched
     for rel, sha in man.get("untouched", {}).items():
         p = os.path.join(ROOT, rel)
-        if not os.path.isfile(p) or hashlib.sha256(open(p, "rb").read()).hexdigest() != sha:
+        if not os.path.isfile(p):
             err(f"legacy file changed or missing: {rel}")
+            continue
+        with open(p, "rb") as f:
+            if hashlib.sha256(f.read()).hexdigest() != sha:
+                err(f"legacy file changed or missing: {rel}")
     if not man.get("untouched"):
         err("manifest does not record the untouched legacy hashes")
     # ---- recorded costs match
