@@ -142,6 +142,7 @@ static func _load_mesh(path: String) -> ArrayMesh:
 		return null
 	var packed := load(path) as PackedScene
 	if packed == null:
+		_fail("Unreadable city GLB: " + path)
 		return null
 	var source := packed.instantiate()
 	if not source.find_children("*", "CollisionObject3D", true, false).is_empty() or not source.find_children("*", "Light3D", true, false).is_empty():

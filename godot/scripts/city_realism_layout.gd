@@ -71,6 +71,8 @@ func _ground(s: float, side: float) -> void:
 
 
 func _curb(s: float, side: float) -> void:
+	if not CityRealismCatalog.meshes.has("curb_segment"):
+		return
 	var mesh: Mesh = CityRealismCatalog.meshes["curb_segment"]
 	var bounds := mesh.get_aabb()
 	var at := CityDistrict.sample(course, s)
