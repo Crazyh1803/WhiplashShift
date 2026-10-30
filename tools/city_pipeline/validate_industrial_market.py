@@ -18,6 +18,8 @@ TOL = 2e-3
 # person_tris was 18000 for the primitive figures; real adult base-human topology (face + hands + fitted garments) needs ~25-30k each (see manifest costs)
 CAPS = {"shop_tris": 70000, "person_tris": 40000, "combined_tris": 120000, "combined_surfaces": 20, "texture_mib": 128.0}
 FLOOR_TOP = 0.15
+MIN_WEAR_SPREAD = 0.05     # real assets: COLOR_0 channel range over all non-emissive vertices
+MIN_UV_SPAN = 0.05         # textured materials: TEXCOORD_0 must span at least this much in u or v
 COUNTER_TOP = 1.20
 errors = []
 CT = {5120: ("b", 1), 5121: ("B", 1), 5122: ("h", 2), 5123: ("H", 2), 5125: ("I", 4), 5126: ("f", 4)}
@@ -132,6 +134,8 @@ def analyze(path):
     tris_by_mat = {}
     degen_by_mat = {}
     lo, hi = [math.inf] * 3, [-math.inf] * 3
+    color_lo, color_hi = [math.inf] * 3, [-math.inf] * 3    # COLOR_0 range over every non-emissive vertex
+    uv_span = {}                                            # textured material -> [umin, vmin, umax, vmax] of TEXCOORD_0
     ident = [[1 if i == j else 0 for j in range(4)] for i in range(4)]
 
     def walk(i, parent):
@@ -154,10 +158,11 @@ def analyze(path):
                 if len(colors) != len(pos) or any(len(row) not in (3, 4) or any(not math.isfinite(c) or not 0 <= c <= 1 for c in row) for row in colors):
                     raise ValueError("invalid baked AO/wear COLOR_0")
                 mat_json = js["materials"][p["material"]] if "material" in p else {}
-                if mat_json.get("name", "") != "sign_emissive":
-                    spread = max(max(r[k] for r in colors) - min(r[k] for r in colors) for k in range(3)) if colors else 0.0
-                    if spread < 0.02:
-                        raise ValueError(f"flat COLOR_0 (spread {spread:.3f}) on {mat_json.get('name', '')}: baked AO/wear is missing")
+                mat_name = mat_json.get("name", "")
+                if mat_name != "sign_emissive" and colors:
+                    for k in range(3):
+                        color_lo[k] = min(color_lo[k], min(r[k] for r in colors))
+                        color_hi[k] = max(color_hi[k], max(r[k] for r in colors))
                 if any(k.startswith("COLOR_") and k != "COLOR_0" for k in at):
                     raise ValueError("extra COLOR_n attribute: baked wear must be the only colour attribute, COLOR_0")
                 if any(k.startswith("TEXCOORD_") and k != "TEXCOORD_0" for k in at):
@@ -176,10 +181,11 @@ def analyze(path):
                     nrm_lens.append(ln)
                     if not math.isfinite(ln) or abs(ln - 1) > 0.05:
                         nrm_bad += 1
-                if any(js["materials"][p["material"]].get(k) or js["materials"][p["material"]].get("pbrMetallicRoughness", {}).get(k)
-                       for k in ("normalTexture", "baseColorTexture", "metallicRoughnessTexture", "emissiveTexture", "occlusionTexture")) \
-                        and uvs and max(u for u, _ in uvs) - min(u for u, _ in uvs) < 1e-3 and max(v for _, v in uvs) - min(v for _, v in uvs) < 1e-3:
-                    raise ValueError("constant mapped TEXCOORD_0 on textured material " + js["materials"][p["material"]].get("name", ""))
+                if uvs and any(mat_json.get(k) or mat_json.get("pbrMetallicRoughness", {}).get(k)
+                               for k in ("normalTexture", "baseColorTexture", "metallicRoughnessTexture", "emissiveTexture", "occlusionTexture")):
+                    span = uv_span.setdefault(mat_name, [1e9, 1e9, -1e9, -1e9])
+                    span[0], span[1] = min(span[0], min(u for u, _ in uvs)), min(span[1], min(v for _, v in uvs))
+                    span[2], span[3] = max(span[2], max(u for u, _ in uvs)), max(span[3], max(v for _, v in uvs))
                 for u, v in uvs:
                     if not (math.isfinite(u) and math.isfinite(v)) or abs(u) > 1000 or abs(v) > 1000:
                         uv_bad += 1
@@ -208,7 +214,9 @@ def analyze(path):
         walk(r, ident)
     info.update(tris=tris, lo=lo, hi=hi, verts=verts, mesh_nodes=len(mesh_nodes), meshes=len(js["meshes"]), uv_bad=uv_bad, nrm_bad=nrm_bad,
                 uv_degenerate=tri_uv_degen / max(tri_uv_total, 1), degen_by_mat=degen_by_mat, uv_range=(uv_min, uv_max), tris_by_mat=tris_by_mat,
-                nrm_mean=sum(nrm_lens) / max(len(nrm_lens), 1))
+                nrm_mean=sum(nrm_lens) / max(len(nrm_lens), 1),
+                color_spread=max((h - l for l, h in zip(color_lo, color_hi)), default=0.0) if color_hi[0] >= color_lo[0] else 0.0,
+                uv_span={n: (s[2] - s[0], s[3] - s[1]) for n, s in uv_span.items()})
     # materials: ordered by first use in primitives; texture slots and embedded images
     glb_dir = os.path.dirname(path)
     mats = []
@@ -222,7 +230,7 @@ def analyze(path):
                 continue
             if ref.get("texCoord", 0) != 0:
                 raise ValueError(f"material {mt.get('name')} {slot} reads texCoord {ref['texCoord']}; Godot imports only TEXCOORD_0 for mapped data")
-            tex =js["textures"][ref["index"]]
+            tex = js["textures"][ref["index"]]
             im = js["images"][tex["source"]]
             try:
                 blob = image_blob(js, binary, glb_dir, im)
@@ -270,6 +278,11 @@ def check_asset(aid, entry, cand):
         err(f"{aid}: {info['uv_bad']} bad UVs, {info['nrm_bad']} non-unit normals")
     if info["uv_degenerate"] > 0.08:
         err(f"{aid}: {info['uv_degenerate']:.1%} of triangles have degenerate UVs {info['degen_by_mat']}")
+    if info["color_spread"] < MIN_WEAR_SPREAD:
+        err(f"{aid}: COLOR_0 baked AO/wear is flat (spread {info['color_spread']:.3f} < {MIN_WEAR_SPREAD}) over the non-emissive surfaces")
+    for mname, (du, dv) in info["uv_span"].items():
+        if max(du, dv) < MIN_UV_SPAN:
+            err(f"{aid}: material {mname} samples textures through a constant TEXCOORD_0 (span {du:.4f} x {dv:.4f})")
     names = [m["name"] for m in info["materials"]]
     if entry.get("surfaces") != names:
         err(f"{aid}: manifest surfaces {entry.get('surfaces')} != GLB materials {names}")

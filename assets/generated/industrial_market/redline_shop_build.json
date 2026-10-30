@@ -1,7 +1,7 @@
 {
  "tris": 34828,
- "glb_bytes": 7609880,
- "seconds": 5.4,
+ "glb_bytes": 7064472,
+ "seconds": 4.9,
  "aabb": [
   [
    -4.8,
@@ -18,12 +18,12 @@
   "rubber": 2724,
   "concrete": 212,
   "equipment_steel": 2426,
-  "steel_structure": 7201,
+  "steel_structure": 7202,
   "cladding_main": 6332,
   "cladding_patch": 536,
   "awning_fabric": 3252,
   "sign_emissive": 1347,
-  "ceramic": 10798
+  "ceramic": 10797
  },
  "textures": {
   "steel_structure": {

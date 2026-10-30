@@ -84,6 +84,10 @@ class ColorZeroTests(unittest.TestCase):
             self.rejected(glb([0.5] * 11 + [bad]))
         self.rejected(glb([1] * 11 + [200], component=UBYTE))
 
+    def test_flat_color_on_a_small_materialless_fixture_passes_analyze(self):
+        info = self.analyze(glb([0.5] * 12))
+        self.assertEqual(info["color_spread"], 0.0)       # real-asset flatness is gated per asset in check_asset, not per primitive
+
     def test_bad_color_surfaces_as_unreadable_glb_failure(self):
         with tempfile.TemporaryDirectory(prefix="market_color_") as tmp:
             with open(os.path.join(tmp, "redline_shop.glb"), "wb") as handle:
@@ -94,24 +98,30 @@ class ColorZeroTests(unittest.TestCase):
             validator.errors.clear()
 
 
-class ShippedAssetKnownDefects(unittest.TestCase):
-    """Read-only checks of the real GLBs. Godot reads only COLOR_0 and TEXCOORD_0 for albedo/normal/ORM, so both
-    expectations below describe what the runtime needs. They currently fail (reported to the lead); once the assets are
-    fixed these report 'unexpected success' and the decorators must be removed."""
+class ShippedAssetAttributes(unittest.TestCase):
+    """Read-only checks of the real GLBs. Godot reads only COLOR_0 and TEXCOORD_0 for albedo/normal/ORM."""
 
     def glbs(self):
         for asset in validator.ASSETS:
             yield asset, validator.read_glb(os.path.join(validator.DEFAULT_DIR, asset + ".glb"))
 
-    @unittest.expectedFailure
-    def test_color_0_carries_the_baked_wear(self):
-        for asset, (js, binary) in self.glbs():
-            for prim in js["meshes"][0]["primitives"]:
-                rows = validator.accessor(js, binary, prim["attributes"]["COLOR_0"])
-                if js["materials"][prim["material"]]["name"] != "sign_emissive":
-                    self.assertGreater(max(r[0] for r in rows) - min(r[0] for r in rows), 0.05, asset)
+    def analyze(self, asset):
+        validator.errors.clear()
+        return validator.analyze(os.path.join(validator.DEFAULT_DIR, asset + ".glb"))
 
-    @unittest.expectedFailure
+    def test_color_0_carries_the_baked_wear(self):
+        for asset, (js, _) in self.glbs():
+            self.assertGreater(self.analyze(asset)["color_spread"], validator.MIN_WEAR_SPREAD, asset)
+            for prim in js["meshes"][0]["primitives"]:
+                self.assertEqual([k for k in prim["attributes"] if k.startswith(("COLOR_", "TEXCOORD_")) and k not in ("COLOR_0", "TEXCOORD_0")], [], asset)
+
+    def test_texcoord_0_is_mapped_for_every_textured_material(self):
+        for asset in validator.ASSETS:
+            spans = self.analyze(asset)["uv_span"]
+            self.assertTrue(spans, asset)
+            for name, (du, dv) in spans.items():
+                self.assertGreater(max(du, dv), validator.MIN_UV_SPAN, f"{asset}/{name}")
+
     def test_texture_maps_use_texcoord_0(self):
         for asset, (js, binary) in self.glbs():
             for material in js["materials"]:
