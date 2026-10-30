@@ -99,17 +99,17 @@ class CityRealism(unittest.TestCase):
         return js, blob
 
     def test_tangent_handedness_from_exported_uv(self):
-        # unmirrored: u grows with +x, v grows downward -> tangent +x, bitangent cross(n, t) * w = +y = up the image, w = +1
+        # unmirrored: u grows with +x, exported v decreases with +y (dP/dv = -y) -> tangent +x, cross(n, t) = +y, so w = -1
         js, blob = self._quad([0, 1, 1, 0])
         t = V.compute_tangents(js, blob)[(0, 0)]
         for tx, ty, tz, w in t:
             self.assertAlmostEqual(tx, 1.0, places=5)
-            self.assertEqual(w, 1.0)
-        # mirrored in u: tangent follows +u (-x) and the handedness flips
+            self.assertEqual(w, -1.0)
+        # mirrored in u: tangent follows +u (-x), cross(n, t) = -y = dP/dv, so w = +1
         js2, blob2 = self._quad([1, 0, 0, 1])
         for tx, ty, tz, w in V.compute_tangents(js2, blob2)[(0, 0)]:
             self.assertAlmostEqual(tx, -1.0, places=5)
-            self.assertEqual(w, -1.0)
+            self.assertEqual(w, 1.0)
 
     def test_tangent_frame_check_catches_reversed_handedness(self):
         import struct
