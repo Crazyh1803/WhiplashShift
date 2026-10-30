@@ -50,6 +50,7 @@ func _ready() -> void:
 	_test_no_colliders_or_lights()
 	_test_determinism()
 	_test_fallback(host)
+	_test_longer_budget()
 	_check("base family, people GLBs and shared texture PNG bytes are unchanged (%d files)" % bytes_before.size(), bytes_before.size() > 40 and bytes_before == _asset_hashes())
 	_check("course points are unmodified by the ground build", var_to_str(_course.points) == points_before)
 	host.free()
@@ -456,9 +457,11 @@ func _test_determinism() -> void:
 func _test_fallback(host: Node3D) -> void:
 	var saved_meshes: Dictionary = {}
 	var saved_costs: Dictionary = {}
+	var saved_entries: Dictionary = {}
 	for id in GROUND:
 		saved_meshes[id] = CityRealismCatalog.meshes[id]
 		saved_costs[id] = CityRealismCatalog.costs[id]
+		saved_entries[id] = CityRealismCatalog.entries[id]
 	var baseline := CityRealismLayout.new(_course)
 	baseline.populate(false)
 	var baseline_counts := {}
@@ -471,6 +474,7 @@ func _test_fallback(host: Node3D) -> void:
 	for id in GROUND:
 		CityRealismCatalog.meshes.erase(id)
 		CityRealismCatalog.costs.erase(id)
+		CityRealismCatalog.entries.erase(id)
 	var fixture := "user://city_ground_regression_%d.json" % OS.get_process_id()
 	var file := FileAccess.open(fixture, FileAccess.WRITE)
 	_check("invalid optional manifest fixture opens", file != null)
@@ -478,10 +482,15 @@ func _test_fallback(host: Node3D) -> void:
 		file.store_string('{"version":"invalid","assets":[]}')
 		file.close()
 		CityRealismCatalog._load_ground(fixture)
-		_check("invalid optional manifest leaves the ground kit unavailable", not CityRealismCatalog.ground_available())
+		_check("invalid optional manifest leaves no partial ground catalog", not CityRealismCatalog.ground_available() and GROUND.all(func(id: String) -> bool: return not CityRealismCatalog.entries.has(id)))
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(fixture))
 		CityRealismCatalog._load_ground(fixture)
-		_check("missing optional manifest leaves the ground kit unavailable", not CityRealismCatalog.ground_available())
+		_check("missing optional manifest leaves no partial ground catalog", not CityRealismCatalog.ground_available() and GROUND.all(func(id: String) -> bool: return not CityRealismCatalog.entries.has(id)))
+	var saved_concrete: Material = CityRealismCatalog.materials["concrete"]
+	CityRealismCatalog.materials["concrete"] = null
+	CityRealismCatalog._load_ground()
+	CityRealismCatalog.materials["concrete"] = saved_concrete
+	_check("a missing material binding cannot partially publish the ground kit", not CityRealismCatalog.ground_available() and GROUND.all(func(id: String) -> bool: return not CityRealismCatalog.entries.has(id)))
 	var unavailable := not CityRealismCatalog.ground_available()
 	var layout := CityRealismLayout.new(_course)
 	layout.populate()
@@ -490,6 +499,7 @@ func _test_fallback(host: Node3D) -> void:
 	for id in GROUND:
 		CityRealismCatalog.meshes[id] = saved_meshes[id]
 		CityRealismCatalog.costs[id] = saved_costs[id]
+		CityRealismCatalog.entries[id] = saved_entries[id]
 		restored_ok = restored_ok and CityRealismCatalog.meshes[id] == saved_meshes[id]
 	_check("erasing the four ground mesh and cost entries marks the kit unavailable", unavailable)
 	_check("fallback layout disables the ground fabric", not layout.ground_enabled)
@@ -510,6 +520,24 @@ func _test_fallback(host: Node3D) -> void:
 	_check("a rebuild after restoring has the ground fabric again", again != null and again.get_meta("ground_fabric") == true and _ground_signature(again) == _ground_signature(_converted))
 	if again != null:
 		again.free()
+
+
+func _test_longer_budget() -> void:
+	var points := _course.points.duplicate(true)
+	for point: Dictionary in points:
+		point["pos"] = (point["pos"] as Vector3) * 1.2
+		point["dist"] = float(point["dist"]) * 1.2
+	var longer := CourseDefinition.new().configure("ground_budget_probe", "Ground budget probe", "city_stacks", 3, points)
+	var baseline := CityRealismLayout.new(longer)
+	baseline.populate(false)
+	var connected := CityRealismLayout.new(longer)
+	connected.populate()
+	_check("the budget probe is twenty percent longer", absf(longer.total_length / _course.total_length - 1.2) < 0.001)
+	for role: String in ["building", "prop", "detail"]:
+		var before := baseline.placements.filter(func(p: Dictionary) -> bool: return p["role"] == role).size()
+		var after := connected.placements.filter(func(p: Dictionary) -> bool: return p["role"] == role).size()
+		_check("longer-course %s count is preserved (%d >= %d)" % [role, after, before], after >= before)
+	_check("longer-course connected layout keeps all geometry caps", connected.triangles <= GLOBAL_LIMIT and connected.quarter_triangles.all(func(t: int) -> bool: return t <= QUARTER_LIMIT))
 
 
 # --- hashes and detectors ---------------------------------------------------------------------

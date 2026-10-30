@@ -16,7 +16,7 @@ Near scenery is merged by material in 48m route chunks. Detailed chunks reach 14
 
 Runtime GLBs contain geometry and named material stubs. The textured source exports remain outside the Godot project in `assets/generated/city_realism/textured_exports/`. `CityRealismCatalog` binds the shared library by material name, preserving UV0, vertex colours and tangents. Scene import therefore has no image references to load or reimport; the shared PNGs keep their import settings and UIDs.
 
-The converted source has 899,920 placed triangles, with quarter counts 236,420 / 224,152 / 200,556 / 238,792 before the separately budgeted people. There are 29 detailed buildings, 492 pavement/curb pieces and 178 other street pieces. The sampled conservative view peaks at 205,644 triangles and 113 material surfaces, including fading chunks; limits are 320,000 and 160. These are scenery geometry measurements, not a frame-rate guarantee.
+The converted source has 887,544 placed triangles, with quarter counts 231,776 / 220,264 / 199,452 / 236,052 before the separately budgeted people. There are 29 detailed buildings, 294 pavement/curb pieces, 902 ground modules and 178 other street pieces. The sampled conservative view peaks at 223,986 triangles and 113 material surfaces, including fading chunks; limits are 320,000 and 160. These are scenery geometry measurements, not a frame-rate guarantee.
 
 ## Review captures
 
@@ -29,10 +29,28 @@ Use `ak-test` with the normal project command, which includes the asset validato
 Converted assets remain candidates awaiting user art review. The approved original ramen benchmark is retained. People are static, distant LODs are simplified massing, and housing windows/depot bays have limited interiors. Street details are culled with the near chunks. The explicit `CityScenery.build(..., true, false)` mode retains the earlier scenery for comparison and regression coverage; unavailable converted assets use that fallback automatically.
 
 
-## Delivery verification
+## Building conversion verification (previous delivery)
 
 Final targeted `ak-test`: city realism 227/0 headless, original street block295/0, city kit383/0, Block Circuit97/0, ramen benchmark762/0 and menu746/0. The asset validators, 17 city-family Python tests and 13 benchmark Python tests pass. Python QA healthy/failure exit checks and timeout kill/reap self-test pass.
 
 A separate actual Vulkan run of the city suite passes228/0, including a deliberately displaced MultiMesh instance. The rendering server defers buffer updates: that detector waits two frames and frame_post_draw after mutation/restoration. The Dummy headless server ignores instance-transform setters, so the renderer-specific mutation runs only with a real display driver. All other source-versus-merged vertex comparisons remain active headless.
 
 The converted model/texture caches were removed and rebuilt successfully. A forced scene reimport and a newly generated row-workshop asset also imported successfully. Shared PNG sidecars have no diff after these checks. All17 final Godot captures save successfully and pass content checks. Independent runtime, asset, binding and test reviews are APPROVE; findings are resolved in `.ai/reviews/city-realism-disposition.md`.
+
+## Connected street fabric
+
+Four reusable ground modules extend the city beyond its sidewalks: patched road aprons, service lanes, loading yards and utility verges. They reuse the same 14 materials and 39 textures, with no extra light nodes or colliders. The apron subdivides at tight bends, checks a 5 cm minimum clearance outside the rail, and fills the rail-to-sidewalk gap. All other ground and solid placements retain the 3.5 m setback. Building models, people, course points and driving behavior remain unchanged.
+
+The layout keeps all 29 buildings, 134 props and 44 details. Replacing most repeated curb segments pays for the new ground: total scenery geometry falls by 12,376 triangles. A missing or invalid optional ground pack falls back atomically to the original pavement/curb layout. The runtime never exposes a partial ground kit.
+
+Ground sources and reproducible build records are in `assets/generated/city_ground/`; rebuild with `ak-blender tools/city_pipeline/build_city_ground.py`. Runtime GLBs are geometry-only, and textured source exports reference the existing shared library. Source validation checks tangents, material bindings, budgets, footprint dimensions and deterministic rebuilds. Ground preview renders remain separate from the actual Godot captures.
+
+## Street fabric delivery verification
+
+Final ground `ak-test`: 192 passed, 0 failed. This includes independent mesh and rail-envelope measurements, actual source-versus-merged vertices, atomic invalid/missing-pack fallback, null material rejection, cache restoration and a second course scaled 20 percent longer. That stress case retains 25 buildings against 23 in its baseline, 158 props against 158 and 52 details against 52, within the unchanged caps. The ground suite has a bounded 900-second allowance after its expanded exhaustive geometry checks exceeded the old 300-second limit.
+
+The broader targeted regression matrix passed: city realism 227/0 headless, street block 295/0, city kit 383/0, Block Circuit 97/0, ramen benchmark 762/0 and menu 746/0. All source validators and 5 ground, 17 city-family and 13 benchmark Python regressions pass, along with QA exit-code and timeout kill/reap self-tests. Independent asset, runtime, test and final-fix reviews approve; disposition is recorded in `.ai/reviews/city-street-fabric-disposition.md`.
+
+All 17 final Godot captures were refreshed and pass save/content checks. The shared texture import sidecars remain unchanged.
+
+The final Vulkan city suite passes 228/0, including actual merged-geometry checks and the deliberately displaced MultiMesh detector.

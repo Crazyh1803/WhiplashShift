@@ -114,14 +114,21 @@ static func _load_ground(path: String = GROUND_DIRECTORY + "city_ground_manifest
 			push_warning("Ignoring city ground kit: geometry exceeds contract for " + id)
 			return
 		prepared[id] = mesh
+	var prepared_costs := {}
 	for id: String in GROUND:
 		var mesh: ArrayMesh = prepared[id]
 		var names: Array[String] = []
 		for surface in mesh.get_surface_count():
-			names.append(mesh.surface_get_material(surface).resource_name)
+			var material := mesh.surface_get_material(surface)
+			if material == null:
+				push_warning("Ignoring city ground kit: unassigned surface material for " + id)
+				return
+			names.append(material.resource_name)
+		prepared_costs[id] = {"tris": IndustrialMarketBenchmark.count_triangles(mesh), "surfaces": mesh.get_surface_count(), "materials": names}
+	for id: String in GROUND:
 		entries[id] = additions[id]
-		meshes[id] = mesh
-		costs[id] = {"tris": IndustrialMarketBenchmark.count_triangles(mesh), "surfaces": mesh.get_surface_count(), "materials": names}
+		meshes[id] = prepared[id]
+		costs[id] = prepared_costs[id]
 
 
 static func _safe_path(value: Variant) -> bool:
@@ -205,7 +212,7 @@ static func _load_mesh(path: String) -> ArrayMesh:
 		var original: Mesh = record["mesh"]
 		for surface in original.get_surface_count():
 			var source_material := original.surface_get_material(surface)
-			if source_material == null or not materials.has(source_material.resource_name):
+			if source_material == null or not materials.has(source_material.resource_name) or materials[source_material.resource_name] == null:
 				source.free()
 				_fail("Unbound city material in " + path)
 				return null

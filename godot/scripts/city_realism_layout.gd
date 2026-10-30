@@ -51,7 +51,7 @@ func populate(use_ground: bool = true) -> void:
 	if ground_enabled:
 		var covered := float(int(course.total_length / 16.0)) * 16.0
 		var remainder := course.total_length - covered
-		if remainder > 0.01:
+		if remainder > 0.5:
 			for side: float in [-1.0, 1.0]:
 				_ground(covered + remainder * 0.5, side, remainder)
 				_street_fabric(covered + remainder * 0.5, side, remainder)
@@ -107,9 +107,10 @@ func _street_fabric(s: float, side: float, length: float = 16.0) -> void:
 func _apron(s: float, side: float, length: float) -> void:
 	var edge := float(CityDistrict.sample(course, s)["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
 	var lateral := edge + 0.12 + float(CityRealismCatalog.GROUND_DEPTHS["road_apron"]) * 0.5
+	var rejection_count := rejected.size()
 	if _flat_tile("road_apron", s, side, lateral, length, "apron"):
 		return
-	if length > 2.0 and not rejected.is_empty() and rejected.back()["reason"] == "road_clearance":
+	if length > 2.0 and rejected.size() > rejection_count and rejected.back()["reason"] == "road_clearance":
 		for offset: float in [-0.25, 0.25]:
 			_apron(s + offset * length, side, length * 0.5)
 

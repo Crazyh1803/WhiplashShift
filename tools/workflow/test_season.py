@@ -120,7 +120,7 @@ def main():
         for scene in options.scenes:
             print(f'CHECK {scene}', flush=True)
             run_engine(['--headless', '--fixed-fps', '120', '--path', 'godot',
-                        f'res://tests/{scene}.tscn'], 900 if scene in ('race_tests', 'season_course_tests', 'cpu_main', 'reverse_race_tests') else 300)
+                        f'res://tests/{scene}.tscn'], 900 if scene in ('race_tests', 'season_course_tests', 'cpu_main', 'reverse_race_tests', 'city_ground_tests') else 300)
             if scene == 'city_realism_tests':
                 check_city_realism_qa()
     return 0
