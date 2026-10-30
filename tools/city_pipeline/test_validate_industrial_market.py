@@ -17,7 +17,7 @@ spec.loader.exec_module(validator)
 FLOAT, UBYTE, USHORT = 5126, 5121, 5123
 
 
-def glb(color=None, color_type="VEC4", component=FLOAT, count=3, normalized=False):
+def glb(color=None, color_type="VEC4", component=FLOAT, count=3, normalized=False, second_color=None):
     """One triangle with POSITION/NORMAL/TEXCOORD_0 and an optional COLOR_0 accessor."""
     chunks = [struct.pack("<9f", 0, 0, 0, 1, 0, 0, 0, 1, 0), struct.pack("<9f", 0, 0, 1, 0, 0, 1, 0, 0, 1), struct.pack("<6f", 0, 0, 1, 0, 0, 1)]
     views = [{"buffer": 0, "byteOffset": 0, "byteLength": 36}, {"buffer": 0, "byteOffset": 36, "byteLength": 36}, {"buffer": 0, "byteOffset": 72, "byteLength": 24}]
@@ -26,7 +26,8 @@ def glb(color=None, color_type="VEC4", component=FLOAT, count=3, normalized=Fals
     attributes = {"POSITION": 0, "NORMAL": 1, "TEXCOORD_0": 2}
     if color is not None:
         code = {FLOAT: "f", UBYTE: "B", USHORT: "H"}[component]
-        data = struct.pack("<%d%s" % (len(color), code), *color)
+        values = color + second_color if second_color is not None else color
+        data = struct.pack("<%d%s" % (len(values), code), *values)
         data += b"\0" * (-len(data) % 4)
         views.append({"buffer": 0, "byteOffset": 96, "byteLength": len(data)})
         chunks.append(data)
@@ -38,6 +39,10 @@ def glb(color=None, color_type="VEC4", component=FLOAT, count=3, normalized=Fals
     binary = b"".join(chunks)
     js = {"asset": {"version": "2.0"}, "scene": 0, "scenes": [{"nodes": [0]}], "nodes": [{"mesh": 0}], "buffers": [{"byteLength": len(binary)}],
           "bufferViews": views, "accessors": accessors, "materials": [{"name": "m"}], "meshes": [{"primitives": [{"attributes": attributes, "material": 0}]}]}
+    if second_color is not None:
+        js["materials"].append({"name": "other_flat_material"})
+        accessors.append(dict(accessor, byteOffset=struct.calcsize("<%d%s" % (len(color), code))))
+        js["meshes"][0]["primitives"].append({"attributes": dict(attributes, COLOR_0=len(accessors) - 1), "material": 1})
     text = json.dumps(js, separators=(",", ":")).encode()
     text += b" " * (-len(text) % 4)
     body = struct.pack("<I4s", len(text), b"JSON") + text + struct.pack("<I4s", len(binary), b"BIN\x00") + binary
@@ -45,6 +50,9 @@ def glb(color=None, color_type="VEC4", component=FLOAT, count=3, normalized=Fals
 
 
 class ColorZeroTests(unittest.TestCase):
+    def test_different_flat_materials_do_not_count_as_baked_wear(self):
+        self.assertEqual(self.analyze(glb([1.0] * 12, second_color=[0.2, 0.2, 0.2, 1.0] * 3))["color_spread"], 0.0)
+
     def analyze(self, data):
         with tempfile.TemporaryDirectory(prefix="market_color_") as tmp:
             path = os.path.join(tmp, "fixture.glb")

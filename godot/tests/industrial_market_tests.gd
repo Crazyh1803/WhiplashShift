@@ -27,6 +27,12 @@ func _ready() -> void:
 	var built := benchmark.build()
 	_check("benchmark builds from the real manifest and GLBs: %s" % ["; ".join(benchmark.errors)], built)
 	if built:
+		var uncolored := MeshInstance3D.new()
+		uncolored.mesh = QuadMesh.new()
+		uncolored.mesh.material = StandardMaterial3D.new()
+		benchmark._prepare_materials(uncolored)
+		_check("uncolored surfaces receive a safe isolated material", not uncolored.get_active_material(0).vertex_color_use_as_albedo and uncolored.get_active_material(0) != uncolored.mesh.material)
+		uncolored.free()
 		_test_placements_and_geometry(benchmark)
 		_test_materials(benchmark)
 		_test_authored_uvs()

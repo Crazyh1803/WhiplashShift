@@ -124,7 +124,8 @@ func _prepare_materials(instance: MeshInstance3D) -> void:
 		if material == null:
 			continue
 		var prepared := material.duplicate() as BaseMaterial3D
-		prepared.vertex_color_use_as_albedo = not instance.mesh.surface_get_arrays(surface)[Mesh.ARRAY_COLOR].is_empty()
+		var colors: Variant = instance.mesh.surface_get_arrays(surface)[Mesh.ARRAY_COLOR]
+		prepared.vertex_color_use_as_albedo = colors is PackedColorArray and not colors.is_empty()
 		if "skin" in material.resource_name.to_lower():
 			prepared.subsurf_scatter_enabled = true
 			prepared.subsurf_scatter_skin_mode = true

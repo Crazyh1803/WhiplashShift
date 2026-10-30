@@ -134,12 +134,12 @@ def analyze(path):
     tris_by_mat = {}
     degen_by_mat = {}
     lo, hi = [math.inf] * 3, [-math.inf] * 3
-    color_lo, color_hi = [math.inf] * 3, [-math.inf] * 3    # COLOR_0 range over every non-emissive vertex
+    color_spread = 0.0
     uv_span = {}                                            # textured material -> [umin, vmin, umax, vmax] of TEXCOORD_0
     ident = [[1 if i == j else 0 for j in range(4)] for i in range(4)]
 
     def walk(i, parent):
-        nonlocal tris, uv_bad, nrm_bad, tri_uv_total, tri_uv_degen
+        nonlocal tris, uv_bad, nrm_bad, tri_uv_total, tri_uv_degen, color_spread
         n = nodes[i]
         name = n.get("name", "")
         if "camera" in n or "light" in n.get("extensions", {}).get("KHR_lights_punctual", {}):
@@ -160,9 +160,7 @@ def analyze(path):
                 mat_json = js["materials"][p["material"]] if "material" in p else {}
                 mat_name = mat_json.get("name", "")
                 if mat_name != "sign_emissive" and colors:
-                    for k in range(3):
-                        color_lo[k] = min(color_lo[k], min(r[k] for r in colors))
-                        color_hi[k] = max(color_hi[k], max(r[k] for r in colors))
+                    color_spread = max(color_spread, max(max(r[k] for r in colors) - min(r[k] for r in colors) for k in range(3)))
                 if any(k.startswith("COLOR_") and k != "COLOR_0" for k in at):
                     raise ValueError("extra COLOR_n attribute: baked wear must be the only colour attribute, COLOR_0")
                 if any(k.startswith("TEXCOORD_") and k != "TEXCOORD_0" for k in at):
@@ -215,7 +213,7 @@ def analyze(path):
     info.update(tris=tris, lo=lo, hi=hi, verts=verts, mesh_nodes=len(mesh_nodes), meshes=len(js["meshes"]), uv_bad=uv_bad, nrm_bad=nrm_bad,
                 uv_degenerate=tri_uv_degen / max(tri_uv_total, 1), degen_by_mat=degen_by_mat, uv_range=(uv_min, uv_max), tris_by_mat=tris_by_mat,
                 nrm_mean=sum(nrm_lens) / max(len(nrm_lens), 1),
-                color_spread=max((h - l for l, h in zip(color_lo, color_hi)), default=0.0) if color_hi[0] >= color_lo[0] else 0.0,
+                color_spread=color_spread,
                 uv_span={n: (s[2] - s[0], s[3] - s[1]) for n, s in uv_span.items()})
     # materials: ordered by first use in primitives; texture slots and embedded images
     glb_dir = os.path.dirname(path)
