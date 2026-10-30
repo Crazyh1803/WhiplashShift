@@ -254,7 +254,7 @@ class _Kit extends RefCounted:
 		var fz := rng.randf_range(15.0, 24.0)
 		var basis := _basis(at["dir"])
 		var offset: float = float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET + gap + fz * 0.5
-		_accept(_tower_parts(basis, at["pos"] + basis * Vector3(0, 0, offset * side), side, fx, fz, height, detailed, index), true, emit_geometry and (not converted_city or gap >= 38.0), converted_city and gap >= 38.0)
+		_accept(_tower_parts(basis, at["pos"] + basis * Vector3(0, 0, offset * side), side, fx, fz, height, detailed, index), true, emit_geometry, converted_city and gap >= 38.0)
 
 	func _tower_parts(basis: Basis, origin: Vector3, side: float, fx: float, fz: float, h: float, detailed: bool, index: int) -> Array:
 		var parts: Array = [_part("body", basis, origin, Vector3(0, h * 0.5, 0), Vector3(fx, h, fz)),
