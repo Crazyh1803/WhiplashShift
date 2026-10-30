@@ -1,0 +1,7 @@
+# Final tangent correction (lead decision)
+
+The independent review correctly identified the exported tangent frame is inverted. Implement the correction; do not retain the current decreasing-V contract. glTF uses cross(N,T.xyz)*T.w, with the tangent basis following the exported UV derivatives (MikkTSpace). On the existing unit quad, U grows with +X, exported V decreases with +Y: tangent=(1,0,0), dP/dv=(0,-1,0), normal=(0,0,1), so w=-1. Mirrored U has w=+1. An image origin convention is not a reason to reverse dP/dv again.
+
+Exact changes: compute_tangents currently subtracts dP/dv into bit; add it instead. tangent_frame_errors currently requires reconstructed bitangent dot positive-V gradient <0; require >0 instead. Update comments and quad fixture expectations, independently verify flipped w is rejected, and regenerate every converted GLB through ak-blender from corrected source. Retain original benchmark/actors, geometry, sockets, signs, texture files, manifest schema and runtime scripts. No preview renders necessary; root will capture Godot. Fix the trivial unclosed legacy-hash file read while there, using with open. Validate via ak-test validator + Python unittest (11 tests currently), verify zero tangent-frame violations on shipped GLBs, report exact git diff and no deferred issue. Do not call a third review or Gemini.
+
+Reference: https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#meshes-using-primitive-data

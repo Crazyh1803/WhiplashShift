@@ -1,0 +1,9 @@
+# City realism review disposition
+
+Asset review: 20261030-155448-codex.md, APPROVE with four MED findings. Glyph-only emissive validation fixed in socket handoff. Remaining tangent, arcade hull and effective emission corrections delegated as city-realism-review-fixes; validate again on integration.
+
+Runtime review rounds: 20261030-160046-claude.md CHANGES_REQUESTED, then 20261030-160252-claude.md APPROVE. HIGH missing actor resource guard fixed: production validates ResourceLoader, PackedScene cast and finite sockets, frees partial pairs and skips unavailable actors. QA asserts geometry and actor budgets; independent full-route regression follows. Incremental rendering_groups and cached route sample positions replace rebuilding every placement for every candidate. Capture directories are created only with --capture. Public static material preparation keeps source resources private. Invalid light direction falls back to a finite default.
+
+Second-round MED on zero near-end margin is stale: city_realism.gd sets SELF fade and visibility_range_end_margin=10 for both LODs, begin margin10 for the far LOD. Paired chunks have the same origin and custom AABB. Runtime centre distances are near140+10, far140-10 through450+10, exactly the conservative150/130/460 window used by layout. The QA uses these same inclusive limits. Independent tests must verify those properties, overlap costs and paired bounds. No third review round requested.
+
+Second-round LOW load diagnostic and curb cache guard fixed in 094ec48. Remaining LOW group cloning is retained: it copies only per-chunk aggregate statistics, not mesh data or full placement arrays, and avoids corrupting accepted groups on a rejected candidate. Review artifacts are intentionally retained as project audit records, following AGENTS.md review requirements; generated scratch files will be removed.
