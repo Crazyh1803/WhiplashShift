@@ -13,12 +13,16 @@ var placements: Array[Dictionary] = []
 var reservations: Array[AABB] = []
 var rejected: Array[Dictionary] = []
 var solids: Array[PackedVector2Array] = []
+var rendering_groups: Dictionary = {}
+var sample_positions := PackedVector3Array()
 var triangles := 0
 var quarter_triangles: Array[int] = [0, 0, 0, 0]
 
 
 func _init(input: CourseDefinition) -> void:
 	course = input.geometry()
+	for s in range(0, int(course.total_length), 10):
+		sample_positions.append(CityDistrict.sample(course, float(s))["pos"] + Vector3.UP * 1.5)
 
 
 func populate() -> void:
@@ -113,6 +117,7 @@ func _try_add(id: String, s: float, side: float, role: String, xf: Transform3D, 
 		rejected.append({"id": id, "s": s, "side": side, "reason": reason})
 		return false
 	placements.append(record)
+	_add_group(rendering_groups, record)
 	triangles += cost
 	quarter_triangles[q] += cost
 	if solid:
@@ -122,31 +127,30 @@ func _try_add(id: String, s: float, side: float, role: String, xf: Transform3D, 
 	return true
 
 
+func _add_group(groups: Dictionary, p: Dictionary) -> void:
+	for far: bool in ([false, true] if p["role"] == "building" else [false]):
+		var key := Vector2i(int(p["chunk"]), int(far))
+		var stats: Dictionary = CityRealismCatalog.costs[p["id"] + ("@far" if far else "")]
+		if not groups.has(key):
+			groups[key] = {"bounds": p["bounds"], "tris": 0, "materials": {}}
+		var group: Dictionary = groups[key]
+		group["bounds"] = (group["bounds"] as AABB).merge(p["bounds"])
+		group["tris"] += stats["tris"]
+		for material: String in stats["materials"]:
+			group["materials"][material] = true
+
+
 func _fits_visible(candidate: Dictionary) -> bool:
-	var groups := {}
-	var records := placements.duplicate()
-	records.append(candidate)
-	for p: Dictionary in records:
-		for far: bool in ([false, true] if p["role"] == "building" else [false]):
-			var key := "%d/%s" % [p["chunk"], far]
-			var stats: Dictionary = CityRealismCatalog.costs[p["id"] + ("@far" if far else "")]
-			if not groups.has(key):
-				groups[key] = {"bounds": p["bounds"], "tris": 0, "materials": {}, "far": far}
-			var group: Dictionary = groups[key]
-			group["bounds"] = (group["bounds"] as AABB).merge(p["bounds"])
-			group["tris"] += stats["tris"]
-			for material: String in stats["materials"]:
-				group["materials"][material] = true
-	for key: String in groups:
-		if groups[key]["far"]:
-			groups[key]["bounds"] = groups[key.replace("true", "false")]["bounds"]
-	for s in range(0, int(course.total_length), 10):
-		var eye: Vector3 = CityDistrict.sample(course, float(s))["pos"] + Vector3.UP * 1.5
+	var groups := rendering_groups.duplicate(true)
+	_add_group(groups, candidate)
+	for eye: Vector3 in sample_positions:
 		var cost := 0
 		var surfaces := 0
-		for group: Dictionary in groups.values():
-			var distance := eye.distance_to((group["bounds"] as AABB).get_center())
-			if distance > (455.0 if group["far"] else 145.0) or (group["far"] and distance < 135.0):
+		for key: Vector2i in groups:
+			var group: Dictionary = groups[key]
+			var bounds: AABB = groups[Vector2i(key.x, 0)]["bounds"]
+			var distance := eye.distance_to(bounds.get_center())
+			if distance > (460.0 if key.y == 1 else 150.0) or (key.y == 1 and distance < 130.0):
 				continue
 			cost += int(group["tris"])
 			surfaces += group["materials"].size()

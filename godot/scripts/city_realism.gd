@@ -31,7 +31,9 @@ static func build(parent: Node3D, input: CourseDefinition) -> Node3D:
 		for anchor: Variant in entry.get("light_anchors", []):
 			if anchor is Dictionary and _vector(anchor.get("pos", anchor.get("position"))) != Vector3.INF:
 				var xf: Transform3D = placement["transform"]
-				var direction := _vector(anchor.get("dir", [0, -1, 0.01]))
+				var direction := _vector(anchor.get("direction", anchor.get("dir", [0, -1, 0.01])))
+				if direction == Vector3.INF or direction.is_zero_approx():
+					direction = Vector3(0, -1, 0.01)
 				lights.anchors.append({"position": xf * _vector(anchor.get("pos", anchor.get("position"))), "direction": xf.basis * direction, "color": Color("ffd2a0") if id != "utility_substation" else Color("b4d3e0"), "energy": 5.0, "range": 25.0, "shadow": false})
 		if id == "street_lamp" and entry.get("light_anchors", []).is_empty():
 			lights.anchors.append({"position": (placement["transform"] as Transform3D) * Vector3(0, 5.5, 0), "energy": 6.0, "range": 26.0, "shadow": false})
@@ -91,14 +93,14 @@ static func _batch(root: Node3D, records: Array, far: bool, bounds: AABB) -> voi
 	instance.set_meta("lod", 1 if far else 0)
 	instance.visibility_range_begin = 140.0 if far else 0.0
 	instance.visibility_range_end = 450.0 if far else 140.0
-	instance.visibility_range_begin_margin = 0.0
-	instance.visibility_range_end_margin = 0.0
+	instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+	instance.visibility_range_begin_margin = 10.0 if far else 0.0
+	instance.visibility_range_end_margin = 10.0
 	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if far else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	root.add_child(instance)
 
 
 static func _actors(root: Node3D, buildings: Array, lights: CityRealismLighting) -> void:
-	var adapter := IndustrialMarketBenchmark.new()
 	var count := 0
 	for placement: Dictionary in buildings:
 		if count >= 2:
@@ -108,24 +110,48 @@ static func _actors(root: Node3D, buildings: Array, lights: CityRealismLighting)
 		var sockets: Dictionary = CityRealismCatalog.entries["redline_shop"].get("actor_sockets", {})
 		if not sockets.has("vendor") or not sockets.has("customer"):
 			continue
+		var models := _actor_models(sockets)
+		if models.size() != 2:
+			continue
 		var group := Node3D.new()
 		group.name = "ShopLife%d" % count
 		group.transform = placement["transform"]
 		for role: String in ["vendor", "customer"]:
-			var path := IndustrialMarketBenchmark.DIRECTORY + "ramen_" + role + ".glb"
-			var model := (load(path) as PackedScene).instantiate() as Node3D
+			var model: Node3D = models[role]
 			model.position = _vector(sockets[role].get("position", [0, 0.15, 0]))
 			model.rotation.y = deg_to_rad(float(sockets[role].get("yaw_degrees", 0)))
 			for instance: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
-				adapter._prepare_materials(instance)
+				IndustrialMarketBenchmark.prepare_materials(instance)
 				instance.visibility_range_end = 60.0
 			group.add_child(model)
 		root.add_child(group)
 		var xf: Transform3D = placement["transform"]
-		lights.anchors.append({"position": xf * _vector(sockets.get("light", [0, 3.5, -1])), "direction": xf.basis * Vector3(0, -1, 0.15), "shadow": true, "energy": 9.0, "range": 12.0})
+		var anchor: Dictionary = sockets["light"]
+		lights.anchors.append({"position": xf * _vector(anchor["position"]), "direction": xf.basis * _vector(anchor["direction"]), "shadow": true, "energy": 9.0, "range": 12.0})
 		count += 1
-	adapter.free()
 	root.set_meta("actor_pairs", count)
+
+
+static func _actor_models(sockets: Dictionary) -> Dictionary:
+	var models := {}
+	for role: String in ["vendor", "customer"]:
+		var path := IndustrialMarketBenchmark.DIRECTORY + "ramen_" + role + ".glb"
+		var packed := load(path) as PackedScene if ResourceLoader.exists(path) else null
+		var model := packed.instantiate() as Node3D if packed != null else null
+		if model == null or not sockets.get(role) is Dictionary or _vector(sockets[role].get("position")) == Vector3.INF or not IndustrialMarketBenchmark.is_number(sockets[role].get("yaw_degrees")):
+			if model != null:
+				model.free()
+			for previous: Node3D in models.values():
+				previous.free()
+			push_warning("Skipping shop actors: missing imported actor or invalid socket")
+			return {}
+		models[role] = model
+	var light: Variant = sockets.get("light")
+	if not light is Dictionary or _vector(light.get("position")) == Vector3.INF or _vector(light.get("direction")) == Vector3.INF:
+		for model: Node3D in models.values():
+			model.free()
+		return {}
+	return models
 
 
 static func _vector(raw: Variant) -> Vector3:

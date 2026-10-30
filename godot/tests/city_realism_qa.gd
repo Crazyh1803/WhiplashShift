@@ -41,15 +41,22 @@ func _ready() -> void:
 		var surfaces := 0
 		for instance: MultiMeshInstance3D in converted.find_children("*", "MultiMeshInstance3D", true, false):
 			var distance := eye.distance_to(instance.global_transform * instance.get_aabb().get_center())
-			if distance > instance.visibility_range_end + 5 or distance < instance.visibility_range_begin - 5:
+			if distance > instance.visibility_range_end + 10 or distance < instance.visibility_range_begin - 10:
 				continue
 			tris += IndustrialMarketBenchmark.count_triangles(instance.multimesh.mesh) * instance.multimesh.instance_count
 			surfaces += instance.multimesh.mesh.get_surface_count()
 		peak_tris = maxi(peak_tris, tris)
 		peak_surfaces = maxi(peak_surfaces, surfaces)
 	print("CITY_RENDER_WINDOW peak_triangles=", peak_tris, " peak_surfaces=", peak_surfaces)
+	assert(peak_tris <= CityRealismLayout.NEAR_BUDGET)
+	assert(peak_surfaces <= CityRealismLayout.SURFACE_BUDGET)
+	assert(converted.get_meta("triangle_count") <= CityRealismLayout.GLOBAL_BUDGET)
+	assert(converted.get_meta("actor_pairs") == 2)
+	for count: int in converted.get_meta("quarter_triangles"):
+		assert(count <= CityRealismLayout.QUARTER_BUDGET)
 	var path := ProjectSettings.globalize_path("res://../assets/previews/city_realism/in_game")
-	DirAccess.make_dir_recursive_absolute(path)
+	if "--capture" in OS.get_cmdline_user_args():
+		DirAccess.make_dir_recursive_absolute(path)
 	for quarter in 4:
 		for view in 2:
 			var s := course.total_length * (quarter + (0.17 if view == 0 else 0.65)) / 4.0

@@ -117,6 +117,10 @@ func _add_vehicle() -> void:
 
 
 func _prepare_materials(instance: MeshInstance3D) -> void:
+	prepare_materials(instance)
+
+
+static func prepare_materials(instance: MeshInstance3D) -> void:
 	if instance.mesh == null:
 		return
 	for surface in instance.mesh.get_surface_count():
