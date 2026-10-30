@@ -314,14 +314,26 @@ func _test_rail_envelope() -> void:
 		solids_worst = minf(solids_worst, _gap(CityRealismLayout.footprint(CityRealismCatalog.meshes[record["id"]].get_aabb(), record["transform"])))
 	_check("existing solid setback is unchanged by the exception (%.2f)" % solids_worst, solids_worst >= CityScenery.ROAD_CLEARANCE - 0.05)
 	_check("ROAD_CLEARANCE constant is still 3.5", is_equal_approx(CityScenery.ROAD_CLEARANCE, SOLID_SETBACK))
-	# Bend handling: half-length aprons are 8 m pieces; every apron scale must be 16 or 8 m.
+	# Bend pieces halve down to 2 m; the final lap fragment starts at its actual remaining length.
 	var lengths := {}
 	for record: Dictionary in _placements.filter(func(p: Dictionary) -> bool: return p["id"] == "road_apron"):
 		var xf: Transform3D = record["transform"]
 		var length := snappedf(xf.basis.x.length() * WIDTH, 0.01)
 		lengths[length] = int(lengths.get(length, 0)) + 1
 	print("CITY_GROUND_TESTS apron lengths: ", lengths)
-	_check("aprons are full (16 m) or half-length (8 m) pieces only", lengths.keys().all(func(l: float) -> bool: return is_equal_approx(l, 16.0) or is_equal_approx(l, 8.0)))
+	_check("aprons use bounded subdivisions or the exact lap remainder", lengths.keys().all(_approved_apron_length))
+
+
+func _approved_apron_length(value: float) -> bool:
+	for start: float in [16.0, fposmod(_course.total_length, 16.0)]:
+		var length := start
+		while length > 0.01:
+			if absf(value - length) < 0.02:
+				return true
+			if length <= 2.0:
+				break
+			length *= 0.5
+	return false
 
 
 # --- budgets, actors, lights ------------------------------------------------------------------
@@ -449,9 +461,27 @@ func _test_fallback(host: Node3D) -> void:
 		saved_costs[id] = CityRealismCatalog.costs[id]
 	var baseline := CityRealismLayout.new(_course)
 	baseline.populate(false)
+	var baseline_counts := {}
+	for record: Dictionary in baseline.placements:
+		if record["role"] in ["building", "prop", "detail"]:
+			baseline_counts[record["id"]] = int(baseline_counts.get(record["id"], 0)) + 1
+	for id: String in baseline_counts:
+		var retained := _placements.filter(func(p: Dictionary) -> bool: return p["id"] == id).size()
+		_check("%s placements do not regress (%d >= %d)" % [id, retained, baseline_counts[id]], retained >= int(baseline_counts[id]))
 	for id in GROUND:
 		CityRealismCatalog.meshes.erase(id)
 		CityRealismCatalog.costs.erase(id)
+	var fixture := "user://city_ground_regression_%d.json" % OS.get_process_id()
+	var file := FileAccess.open(fixture, FileAccess.WRITE)
+	_check("invalid optional manifest fixture opens", file != null)
+	if file != null:
+		file.store_string('{"version":"invalid","assets":[]}')
+		file.close()
+		CityRealismCatalog._load_ground(fixture)
+		_check("invalid optional manifest leaves the ground kit unavailable", not CityRealismCatalog.ground_available())
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(fixture))
+		CityRealismCatalog._load_ground(fixture)
+		_check("missing optional manifest leaves the ground kit unavailable", not CityRealismCatalog.ground_available())
 	var unavailable := not CityRealismCatalog.ground_available()
 	var layout := CityRealismLayout.new(_course)
 	layout.populate()
