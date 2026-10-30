@@ -26,6 +26,8 @@ class Ctx:
         self.polish = []         # (x, y, z, radius): hand-worn spots that stay clean
         self.dirty = []          # (x, y, z, radius, strength): oil / exhaust / foot-traffic
         self.signs = []
+        self.sockets = {}        # optional actor sockets (Blender coordinates), see redline_shop
+        self.actor_light = None  # index into anchors of the light that lights the actors
         self.tints = []          # (x, y, z, radius, (r, g, b)): colour carried in COLOR_0 for living things (foliage) the library has no material for
 
     def r(self, a=0.0, b=1.0):

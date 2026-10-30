@@ -1911,7 +1911,7 @@
    "role": "building",
    "district_role": "market/food",
    "glb": "redline_shop.glb",
-   "tris": 9844,
+   "tris": 9888,
    "aabb": {
     "min": [
      -6.04,
@@ -1967,13 +1967,13 @@
    ],
    "tris_by_surface": {
     "steel_structure": 3138,
-    "cladding_corrugated": 1952,
+    "cladding_corrugated": 1944,
     "cladding_patch": 212,
     "concrete": 768,
     "render_plaster": 192,
     "roof_membrane": 320,
-    "paving": 104,
-    "equipment_steel": 2056,
+    "paving": 172,
+    "equipment_steel": 2040,
     "glass_window": 116,
     "fabric_awning": 260,
     "plastic_rubber": 558,
@@ -1982,7 +1982,7 @@
    },
    "identity": "Lower-cost conversion of the approved Redline Ramen counter shop: H-column frame on plinths, header beam, cladding with repairs, red awning, counter, cooking hood and duct, flat above.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 913256,
+   "glb_bytes": 919812,
    "lod1_glb": "redline_shop_lod1.glb",
    "lod1_tris": 332,
    "lod1_aabb": {
@@ -2239,6 +2239,28 @@
      "range_m": 9.0,
      "energy": 1.3,
      "shadow": false
+    },
+    {
+     "id": "redline_shop_light_9",
+     "kind": "service",
+     "position": [
+      1.35,
+      2.6,
+      -0.1
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.1
+     ],
+     "color": [
+      1.0,
+      0.82,
+      0.55
+     ],
+     "range_m": 3.5,
+     "energy": 1.0,
+     "shadow": false
     }
    ],
    "signs": [
@@ -2252,8 +2274,66 @@
      "blade": true
     }
    ],
+   "actor_sockets": {
+    "meaning": "position = glTF coordinates of the point on the floor between the actor's feet (the actor GLB origin), in the shop's own frame; yaw_degrees = rotation about +Y applied to the actor, same convention as benchmark_manifest placements (vendor 0 faces the street, customer 180 faces the counter)",
+    "floor_y": 0.15,
+    "counter_top_y": 1.2,
+    "bowl": [
+     1.35,
+     1.2,
+     0.115
+    ],
+    "vendor": {
+     "actor": "ramen_vendor",
+     "glb": "godot/assets/city/candidates/industrial_market/ramen_vendor.glb",
+     "position": [
+      1.2,
+      0.15,
+      0.565
+     ],
+     "yaw_degrees": 0.0
+    },
+    "customer": {
+     "actor": "ramen_customer",
+     "glb": "godot/assets/city/candidates/industrial_market/ramen_customer.glb",
+     "position": [
+      1.46,
+      0.15,
+      -0.405
+     ],
+     "yaw_degrees": 180.0
+    },
+    "light": {
+     "id": "redline_shop_light_9",
+     "kind": "service",
+     "position": [
+      1.35,
+      2.6,
+      -0.1
+     ],
+     "direction": [
+      0,
+      -1,
+      -0.1
+     ],
+     "color": [
+      1.0,
+      0.82,
+      0.55
+     ],
+     "range_m": 3.5,
+     "energy": 1.0,
+     "shadow": false
+    }
+   },
    "source_blend": "assets/generated/city_realism/blends/redline_shop.blend",
    "previews": [
+    "assets/previews/city_realism/redline_shop_actors_feet_counter.png",
+    "assets/previews/city_realism/redline_shop_actors_handoff.png",
+    "assets/previews/city_realism/redline_shop_actors_handoff_34.png",
+    "assets/previews/city_realism/redline_shop_actors_kitchen_side.png",
+    "assets/previews/city_realism/redline_shop_actors_night.png",
+    "assets/previews/city_realism/redline_shop_actors_street_34.png",
     "assets/previews/city_realism/redline_shop_front.png",
     "assets/previews/city_realism/redline_shop_night.png",
     "assets/previews/city_realism/redline_shop_street.png"
@@ -2268,7 +2348,7 @@
     "refine_attempts": [
      [
       1.7,
-      9844
+      9888
      ]
     ],
     "ao_rays": 10
@@ -3994,15 +4074,15 @@
   }
  ],
  "costs": {
-  "unique_geometry_tris": 124680,
-  "buildings_lod0_tris": 118206,
+  "unique_geometry_tris": 124724,
+  "buildings_lod0_tris": 118250,
   "buildings_lod1_tris": 4316,
   "streets_tris": 6474,
   "library_materials": 14,
   "unique_textures": 39,
   "texture_mib_mips": 60.0,
   "texture_assumptions": "RGBA8 + full mip chain per distinct PNG, no VRAM compression, shared by path (one copy regardless of how many GLBs use it)",
-  "glb_bytes_total": 10899276
+  "glb_bytes_total": 10905832
  },
  "untouched": {
   "godot/assets/city/candidates/industrial_market/redline_shop.glb": "bcc65e9d7065737d75ce92d7c03293c82c1a58fd78e9dd371976a81034caaced",
