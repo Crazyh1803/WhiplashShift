@@ -10,9 +10,9 @@
   "blender_source": "Z-up, front +Y"
  },
  "texture_binding": {
-  "mode": "shared external texture URIs",
+  "mode": "geometry-only GLBs with named material library bindings",
   "base_dir": "godot/assets/city/realism/",
-  "rule": "every GLB image is textures/<material>_<slot>.png; no embedded images; one Godot import per file, deduplicated by path",
+  "rule": "runtime GLBs contain no images, textures, samplers or texture slots; each material stub carries extras.library_binding equal to its exact name and is replaced from this library (textures/<material>_<slot>.png, loaded as plain resources, never by the scene importer)",
   "channels": {
    "albedo": "sRGB RGB",
    "orm": "R occlusion, G roughness, B metallic (glTF metallicRoughness uses G/B)",
@@ -20,7 +20,8 @@
    "emissive": "sRGB, sign_atlas only (glyphs and icons)"
   },
   "vertex_color": "COLOR_0 multiplies albedo (AO x wear); TEXCOORD_0 is the only UV set",
-  "uv_density": "tiles per metre in each material's uv_per_m (world-projected box UVs)"
+  "uv_density": "tiles per metre in each material's uv_per_m (world-projected box UVs)",
+  "textured_sources": "assets/generated/city_realism/textured_exports/<glb name>: full textured exports (../textures/<material>_<slot>.png URIs) with the same geometry, UV0, COLOR_0 and TANGENT bytes"
  },
  "emission_whitelist": [
   "sign_atlas",
@@ -475,7 +476,7 @@
    },
    "identity": "Three storeys of patched render and brick housing over a four-bay steel-framed workshop floor: half-raised shutter, barred display window, bolted cladding repairs, balconies with laundry, roof tanks.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 1804672,
+   "glb_bytes": 1799660,
    "lod1_glb": "habitation_workshop_lod1.glb",
    "lod1_tris": 692,
    "lod1_aabb": {
@@ -500,7 +501,7 @@
     "render_plaster": 248,
     "roof_membrane": 176
    },
-   "lod1_glb_bytes": 55696,
+   "lod1_glb_bytes": 54372,
    "protrusions": {
     "front": 1.704,
     "left": 0.04,
@@ -839,7 +840,9 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/habitation_workshop.glb",
+   "lod1_textured_source": "assets/generated/city_realism/textured_exports/habitation_workshop_lod1.glb"
   },
   {
    "id": "market_habitat",
@@ -917,7 +920,7 @@
    },
    "identity": "Open market arcade on a steel colonnade with mixed canvas stall awnings, produce crates and bulb strings under two brick housing floors with laundry poles and roof tanks.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 1685100,
+   "glb_bytes": 1680088,
    "lod1_glb": "market_habitat_lod1.glb",
    "lod1_tris": 380,
    "lod1_aabb": {
@@ -942,7 +945,7 @@
     "brick": 164,
     "roof_membrane": 96
    },
-   "lod1_glb_bytes": 35284,
+   "lod1_glb_bytes": 34004,
    "protrusions": {
     "front": 1.954,
     "left": 0.04,
@@ -1223,7 +1226,9 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/market_habitat.glb",
+   "lod1_textured_source": "assets/generated/city_realism/textured_exports/market_habitat_lod1.glb"
   },
   {
    "id": "service_tenement",
@@ -1301,7 +1306,7 @@
    },
    "identity": "Narrow five-storey brick tenement with an external steel fire stair, shop shutter and stair door, corbelled cornice, chimney stacks and roof tank.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 1337256,
+   "glb_bytes": 1332244,
    "lod1_glb": "service_tenement_lod1.glb",
    "lod1_tris": 444,
    "lod1_aabb": {
@@ -1326,7 +1331,7 @@
     "brick": 288,
     "roof_membrane": 96
    },
-   "lod1_glb_bytes": 38592,
+   "lod1_glb_bytes": 37316,
    "protrusions": {
     "front": 1.49,
     "left": 0.1,
@@ -1525,7 +1530,9 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/service_tenement.glb",
+   "lod1_textured_source": "assets/generated/city_realism/textured_exports/service_tenement_lod1.glb"
   },
   {
    "id": "freight_depot",
@@ -1597,7 +1604,7 @@
    },
    "identity": "Corrugated portal-frame depot on a raised concrete dock: four dock doors at different heights, bumpers, levellers, cantilever canopy, office annex, ridge ventilator.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 1387104,
+   "glb_bytes": 1382924,
    "lod1_glb": "freight_depot_lod1.glb",
    "lod1_tris": 860,
    "lod1_aabb": {
@@ -1622,7 +1629,7 @@
     "concrete": 388,
     "roof_membrane": 20
    },
-   "lod1_glb_bytes": 49300,
+   "lod1_glb_bytes": 47984,
    "protrusions": {
     "front": 3.804,
     "left": 0.835,
@@ -1904,7 +1911,9 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/freight_depot.glb",
+   "lod1_textured_source": "assets/generated/city_realism/textured_exports/freight_depot_lod1.glb"
   },
   {
    "id": "redline_shop",
@@ -1982,7 +1991,7 @@
    },
    "identity": "Lower-cost conversion of the approved Redline Ramen counter shop: H-column frame on plinths, header beam, cladding with repairs, red awning, counter, cooking hood and duct, flat above.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 920008,
+   "glb_bytes": 914992,
    "lod1_glb": "redline_shop_lod1.glb",
    "lod1_tris": 332,
    "lod1_aabb": {
@@ -2007,7 +2016,7 @@
     "cladding_corrugated": 192,
     "roof_membrane": 96
    },
-   "lod1_glb_bytes": 32472,
+   "lod1_glb_bytes": 31120,
    "protrusions": {
     "front": 1.868,
     "left": 0.04,
@@ -2352,7 +2361,9 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/redline_shop.glb",
+   "lod1_textured_source": "assets/generated/city_realism/textured_exports/redline_shop_lod1.glb"
   },
   {
    "id": "row_workshop",
@@ -2421,7 +2432,7 @@
    },
    "identity": "Row of four brick/clad workshop units under a sawtooth roof, each with its own shutter or doors, signs, stock and flues.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 821852,
+   "glb_bytes": 818096,
    "lod1_glb": "row_workshop_lod1.glb",
    "lod1_tris": 572,
    "lod1_aabb": {
@@ -2446,7 +2457,7 @@
     "brick": 224,
     "roof_membrane": 176
    },
-   "lod1_glb_bytes": 44828,
+   "lod1_glb_bytes": 43548,
    "protrusions": {
     "front": 2.4,
     "left": 0.35,
@@ -2751,7 +2762,9 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/row_workshop.glb",
+   "lod1_textured_source": "assets/generated/city_realism/textured_exports/row_workshop_lod1.glb"
   },
   {
    "id": "utility_substation",
@@ -2823,7 +2836,7 @@
    },
    "identity": "Brick control building with blast door and louvres beside a fenced transformer yard: radiator-finned transformer with ribbed bushings, insulator gantry, cable tray, floodlight.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 900212,
+   "glb_bytes": 896104,
    "lod1_glb": "utility_substation_lod1.glb",
    "lod1_tris": 556,
    "lod1_aabb": {
@@ -2848,7 +2861,7 @@
     "brick": 224,
     "roof_membrane": 176
    },
-   "lod1_glb_bytes": 45284,
+   "lod1_glb_bytes": 44004,
    "protrusions": {
     "front": 1.8,
     "left": 0.04,
@@ -3024,7 +3037,9 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/utility_substation.glb",
+   "lod1_textured_source": "assets/generated/city_realism/textured_exports/utility_substation_lod1.glb"
   },
   {
    "id": "transit_depot",
@@ -3102,7 +3117,7 @@
    },
    "identity": "Two-bay vehicle hall with raised grilles and hazard-striped thresholds beside a cantilever passenger shelter with bench, kiosk, timetable, stop pole and clock.",
    "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)",
-   "glb_bytes": 1053904,
+   "glb_bytes": 1048928,
    "lod1_glb": "transit_depot_lod1.glb",
    "lod1_tris": 480,
    "lod1_aabb": {
@@ -3127,7 +3142,7 @@
     "cladding_corrugated": 384,
     "roof_membrane": 20
    },
-   "lod1_glb_bytes": 31268,
+   "lod1_glb_bytes": 29916,
    "protrusions": {
     "front": 3.85,
     "left": 0.3,
@@ -3402,7 +3417,9 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/transit_depot.glb",
+   "lod1_textured_source": "assets/generated/city_realism/textured_exports/transit_depot_lod1.glb"
   },
   {
    "id": "sidewalk_panel",
@@ -3456,7 +3473,7 @@
    },
    "identity": "Six settled paving slabs, steel expansion strip, bolted service plate, tactile studs and a bright replacement patch.",
    "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
-   "glb_bytes": 112940,
+   "glb_bytes": 110832,
    "entrances": [],
    "light_anchors": [],
    "signs": [],
@@ -3479,7 +3496,8 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/sidewalk_panel.glb"
   },
   {
    "id": "curb_segment",
@@ -3536,7 +3554,7 @@
    },
    "identity": "Kerb with steel edge angle, joints, gutter lip and worn no-parking paint.",
    "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
-   "glb_bytes": 33176,
+   "glb_bytes": 30648,
    "entrances": [],
    "light_anchors": [],
    "signs": [],
@@ -3559,7 +3577,8 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/curb_segment.glb"
   },
   {
    "id": "drain_cover",
@@ -3613,7 +3632,7 @@
    },
    "identity": "Cast frame with parallel grate bars and lifting eyes over a dark sump.",
    "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
-   "glb_bytes": 37004,
+   "glb_bytes": 34856,
    "entrances": [],
    "light_anchors": [],
    "signs": [],
@@ -3636,7 +3655,8 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/drain_cover.glb"
   },
   {
    "id": "street_lamp",
@@ -3690,7 +3710,7 @@
    },
    "identity": "7.9 m column on base plate and bolts with hand-hole cover, sleeve joint, banner bracket, cranked arm and lensed luminaire.",
    "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
-   "glb_bytes": 72956,
+   "glb_bytes": 71272,
    "entrances": [],
    "light_anchors": [
     {
@@ -3736,7 +3756,8 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/street_lamp.glb"
   },
   {
    "id": "bollard",
@@ -3787,7 +3808,7 @@
    },
    "identity": "Concrete-filled steel crash bollard on a bolted base plate with reflective band.",
    "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
-   "glb_bytes": 38056,
+   "glb_bytes": 36332,
    "entrances": [],
    "light_anchors": [],
    "signs": [],
@@ -3810,7 +3831,8 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/bollard.glb"
   },
   {
    "id": "bench_planter",
@@ -3867,7 +3889,7 @@
    },
    "identity": "Concrete planter with shrubs and a steel-framed slatted bench.",
    "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
-   "glb_bytes": 93980,
+   "glb_bytes": 91456,
    "entrances": [],
    "light_anchors": [],
    "signs": [],
@@ -3890,7 +3912,8 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/bench_planter.glb"
   },
   {
    "id": "refuse_station",
@@ -3944,7 +3967,7 @@
    },
    "identity": "Steel mesh cage with three wheeled bins, hinged lids, hose bib and drip tray.",
    "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
-   "glb_bytes": 88172,
+   "glb_bytes": 86024,
    "entrances": [],
    "light_anchors": [],
    "signs": [],
@@ -3967,7 +3990,8 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/refuse_station.glb"
   },
   {
    "id": "alley_conduit",
@@ -4024,7 +4048,7 @@
    },
    "identity": "Alley-crossing steel gantry carrying conduit, pipes, junction boxes and a sagging cable.",
    "origin": "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
-   "glb_bytes": 198452,
+   "glb_bytes": 196348,
    "entrances": [],
    "light_anchors": [
     {
@@ -4070,7 +4094,8 @@
      ]
     ],
     "ao_rays": 10
-   }
+   },
+   "textured_source": "assets/generated/city_realism/textured_exports/alley_conduit.glb"
   }
  ],
  "costs": {
@@ -4082,7 +4107,7 @@
   "unique_textures": 39,
   "texture_mib_mips": 60.0,
   "texture_assumptions": "RGBA8 + full mip chain per distinct PNG, no VRAM compression, shared by path (one copy regardless of how many GLBs use it)",
-  "glb_bytes_total": 10917568
+  "glb_bytes_total": 10853068
  },
  "untouched": {
   "godot/assets/city/candidates/industrial_market/redline_shop.glb": "bcc65e9d7065737d75ce92d7c03293c82c1a58fd78e9dd371976a81034caaced",

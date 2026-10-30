@@ -149,6 +149,99 @@ class CityRealism(unittest.TestCase):
                     c = [sum(pos[idx[t + j]][k] for j in range(3)) / 3 for k in range(3)]
                     self.assertFalse(abs(c[0]) < 8.8 and 0.1 < c[2] < 2.2 and c[1] < 3.6, f"brick inside the arcade at {c}")
 
+    def test_shipped_runtime_glbs_are_geometry_only(self):
+        import glob
+        files = glob.glob(os.path.join(V.DEFAULT_DIR, "*.glb"))
+        self.assertEqual(len(files), 24)
+        for path in files:
+            js, _ = V.VIM.read_glb(path)
+            for k in ("images", "textures", "samplers"):
+                self.assertNotIn(k, js, path)
+            self.assertNotIn("KHR_texture_transform", js.get("extensionsUsed", []))
+            for m in js["materials"]:
+                self.assertEqual(V.tex_keys(m), [], path)
+                self.assertEqual(m["extras"]["library_binding"], m["name"])
+            self.assertNotIn(b'"uri"', open(path, "rb").read(), path)
+
+    def _mutated_glb(self, fn):
+        """Copy the library, apply fn(js, binary) -> (js, binary) to the first asset's runtime GLB, validate, return errors."""
+        import city_realism_bind as B
+        d = tempfile.mkdtemp()
+        try:
+            for root, _, files in os.walk(V.DEFAULT_DIR):
+                for f in files:
+                    rel = os.path.relpath(os.path.join(root, f), V.DEFAULT_DIR)
+                    os.makedirs(os.path.dirname(os.path.join(d, rel)), exist_ok=True)
+                    shutil.copyfile(os.path.join(root, f), os.path.join(d, rel))
+            man = V.load_manifest(d)
+            path = os.path.join(d, man["assets"][0]["glb"])
+            js, binary = B.read_glb(path)
+            js, binary = fn(js, binary)
+            with open(path, "wb") as fh:
+                fh.write(B.glb_bytes(js, binary))
+            man["assets"][0]["glb_bytes"] = os.path.getsize(path)         # isolate the injected defect from the byte-count check
+            with open(os.path.join(d, "city_families_manifest.json"), "w", encoding="utf-8") as fh:
+                json.dump(man, fh)
+            V.errors.clear()
+            V.validate(d)
+            return list(V.errors)
+        finally:
+            shutil.rmtree(d)
+
+    def test_rejects_broken_library_binding(self):
+        def bad(js, binary):
+            js["materials"][0]["extras"]["library_binding"] = "not_" + js["materials"][0]["name"]
+            return js, binary
+        self.assertTrue(any("library_binding" in e for e in self._mutated_glb(bad)))
+
+    def test_rejects_runtime_image_references(self):
+        def bad(js, binary):
+            js["images"] = [{"uri": "textures/concrete_albedo.png"}]
+            js["textures"] = [{"source": 0}]
+            js["materials"][0].setdefault("pbrMetallicRoughness", {})["baseColorTexture"] = {"index": 0}
+            return js, binary
+        self.assertTrue(any("geometry-only" in e for e in self._mutated_glb(bad)))
+
+    def test_rejects_flipped_tangent_in_stripped_glb(self):
+        import struct
+
+        def bad(js, binary):
+            blob = bytearray(binary)
+            for mesh in js["meshes"]:
+                for prim in mesh["primitives"]:
+                    if "TANGENT" not in prim["attributes"]:
+                        continue
+                    acc = js["accessors"][prim["attributes"]["TANGENT"]]
+                    start = js["bufferViews"][acc["bufferView"]].get("byteOffset", 0) + acc.get("byteOffset", 0)
+                    for i in range(acc["count"]):
+                        o = start + i * 16 + 12
+                        blob[o:o + 4] = struct.pack("<f", -struct.unpack_from("<f", blob, o)[0])
+            return js, bytes(blob)
+        errs = self._mutated_glb(bad)
+        self.assertTrue(any("TANGENT frame" in e for e in errs), errs)
+
+    def test_rejects_missing_shared_emissive_map(self):
+        def bad(man):
+            del man["materials"]["sign_atlas"]["emissive"]
+        self.assertTrue(any("sign_atlas: missing emissive" in e for e in self._mutated(bad)))
+        d = tempfile.mkdtemp()
+        try:
+            shutil.copytree(V.DEFAULT_DIR, d, dirs_exist_ok=True)
+            os.remove(os.path.join(d, "textures", "sign_atlas_emissive.png"))
+            V.errors.clear()
+            V.validate(d)
+            self.assertTrue(any("sign_atlas_emissive.png missing" in e for e in V.errors))
+        finally:
+            shutil.rmtree(d)
+
+    def test_textured_sources_keep_geometry_and_textures(self):
+        man = V.load_manifest(V.DEFAULT_DIR)
+        self.assertTrue(man["texture_binding"]["mode"].startswith("geometry-only"))
+        for a in man["assets"]:
+            self.assertTrue(os.path.isfile(os.path.join(V.ROOT, a["textured_source"])), a["id"])
+            js, _ = V.VIM.read_glb(os.path.join(V.ROOT, a["textured_source"]))
+            self.assertTrue(js["images"] and all(i["uri"].startswith("../textures/") for i in js["images"]), a["id"])
+
     def test_rejects_missing_texture_and_bad_lod(self):
         def bad(man):
             man["materials"]["brick"]["albedo"] = "textures/missing.png"

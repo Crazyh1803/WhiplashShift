@@ -24,6 +24,7 @@ for _home in (os.environ.get("AK_HOME"), os.path.expanduser("~/agent-kit")):
 from ak_util import args, report  # noqa: E402
 
 import industrial_market_common as C  # noqa: E402
+import city_realism_bind as BIND  # noqa: E402
 import city_realism_textures as T  # noqa: E402
 import city_realism_parts as P  # noqa: E402
 import city_realism_families as F  # noqa: E402
@@ -239,7 +240,7 @@ def export(ob, path):
 
 
 def externalize(path):
-    """Rewrite the GLB so every image is a shared external URI (textures/<name>.png) and the embedded bytes are dropped."""
+    """Rewrite the exported GLB (shared image URIs, embedded bytes dropped, TANGENT added), store it as the textured source, then ship the geometry-only runtime GLB."""
     data = open(path, "rb").read()
     off = 12
     js = binary = None
@@ -289,11 +290,8 @@ def externalize(path):
     while len(new_bin) % 4:
         new_bin.append(0)
     js["buffers"] = [{"byteLength": len(new_bin)}]
-    jb = json.dumps(js, separators=(",", ":")).encode("utf-8")
-    jb += b" " * ((4 - len(jb) % 4) % 4)
-    out = struct.pack("<4sII", b"glTF", 2, 12 + 8 + len(jb) + 8 + len(new_bin))
-    out += struct.pack("<I4s", len(jb), b"JSON") + jb + struct.pack("<I4s", len(new_bin), b"BIN\x00") + bytes(new_bin)
-    open(path, "wb").write(out)
+    # tangents are generated above from the textured export; the runtime GLB is then stripped to geometry + named library stubs
+    BIND.write_pair(js, bytes(new_bin), os.path.join(BIND.TEXTURED, os.path.basename(path)), path)
 
 
 # ================================================================================================ LOD1
@@ -348,13 +346,13 @@ def write_manifest(lib, recs):
              "aabb": bb, "footprint": fp, "front_setback_m": 0.0, "materials": sorted(set(order)), "surfaces": order,
              "tris_by_surface": {s["material"]: s["tris"] for s in an["surfaces"]}, "identity": IDENTITY[aid][1],
              "origin": "front-centre foot: facade plane z=0, x centred, y=0 at ground; front faces -Z (back of the lot is +Z)" if building else "foot-centred: footprint centre at xz 0, base at y 0; front faces -Z",
-             "glb_bytes": an["glb_bytes"]}
+             "glb_bytes": an["glb_bytes"], "textured_source": f"assets/generated/city_realism/textured_exports/{aid}.glb"}
         if building:
             a1 = VAL.analyze(os.path.join(REAL, aid + "_lod1.glb"))
             pro = {"front": round(max(0.0, -bb["min"][2]), 3), "left": round(max(0.0, fp["min"][0] - bb["min"][0]), 3),
                    "right": round(max(0.0, bb["max"][0] - fp["max"][0]), 3), "back": round(max(0.0, bb["max"][2] - fp["max"][1]), 3)}
             e.update({"lod1_glb": aid + "_lod1.glb", "lod1_tris": a1["tris"], "lod1_aabb": a1["aabb"], "lod1_surfaces": [s["material"] for s in a1["surfaces"]],
-                      "lod1_tris_by_surface": {s["material"]: s["tris"] for s in a1["surfaces"]}, "lod1_glb_bytes": a1["glb_bytes"], "protrusions": pro,
+                      "lod1_tris_by_surface": {s["material"]: s["tris"] for s in a1["surfaces"]}, "lod1_glb_bytes": a1["glb_bytes"], "lod1_textured_source": f"assets/generated/city_realism/textured_exports/{aid}_lod1.glb", "protrusions": pro,
                       "frontage_m": W, "depth_m": D, "height_m": bb["max"][1]})
             e["front_setback_m"] = round(math.ceil((pro["front"] + 0.3) * 20) / 20, 2)
         else:
@@ -392,7 +390,9 @@ def write_manifest(lib, recs):
     man = {
         "version": 2, "status": "candidate-review",
         "coordinate_system": {"units": "metres", "up": "+Y", "front": "-Z", "building_origin": "front-centre foot", "street_origin": "foot-centred", "blender_source": "Z-up, front +Y"},
-        "texture_binding": {"mode": "shared external texture URIs", "base_dir": "godot/assets/city/realism/", "rule": "every GLB image is textures/<material>_<slot>.png; no embedded images; one Godot import per file, deduplicated by path",
+        "texture_binding": {"mode": "geometry-only GLBs with named material library bindings", "base_dir": "godot/assets/city/realism/",
+                            "rule": "runtime GLBs contain no images, textures, samplers or texture slots; each material stub carries extras.library_binding equal to its exact name and is replaced from this library (textures/<material>_<slot>.png, loaded as plain resources, never by the scene importer)",
+                            "textured_sources": "assets/generated/city_realism/textured_exports/<glb name>: full textured exports (../textures/<material>_<slot>.png URIs) with the same geometry, UV0, COLOR_0 and TANGENT bytes",
                             "channels": {"albedo": "sRGB RGB", "orm": "R occlusion, G roughness, B metallic (glTF metallicRoughness uses G/B)", "normal": "OpenGL +Y tangent space, TANGENT exported",
                                          "emissive": "sRGB, sign_atlas only (glyphs and icons)"},
                             "vertex_color": "COLOR_0 multiplies albedo (AO x wear); TEXCOORD_0 is the only UV set", "uv_density": "tiles per metre in each material's uv_per_m (world-projected box UVs)"},

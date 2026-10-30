@@ -22,6 +22,8 @@ STREETS = ("sidewalk_panel", "curb_segment", "drain_cover", "street_lamp", "boll
 EMISSIVE_WHITELIST = ("sign_atlas", "lamp_glass")
 LIBRARY = ("steel_structure", "cladding_corrugated", "cladding_patch", "concrete", "brick", "render_plaster", "roof_membrane", "paving", "equipment_steel",
            "glass_window", "fabric_awning", "plastic_rubber", "sign_atlas", "lamp_glass")
+NORMAL_MAPPED = tuple(n for n in LIBRARY if n not in EMISSIVE_WHITELIST)       # library materials that carry a normal map (runtime GLBs keep no normalTexture)
+TEXTURE_SLOTS = ("albedo", "orm", "normal", "emissive")
 CAPS = {"lod0_tris": 22000, "lod0_tris_redline": 25000, "lod1_tris": 2000, "lod1_surfaces": 3, "frontage": (12.0, 18.0, 24.0), "depth": 22.0, "height": 18.0,
         "materials": 14, "textures": 43, "tex_px": 512, "atlas_px": 1024, "street_tris": 3500, "global_unique_tris": 450000}
 TOL = 0.02
@@ -37,6 +39,11 @@ def png_dims(path):
         return VIM.png_info(f.read(32))
 
 
+def normal_mapped(mat):
+    """Textured exports carry normalTexture; runtime stubs are identified by their exact library material name."""
+    return "normalTexture" in mat or mat.get("name") in NORMAL_MAPPED
+
+
 def compute_tangents(js, binary):
     """Per-vertex TANGENT (xyz + w) for every primitive whose material has a normal map, from the EXPORTED glTF POSITION/NORMAL/TEXCOORD_0.
     glTF defines the bitangent as cross(n, t) * w and the tangent basis follows the EXPORTED UV derivatives (MikkTSpace): t = dP/du and the
@@ -45,7 +52,7 @@ def compute_tangents(js, binary):
     out = {}
     for mi, mesh in enumerate(js["meshes"]):
         for pi, prim in enumerate(mesh["primitives"]):
-            if "normalTexture" not in js["materials"][prim["material"]]:
+            if not normal_mapped(js["materials"][prim["material"]]):
                 continue
             at = prim["attributes"]
             pos = VIM.accessor(js, binary, at["POSITION"])
@@ -93,7 +100,7 @@ def tangent_frame_errors(js, binary, limit=4000):
     for mesh in js["meshes"]:
         for prim in mesh["primitives"]:
             at = prim["attributes"]
-            if "TANGENT" not in at or "material" not in prim or "normalTexture" not in js["materials"][prim["material"]]:
+            if "TANGENT" not in at or "material" not in prim or not normal_mapped(js["materials"][prim["material"]]):
                 continue
             pos = VIM.accessor(js, binary, at["POSITION"])
             nrm = VIM.accessor(js, binary, at["NORMAL"])
@@ -129,6 +136,14 @@ def tangent_frame_errors(js, binary, limit=4000):
                     if sum(tv[k] * gu[k] for k in range(3)) <= 0 or sum(bt[k] * gv[k] for k in range(3)) <= 0:
                         bad += 1
     return bad
+
+
+def tex_keys(m):
+    """Every texture reference left on a material: standard slots plus any extension block holding a texture info."""
+    pbr = m.get("pbrMetallicRoughness", {})
+    keys = [k for k in ("baseColorTexture", "metallicRoughnessTexture") if k in pbr] + [k for k in ("normalTexture", "emissiveTexture", "occlusionTexture") if k in m]
+    keys += [f"extensions.{e}" for e, v in m.get("extensions", {}).items() if any(isinstance(x, dict) and "index" in x for x in v.values()) or e == "KHR_texture_transform"]
+    return keys
 
 
 def analyze(path):
@@ -243,6 +258,8 @@ def analyze(path):
                      "base_factor": pbr.get("baseColorFactor", [1, 1, 1, 1]), "unlit": "KHR_materials_unlit" in m.get("extensions", {})})
     out["materials"] = mats
     out["image_count"] = len(js.get("images", []))
+    out["image_refs"] = [k for k in ("images", "textures", "samplers") if js.get(k)] + [f"{m.get('name')}.{k}" for m in js.get("materials", []) for k in tex_keys(m)]
+    out["bindings"] = {m.get("name"): (m.get("extras") or {}).get("library_binding") for m in js.get("materials", [])}
     out["glb_bytes"] = os.path.getsize(path)
     return out
 
@@ -285,18 +302,8 @@ def check_geometry(label, an, manifest_dir, lib):
             err(f"{label}: GLB material {m['name']!r} not in library")
             continue
         li = lib[m["name"]]
-        for slot, t in m["tex"].items():
-            if t["embedded"]:
-                err(f"{label}/{m['name']}: {slot} is an embedded image (must be shared external)")
-                continue
-            want = li.get(slot)
-            if want is None or t["uri"] != want:
-                err(f"{label}/{m['name']}: {slot} uri {t['uri']!r} != library {want!r}")
-        for slot in ("albedo", "orm", "normal"):
-            if m["name"] != "lamp_glass" and not (m["name"] == "sign_atlas" and slot == "normal") and slot not in m["tex"]:
-                err(f"{label}/{m['name']}: missing {slot} texture binding")
-        if m["name"] == "sign_atlas" and "emissive" not in m["tex"]:
-            err(f"{label}/sign_atlas: missing emissive texture binding (emission must be glyph-only)")
+        if an["bindings"].get(m["name"]) != m["name"]:
+            err(f"{label}/{m['name']}: extras.library_binding {an['bindings'].get(m['name'])!r} != material name")
         emits = any(v > 1e-4 for v in m["emissive_factor"])
         if emits and m["name"] not in EMISSIVE_WHITELIST:
             err(f"{label}/{m['name']}: emissive on a non-whitelisted material")
@@ -306,8 +313,41 @@ def check_geometry(label, an, manifest_dir, lib):
             want = li.get("emission", {}).get("strength")
             if want is None or abs(m["emissive_strength"] - want) > 1e-3:
                 err(f"{label}/{m['name']}: exported emissive strength {m['emissive_strength']} != manifest {want}")
-    if an["image_count"] and any(t["embedded"] for m in an["materials"] for t in m["tex"].values()):
-        err(f"{label}: embedded images present")
+    if an["image_refs"]:
+        err(f"{label}: runtime GLB must be geometry-only but references images/textures: {an['image_refs']}")
+
+
+def check_textured_source(label, runtime_glb, rel, lib, d):
+    """The retained textured export must resolve every slot to the shared library PNGs and hold byte-identical geometry (accessors, buffer, nodes, meshes)."""
+    if not VIM.safe_rel(rel or ""):
+        err(f"{label}: textured source path {rel!r} missing/unsafe")
+        return
+    path = os.path.join(ROOT, rel)
+    if not os.path.isfile(path):
+        err(f"{label}: textured source {rel} missing")
+        return
+    sjs, sbin = VIM.read_glb(path)
+    rjs, rbin = VIM.read_glb(runtime_glb)
+    for k in ("asset", "scene", "scenes", "nodes", "meshes", "accessors", "bufferViews", "buffers"):
+        if sjs.get(k) != rjs.get(k):
+            err(f"{label}: textured source {k} differs from the runtime GLB")
+    if sbin != rbin:
+        err(f"{label}: textured source binary (geometry/UV0/COLOR_0/TANGENT) differs from the runtime GLB")
+    if [m.get("name") for m in sjs["materials"]] != [m.get("name") for m in rjs["materials"]]:
+        err(f"{label}: textured source material names/order differ from the runtime GLB")
+    for m in sjs["materials"]:
+        pbr = m.get("pbrMetallicRoughness", {})
+        for slot, info in (("albedo", pbr.get("baseColorTexture")), ("orm", pbr.get("metallicRoughnessTexture")), ("normal", m.get("normalTexture")), ("emissive", m.get("emissiveTexture"))):
+            want = lib.get(m.get("name"), {}).get(slot)
+            if info is None:
+                if want:
+                    err(f"{label}: textured source {m.get('name')} lacks its {slot} texture")
+                continue
+            uri = sjs["images"][sjs["textures"][info["index"]]["source"]].get("uri", "")
+            if not want or os.path.basename(uri) != os.path.basename(want):
+                err(f"{label}: textured source {m.get('name')} {slot} {uri!r} != library {want!r}")
+            elif not os.path.isfile(os.path.normpath(os.path.join(os.path.dirname(path), uri))):
+                err(f"{label}: textured source {m.get('name')} {slot} {uri!r} does not resolve")
 
 
 def check_actor_sockets(aid, a, bb):
@@ -363,6 +403,8 @@ def validate(d=DEFAULT_DIR):
     man = load_manifest(d)
     if man.get("version") != 2:
         err("manifest version must be 2")
+    if not str(man.get("texture_binding", {}).get("mode", "")).startswith("geometry-only"):
+        err("manifest texture_binding.mode must declare geometry-only named material library bindings")
     lib = man.get("materials", {})
     if set(lib) != set(LIBRARY):
         err(f"library materials {sorted(lib)} != expected {sorted(LIBRARY)}")
@@ -377,7 +419,7 @@ def validate(d=DEFAULT_DIR):
         for slot in ("albedo", "orm", "normal", "emissive"):
             rel = m.get(slot)
             if rel is None:
-                if slot in ("albedo", "orm") and name != "lamp_glass" or (slot == "normal" and name not in ("sign_atlas", "lamp_glass")):
+                if slot in ("albedo", "orm") and name != "lamp_glass" or (slot == "normal" and name not in ("sign_atlas", "lamp_glass")) or (slot == "emissive" and name == "sign_atlas"):
                     err(f"library {name}: missing {slot}")
                 continue
             if not VIM.safe_rel(rel):
@@ -423,6 +465,9 @@ def validate(d=DEFAULT_DIR):
             continue
         an = analyze(glb)
         check_geometry(aid, an, d, lib)
+        check_textured_source(aid, glb, a.get("textured_source"), lib, d)
+        if an["glb_bytes"] != a.get("glb_bytes"):
+            err(f"{aid}: glb_bytes {an['glb_bytes']} != manifest {a.get('glb_bytes')}")
         unique_tris += an["tris"]
         if an["tris"] != a["tris"]:
             err(f"{aid}: tris {an['tris']} != manifest {a['tris']}")
@@ -466,6 +511,9 @@ def validate(d=DEFAULT_DIR):
             else:
                 a1 = analyze(l1)
                 check_geometry(aid + ".lod1", a1, d, lib)
+                check_textured_source(aid + ".lod1", l1, a.get("lod1_textured_source"), lib, d)
+                if a1["glb_bytes"] != a.get("lod1_glb_bytes"):
+                    err(f"{aid}: lod1_glb_bytes {a1['glb_bytes']} != manifest {a.get('lod1_glb_bytes')}")
                 if a1["tris"] != a.get("lod1_tris") or a1["tris"] > CAPS["lod1_tris"]:
                     err(f"{aid}: lod1 tris {a1['tris']} (manifest {a.get('lod1_tris')}, cap {CAPS['lod1_tris']})")
                 if not aabb_close(a1["aabb"], a.get("lod1_aabb", {"min": [9] * 3, "max": [9] * 3})):
