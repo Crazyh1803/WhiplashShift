@@ -153,7 +153,16 @@ def analyze(path):
                 colors = accessor(js, binary, at["COLOR_0"])
                 if len(colors) != len(pos) or any(len(row) not in (3, 4) or any(not math.isfinite(c) or not 0 <= c <= 1 for c in row) for row in colors):
                     raise ValueError("invalid baked AO/wear COLOR_0")
-                if not all(math.isfinite(c) for r in pos for c in r):
+                mat_json = js["materials"][p["material"]] if "material" in p else {}
+                if mat_json.get("name", "") != "sign_emissive":
+                    spread = max(max(r[k] for r in colors) - min(r[k] for r in colors) for k in range(3)) if colors else 0.0
+                    if spread < 0.02:
+                        raise ValueError(f"flat COLOR_0 (spread {spread:.3f}) on {mat_json.get('name', '')}: baked AO/wear is missing")
+                if any(k.startswith("COLOR_") and k != "COLOR_0" for k in at):
+                    raise ValueError("extra COLOR_n attribute: baked wear must be the only colour attribute, COLOR_0")
+                if any(k.startswith("TEXCOORD_") and k != "TEXCOORD_0" for k in at):
+                    raise ValueError("extra TEXCOORD_n attribute: mapped data must be the only UV set, TEXCOORD_0")
+                if not all(math.isfinite(c) for c in (c for r in pos for c in r)):
                     raise ValueError("non-finite POSITION")
                 if "NORMAL" not in at or "TEXCOORD_0" not in at:
                     err(f"{os.path.basename(path)}: primitive missing NORMAL/TEXCOORD_0")
@@ -167,6 +176,10 @@ def analyze(path):
                     nrm_lens.append(ln)
                     if not math.isfinite(ln) or abs(ln - 1) > 0.05:
                         nrm_bad += 1
+                if any(js["materials"][p["material"]].get(k) or js["materials"][p["material"]].get("pbrMetallicRoughness", {}).get(k)
+                       for k in ("normalTexture", "baseColorTexture", "metallicRoughnessTexture", "emissiveTexture", "occlusionTexture")) \
+                        and uvs and max(u for u, _ in uvs) - min(u for u, _ in uvs) < 1e-3 and max(v for _, v in uvs) - min(v for _, v in uvs) < 1e-3:
+                    raise ValueError("constant mapped TEXCOORD_0 on textured material " + js["materials"][p["material"]].get("name", ""))
                 for u, v in uvs:
                     if not (math.isfinite(u) and math.isfinite(v)) or abs(u) > 1000 or abs(v) > 1000:
                         uv_bad += 1
@@ -207,7 +220,9 @@ def analyze(path):
                           ("emissive", mt.get("emissiveTexture")), ("occlusion", mt.get("occlusionTexture"))):
             if ref is None:
                 continue
-            tex = js["textures"][ref["index"]]
+            if ref.get("texCoord", 0) != 0:
+                raise ValueError(f"material {mt.get('name')} {slot} reads texCoord {ref['texCoord']}; Godot imports only TEXCOORD_0 for mapped data")
+            tex =js["textures"][ref["index"]]
             im = js["images"][tex["source"]]
             try:
                 blob = image_blob(js, binary, glb_dir, im)

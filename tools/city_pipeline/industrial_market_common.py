@@ -35,7 +35,7 @@ class Mesh:
     def __init__(self, mats):
         self.bm = bmesh.new()
         self.mats = list(mats)
-        self.uv = self.bm.loops.layers.uv.verify()
+        self.uv = self.bm.loops.layers.uv.get("UVMap") or self.bm.loops.layers.uv.new("UVMap")
         self.explicit = set()           # faces whose UVs a builder authored (box_uv skips them)
 
     def mi(self, name):
@@ -455,6 +455,15 @@ def commit(mesh, name, mats):
     mesh.bm.to_mesh(me)
     for m in mats:
         me.materials.append(m)
+    # Exactly one UV map (TEXCOORD_0) and one colour attribute (COLOR_0 = baked AO x wear), both active and render.
+    for extra in [u.name for u in me.uv_layers if u.name != "UVMap"]:
+        me.uv_layers.remove(me.uv_layers[extra])
+    me.uv_layers.active = me.uv_layers["UVMap"]
+    me.uv_layers["UVMap"].active_render = True
+    for extra in [c.name for c in me.color_attributes if c.name != "Color"]:
+        me.color_attributes.remove(me.color_attributes[extra])
+    me.color_attributes.active_color = me.color_attributes["Color"]
+    me.color_attributes.render_color_index = me.color_attributes.find("Color")
     ob = bpy.data.objects.new(name, me)
     bpy.context.scene.collection.objects.link(ob)
     return ob
@@ -467,12 +476,9 @@ def export_glb(ob, path):
     bpy.context.view_layer.objects.active = ob
     kw = dict(filepath=path, export_format="GLB", use_selection=True, export_apply=True, export_yup=True, export_texcoords=True,
               export_normals=True, export_materials="EXPORT", export_cameras=False, export_lights=False, export_animations=False,
-              export_image_format="AUTO")
+              export_image_format="AUTO", export_vertex_color="ACTIVE", export_all_vertex_colors=False, export_colors=True)
     props = bpy.ops.export_scene.gltf.get_rna_type().properties
-    if "export_vertex_color" in props:
-        kw["export_vertex_color"] = "ACTIVE"
-    elif "export_colors" in props:
-        kw["export_colors"] = True
+    kw = {k: v for k, v in kw.items() if k in props}
     if "export_active_vertex_color_when_no_material" in props:
         kw["export_active_vertex_color_when_no_material"] = True
     bpy.ops.export_scene.gltf(**kw)
