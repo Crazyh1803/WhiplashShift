@@ -197,6 +197,8 @@ def check_geometry(label, an, manifest_dir, lib):
         for slot in ("albedo", "orm", "normal"):
             if m["name"] != "lamp_glass" and not (m["name"] == "sign_atlas" and slot == "normal") and slot not in m["tex"]:
                 err(f"{label}/{m['name']}: missing {slot} texture binding")
+        if m["name"] == "sign_atlas" and "emissive" not in m["tex"]:
+            err(f"{label}/sign_atlas: missing emissive texture binding (emission must be glyph-only)")
         emits = any(v > 1e-4 for v in m["emissive_factor"])
         if emits and m["name"] not in EMISSIVE_WHITELIST:
             err(f"{label}/{m['name']}: emissive on a non-whitelisted material")
@@ -204,6 +206,45 @@ def check_geometry(label, an, manifest_dir, lib):
             err(f"{label}/{m['name']}: whitelisted emissive material does not emit")
     if an["image_count"] and any(t["embedded"] for m in an["materials"] for t in m["tex"].values()):
         err(f"{label}: embedded images present")
+
+
+def check_actor_sockets(aid, a, bb):
+    """redline_shop must carry vendor/customer sockets for the approved benchmark actors: standing on one floor, 1.05 m below the counter top,
+    facing each other (yaw 0 / 180), inside the lot, with a registered light anchor aimed at the hand-off."""
+    sk = a.get("actor_sockets")
+    if aid != "redline_shop":
+        return
+    if not sk:
+        err(f"{aid}: actor_sockets missing")
+        return
+    pos = {}
+    for who, yaw in (("vendor", 0.0), ("customer", 180.0)):
+        s = sk.get(who) or {}
+        p = s.get("position")
+        if not isinstance(p, list) or len(p) != 3 or not all(isinstance(v, (int, float)) and math.isfinite(v) for v in p):
+            err(f"{aid}: {who} socket position invalid")
+            continue
+        pos[who] = p
+        if not isinstance(s.get("yaw_degrees"), (int, float)) or abs(((s["yaw_degrees"] - yaw + 180.0) % 360.0) - 180.0) > 1e-6:
+            err(f"{aid}: {who} socket yaw {s.get('yaw_degrees')!r} != {yaw}")
+        if s.get("actor") != "ramen_" + who:
+            err(f"{aid}: {who} socket actor {s.get('actor')!r}")
+        if not (bb["min"][0] <= p[0] <= bb["max"][0] and bb["min"][2] <= p[2] <= bb["max"][2]):
+            err(f"{aid}: {who} socket outside the shop bounds")
+    if len(pos) == 2:
+        v, c = pos["vendor"], pos["customer"]
+        if abs(v[1] - c[1]) > 1e-6 or not 0.1 <= v[1] <= 0.2:
+            err(f"{aid}: vendor/customer feet not on one floor ({v[1]}, {c[1]})")
+        if abs(sk.get("counter_top_y", 0) - sk.get("floor_y", 0) - 1.05) > 0.011 or abs(sk.get("floor_y", -1) - v[1]) > 1e-6:
+            err(f"{aid}: counter top {sk.get('counter_top_y')} is not 1.05 m above the actor floor {sk.get('floor_y')}")
+        if not (v[2] > c[2] and 0.7 <= v[2] - c[2] <= 1.3):
+            err(f"{aid}: vendor must stand 0.7..1.3 m behind the customer ({v}, {c})")
+        b = sk.get("bowl", [0, 0, 0])
+        if not (v[2] > b[2] > c[2]) or abs(b[1] - sk.get("counter_top_y", -9)) > 1e-6 or not min(v[0], c[0]) - 0.3 <= b[0] <= max(v[0], c[0]) + 0.3:
+            err(f"{aid}: bowl {b} is not on the counter between the actors")
+    la = sk.get("light") or {}
+    if la.get("id") not in [x.get("id") for x in a["light_anchors"]] or la not in a["light_anchors"]:
+        err(f"{aid}: actor light is not a registered light anchor")
 
 
 def load_manifest(d):
@@ -364,6 +405,7 @@ def validate(d=DEFAULT_DIR):
                 err(f"{aid}: light anchor kind {la['kind']}")
             if math.sqrt(sum(v * v for v in la["direction"])) < 0.5 or la["range_m"] <= 0:
                 err(f"{aid}: light anchor {la.get('id')} direction/range")
+        check_actor_sockets(aid, a, bb)
         if building and sum(1 for la in a["light_anchors"] if la["kind"] in ("street", "fixture")) < 1:
             err(f"{aid}: needs at least one street/fixture light anchor")
         for rel in a.get("source_blend", []) if isinstance(a.get("source_blend"), list) else [a.get("source_blend")]:

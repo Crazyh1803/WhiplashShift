@@ -58,6 +58,30 @@ class CityRealism(unittest.TestCase):
         self.assertTrue(any("tris" in e for e in errs))
         self.assertTrue(any("emission flag" in e for e in errs))
 
+    def test_redline_actor_sockets(self):
+        man = V.load_manifest(V.DEFAULT_DIR)
+        sk = next(a for a in man["assets"] if a["id"] == "redline_shop")["actor_sockets"]
+        self.assertEqual(sk["vendor"]["yaw_degrees"], 0.0)
+        self.assertEqual(sk["customer"]["yaw_degrees"], 180.0)
+        self.assertAlmostEqual(sk["counter_top_y"] - sk["vendor"]["position"][1], 1.05)
+        self.assertEqual(sk["vendor"]["position"][1], sk["customer"]["position"][1])
+
+    def test_rejects_bad_actor_sockets(self):
+        def bad(man):
+            sk = next(a for a in man["assets"] if a["id"] == "redline_shop")["actor_sockets"]
+            sk["customer"]["yaw_degrees"] = 0.0
+            sk["customer"]["position"][1] = 0.0
+            sk["light"] = {"id": "nope"}
+        errs = self._mutated(bad)
+        self.assertTrue(any("customer socket yaw" in e for e in errs))
+        self.assertTrue(any("one floor" in e for e in errs))
+        self.assertTrue(any("actor light" in e for e in errs))
+
+    def test_rejects_missing_actor_sockets(self):
+        def bad(man):
+            del next(a for a in man["assets"] if a["id"] == "redline_shop")["actor_sockets"]
+        self.assertTrue(any("actor_sockets missing" in e for e in self._mutated(bad)))
+
     def test_rejects_missing_texture_and_bad_lod(self):
         def bad(man):
             man["materials"]["brick"]["albedo"] = "textures/missing.png"

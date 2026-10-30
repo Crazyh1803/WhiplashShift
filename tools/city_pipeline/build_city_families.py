@@ -415,6 +415,17 @@ def write_manifest(lib, recs):
         e["light_anchors"] = [{"id": f"{aid}_light_{i}", "kind": la["kind"], "position": to_gltf(la["p"]), "direction": [round(v, 3) for v in to_gltf(la["d"])],
                                "color": list(la["color"]), "range_m": la["range_m"], "energy": la["energy"], "shadow": la["shadow"]} for i, la in enumerate(ctx_info["anchors"])]
         e["signs"] = ctx_info["signs"]
+        if ctx_info.get("sockets"):
+            sk = ctx_info["sockets"]
+            e["actor_sockets"] = {
+                "meaning": "position = glTF coordinates of the point on the floor between the actor's feet (the actor GLB origin), in the shop's own frame; "
+                           "yaw_degrees = rotation about +Y applied to the actor, same convention as benchmark_manifest placements (vendor 0 faces the street, customer 180 faces the counter)",
+                "floor_y": round(sk["vendor"]["p"][2], 4), "counter_top_y": round(sk["bowl"][2], 4), "bowl": to_gltf(sk["bowl"]),
+                "vendor": {"actor": sk["vendor"]["actor"], "glb": "godot/assets/city/candidates/industrial_market/" + sk["vendor"]["actor"] + ".glb",
+                           "position": to_gltf(sk["vendor"]["p"]), "yaw_degrees": sk["vendor"]["yaw_degrees"]},
+                "customer": {"actor": sk["customer"]["actor"], "glb": "godot/assets/city/candidates/industrial_market/" + sk["customer"]["actor"] + ".glb",
+                             "position": to_gltf(sk["customer"]["p"]), "yaw_degrees": sk["customer"]["yaw_degrees"]},
+                "light": e["light_anchors"][ctx_info["actor_light"]]}
         e["source_blend"] = f"assets/generated/city_realism/blends/{aid}.blend"
         e["previews"] = [f"assets/previews/city_realism/{f}" for f in sorted(os.listdir(PREV)) if f.startswith(aid + "_") and f.endswith(".png")] if os.path.isdir(PREV) else []
         e["wear"] = {"COLOR_0": "ray-cast AO x ground splash x rain streaks below joints/sills/outlets x oil/exhaust at use points x polished hand contacts x sun-faded roofline; emissive materials stay white",
@@ -478,7 +489,7 @@ def main():
         cap = 25000 if aid == "redline_shop" else 22000
         tried = finish_lod0(ctx, aid, cap - 300 if building else 3400, 10)
         tris = tri_count(ctx.m.bm)
-        info = {"W": W, "D": D, "tried": tried, "tris_est": tris, "ctx": {"entrances": ctx.entrances, "anchors": ctx.anchors, "signs": ctx.signs, "drips": [list(d) for d in ctx.drips],
+        info = {"W": W, "D": D, "tried": tried, "tris_est": tris, "ctx": {"entrances": ctx.entrances, "anchors": ctx.anchors, "signs": ctx.signs, "sockets": ctx.sockets, "actor_light": ctx.actor_light, "drips": [list(d) for d in ctx.drips],
                                                                          "dirty": [list(d) for d in ctx.dirty], "polish": [list(d) for d in ctx.polish]}}
         glb = os.path.join(REAL, aid + ".glb")
         # keep the evaluated bmesh for the .blend copy, export first

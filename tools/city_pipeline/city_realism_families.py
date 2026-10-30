@@ -364,13 +364,14 @@ def build_redline_shop(c):
     W, D = 12.0, 12.0
     GH, UH = 4.1, 3.0
     top = GH + UH
+    FLOOR, CTOP = 0.15, 1.2                                          # vendor and customer both stand 0.15 m above the pavement; counter top is 1.05 m above their feet
     # hollow ground-floor kitchen (2.8 m deep, visible through the counter opening) under a solid body
     bx(c, -W / 2, W / 2, -D, -2.8, 0.0, GH, "cladding_corrugated")
     bx(c, -W / 2, W / 2, -D, -T, GH, top, "cladding_corrugated")
     bx(c, -W / 2, W / 2, -T, 0.08, 0.0, 0.3, "concrete")
     for sx in (-1, 1):
         bx(c, sx * W / 2 - (0.15 if sx > 0 else 0), sx * W / 2 + (0 if sx > 0 else 0.15), -2.8, 0.0, 0.0, GH, "cladding_corrugated")
-    bx(c, -W / 2, W / 2, -2.8, 0.0, 0.0, 0.12, "paving")                                                   # kitchen floor
+    bx(c, -W / 2, W / 2, -2.8, 0.0, 0.0, FLOOR, "paving")                                                  # kitchen floor, level with the customer apron
     bx(c, -W / 2, W / 2, -2.8, -T, GH - 0.3, GH, "steel_structure")                                          # ceiling slab
     bx(c, -W / 2 + 0.2, W / 2 - 0.2, -2.72, -2.6, 0.12, 2.6, "equipment_steel")                              # back wall panel
     for z in (0.9, 1.5, 2.1):                                                                                # shelves with crates and hanging pots
@@ -396,10 +397,17 @@ def build_redline_shop(c):
     P.corrugated(c, -5.05, -3.7, 0.3, GH - 0.3, 0.02)
     P.corrugated(c, 5.0, 5.4, 0.3, GH - 0.3, 0.02)
     P.patch(c, -5.0, -3.9, 0.6, 1.8, 0.04, "cladding_patch")
-    bx(c, -3.6, 3.2, -1.6, 0.0, 0.0, 1.2, "cladding_corrugated")                                 # counter carcass
-    bx(c, -3.75, 3.35, -1.6, 0.18, 1.14, 1.2, "equipment_steel")                                 # counter top, rolled lip
-    bx(c, -3.75, 3.35, 0.1, 0.18, 1.0, 1.2, "equipment_steel")
+    # counter: deep cooking-line carcass either side of a 1.5 m vendor bay (x 0.85..2.35) where only the thin serving front remains
+    bay = (0.85, 2.35)
+    bx(c, -3.6, bay[0], -1.6, 0.0, 0.0, CTOP, "cladding_corrugated")                             # counter carcass
+    bx(c, bay[1], 3.2, -1.6, 0.0, 0.0, CTOP, "cladding_corrugated")
+    bx(c, -3.75, bay[0], -1.6, 0.18, CTOP - 0.06, CTOP, "equipment_steel")                       # counter top
+    bx(c, bay[1], 3.35, -1.6, 0.18, CTOP - 0.06, CTOP, "equipment_steel")
+    bx(c, bay[0], bay[1], -0.35, 0.0, 0.0, CTOP, "cladding_corrugated")                          # serving front through the bay
+    bx(c, bay[0], bay[1], -0.4, 0.18, CTOP - 0.06, CTOP, "equipment_steel")
+    bx(c, -3.75, 3.35, 0.1, 0.18, 1.0, CTOP, "equipment_steel")                                  # rolled lip
     bx(c, -3.4, 2.8, -0.0, 0.14, 0.0, 0.15, "plastic_rubber")                                    # toe kick
+    bx(c, -3.9, 3.5, 0.08, 0.95, 0.0, FLOOR, "paving")                                           # customer apron, level with the kitchen floor
     patch_x = (0.6, 2.2)
     P.patch(c, patch_x[0], patch_x[1], 0.25, 1.0, 0.0, "cladding_patch")
     P.personnel_door(c, 4.45, 0.3, 0.0, 0.9, 2.1, canopy=False)
@@ -451,13 +459,20 @@ def build_redline_shop(c):
     bx(c, -3.25, -1.55, 0.23, 0.245, 1.3, 2.1, "render_plaster")
     for k in range(4):
         bx(c, -3.1, -1.7, 0.245, 0.255, 1.4 + k * 0.17, 1.46 + k * 0.17, "equipment_steel")
-    cylv(c, 2.6, 0.5, 1.2, 1.28, 0.2, "equipment_steel", seg=12)                                  # tea urn
-    cylv(c, 2.6, 0.5, 1.28, 1.5, 0.15, "equipment_steel", seg=12)
+    cylv(c, 2.7, -0.05, 1.2, 1.28, 0.2, "equipment_steel", seg=12)                                # tea urn, on the counter top
+    cylv(c, 2.7, -0.05, 1.28, 1.5, 0.15, "equipment_steel", seg=12)
     for k in range(5):
-        cylv(c, -3.0 + k * 0.3, 0.55, 1.2, 1.25 + 0.04 * k, 0.1, "render_plaster", seg=10)        # stacked bowls
+        cylv(c, -3.0 + k * 0.3, 0.0, 1.2, 1.25 + 0.04 * k, 0.1, "render_plaster", seg=10)        # stacked bowls
     P.lamp_fixture(c, -4.6, 0.05, GH - 0.55, 0.4, rng_m=8.0)
     P.lamp_fixture(c, 4.6, 0.05, 3.0, 0.4, rng_m=8.0)
     c.anchor("street", (0.0, 1.2, GH + 0.2), (0, 1, -0.5), (1.0, 0.45, 0.25), 9.0, 1.3)
+    # Hand-off for the approved ramen vendor/customer GLBs (Blender coords). Actor origin = point on the floor between the feet; offsets are the
+    # approved benchmark's relative to its counter lip, moved to the open bay. Yaw 0 / 180 as in benchmark_manifest placements.
+    c.anchor("service", (1.35, 0.1, 2.6), (0, 0.1, -1), (1.0, 0.82, 0.55), 3.5, 1.0)
+    c.actor_light = len(c.anchors) - 1
+    c.sockets = {"vendor": {"actor": "ramen_vendor", "p": (1.2, -0.565, FLOOR), "yaw_degrees": 0.0},
+                 "customer": {"actor": "ramen_customer", "p": (1.46, 0.405, FLOOR), "yaw_degrees": 180.0},
+                 "bowl": (1.35, -0.115, CTOP)}
 
 
 # ================================================================================================ 6 row_workshop
