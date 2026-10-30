@@ -66,6 +66,21 @@ func _ready() -> void:
 			lights._refresh(camera.position)
 			if "--capture" in OS.get_cmdline_user_args():
 				await _capture(path.path_join("quarter-%d-driver-%d.png" % [quarter + 1, view + 1]))
+		if "--capture" in OS.get_cmdline_user_args():
+			for placement: Dictionary in converted.get_meta("placements"):
+				if placement["quarter"] == quarter and placement["role"] == "building":
+					var xf: Transform3D = placement["transform"]
+					camera.position = xf * Vector3(-12, 2.5, -20)
+					camera.look_at(xf * Vector3(0, 3.5, 1))
+					lights._refresh(camera.position)
+					await _capture(path.path_join("quarter-%d-sidewalk-night.png" % (quarter + 1)))
+					break
+	if "--capture" in OS.get_cmdline_user_args() and converted.has_node("ShopLife0"):
+		var xf: Transform3D = (converted.get_node("ShopLife0") as Node3D).global_transform
+		camera.position = xf * Vector3(-0.5, 1.8, -4.5)
+		camera.look_at(xf * Vector3(1.35, 1.6, 0.2))
+		lights._refresh(camera.position)
+		await _capture(path.path_join("ramen-handoff-night.png"))
 	if "--capture" in OS.get_cmdline_user_args():
 		var sunlight := DirectionalLight3D.new()
 		sunlight.rotation_degrees = Vector3(-50, -25, 0)
