@@ -4,6 +4,7 @@ extends RefCounted
 const DIRECTORY := "res://assets/city/realism/"
 const MANIFEST := DIRECTORY + "city_families_manifest.json"
 const FAMILIES: Array[String] = ["habitation_workshop", "market_habitat", "service_tenement", "freight_depot", "redline_shop", "row_workshop", "utility_substation", "transit_depot"]
+const STREETS: Array[String] = ["sidewalk_panel", "curb_segment", "drain_cover", "street_lamp", "bollard", "bench_planter", "refuse_station", "alley_conduit"]
 static var entries: Dictionary = {}
 static var materials: Dictionary = {}
 static var meshes: Dictionary = {}
@@ -50,6 +51,9 @@ static func available() -> bool:
 	for id: String in FAMILIES:
 		if not catalog.has(id) or not _safe_path(catalog[id].get("lod1_glb")):
 			return _fail("Missing city family or silhouette: " + id)
+	for id: String in STREETS:
+		if not catalog.has(id):
+			return _fail("Missing city street piece: " + id)
 	materials = prepared
 	for id: String in catalog:
 		var entry: Dictionary = catalog[id]
@@ -79,8 +83,16 @@ static func _material(id: String, definition: Dictionary) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.resource_name = id
 	material.vertex_color_use_as_albedo = true
-	var factors: Dictionary = definition.get("factors", {})
-	var base: Array = factors.get("base_color", [1, 1, 1])
+	var raw: Variant = definition.get("factors", {})
+	if not raw is Dictionary or CityRealism._vector(raw.get("base_color")) == Vector3.INF:
+		_fail("Invalid city material factors: " + id)
+		return null
+	var factors: Dictionary = raw
+	for value: Variant in [factors.get("roughness"), factors.get("metallic"), definition.get("normal_strength", 0.5)]:
+		if not IndustrialMarketBenchmark.is_number(value):
+			_fail("Invalid city material strength: " + id)
+			return null
+	var base: Array = factors["base_color"]
 	material.albedo_color = Color(base[0], base[1], base[2])
 	material.roughness = float(factors.get("roughness", 1.0))
 	material.metallic = float(factors.get("metallic", 0.0))

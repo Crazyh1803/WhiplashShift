@@ -9,7 +9,10 @@ static func build(parent: Node3D, input: CourseDefinition) -> Node3D:
 	var layout := CityRealismLayout.new(course)
 	layout.populate()
 	var buildings := layout.placements.filter(func(p: Dictionary) -> bool: return p["role"] == "building")
-	if buildings.size() < 8:
+	var covered := {}
+	for building: Dictionary in buildings:
+		covered["%d/%d" % [building["quarter"], building["side"]]] = true
+	if buildings.size() < 8 or covered.size() != 8:
 		push_warning("Converted city has insufficient safe lots; retaining the legacy city")
 		return null
 	var root := Node3D.new()
@@ -34,10 +37,13 @@ static func build(parent: Node3D, input: CourseDefinition) -> Node3D:
 			lights.anchors.append({"position": (placement["transform"] as Transform3D) * Vector3(0, 5.5, 0), "energy": 6.0, "range": 26.0, "shadow": false})
 	for key: String in batches:
 		var records: Array = batches[key]
-		_batch(root, records, false)
+		var bounds: AABB = records[0]["bounds"]
+		for record: Dictionary in records:
+			bounds = bounds.merge(record["bounds"])
+		_batch(root, records, false, bounds)
 		var far_records := records.filter(func(p: Dictionary) -> bool: return p["role"] == "building")
 		if not far_records.is_empty():
-			_batch(root, far_records, true)
+			_batch(root, far_records, true, bounds)
 	_actors(root, buildings, lights)
 	root.add_child(lights)
 	root.set_meta("placements", layout.placements)
@@ -52,10 +58,7 @@ static func build(parent: Node3D, input: CourseDefinition) -> Node3D:
 	return root
 
 
-static func _batch(root: Node3D, records: Array, far: bool) -> void:
-	var bounds: AABB = records[0]["bounds"]
-	for record: Dictionary in records:
-		bounds = bounds.merge(record["bounds"])
+static func _batch(root: Node3D, records: Array, far: bool, bounds: AABB) -> void:
 	var origin := bounds.get_center()
 	var tools := {}
 	for record: Dictionary in records:
@@ -77,6 +80,7 @@ static func _batch(root: Node3D, records: Array, far: bool) -> void:
 	var multimesh := MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.mesh = combined
+	multimesh.custom_aabb = AABB(bounds.position - origin, bounds.size)
 	multimesh.instance_count = 1
 	multimesh.set_instance_transform(0, Transform3D.IDENTITY)
 	var instance := MultiMeshInstance3D.new()

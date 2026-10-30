@@ -137,6 +137,9 @@ func _fits_visible(candidate: Dictionary) -> bool:
 			group["tris"] += stats["tris"]
 			for material: String in stats["materials"]:
 				group["materials"][material] = true
+	for key: String in groups:
+		if groups[key]["far"]:
+			groups[key]["bounds"] = groups[key.replace("true", "false")]["bounds"]
 	for s in range(0, int(course.total_length), 10):
 		var eye: Vector3 = CityDistrict.sample(course, float(s))["pos"] + Vector3.UP * 1.5
 		var cost := 0
