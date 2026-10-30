@@ -1,0 +1,89 @@
+extends Node3D
+
+func _ready() -> void:
+	var course := BlockCircuitData.build_course()
+	var env := WorldEnvironment.new()
+	env.environment = TrackMaterials.environment()
+	add_child(env)
+	TrackBuilder.build(self, course.points)
+	TrackBuilder.build_guard_rails(self, course.points)
+	TrackScenery.build_guidance(self, course)
+	var city := CityScenery.build(self, course)
+	var converted := city.get_node_or_null("CityRealism")
+	if converted == null:
+		push_error("Converted city unavailable: " + CityRealismCatalog.error)
+		get_tree().quit(1)
+		return
+	var families := {}
+	var roles := {}
+	var reasons := {}
+	for p: Dictionary in converted.get_meta("placements"):
+		families[p["id"]] = int(families.get(p["id"], 0)) + 1
+		roles[p["role"]] = int(roles.get(p["role"], 0)) + 1
+	for p: Dictionary in converted.get_meta("rejected_slots"):
+		reasons[p["reason"]] = int(reasons.get(p["reason"], 0)) + 1
+	print("CITY_REALISM_COUNTS ", families, " roles=", roles, " rejected=", reasons, " tris=", converted.get_meta("triangle_count"), " quarters=", converted.get_meta("quarter_triangles"))
+	var camera := Camera3D.new()
+	camera.fov = 70
+	camera.far = 2500
+	add_child(camera)
+	camera.current = true
+	var headlight := OmniLight3D.new()
+	headlight.light_energy = 2.0
+	headlight.omni_range = 45.0
+	camera.add_child(headlight)
+	var lights: CityRealismLighting = converted.get_node("LocalLighting")
+	var peak_tris := 0
+	var peak_surfaces := 0
+	for s in range(0, int(course.total_length), 10):
+		var eye: Vector3 = CityDistrict.sample(course, s)["pos"] + Vector3.UP * 1.5
+		var tris := 0
+		var surfaces := 0
+		for instance: MultiMeshInstance3D in converted.find_children("*", "MultiMeshInstance3D", true, false):
+			var distance := eye.distance_to(instance.global_transform * instance.get_aabb().get_center())
+			if distance > instance.visibility_range_end + 5 or distance < instance.visibility_range_begin - 5:
+				continue
+			tris += IndustrialMarketBenchmark.count_triangles(instance.multimesh.mesh) * instance.multimesh.instance_count
+			surfaces += instance.multimesh.mesh.get_surface_count()
+		peak_tris = maxi(peak_tris, tris)
+		peak_surfaces = maxi(peak_surfaces, surfaces)
+	print("CITY_RENDER_WINDOW peak_triangles=", peak_tris, " peak_surfaces=", peak_surfaces)
+	var path := ProjectSettings.globalize_path("res://../assets/previews/city_realism/in_game")
+	DirAccess.make_dir_recursive_absolute(path)
+	for quarter in 4:
+		for view in 2:
+			var s := course.total_length * (quarter + (0.17 if view == 0 else 0.65)) / 4.0
+			var at := CityDistrict.sample(course, s)
+			camera.position = at["pos"] + Vector3.UP * 1.5
+			camera.look_at((at["pos"] as Vector3) + (at["dir"] as Vector3) * 85 + Vector3.UP * 2.5)
+			lights._refresh(camera.position)
+			if "--capture" in OS.get_cmdline_user_args():
+				await _capture(path.path_join("quarter-%d-driver-%d.png" % [quarter + 1, view + 1]))
+	if "--capture" in OS.get_cmdline_user_args():
+		var sunlight := DirectionalLight3D.new()
+		sunlight.rotation_degrees = Vector3(-50, -25, 0)
+		sunlight.light_energy = 0.8
+		add_child(sunlight)
+		env.environment.fog_enabled = false
+		env.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+		env.environment.ambient_light_color = Color(0.65, 0.7, 0.8)
+		env.environment.ambient_light_energy = 0.5
+		for quarter in 4:
+			for p: Dictionary in converted.get_meta("placements"):
+				if p["quarter"] == quarter and p["role"] == "building":
+					var xf: Transform3D = p["transform"]
+					camera.position = xf * Vector3(-12, 3, -20)
+					camera.look_at(xf * Vector3(0, 4, 1))
+					await _capture(path.path_join("quarter-%d-sidewalk-neutral.png" % (quarter + 1)))
+					break
+	city.queue_free()
+	for i in 4:
+		await get_tree().process_frame
+	get_tree().quit()
+
+func _capture(path: String) -> void:
+	for i in 12:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	var result := get_viewport().get_texture().get_image().save_png(path)
+	print("CITY_CAPTURE ", path, " result=", result)

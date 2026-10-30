@@ -23,16 +23,11 @@ func _init(input: CourseDefinition) -> void:
 
 func populate() -> void:
 	var quarter := course.total_length / 4.0
-	for station in 8:
-		for q in 4:
-			for side: float in [-1.0, 1.0]:
-				var s := quarter * (q + (station + 0.55) / 8.0)
-				var family: String = FAMILY_ORDER[q][(station + int(side > 0)) % 4]
-				_place(family, s, side, "building", 9.5)
-	for index in int(course.total_length / 8.0):
-		var s := 5.0 + 8.0 * index
+	for index in int(course.total_length / 16.0):
+		var s := 8.0 + 16.0 * index
 		for side: float in [-1.0, 1.0]:
 			_ground(s, side)
+			_curb(s, side)
 			if index % 5 == 1:
 				_place("street_lamp", s, side, "prop", 4.5)
 			if index % 9 == 4:
@@ -43,6 +38,13 @@ func populate() -> void:
 				_place("drain_cover", s, side, "detail", 5.0)
 			if index % 17 == 8:
 				_place("alley_conduit", s, side, "prop", 11.0)
+
+	for station in 8:
+		for q in 4:
+			for side: float in [-1.0, 1.0]:
+				var s := quarter * (q + (station + 0.55) / 8.0)
+				var family: String = FAMILY_ORDER[q][(station + int(side > 0)) % 4]
+				_place(family, s, side, "building", 9.5)
 
 
 func transform_at(s: float, side: float, lateral: float) -> Transform3D:
@@ -60,8 +62,18 @@ func _ground(s: float, side: float) -> void:
 	var at := CityDistrict.sample(course, s)
 	var edge := float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
 	var xf := transform_at(s, side, edge + 6.75)
-	xf.basis = xf.basis.scaled_local(Vector3(8.0 / bounds.size.x, 1.0, 5.5 / bounds.size.z))
+	xf.basis = xf.basis.scaled_local(Vector3(16.1 / bounds.size.x, 1.0, 5.5 / bounds.size.z))
 	_try_add("sidewalk_panel", s, side, "ground", xf, false)
+
+
+func _curb(s: float, side: float) -> void:
+	var mesh: Mesh = CityRealismCatalog.meshes["curb_segment"]
+	var bounds := mesh.get_aabb()
+	var at := CityDistrict.sample(course, s)
+	var edge := float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
+	var xf := transform_at(s, side, edge + 4.05)
+	xf.basis = xf.basis.scaled_local(Vector3(16.1 / bounds.size.x, 1, 1))
+	_try_add("curb_segment", s, side, "ground", xf, false)
 
 
 func _place(id: String, s: float, side: float, role: String, setback: float) -> void:
@@ -111,22 +123,31 @@ func _try_add(id: String, s: float, side: float, role: String, xf: Transform3D, 
 
 
 func _fits_visible(candidate: Dictionary) -> bool:
-	var buildings := placements.filter(func(p: Dictionary) -> bool: return p["role"] == "building")
-	buildings.append(candidate)
+	var groups := {}
+	var records := placements.duplicate()
+	records.append(candidate)
+	for p: Dictionary in records:
+		for far: bool in ([false, true] if p["role"] == "building" else [false]):
+			var key := "%d/%s" % [p["chunk"], far]
+			var stats: Dictionary = CityRealismCatalog.costs[p["id"] + ("@far" if far else "")]
+			if not groups.has(key):
+				groups[key] = {"bounds": p["bounds"], "tris": 0, "materials": {}, "far": far}
+			var group: Dictionary = groups[key]
+			group["bounds"] = (group["bounds"] as AABB).merge(p["bounds"])
+			group["tris"] += stats["tris"]
+			for material: String in stats["materials"]:
+				group["materials"][material] = true
 	for s in range(0, int(course.total_length), 10):
-		var at: Vector3 = CityDistrict.sample(course, float(s))["pos"]
+		var eye: Vector3 = CityDistrict.sample(course, float(s))["pos"] + Vector3.UP * 1.5
 		var cost := 0
 		var surfaces := 0
-		for p: Dictionary in buildings:
-			var distance := at.distance_to((p["bounds"] as AABB).get_center())
-			var radius := (p["bounds"] as AABB).size.length() * 0.5
-			var far := distance - radius > 140.0
-			if distance - radius > 450.0:
+		for group: Dictionary in groups.values():
+			var distance := eye.distance_to((group["bounds"] as AABB).get_center())
+			if distance > (455.0 if group["far"] else 145.0) or (group["far"] and distance < 135.0):
 				continue
-			var stats: Dictionary = CityRealismCatalog.costs[p["id"] + ("@far" if far else "")]
-			cost += int(stats["tris"])
-			surfaces += int(stats["surfaces"])
-		if cost > NEAR_BUDGET - 40000 or surfaces > SURFACE_BUDGET - 32:
+			cost += int(group["tris"])
+			surfaces += group["materials"].size()
+		if cost > NEAR_BUDGET or surfaces > SURFACE_BUDGET:
 			return false
 	return true
 

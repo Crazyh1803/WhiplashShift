@@ -20,7 +20,7 @@ static func build(parent: Node3D, input: CourseDefinition) -> Node3D:
 	for placement: Dictionary in layout.placements:
 		var id: String = placement["id"]
 		var chunk := int(placement["chunk"])
-		var key := "%d/%s" % [chunk, id]
+		var key := str(chunk)
 		if not batches.has(key):
 			batches[key] = []
 		batches[key].append(placement)
@@ -34,10 +34,10 @@ static func build(parent: Node3D, input: CourseDefinition) -> Node3D:
 			lights.anchors.append({"position": (placement["transform"] as Transform3D) * Vector3(0, 5.5, 0), "energy": 6.0, "range": 26.0, "shadow": false})
 	for key: String in batches:
 		var records: Array = batches[key]
-		var id: String = records[0]["id"]
-		_batch(root, records, id, false)
-		if id in CityRealismCatalog.FAMILIES:
-			_batch(root, records, id, true)
+		_batch(root, records, false)
+		var far_records := records.filter(func(p: Dictionary) -> bool: return p["role"] == "building")
+		if not far_records.is_empty():
+			_batch(root, far_records, true)
 	_actors(root, buildings, lights)
 	root.add_child(lights)
 	root.set_meta("placements", layout.placements)
@@ -52,31 +52,43 @@ static func build(parent: Node3D, input: CourseDefinition) -> Node3D:
 	return root
 
 
-static func _batch(root: Node3D, records: Array, id: String, far: bool) -> void:
-	var mesh: Mesh = CityRealismCatalog.meshes[id + ("@far" if far else "")]
-	var origin: Vector3 = (records[0]["transform"] as Transform3D).origin
+static func _batch(root: Node3D, records: Array, far: bool) -> void:
+	var bounds: AABB = records[0]["bounds"]
+	for record: Dictionary in records:
+		bounds = bounds.merge(record["bounds"])
+	var origin := bounds.get_center()
+	var tools := {}
+	for record: Dictionary in records:
+		var mesh: Mesh = CityRealismCatalog.meshes[record["id"] + ("@far" if far else "")]
+		var xf: Transform3D = record["transform"]
+		xf.origin -= origin
+		for surface in mesh.get_surface_count():
+			var material: Material = mesh.surface_get_material(surface)
+			var id := material.resource_name
+			if not tools.has(id):
+				var tool := SurfaceTool.new()
+				tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+				tools[id] = tool
+			tools[id].append_from(mesh, surface, xf)
+	var combined := ArrayMesh.new()
+	for id: String in tools:
+		tools[id].commit(combined)
+		combined.surface_set_material(combined.get_surface_count() - 1, CityRealismCatalog.materials[id])
 	var multimesh := MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	multimesh.mesh = mesh
-	multimesh.instance_count = records.size()
-	var transforms: Array[Transform3D] = []
-	for index in records.size():
-		var xf: Transform3D = records[index]["transform"]
-		transforms.append(xf)
-		xf.origin -= origin
-		multimesh.set_instance_transform(index, xf)
+	multimesh.mesh = combined
+	multimesh.instance_count = 1
+	multimesh.set_instance_transform(0, Transform3D.IDENTITY)
 	var instance := MultiMeshInstance3D.new()
-	instance.name = "%s_%d_%s" % [id, int(records[0]["chunk"]), "far" if far else "near"]
+	instance.name = "Chunk%d_%s" % [int(records[0]["chunk"]), "far" if far else "near"]
 	instance.position = origin
 	instance.multimesh = multimesh
-	instance.set_meta("asset_id", id)
-	instance.set_meta("transforms", transforms)
+	instance.set_meta("placements", records)
 	instance.set_meta("lod", 1 if far else 0)
-	var building := id in CityRealismCatalog.FAMILIES
-	instance.visibility_range_begin = 130.0 if far else 0.0
-	instance.visibility_range_end = 450.0 if far else 140.0 if building else 420.0 if id == "sidewalk_panel" else 180.0
-	instance.visibility_range_begin_margin = 5.0 if far else 0.0
-	instance.visibility_range_end_margin = 5.0
+	instance.visibility_range_begin = 140.0 if far else 0.0
+	instance.visibility_range_end = 450.0 if far else 140.0
+	instance.visibility_range_begin_margin = 0.0
+	instance.visibility_range_end_margin = 0.0
 	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if far else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	root.add_child(instance)
 

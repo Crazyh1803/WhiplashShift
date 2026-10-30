@@ -18,10 +18,17 @@ static func available() -> bool:
 	if not FileAccess.file_exists(MANIFEST):
 		return false
 	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST))
-	if not data is Dictionary or data.get("version") != 2 or not data.get("assets") is Array:
+	if not data is Dictionary or not IndustrialMarketBenchmark.is_number(data.get("version")) or data.get("version") != 2 or not data.get("assets") is Array:
 		return _fail("Invalid city realism manifest")
 	var library: Variant = data.get("materials", {})
-	var definitions: Array = library.values() if library is Dictionary else library if library is Array else []
+	var definitions: Array = []
+	if library is Dictionary:
+		for key: String in library:
+			if not library[key] is Dictionary:
+				return _fail("Invalid city material library")
+			var definition: Dictionary = library[key].duplicate()
+			definition["id"] = key
+			definitions.append(definition)
 	var prepared := {}
 	for definition: Variant in definitions:
 		if not definition is Dictionary:
@@ -53,9 +60,13 @@ static func available() -> bool:
 			if mesh == null:
 				materials.clear()
 				meshes.clear()
+				costs.clear()
 				return false
 			meshes[key] = mesh
-			costs[key] = {"tris": IndustrialMarketBenchmark.count_triangles(mesh), "surfaces": mesh.get_surface_count()}
+			var names: Array[String] = []
+			for surface in mesh.get_surface_count():
+				names.append(mesh.surface_get_material(surface).resource_name)
+			costs[key] = {"tris": IndustrialMarketBenchmark.count_triangles(mesh), "surfaces": mesh.get_surface_count(), "materials": names}
 	entries = catalog
 	return true
 
@@ -68,11 +79,15 @@ static func _material(id: String, definition: Dictionary) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.resource_name = id
 	material.vertex_color_use_as_albedo = true
-	material.roughness = 1.0
-	material.metallic = 1.0
-	var textures: Dictionary = definition.get("textures", definition)
-	for slot: String in ["albedo", "orm", "normal"]:
-		var path: Variant = textures.get(slot)
+	var factors: Dictionary = definition.get("factors", {})
+	var base: Array = factors.get("base_color", [1, 1, 1])
+	material.albedo_color = Color(base[0], base[1], base[2])
+	material.roughness = float(factors.get("roughness", 1.0))
+	material.metallic = float(factors.get("metallic", 0.0))
+	for slot: String in ["albedo", "orm", "normal", "emissive"]:
+		if not definition.has(slot):
+			continue
+		var path: Variant = definition[slot]
 		if not _safe_path(path) or not ResourceLoader.exists(DIRECTORY + String(path)):
 			_fail("Missing shared city texture: " + id + "/" + slot)
 			return null
@@ -81,21 +96,31 @@ static func _material(id: String, definition: Dictionary) -> StandardMaterial3D:
 			_fail("Unreadable shared city texture: " + id + "/" + slot)
 			return null
 		match slot:
-			"albedo": material.albedo_texture = texture
+			"albedo":
+				material.albedo_texture = texture
+				material.albedo_color = Color.WHITE
 			"orm":
+				material.roughness = 1.0
+				material.metallic = 1.0
 				material.roughness_texture = texture
 				material.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_GREEN
 				material.metallic_texture = texture
 				material.metallic_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_BLUE
+				material.ao_enabled = true
+				material.ao_texture = texture
+				material.ao_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
 			"normal":
 				material.normal_enabled = true
 				material.normal_texture = texture
 				material.normal_scale = float(definition.get("normal_strength", 0.5))
+			"emissive":
+				if id == "sign_atlas":
+					material.emission_texture = texture
 	if id in ["sign_atlas", "lamp_glass"]:
 		material.emission_enabled = true
-		material.emission = Color.WHITE
-		material.emission_texture = material.albedo_texture
-		material.emission_energy_multiplier = float(definition.get("emission_strength", 2.0))
+		material.emission_operator = BaseMaterial3D.EMISSION_OP_MULTIPLY
+		material.emission = material.albedo_color
+		material.emission_energy_multiplier = float(definition.get("emission", {}).get("strength", 2.0))
 	return material
 
 
