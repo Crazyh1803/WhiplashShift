@@ -61,7 +61,16 @@ def rebind(objs):
                 if slot_name in lib:
                     n = nt.nodes.new("ShaderNodeTexImage")
                     n.image = bpy.data.images.load(os.path.join(REAL, lib[slot_name]), check_existing=True)
-                    nt.links.new(n.outputs["Color"], b.inputs[sock])
+                    vc = next((v for v in nt.nodes if v.type == "VERTEX_COLOR"), None)    # importer's COLOR_0 layer ("Color"): AO/wear multiplier
+                    if vc is None:
+                        nt.links.new(n.outputs["Color"], b.inputs[sock])
+                    else:
+                        mul = nt.nodes.new("ShaderNodeMix")
+                        mul.data_type, mul.blend_type = "RGBA", "MULTIPLY"
+                        mul.inputs["Factor"].default_value = 1.0
+                        nt.links.new(n.outputs["Color"], mul.inputs["A"])
+                        nt.links.new(vc.outputs["Color"], mul.inputs["B"])
+                        nt.links.new(mul.outputs["Result"], b.inputs[sock])
             if "orm" in lib:
                 n = nt.nodes.new("ShaderNodeTexImage")
                 n.image = bpy.data.images.load(os.path.join(REAL, lib["orm"]), check_existing=True)
