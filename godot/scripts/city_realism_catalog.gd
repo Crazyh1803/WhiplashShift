@@ -6,6 +6,7 @@ const MANIFEST := DIRECTORY + "city_families_manifest.json"
 const FAMILIES: Array[String] = ["habitation_workshop", "market_habitat", "service_tenement", "freight_depot", "redline_shop", "row_workshop", "utility_substation", "transit_depot"]
 const STREETS: Array[String] = ["sidewalk_panel", "curb_segment", "drain_cover", "street_lamp", "bollard", "bench_planter", "refuse_station", "alley_conduit"]
 const GROUND_DIRECTORY := "res://assets/city/ground/"
+const GROUND_DEPTHS := {"road_apron": 3.8, "service_lane": 10.0, "loading_yard": 14.0, "utility_verge": 14.0}
 const GROUND_CAPS := {"road_apron": 24, "service_lane": 40, "loading_yard": 64, "utility_verge": 64}
 const GROUND: Array[String] = ["road_apron", "service_lane", "loading_yard", "utility_verge"]
 static var entries: Dictionary = {}
@@ -83,19 +84,21 @@ static func ground_available() -> bool:
 	return GROUND.all(func(id: String) -> bool: return entries.has(id) and meshes.has(id) and costs.has(id))
 
 
-static func _load_ground() -> void:
-	var path := GROUND_DIRECTORY + "city_ground_manifest.json"
+static func _load_ground(path: String = GROUND_DIRECTORY + "city_ground_manifest.json") -> void:
 	if not FileAccess.file_exists(path):
 		return
 	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 	if not data is Dictionary or not IndustrialMarketBenchmark.is_number(data.get("version")) or data["version"] != 1 or not data.get("assets") is Array:
+		push_warning("Ignoring city ground kit: invalid manifest schema/version")
 		return
 	var additions := {}
 	for raw: Variant in data["assets"]:
 		if not raw is Dictionary or not raw.get("id") is String or raw["id"] not in GROUND or additions.has(raw["id"]) or raw.get("glb") != raw["id"] + ".glb":
+			push_warning("Ignoring city ground kit: invalid or duplicate asset")
 			return
 		additions[raw["id"]] = raw
 	if additions.size() != GROUND.size():
+		push_warning("Ignoring city ground kit: incomplete asset set")
 		return
 	var prepared := {}
 	for id: String in GROUND:
@@ -105,9 +108,10 @@ static func _load_ground() -> void:
 			error = ""
 			return
 		var box := mesh.get_aabb()
-		var depth := 3.8 if id == "road_apron" else 10.0 if id == "service_lane" else 14.0
+		var depth: float = GROUND_DEPTHS[id]
 		var centred := absf(box.position.x + 8.05) < 0.02 and absf(box.end.x - 8.05) < 0.02 and absf(box.position.z + depth * 0.5) < 0.02 and absf(box.end.z - depth * 0.5) < 0.02
 		if not centred or not box.position.is_finite() or not box.size.is_finite() or box.size.x < 0.01 or box.size.z < 0.01 or box.position.y < -0.001 or box.end.y > 0.035 or mesh.get_surface_count() > 3 or IndustrialMarketBenchmark.count_triangles(mesh) > GROUND_CAPS[id]:
+			push_warning("Ignoring city ground kit: geometry exceeds contract for " + id)
 			return
 		prepared[id] = mesh
 	for id: String in GROUND:
