@@ -1,7 +1,8 @@
 """Renders of the REAL exported city realism GLBs, re-imported into a clean scene (what Godot loads):
 ak-blender tools/city_pipeline/city_realism_preview.py -- --set all|assets|lineups [--only id,id] [--res 900]
 
-Shared textures are external URIs; after import every material is checked and, if a texture binding was lost, rebound from the manifest library.
+Runtime GLBs are geometry-only: every imported material stub (named exactly like its extras.library_binding) is explicitly rebound
+to the shared PNGs of the manifest material library, so previews stay reproducible without the textured source exports.
 Outputs assets/previews/city_realism/<id>_{front,street,night}.png and lineup_{buildings,streets}_{neutral,night}.png. Blender lighting is diagnostic only."""
 import argparse
 import json
@@ -52,7 +53,7 @@ def rebind(objs):
                 raise SystemExit(f"material {m.name} not in library")
             nt = m.node_tree
             if any(n.type == "TEX_IMAGE" and n.image for n in nt.nodes) or ("albedo" not in lib and "orm" not in lib):
-                continue                                     # bound by the importer, or texture-free by design (lamp_glass)
+                continue                                     # already bound, or texture-free by design (lamp_glass)
             rebound["n"] += 1
             rebound.setdefault("names", set()).add(m.name)
             b = nt.nodes["Principled BSDF"]
@@ -76,6 +77,10 @@ def rebind(objs):
                 nm = nt.nodes.new("ShaderNodeNormalMap")
                 nt.links.new(n.outputs["Color"], nm.inputs["Color"])
                 nt.links.new(nm.outputs["Normal"], b.inputs["Normal"])
+            if "emissive" in lib:
+                n = nt.nodes.new("ShaderNodeTexImage")
+                n.image = bpy.data.images.load(os.path.join(REAL, lib["emissive"]), check_existing=True)
+                nt.links.new(n.outputs["Color"], b.inputs["Emission Color"])
 
 
 def place(aid, x=0.0, lod1=False):

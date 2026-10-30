@@ -8,7 +8,7 @@ Eight street-building families (+LOD1) and eight street pieces in the approved w
 | Path | What |
 |---|---|
 | `godot/assets/city/realism/<id>.glb`, `<id>_lod1.glb` | 8 buildings (LOD0 + LOD1) and 8 street pieces (LOD0). One static mesh each, no cameras/lights/animation/colliders |
-| `godot/assets/city/realism/textures/*.png` | shared PBR library: 14 materials, 39 images, referenced by external URI from every GLB (no embedded images) |
+| `godot/assets/city/realism/textures/*.png` | shared PBR library: 14 materials, 39 images, bound by exact material name (`extras.library_binding`) from the manifest library; runtime GLBs are geometry-only with no images/textures/samplers. Full textured exports are kept in `assets/generated/city_realism/textured_exports/` (`city_realism_bind.py convert` re-derives the pair) |
 | `godot/assets/city/realism/city_families_manifest.json` | version 2: library, per-asset tris/AABB/footprint/protrusions/entrances/light anchors/ordered surfaces/costs |
 | `assets/generated/city_realism/` | source textures, `.blend` per asset, `build_records.json` |
 | `assets/previews/city_realism/` | re-imported GLB renders: `<id>_{front,street,night}.png`, `lineup_buildings{,_b}_{neutral,night}.png`, `lineup_streets_{neutral,night}.png` |
