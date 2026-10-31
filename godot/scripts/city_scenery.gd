@@ -11,6 +11,15 @@ const DETAIL_BEHIND := 100.0
 const DETAIL_AHEAD := 350.0
 const WORLD_LIMIT := 1100.0
 const FACADE_SHADER := preload("res://shaders/city_facade.gdshader")
+const BACKDROP_SHADER := preload("res://shaders/city_backdrop.gdshader")
+# Converted-city midground: the original tower kit, weathered, behind the detailed frontages.
+const BACKDROP_MAX_BUILDINGS := 420
+const BACKDROP_MAX_INSTANCES := 1900
+const BACKDROP_TRIANGLES_PER_BOX := 12
+const BACKDROP_TRIANGLE_CAP := BACKDROP_MAX_INSTANCES * BACKDROP_TRIANGLES_PER_BOX
+const BACKDROP_MIN_PER_QUARTER_SIDE := 8
+const BACKDROP_STEP := 26.0
+const BACKDROP_INFILL_STEP := 11.0
 const UNIT_BOX := AABB(Vector3(-0.5, -0.5, -0.5), Vector3.ONE)
 
 
@@ -31,11 +40,18 @@ static func build(parent: Node3D, course: CourseDefinition, use_city_kit: bool =
 	if block != null:
 		reserved.assign(block.get_meta("reserved_bounds", []))
 		block_lights = int(block.get_meta("light_count", 0))
-	_Kit.new(course, use_city_kit, reserved, block_lights, converted).populate(root)
+	var kit := _Kit.new(course, use_city_kit, reserved, block_lights, converted)
+	kit.populate(root)
 	root.set_meta("authored_quarter", use_city_kit)
 	root.set_meta("converted_city", converted)
 	if use_city_kit:
-		CityDistrict.build(root, course)
+		var district := CityDistrict.build(root, course)
+		# The backdrop goes in last so it can never take a landmark's lot.
+		if converted:
+			var landmarks: Array[AABB] = []
+			for placement: Dictionary in district.get_meta("placements", []):
+				landmarks.append(placement["bounds"])
+			kit.build_backdrop(root, landmarks)
 	return root
 
 
@@ -83,6 +99,8 @@ class _Kit extends RefCounted:
 	var total := 0.0
 	var pieces := {}
 	var footprints: Array[AABB] = []
+	var visible_footprints: Array[AABB] = []
+	var crown_footprint := AABB()
 	var lights := 0
 	var sinew_count := 0
 	var materials := {}
@@ -128,6 +146,11 @@ class _Kit extends RefCounted:
 		# Beyond the road fog (280 m), distant silhouettes stay readable by ignoring it.
 		materials["skyline"] = _flat(Color(0.07, 0.08, 0.115))
 		materials["windows"] = _glow(Color.WHITE, true)
+		var backdrop := ShaderMaterial.new()
+		backdrop.shader = CityScenery.BACKDROP_SHADER
+		materials["bd_body"] = backdrop
+		materials["bd_rib"] = _flat(Color(0.17, 0.16, 0.15))
+		(materials["bd_rib"] as StandardMaterial3D).disable_fog = false
 		materials["crown_steel"] = _flat(Color(0.10, 0.11, 0.15))
 		materials["crown_cream"] = _flat(Color(0.46, 0.43, 0.36))
 		materials["crown_cyan"] = _glow(Color("00f0ff"), true)
@@ -178,7 +201,7 @@ class _Kit extends RefCounted:
 			merged = merged.merge(part[1] * CityScenery.UNIT_BOX)
 		return merged
 
-	func _accept(parts: Array, own_overlap: bool = true, emit_geometry: bool = true, preserve_far: bool = false) -> bool:
+	func _accept(parts: Array, own_overlap: bool = true, emit_geometry: bool = true) -> bool:
 		var bounds := _bounds(parts)
 		if absf(bounds.position.x) > CityScenery.WORLD_LIMIT or absf(bounds.end.x) > CityScenery.WORLD_LIMIT \
 				or absf(bounds.position.z) > CityScenery.WORLD_LIMIT or absf(bounds.end.z) > CityScenery.WORLD_LIMIT:
@@ -187,7 +210,7 @@ class _Kit extends RefCounted:
 			return false
 		var flat := AABB(Vector3(bounds.position.x, 0, bounds.position.z), Vector3(bounds.size.x, 1, bounds.size.z)).grow(1.0)
 		for reserved: AABB in reserved_bounds:
-			if not preserve_far and flat.intersects(reserved):
+			if flat.intersects(reserved):
 				return false
 		if own_overlap:
 			for other in footprints:
@@ -195,6 +218,8 @@ class _Kit extends RefCounted:
 					return false
 			footprints.append(flat)
 		if emit_geometry:
+			if own_overlap:
+				visible_footprints.append(flat)
 			for part: Array in parts:
 				pieces[part[0]].append(part[1])
 		return true
@@ -254,7 +279,7 @@ class _Kit extends RefCounted:
 		var fz := rng.randf_range(15.0, 24.0)
 		var basis := _basis(at["dir"])
 		var offset: float = float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET + gap + fz * 0.5
-		_accept(_tower_parts(basis, at["pos"] + basis * Vector3(0, 0, offset * side), side, fx, fz, height, detailed, index), true, emit_geometry, converted_city and gap >= 38.0)
+		_accept(_tower_parts(basis, at["pos"] + basis * Vector3(0, 0, offset * side), side, fx, fz, height, detailed, index), true, emit_geometry)
 
 	func _tower_parts(basis: Basis, origin: Vector3, side: float, fx: float, fz: float, h: float, detailed: bool, index: int) -> Array:
 		var parts: Array = [_part("body", basis, origin, Vector3(0, h * 0.5, 0), Vector3(fx, h, fz)),
@@ -363,6 +388,7 @@ class _Kit extends RefCounted:
 		var crown := Node3D.new()
 		crown.name = "Crown"
 		crown.position = origin
+		crown_footprint = AABB(origin - Vector3(48, 0, 48), Vector3(96, 1, 96))
 		root.add_child(crown)
 		var steel: Material = materials["crown_steel"]
 		var cream: Material = materials["crown_cream"]
@@ -400,6 +426,139 @@ class _Kit extends RefCounted:
 		glow.shadow_enabled = false
 		crown.add_child(glow)
 		lights += 1
+
+	# --- converted-city midground ------------------------------------------------------------
+
+	# Weathered original-kit towers in rows behind the detailed frontages, all four quarters.
+	# One shaded body batch and one trim batch; no lights, no collision, own RNG stream.
+	func build_backdrop(root: Node3D, extra_reserved: Array[AABB]) -> void:
+		for box: AABB in extra_reserved:
+			reserved_bounds.append(AABB(Vector3(box.position.x, 0.0, box.position.z), Vector3(box.size.x, 1.0, box.size.z)))
+		var bd_rng := RandomNumberGenerator.new()
+		bd_rng.seed = CityScenery.SEED + 977
+		var state := {"rng": bd_rng, "bodies": [], "ribs": [], "records": [], "own": [] as Array[AABB],
+				"counts": {}, "index": 0}
+		var rows := [[14.0, 22.0, 26.0, 44.0], [30.0, 40.0, 40.0, 66.0], [50.0, 62.0, 56.0, 92.0], [74.0, 90.0, 70.0, 118.0]]
+		_backdrop_sweep(state, 0.0, total, CityScenery.BACKDROP_STEP, [-1.0, 1.0], rows, 0)
+		var dense := [[10.0, 16.0, 22.0, 38.0], [18.0, 28.0, 30.0, 52.0], [32.0, 46.0, 42.0, 70.0], [52.0, 72.0, 58.0, 96.0]]
+		for quarter in 4:
+			for side: float in [-1.0, 1.0]:
+				var need := CityScenery.BACKDROP_MIN_PER_QUARTER_SIDE - int(state["counts"].get("%d/%d" % [quarter, int(side)], 0))
+				if need > 0:
+					_backdrop_sweep(state, total * quarter / 4.0, total * (quarter + 1) / 4.0, CityScenery.BACKDROP_INFILL_STEP, [side], dense, need)
+		var container := Node3D.new()
+		container.name = "CityBackdrop"
+		root.add_child(container)
+		var bodies: Array = state["bodies"]
+		var ribs: Array = state["ribs"]
+		_backdrop_batch(container, "BackdropBody", bodies, materials["bd_body"], true)
+		_backdrop_batch(container, "BackdropRib", ribs, materials["bd_rib"], false)
+		var instances := bodies.size() + ribs.size()
+		container.set_meta("building_count", (state["records"] as Array).size())
+		container.set_meta("instance_count", instances)
+		container.set_meta("triangle_count", instances * CityScenery.BACKDROP_TRIANGLES_PER_BOX)
+		container.set_meta("quarter_side_counts", state["counts"])
+		container.set_meta("records", state["records"])
+
+	func _backdrop_sweep(state: Dictionary, from_s: float, to_s: float, step: float, sides: Array, rows: Array, quota: int) -> void:
+		var rng: RandomNumberGenerator = state["rng"]
+		var added := 0
+		var raw := from_s + step * 0.5
+		while raw < to_s:
+			for side: float in sides:
+				for row_index in rows.size():
+					if quota > 0 and added >= quota:
+						return
+					var row: Array = rows[row_index]
+					var jitter := rng.randf_range(-3.0, 3.0)
+					var gap := rng.randf_range(row[0], row[1])
+					var height := rng.randf_range(row[2], row[3])
+					var fx := rng.randf_range(14.0, 24.0)
+					var fz := rng.randf_range(14.0, 22.0)
+					var shape := rng.randf()
+					var at := _sample(clampf(raw + jitter, from_s, to_s - 0.01))
+					var basis := _basis(at["dir"])
+					var offset: float = float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET + gap + fz * 0.5
+					var origin: Vector3 = at["pos"] + basis * Vector3(0, 0, offset * side)
+					var seed_value := rng.randf()
+					var tone := float(rng.randi() % 5)
+					var parts := _backdrop_parts(basis, origin, side, fx, fz, height, shape, Color(tone, seed_value, 0.0, 0.0))
+					if _backdrop_accept(state, parts, clampf(raw + jitter, 0.0, total - 0.01), side, row_index):
+						added += 1
+			raw += step
+
+	func _backdrop_parts(basis: Basis, origin: Vector3, side: float, fx: float, fz: float, h: float, shape: float, custom: Color) -> Array:
+		var parts: Array = [_part("bd_body", basis, origin, Vector3(0, h * 0.5, 0), Vector3(fx, h, fz))]
+		var top := h
+		if shape < 0.7:
+			top = h * 1.2
+			parts.append(_part("bd_body", basis, origin, Vector3(fx * 0.08, h * 1.1, 0), Vector3(fx * 0.7, h * 0.2, fz * 0.7)))
+		parts.append(_part("bd_body", basis, origin, Vector3(-fx * 0.15, top + 1.4, fz * 0.1), Vector3(fx * 0.28, 2.8, fz * 0.3)))
+		parts.append(_part("bd_rib", basis, origin, Vector3(0, h, 0), Vector3(fx + 0.8, 0.6, fz + 0.8)))
+		var front := -side * (fz * 0.5 + 0.2)
+		var pilasters := 3 if shape > 0.35 else 2
+		for i in pilasters:
+			var x := (-fx * 0.5 + (float(i) + 0.5) * fx / 3.0) if pilasters == 3 else (-fx * 0.25 + float(i) * fx * 0.5)
+			parts.append(_part("bd_rib", basis, origin, Vector3(x, h * 0.45, front), Vector3(0.7, h * 0.9, 0.5)))
+		for part: Array in parts:
+			part.append(custom)
+		return parts
+
+	func _backdrop_accept(state: Dictionary, parts: Array, raw: float, side: float, row_index: int) -> bool:
+		var records: Array = state["records"]
+		var bodies: Array = state["bodies"]
+		var ribs: Array = state["ribs"]
+		if records.size() >= CityScenery.BACKDROP_MAX_BUILDINGS or bodies.size() + ribs.size() + parts.size() > CityScenery.BACKDROP_MAX_INSTANCES:
+			return false
+		var bounds := _bounds(parts)
+		if absf(bounds.position.x) > CityScenery.WORLD_LIMIT or absf(bounds.end.x) > CityScenery.WORLD_LIMIT \
+				or absf(bounds.position.z) > CityScenery.WORLD_LIMIT or absf(bounds.end.z) > CityScenery.WORLD_LIMIT:
+			return false
+		if CityScenery.road_clearance(bounds, course) < CityScenery.ROAD_CLEARANCE:
+			return false
+		var flat := AABB(Vector3(bounds.position.x, 0, bounds.position.z), Vector3(bounds.size.x, 1, bounds.size.z)).grow(1.0)
+		for reserved: AABB in reserved_bounds:
+			if flat.intersects(reserved):
+				return false
+		if crown_footprint.size != Vector3.ZERO and flat.intersects(crown_footprint):
+			return false
+		for other in visible_footprints:
+			if other.intersects(flat):
+				return false
+		for other in state["own"]:
+			if other.intersects(flat):
+				return false
+		(state["own"] as Array[AABB]).append(flat)
+		for part: Array in parts:
+			(bodies if part[0] == "bd_body" else ribs).append([part[1], part[2]])
+		var quarter := mini(3, int(raw / total * 4.0))
+		var key := "%d/%d" % [quarter, int(side)]
+		state["counts"][key] = int(state["counts"].get(key, 0)) + 1
+		records.append({"s": raw, "quarter": quarter, "side": int(side), "row": row_index, "bounds": bounds, "parts": parts.size()})
+		return true
+
+	func _backdrop_batch(parent: Node3D, label: String, items: Array, material: Material, custom: bool) -> void:
+		if items.is_empty():
+			return
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.use_custom_data = custom
+		multimesh.mesh = box
+		multimesh.instance_count = items.size()
+		var placed: Array[Transform3D] = []
+		for i in items.size():
+			placed.append(items[i][0])
+			multimesh.set_instance_transform(i, items[i][0])
+			if custom:
+				multimesh.set_instance_custom_data(i, items[i][1])
+		var instance := MultiMeshInstance3D.new()
+		instance.name = label
+		instance.multimesh = multimesh
+		instance.set_meta("city_transforms", placed)
+		instance.set_meta("city_backdrop", true)
+		instance.material_override = material
+		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		parent.add_child(instance)
 
 	func _box_mesh(size: Vector3) -> BoxMesh:
 		var mesh := BoxMesh.new()
