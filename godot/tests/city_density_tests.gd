@@ -29,6 +29,7 @@ func _ready() -> void:
 	_test_baseline_preserved(baseline, dense)
 	_test_variation(dense)
 	_test_compositions(dense)
+	_test_composition_rollback(dense)
 	_test_safety(dense)
 	_test_determinism(dense, repeat)
 	_test_detectors()
@@ -149,6 +150,43 @@ func _test_compositions(dense: CityRealismLayout) -> void:
 	if not court_recessed.is_empty() and not court_frontage.is_empty():
 		var lateral := func(p: Dictionary) -> float: return _distance_to_route(p)
 		_check("the tenement court recesses its middle block behind its flanks", lateral.call(court_recessed[0]) > lateral.call(court_frontage[0]) + 1.0)
+
+
+## Forces the second part of a shop_terrace to fail after a valid first part and checks the
+## attempt leaves no trace: the rollback must restore every layout total exactly.
+func _test_composition_rollback(dense: CityRealismLayout) -> void:
+	var first := dense.placements.filter(func(p: Dictionary) -> bool: return p["composition"] == "shop_terrace" and p["id"] == "row_workshop")
+	_check("a dense shop_terrace first part exists to derive a safe start", not first.is_empty())
+	if first.is_empty():
+		return
+	var part: Array = (CityRealismLayout.COMPOSITIONS["shop_terrace"] as Array)[0]
+	var half := (CityRealismCatalog.meshes["row_workshop"] as Mesh).get_aabb().size.x * float(part[2]) * 0.5
+	var start := float(first[0]["s"]) - half
+	var q: int = first[0]["quarter"]
+	var side: float = first[0]["side"]
+	var count := -1
+	for candidate in 10:
+		if CityRealismLayout.COMPOSITIONS.keys()[(q + int(side > 0.0) + candidate / 5) % CityRealismLayout.COMPOSITIONS.size()] == "shop_terrace":
+			count = candidate
+			break
+	_check("a count selecting shop_terrace exists for quarter %d side %d" % [q, int(side)], count >= 0)
+	if count < 0:
+		return
+	var layout := CityRealismLayout.new(_course)
+	var empty := layout._snapshot()
+	layout._tag = {"variant": 0, "composition": "shop_terrace"}
+	layout._place_scaled("row_workshop", start + half, side, 9.5 + float(part[1]), Vector2(part[2], part[3]))
+	_check("the first shop_terrace part fits on its own", layout.placements.size() == 1)
+	layout._restore(empty)
+	var state := func() -> Array:
+		return [var_to_str(layout.placements), var_to_str(layout.reservations), var_to_str(layout.solids), layout.triangles, var_to_str(layout.quarter_triangles), var_to_str(layout.rendering_groups)]
+	var before: Array = state.call()
+	var shop: Mesh = CityRealismCatalog.meshes["redline_shop"]
+	CityRealismCatalog.meshes.erase("redline_shop")
+	var result := layout._infill_composition(q, side, start, count)
+	CityRealismCatalog.meshes["redline_shop"] = shop
+	_check("a missing later part aborts the composition (%s)" % str(result), result == -1.0)
+	_check("rollback leaves placements, reservations, solids, triangle totals, quarter totals and rendering groups exactly unchanged", var_to_str(state.call()) == var_to_str(before) and layout.placements.is_empty())
 
 
 func _distance_to_route(p: Dictionary) -> float:
