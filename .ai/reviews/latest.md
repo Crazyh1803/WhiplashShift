@@ -1,3 +1,3 @@
-VERDICT: APPROVE
+VERDICT: CHANGES_REQUESTED
 
-Final review-fix verification found no new actionable findings. See city-street-fabric-disposition.md for reviewer reports, fixes, quota fallback and verification scope. Final checks passed: ground 192/0, Vulkan city 228/0, all 17 captures saved with content checks; the broader regression matrix and source validators also pass.
+Independent Codex review: no production findings; one MED test gap (actual MultiMesh transform/displacement verification). See city-background-infill-disposition.md. Scoped follow-up pending.
