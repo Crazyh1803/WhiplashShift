@@ -1,8 +1,10 @@
 class_name CityRealismLayout
 extends RefCounted
 
-const GLOBAL_BUDGET := 900000
-const QUARTER_BUDGET := 240000
+const BASE_GLOBAL_BUDGET := 900000
+const BASE_QUARTER_BUDGET := 240000
+const GLOBAL_BUDGET := 1500000
+const QUARTER_BUDGET := 400000
 const NEAR_BUDGET := 320000
 const SURFACE_BUDGET := 160
 const CHUNK_LENGTH := 48.0
@@ -14,8 +16,8 @@ const INFILL_HEIGHTS := [1.0, 1.1, 0.92, 1.05]
 const INFILL_SETBACKS := [9.5, 11.0, 10.2]
 ## Compositions reuse full-detail catalogue meshes: [family, extra setback, width scale, height scale].
 const COMPOSITIONS := {
-	"shop_terrace": [["row_workshop", 0.0, 1.0, 0.94], ["redline_shop", 0.0, 1.0, 1.1], ["row_workshop", 0.0, 0.94, 1.0]],
-	"tenement_court": [["service_tenement", 0.0, 1.0, 1.08], ["habitation_workshop", 3.2, 1.0, 0.9], ["service_tenement", 0.0, 0.94, 1.0]],
+	"shop_terrace": [["row_workshop", 0.0, 0.65, 0.94], ["redline_shop", 0.0, 0.95, 1.1]],
+	"tenement_court": [["service_tenement", 0.0, 0.7, 1.08], ["row_workshop", 3.2, 0.5, 0.9], ["service_tenement", 0.0, 0.7, 1.0]],
 }
 const FAMILY_ORDER := [["market_habitat", "habitation_workshop", "redline_shop", "row_workshop"], ["freight_depot", "transit_depot", "row_workshop", "service_tenement"], ["utility_substation", "freight_depot", "habitation_workshop", "row_workshop"], ["service_tenement", "market_habitat", "transit_depot", "habitation_workshop"]]
 var course: CourseDefinition
@@ -30,6 +32,7 @@ var triangles := 0
 var quarter_triangles: Array[int] = [0, 0, 0, 0]
 var infill_rejections: Dictionary = {}
 var _quiet := false
+var _side_triangle_limit := QUARTER_BUDGET
 var _tag: Dictionary = {}
 
 
@@ -84,40 +87,58 @@ func populate(use_ground: bool = true, dense: bool = true) -> void:
 ## retries over families and setbacks. Failures are counted, never added to `rejected`.
 func _infill(quarter: float) -> void:
 	_quiet = true
+	_side_triangle_limit = QUARTER_BUDGET
+	var cells: Array[Dictionary] = []
 	for q in 4:
 		for side: float in [-1.0, 1.0]:
-			var s := quarter * q + 4.0
-			var end := quarter * (q + 1) - 4.0
-			var count := 0
-			var previous := ""
-			while s < end:
-				var seed_value := (q * 7 + int(side > 0.0) * 3 + count * 5) % 11
-				var advance := INFILL_PITCH
-				var placed_end := _infill_composition(q, side, s, count) if count % 5 == 2 else -1.0
-				if placed_end > 0.0:
-					advance = placed_end - s + INFILL_GAP
-					previous = ""
-					count += 1
-				else:
-					var order: Array = FAMILY_ORDER[q]
-					for attempt in 4:
-						var family: String = order[(count + attempt + int(side > 0.0) * 2) % 4]
-						if family == previous:
-							continue
-						_tag = {"variant": seed_value, "composition": ""}
-						var setback: float = INFILL_SETBACKS[(seed_value + attempt) % 3]
-						var scale := Vector2(INFILL_WIDTHS[seed_value % 5], INFILL_HEIGHTS[(seed_value + attempt) % 4])
-						var before := placements.size()
-						_place_scaled(family, s, side, setback, scale)
-						if placements.size() > before:
-							var width: float = (CityRealismCatalog.meshes[family] as Mesh).get_aabb().size.x * scale.x
-							advance = width * 0.5 + INFILL_GAP + 3.0
-							previous = family
-							count += 1
-							break
-				s += advance
+			cells.append({"q": q, "side": side, "s": quarter * q + 4.0, "end": quarter * (q + 1) - 4.0, "count": 0, "previous": ""})
+	# Round robin: each pass gives every quarter/side one placement step, so no cell can
+	# exhaust the shared quarter, global or visible budgets before the others start.
+	var round_index := 0
+	var open := true
+	while open:
+		open = false
+		for i in cells.size():
+			var cell: Dictionary = cells[(i + round_index) % cells.size()]
+			if float(cell["s"]) < float(cell["end"]):
+				_infill_step(cell)
+				open = open or float(cell["s"]) < float(cell["end"])
+		round_index += 1
 	_tag = {}
 	_quiet = false
+
+
+## One placement attempt for a cell: a composition on every third slot, else a retried single frontage.
+func _infill_step(cell: Dictionary) -> void:
+	var q: int = cell["q"]
+	var side: float = cell["side"]
+	var s: float = cell["s"]
+	var count: int = cell["count"]
+	var seed_value := (q * 7 + int(side > 0.0) * 3 + count * 5) % 11
+	var advance := INFILL_PITCH
+	var placed_end := _infill_composition(q, side, s, count) if count % 3 == 0 else -1.0
+	if placed_end > 0.0:
+		advance = placed_end - s + INFILL_GAP
+		cell["previous"] = ""
+		cell["count"] = count + 1
+	else:
+		var order: Array = FAMILY_ORDER[q]
+		for attempt in 4:
+			var family: String = order[(count + attempt + int(side > 0.0) * 2) % 4]
+			if family == cell["previous"]:
+				continue
+			_tag = {"variant": seed_value, "composition": ""}
+			var setback: float = INFILL_SETBACKS[(seed_value + attempt) % 3]
+			var scale := Vector2(INFILL_WIDTHS[seed_value % 5], INFILL_HEIGHTS[(seed_value + attempt) % 4])
+			var before := placements.size()
+			_place_scaled(family, s, side, setback, scale)
+			if placements.size() > before:
+				var width: float = (CityRealismCatalog.meshes[family] as Mesh).get_aabb().size.x * scale.x
+				advance = width * 0.5 + INFILL_GAP + 3.0
+				cell["previous"] = family
+				cell["count"] = count + 1
+				break
+	cell["s"] = s + advance
 
 
 ## Places a contiguous frontage atomically; returns the far end distance, or -1.0 after rollback.
@@ -256,9 +277,12 @@ func _try_add(id: String, s: float, side: float, role: String, xf: Transform3D, 
 	var cost := int(CityRealismCatalog.costs[id]["tris"])
 	var reason := ""
 	var required_clearance := 0.05 if id == "road_apron" and role == "apron" else CityScenery.ROAD_CLEARANCE
-	if clearance(polygon, course) < required_clearance:
+	var over_budget := triangles + cost > (GLOBAL_BUDGET if _quiet else BASE_GLOBAL_BUDGET) or quarter_triangles[q] + cost > (_side_triangle_limit if _quiet else BASE_QUARTER_BUDGET)
+	if _quiet and over_budget:
+		reason = "triangle_budget"  # cheap check first on infill retries
+	elif clearance(polygon, course) < required_clearance:
 		reason = "road_clearance"
-	elif triangles + cost > GLOBAL_BUDGET or quarter_triangles[q] + cost > QUARTER_BUDGET:
+	elif over_budget:
 		reason = "triangle_budget"
 	if reason.is_empty() and solid:
 		for other: PackedVector2Array in solids:

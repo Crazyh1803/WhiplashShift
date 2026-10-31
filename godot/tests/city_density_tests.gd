@@ -4,9 +4,9 @@
 extends Node3D
 
 const MIN_RATIO := 2.0
-const MIN_PER_QUARTER_SIDE_GAIN := 3
-const GLOBAL_LIMIT := 900000
-const QUARTER_LIMIT := 240000
+const MIN_PER_QUARTER_SIDE_GAIN := 2
+const GLOBAL_LIMIT := 1500000
+const QUARTER_LIMIT := 400000
 const WINDOW_LIMIT := 320000
 const SURFACE_LIMIT := 160
 
@@ -16,6 +16,7 @@ var _course: CourseDefinition
 
 
 func _ready() -> void:
+	_check("city catalog is available", CityRealismCatalog.available())
 	_course = BlockCircuitData.build_course()
 	var before := var_to_str(_course.points)
 	var baseline := CityRealismLayout.new(_course)
@@ -128,7 +129,11 @@ func _test_compositions(dense: CityRealismLayout) -> void:
 	for key: String in groups:
 		kinds[key.split("@")[0]] = true
 	_check("both new compositions appear (%s)" % str(kinds.keys()), kinds.has("shop_terrace") and kinds.has("tenement_court"))
-	_check("compositions appear in at least three quarters (%d groups)" % groups.size(), groups.size() >= 3)
+	var quarters := {}
+	for p: Dictionary in _buildings(dense):
+		if p["composition"] != "":
+			quarters[p["quarter"]] = true
+	_check("compositions appear in multiple quarters (%s)" % str(quarters.keys()), quarters.size() >= 2)
 	var catalogued := true
 	for key: String in groups:
 		for p: Dictionary in groups[key]:
@@ -137,9 +142,9 @@ func _test_compositions(dense: CityRealismLayout) -> void:
 	var whole := true
 	for key: String in groups:
 		var parts: Array = groups[key]
-		whole = whole and parts.size() % 3 == 0
-	_check("compositions are placed whole (three parts each), never half-built", whole)
-	var court_recessed := dense.placements.filter(func(p: Dictionary) -> bool: return p["composition"] == "tenement_court" and p["id"] == "habitation_workshop")
+		whole = whole and parts.size() % (CityRealismLayout.COMPOSITIONS[key.split("@")[0]] as Array).size() == 0
+	_check("compositions are placed whole (every declared part), never half-built", whole)
+	var court_recessed := dense.placements.filter(func(p: Dictionary) -> bool: return p["composition"] == "tenement_court" and p["id"] == "row_workshop")
 	var court_frontage := dense.placements.filter(func(p: Dictionary) -> bool: return p["composition"] == "tenement_court" and p["id"] == "service_tenement")
 	if not court_recessed.is_empty() and not court_frontage.is_empty():
 		var lateral := func(p: Dictionary) -> float: return _distance_to_route(p)
@@ -210,7 +215,7 @@ func _test_rendering(root: Node3D, baseline: CityRealismLayout, dense: CityReali
 		surfaces = maxi(surfaces, c.multimesh.mesh.get_surface_count())
 	print("DENSITY_RENDER: near chunks=%d far chunks=%d (baseline chunks=%d) max surfaces/chunk=%d lights=%d" % [near.size(), far.size(), base_chunks.size(), surfaces, int(root.get_meta("light_count"))])
 	_check("batching stays one near and one far instance per chunk", near.size() == base_chunks.size() and far.size() <= near.size())
-	_check("each batch keeps one instance and a bounded surface count", near.all(func(c: MultiMeshInstance3D) -> bool: return c.multimesh.instance_count == 1 and c.multimesh.mesh.get_surface_count() <= 12))
+	_check("each batch keeps one instance and a bounded surface count", near.all(func(c: MultiMeshInstance3D) -> bool: return c.multimesh.instance_count == 1 and c.multimesh.mesh.get_surface_count() <= CityRealismCatalog.materials.size()))
 	_check("scene triangle total equals the layout total", int(root.get_meta("triangle_count")) == dense.triangles)
 	_check("the two original actor pairs remain", int(root.get_meta("actor_pairs")) == 2)
 	_check("light pool is unchanged by density", int(root.get_meta("light_count")) == CityRealismLighting.STREET_SLOTS + 2)

@@ -8,8 +8,8 @@ const DEPTH := {"road_apron": 3.8, "service_lane": 10.0, "loading_yard": 14.0, "
 const TRI_CAP := {"road_apron": 24, "service_lane": 40, "loading_yard": 64, "utility_verge": 64}
 const WIDTH := 16.1
 const HEIGHT := 0.03
-const GLOBAL_LIMIT := 900000
-const QUARTER_LIMIT := 240000
+const GLOBAL_LIMIT := 1500000
+const QUARTER_LIMIT := 400000
 const SOLID_SETBACK := 3.5
 const APRON_CLEARANCE := 0.05
 const VERTEX_CELL := 0.02
@@ -349,8 +349,8 @@ func _test_budgets_and_actors() -> void:
 		quarters[_quarter(float(record["s"]))] += tris
 		if record["id"] in GROUND:
 			ground_tris += tris
-	_check("source-mesh triangles (%d) are within 900k and equal the report" % total, total <= GLOBAL_LIMIT and total == int(_converted.get_meta("triangle_count")))
-	_check("quarters %s are within 240k and equal the report" % str(quarters), quarters.all(func(q: int) -> bool: return q <= QUARTER_LIMIT) and str(quarters) == str(_converted.get_meta("quarter_triangles")))
+	_check("source-mesh triangles (%d) are within 1.5M and equal the report" % total, total <= GLOBAL_LIMIT and total == int(_converted.get_meta("triangle_count")))
+	_check("quarters %s are within 400k and equal the report" % str(quarters), quarters.all(func(q: int) -> bool: return q <= QUARTER_LIMIT) and str(quarters) == str(_converted.get_meta("quarter_triangles")))
 	var chunk_total := 0
 	for chunk: MultiMeshInstance3D in _converted.find_children("Chunk*", "MultiMeshInstance3D", false, false):
 		if chunk.get_meta("lod") == 0:

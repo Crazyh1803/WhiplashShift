@@ -5,8 +5,8 @@ extends Node3D
 
 const FAMILIES: Array[String] = ["habitation_workshop", "market_habitat", "service_tenement", "freight_depot", "redline_shop", "row_workshop", "utility_substation", "transit_depot"]
 const STREETS: Array[String] = ["sidewalk_panel", "curb_segment", "drain_cover", "street_lamp", "bollard", "bench_planter", "refuse_station", "alley_conduit"]
-const GLOBAL_LIMIT := 900000
-const QUARTER_LIMIT := 240000
+const GLOBAL_LIMIT := 1500000
+const QUARTER_LIMIT := 400000
 const WINDOW_LIMIT := 320000
 const SURFACE_LIMIT := 160
 const ACTOR_LIMIT := 110000
@@ -342,9 +342,9 @@ func _test_budgets() -> void:
 		total += tris
 		for record: Dictionary in chunk.get_meta("placements"):
 			quarters[_quarter(float(record["s"]))] += int(IndustrialMarketBenchmark.count_triangles(CityRealismCatalog.meshes[record["id"]]))
-	_check("placed geometry measured from batches (%d) is within 900k" % total, total <= GLOBAL_LIMIT and total > 100000)
+	_check("placed geometry measured from batches (%d) is within 1.5M" % total, total <= GLOBAL_LIMIT and total > 100000)
 	_check("batch triangles equal the reported total", total == int(_converted.get_meta("triangle_count")))
-	_check("quarters %s are within 240k and match the report" % str(quarters), quarters.all(func(q: int) -> bool: return q <= QUARTER_LIMIT and q > 0) and str(quarters) == str(_converted.get_meta("quarter_triangles")))
+	_check("quarters %s are within 400k and match the report" % str(quarters), quarters.all(func(q: int) -> bool: return q <= QUARTER_LIMIT and q > 0) and str(quarters) == str(_converted.get_meta("quarter_triangles")))
 	for record: Dictionary in _placements:
 		_check_once(int(record["quarter"]) == _quarter(float(record["s"])), "%s quarter label matches its route distance" % record["id"], int(float(record["s"])))
 	var actors := 0
