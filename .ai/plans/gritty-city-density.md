@@ -1,0 +1,7 @@
+# Detailed city density expansion
+
+Base: user explicitly approved continuing origin/chat/season-one-city-circuit-219a731d858a (42feeef). Isolated chat branch keeps that dependency; no merge to main.
+
+Claude (asset lead, isolated delegation): expand detailed street-level city coverage using the existing eight worn industrial families. Reuse geometry/material library with deterministic minor variants, and add two recognizably different low-cost building compositions from existing modular geometry. Prefer code-native assembly/reuse over fresh generated textures or rebuilding the whole Blender library. If actual model changes are necessary, use ak-blender headlessly. Add a gap-filling pass with safe candidate retries and differentiated frontages across all four quarters, keeping existing road clearance, solid reservations, global/quarter/visible geometry, surface and light limits. Preserve original shop/actor assets. Add focused regressions proving increased building count/coverage versus existing 64-slot placement, deterministic variation/new compositions, no overlaps, course immutability and bounded rendering. Keep scope to city layout/catalog/rendering and dedicated tests/runner wiring; no vehicles, HUD, road, physics, main merge or assets/final.
+
+Codex: inspect delegate diff, integrate, run ak-test and independent review, inspect actual Godot street/driver captures, fix or delegate review findings, then commit and publish this chat branch for desktop preview. Record measured before/after building counts and costs. No release promotion.
