@@ -244,7 +244,7 @@ func _test_shader(backdrop: Node3D) -> void:
 	_check("shader is deterministic and texture-free (no TIME, no samplers)", code.find("TIME") == -1 and code.find("sampler2D") == -1 and code.find("texture(") == -1)
 	_check("shader is unshaded so it adds no light dependence", code.find("render_mode unshaded") != -1)
 	_check("shader stays within the sparse-window rule", code.find("step(0.93, lit_roll)") != -1)
-	_check("shader exposure keeps the facade dark behind the detailed fronts", code.find("const float EXPOSURE = 0.22;") != -1)
+	_check("shader exposure keeps the facade dark behind the detailed fronts", code.find("const float BACKDROP_EXPOSURE = 0.22;") != -1)
 	var rib := (backdrop.get_node("BackdropRib") as MultiMeshInstance3D).material_override as StandardMaterial3D
 	_check("trim is dark (albedo %.3f)" % rib.albedo_color.v, rib != null and rib.albedo_color.v <= 0.05)
 
@@ -256,6 +256,7 @@ func _test_renderer_transforms(backdrop: Node3D) -> void:
 	if DisplayServer.get_name() == "headless":
 		print("RENDER_CHECK: MultiMesh readback and mutation detector require the Vulkan backdrop run; Dummy transform setters are no-ops")
 		return
+	await _settle()
 	var total := 0
 	var drift := 0
 	for batch: MultiMeshInstance3D in backdrop.find_children("*", "MultiMeshInstance3D", false, false):
