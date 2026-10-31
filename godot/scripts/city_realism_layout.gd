@@ -7,6 +7,16 @@ const NEAR_BUDGET := 320000
 const SURFACE_BUDGET := 160
 const CHUNK_LENGTH := 48.0
 const DISTRICTS: Array[String] = ["Market boulevard", "Freight and service", "Utility works", "Housing and transit"]
+const INFILL_PITCH := 3.0
+const INFILL_GAP := 0.9
+const INFILL_WIDTHS := [1.0, 0.92, 1.08, 0.96, 1.12]
+const INFILL_HEIGHTS := [1.0, 1.1, 0.92, 1.05]
+const INFILL_SETBACKS := [9.5, 11.0, 10.2]
+## Compositions reuse full-detail catalogue meshes: [family, extra setback, width scale, height scale].
+const COMPOSITIONS := {
+	"shop_terrace": [["row_workshop", 0.0, 1.0, 0.94], ["redline_shop", 0.0, 1.0, 1.1], ["row_workshop", 0.0, 0.94, 1.0]],
+	"tenement_court": [["service_tenement", 0.0, 1.0, 1.08], ["habitation_workshop", 3.2, 1.0, 0.9], ["service_tenement", 0.0, 0.94, 1.0]],
+}
 const FAMILY_ORDER := [["market_habitat", "habitation_workshop", "redline_shop", "row_workshop"], ["freight_depot", "transit_depot", "row_workshop", "service_tenement"], ["utility_substation", "freight_depot", "habitation_workshop", "row_workshop"], ["service_tenement", "market_habitat", "transit_depot", "habitation_workshop"]]
 var course: CourseDefinition
 var placements: Array[Dictionary] = []
@@ -18,6 +28,9 @@ var sample_positions := PackedVector3Array()
 var ground_enabled := false
 var triangles := 0
 var quarter_triangles: Array[int] = [0, 0, 0, 0]
+var infill_rejections: Dictionary = {}
+var _quiet := false
+var _tag: Dictionary = {}
 
 
 func _init(input: CourseDefinition) -> void:
@@ -26,7 +39,8 @@ func _init(input: CourseDefinition) -> void:
 		sample_positions.append(CityDistrict.sample(course, float(s))["pos"] + Vector3.UP * 1.5)
 
 
-func populate(use_ground: bool = true) -> void:
+## `dense` adds the deterministic infill pass after the original 64 slots; false reproduces the baseline.
+func populate(use_ground: bool = true, dense: bool = true) -> void:
 	ground_enabled = use_ground and CityRealismCatalog.ground_available()
 	var quarter := course.total_length / 4.0
 	for index in int(course.total_length / 16.0):
@@ -62,6 +76,103 @@ func populate(use_ground: bool = true) -> void:
 				var s := quarter * (q + (station + 0.55) / 8.0)
 				var family: String = FAMILY_ORDER[q][(station + int(side > 0)) % 4]
 				_place(family, s, side, "building", 9.5)
+	if dense:
+		_infill(quarter)
+
+
+## Walks every quarter side at a fixed pitch, trying compositions then single frontages with
+## retries over families and setbacks. Failures are counted, never added to `rejected`.
+func _infill(quarter: float) -> void:
+	_quiet = true
+	for q in 4:
+		for side: float in [-1.0, 1.0]:
+			var s := quarter * q + 4.0
+			var end := quarter * (q + 1) - 4.0
+			var count := 0
+			var previous := ""
+			while s < end:
+				var seed_value := (q * 7 + int(side > 0.0) * 3 + count * 5) % 11
+				var advance := INFILL_PITCH
+				var placed_end := _infill_composition(q, side, s, count) if count % 5 == 2 else -1.0
+				if placed_end > 0.0:
+					advance = placed_end - s + INFILL_GAP
+					previous = ""
+					count += 1
+				else:
+					var order: Array = FAMILY_ORDER[q]
+					for attempt in 4:
+						var family: String = order[(count + attempt + int(side > 0.0) * 2) % 4]
+						if family == previous:
+							continue
+						_tag = {"variant": seed_value, "composition": ""}
+						var setback: float = INFILL_SETBACKS[(seed_value + attempt) % 3]
+						var scale := Vector2(INFILL_WIDTHS[seed_value % 5], INFILL_HEIGHTS[(seed_value + attempt) % 4])
+						var before := placements.size()
+						_place_scaled(family, s, side, setback, scale)
+						if placements.size() > before:
+							var width: float = (CityRealismCatalog.meshes[family] as Mesh).get_aabb().size.x * scale.x
+							advance = width * 0.5 + INFILL_GAP + 3.0
+							previous = family
+							count += 1
+							break
+				s += advance
+	_tag = {}
+	_quiet = false
+
+
+## Places a contiguous frontage atomically; returns the far end distance, or -1.0 after rollback.
+func _infill_composition(q: int, side: float, s: float, count: int) -> float:
+	var name: String = COMPOSITIONS.keys()[(q + int(side > 0.0) + count / 5) % COMPOSITIONS.size()]
+	var snapshot := _snapshot()
+	var cursor := s
+	var variant := (q * 5 + int(side > 0.0)) % 11
+	for part: Array in COMPOSITIONS[name]:
+		var family: String = part[0]
+		if not CityRealismCatalog.meshes.has(family):
+			_restore(snapshot)
+			return -1.0
+		var width: float = (CityRealismCatalog.meshes[family] as Mesh).get_aabb().size.x * float(part[2])
+		cursor += width * 0.5
+		_tag = {"variant": variant, "composition": name}
+		var before := placements.size()
+		_place_scaled(family, cursor, side, 9.5 + float(part[1]), Vector2(part[2], part[3]))
+		if placements.size() == before:
+			_restore(snapshot)
+			return -1.0
+		cursor += width * 0.5 + INFILL_GAP
+	return cursor
+
+
+func _snapshot() -> Dictionary:
+	return {"placements": placements.size(), "reservations": reservations.size(), "solids": solids.size(), "triangles": triangles, "quarters": quarter_triangles.duplicate(), "groups": rendering_groups.duplicate(true)}
+
+
+func _restore(snapshot: Dictionary) -> void:
+	placements.resize(snapshot["placements"])
+	reservations.resize(snapshot["reservations"])
+	solids.resize(snapshot["solids"])
+	triangles = snapshot["triangles"]
+	quarter_triangles = snapshot["quarters"]
+	rendering_groups = snapshot["groups"]
+
+
+func _place_scaled(id: String, s: float, side: float, setback: float, scale: Vector2) -> void:
+	if not CityRealismCatalog.meshes.has(id):
+		return
+	var bounds: AABB = CityRealismCatalog.meshes[id].get_aabb()
+	var from := CityDistrict.sample(course, maxf(0.0, s - bounds.size.x * scale.x * 0.5))
+	var to := CityDistrict.sample(course, minf(course.total_length - 0.001, s + bounds.size.x * scale.x * 0.5))
+	if (from["dir"] as Vector3).angle_to(to["dir"]) > deg_to_rad(10.0):
+		_count_rejection("curve")
+		return
+	var edge := float(CityDistrict.sample(course, s)["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
+	var xf := transform_at(s, side, edge + setback - bounds.position.z)
+	xf.basis = xf.basis.scaled_local(Vector3(scale.x, scale.y, 1.0))
+	_try_add(id, s, side, "building", xf, true)
+
+
+func _count_rejection(reason: String) -> void:
+	infill_rejections[reason] = int(infill_rejections.get(reason, 0)) + 1
 
 
 func transform_at(s: float, side: float, lateral: float) -> Transform3D:
@@ -154,11 +265,16 @@ func _try_add(id: String, s: float, side: float, role: String, xf: Transform3D, 
 			if not Geometry2D.intersect_polygons(polygon, other).is_empty():
 				reason = "solid_overlap"
 				break
-	var record := {"id": id, "s": s, "side": side, "quarter": q, "district": DISTRICTS[q], "role": role, "transform": xf, "bounds": xf * mesh.get_aabb(), "polygon": polygon, "tris": cost, "chunk": int(s / CHUNK_LENGTH)}
+	var record := {"variant": 0, "composition": ""}
+	record.merge(_tag, true)
+	record.merge({"id": id, "s": s, "side": side, "quarter": q, "district": DISTRICTS[q], "role": role, "transform": xf, "bounds": xf * mesh.get_aabb(), "polygon": polygon, "tris": cost, "chunk": int(s / CHUNK_LENGTH)}, true)
 	if reason.is_empty() and role == "building" and not _fits_visible(record):
 		reason = "visible_budget"
 	if not reason.is_empty():
-		rejected.append({"id": id, "s": s, "side": side, "reason": reason})
+		if _quiet:
+			_count_rejection(reason)
+		else:
+			rejected.append({"id": id, "s": s, "side": side, "reason": reason})
 		return false
 	placements.append(record)
 	_add_group(rendering_groups, record)

@@ -97,7 +97,7 @@ def main():
     parser.add_argument('--menu-capture', action='store_true')
     parser.add_argument('--scenes', nargs='+', default=[
         'season_codec_tests', 'race_modes_tests', 'reverse_race_tests', 'main_menu_visual_qa',
-        'city_street_block_tests', 'block_circuit_tests', 'city_kit_tests', 'city_ground_tests', 'city_realism_tests', 'city_backdrop_tests', 'season_course_tests', 'vehicle_audio_tests', 'vehicle_feedback_tests',
+        'city_street_block_tests', 'block_circuit_tests', 'city_kit_tests', 'city_ground_tests', 'city_realism_tests', 'city_density_tests', 'city_backdrop_tests', 'season_course_tests', 'vehicle_audio_tests', 'vehicle_feedback_tests',
         'vehicle_effects_tests', 'bodywork_visual_tests', 'test_main', 'viscera_response_tests',
         'rubble_response_tests', 'armor_response_tests', 'coolant_response_tests', 'effluent_response_tests',
         'ichor_response_tests', 'track_visual_tests', 'viscera_pit_tests', 'boulder_motion_tests',
