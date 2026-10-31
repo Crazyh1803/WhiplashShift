@@ -1,6 +1,6 @@
 extends Node3D
 
-const EXPECTED_CAPTURES := 17
+const EXPECTED_CAPTURES := 21
 
 var _failures: Array[String] = []
 var _captured := 0
@@ -107,6 +107,14 @@ func _ready() -> void:
 					camera.look_at(xf * Vector3(0, 4, 1))
 					await _capture(path.path_join("quarter-%d-sidewalk-neutral.png" % (quarter + 1)))
 					break
+		for quarter in 4:
+			var at := CityDistrict.sample(course, course.total_length * (quarter + 0.45) / 4.0)
+			var direction: Vector3 = at["dir"]
+			var right := Vector3(-direction.z, 0, direction.x)
+			camera.position = (at["pos"] as Vector3) - direction * 45 + right * 45 + Vector3.UP * 28
+			camera.look_at((at["pos"] as Vector3) + direction * 60 + Vector3.UP * 14)
+			lights._refresh(camera.position)
+			await _capture(path.path_join("quarter-%d-city-overview.png" % (quarter + 1)))
 		_check(_captured == EXPECTED_CAPTURES, "captured %d of %d expected images" % [_captured, EXPECTED_CAPTURES])
 	city.queue_free()
 	for i in 4:
