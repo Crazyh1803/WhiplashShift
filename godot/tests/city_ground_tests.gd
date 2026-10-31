@@ -464,8 +464,10 @@ func _test_fallback(host: Node3D) -> void:
 		saved_entries[id] = CityRealismCatalog.entries[id]
 	var baseline := CityRealismLayout.new(_course)
 	baseline.populate(false)
+	var original := CityRealismLayout.new(_course)
+	original.populate(false, false)
 	var baseline_counts := {}
-	for record: Dictionary in baseline.placements:
+	for record: Dictionary in original.placements:
 		if record["role"] in ["building", "prop", "detail"]:
 			baseline_counts[record["id"]] = int(baseline_counts.get(record["id"], 0)) + 1
 	for id: String in baseline_counts:
