@@ -1,6 +1,8 @@
 extends Node3D
 
-const EXPECTED_CAPTURES := 21
+const QUARTERS := 4
+const DRIVER_VIEWS := 2
+const EXPECTED_CAPTURES := QUARTERS * (DRIVER_VIEWS + 3) + 1
 
 var _failures: Array[String] = []
 var _captured := 0
@@ -64,8 +66,10 @@ func _ready() -> void:
 	var path := ProjectSettings.globalize_path("res://../assets/previews/city_realism/in_game")
 	if capturing:
 		DirAccess.make_dir_recursive_absolute(path)
-	for quarter in 4:
-		for view in 2:
+	for quarter in QUARTERS:
+		if capturing:
+			_check((converted.get_meta("placements") as Array).any(func(p: Dictionary) -> bool: return p["quarter"] == quarter and p["role"] == "building"), "quarter %d has a building for sidewalk captures" % (quarter + 1))
+		for view in DRIVER_VIEWS:
 			var s := course.total_length * (quarter + (0.17 if view == 0 else 0.65)) / 4.0
 			var at := CityDistrict.sample(course, s)
 			camera.position = at["pos"] + Vector3.UP * 1.5
@@ -99,7 +103,7 @@ func _ready() -> void:
 		env.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 		env.environment.ambient_light_color = Color(0.65, 0.7, 0.8)
 		env.environment.ambient_light_energy = 0.5
-		for quarter in 4:
+		for quarter in QUARTERS:
 			for p: Dictionary in converted.get_meta("placements"):
 				if p["quarter"] == quarter and p["role"] == "building":
 					var xf: Transform3D = p["transform"]
@@ -107,13 +111,19 @@ func _ready() -> void:
 					camera.look_at(xf * Vector3(0, 4, 1))
 					await _capture(path.path_join("quarter-%d-sidewalk-neutral.png" % (quarter + 1)))
 					break
-		for quarter in 4:
+		for quarter in QUARTERS:
 			var at := CityDistrict.sample(course, course.total_length * (quarter + 0.45) / 4.0)
 			var direction: Vector3 = at["dir"]
-			var right := Vector3(-direction.z, 0, direction.x)
-			camera.position = (at["pos"] as Vector3) - direction * 45 + right * 45 + Vector3.UP * 28
+			camera.position = (at["pos"] as Vector3) - direction * 20 + Vector3.UP * 28
 			camera.look_at((at["pos"] as Vector3) + direction * 60 + Vector3.UP * 14)
 			lights._refresh(camera.position)
+			var framed_frontages := (converted.get_meta("placements") as Array).filter(func(p: Dictionary) -> bool: return p["role"] == "building" and camera.is_position_in_frustum((p["bounds"] as AABB).get_center())).size()
+			var framed_background := 0
+			for batch: MultiMeshInstance3D in city.find_children("*", "MultiMeshInstance3D", true, false):
+				for xf: Transform3D in batch.get_meta("city_transforms", []):
+					if camera.is_position_in_frustum(batch.global_transform * xf.origin):
+						framed_background += 1
+			_check(framed_frontages > 0 and framed_background >= 5, "quarter %d overview frames frontages (%d) and background pieces (%d)" % [quarter + 1, framed_frontages, framed_background])
 			await _capture(path.path_join("quarter-%d-city-overview.png" % (quarter + 1)))
 		_check(_captured == EXPECTED_CAPTURES, "captured %d of %d expected images" % [_captured, EXPECTED_CAPTURES])
 	city.queue_free()

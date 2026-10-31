@@ -54,3 +54,13 @@ The broader targeted regression matrix passed: city realism 227/0 headless, stre
 All 17 final Godot captures were refreshed and pass save/content checks. The shared texture import sidecars remain unchanged.
 
 The final Vulkan city suite passes 228/0, including actual merged-geometry checks and the deliberately displaced MultiMesh detector.
+
+## Full-course city layers
+
+The original tower vocabulary supplies inexpensive midground behind the eight detailed building families. The converted city adds a deterministic backdrop after the detailed lots and district landmarks have reserved their space. It reuses stepped tower bodies, pilasters and roof equipment with five muted facade tones, grime, rain streaks, repair patches and sparse stable warm/cool window emission. The distant skyline and communications crown remain unchanged. No new texture images, light nodes or collision objects are required.
+
+The backdrop uses one body MultiMesh and one trim MultiMesh. It has separate hard caps of 420 buildings, 1,900 box instances and 22,800 triangles, while the detailed-city geometry budgets remain unchanged. All emitted original-kit structures now respect detailed-lot reservations. The added backdrop also avoids existing towers, landmarks and the crown footprint. Tests independently reconstruct transformed corners, check road and lot clearance, all-quarter coverage, source course stability, determinism and fallback behavior.
+
+Godot review capture coverage now includes four city overviews as well as eight driver views, eight sidewalk views and the ramen closeup (21 total). Each overview must frame at least one detailed frontage and five original/background pieces. Neutral overviews use diagnostic lighting to show layout and surface detail; driver/night views use the race environment and a QA camera headlight.
+
+Block Circuit emits 227 added backdrop buildings: 71 / 47 / 55 / 54 across the four quarters. Their 1,438 box instances total 17,256 triangles across two material batches. All 55 dedicated backdrop checks pass. The existing detailed-city total remains 887,544 triangles with 29 buildings.
