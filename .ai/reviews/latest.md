@@ -1,3 +1,2 @@
 VERDICT: APPROVE
-FINDINGS:
-- [MED] godot/tests/city_density_tests.gd:138 — Composition completeness is checked only by total part count per kind/quarter/side. Multiple partial compositions can satisfy this modulo check, so it does not establish atomic rollback. — Force a later part to fail and assert that placements, reservations, solids, triangle totals and rendering groups exactly match their pre-attempt state.
+FINDINGS: none
