@@ -1,3 +1,3 @@
-VERDICT: FINDINGS_RESOLVED
-
-Independent Codex reviews raised two MED test findings; both are fixed and verified under Vulkan (actual instance readback, deliberate displacement/restoration, initial renderer settling). No production or HIGH findings. Root QA reviews: APPROVE. No third review round requested. Final ak-test exit0: backdrop57/0 headless,60/0 Vulkan; QA21captures/0failures; audio46/0. See city-background-infill-disposition.md for review provenance and interrupted broad-run limitations.
+VERDICT: APPROVE
+FINDINGS:
+- [MED] godot/tests/city_density_tests.gd:138 — Composition completeness is checked only by total part count per kind/quarter/side. Multiple partial compositions can satisfy this modulo check, so it does not establish atomic rollback. — Force a later part to fail and assert that placements, reservations, solids, triangle totals and rendering groups exactly match their pre-attempt state.
