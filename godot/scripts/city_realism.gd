@@ -52,6 +52,7 @@ static func build(parent: Node3D, input: CourseDefinition) -> Node3D:
 	root.set_meta("placements", layout.placements)
 	root.set_meta("reserved_bounds", layout.reservations)
 	root.set_meta("rejected_slots", layout.rejected)
+	root.set_meta("infill_rejections", layout.infill_rejections)
 	root.set_meta("triangle_count", layout.triangles)
 	root.set_meta("quarter_triangles", layout.quarter_triangles)
 	root.set_meta("triangle_budget", CityRealismLayout.GLOBAL_BUDGET)
