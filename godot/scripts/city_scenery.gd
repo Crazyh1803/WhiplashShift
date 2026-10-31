@@ -149,7 +149,7 @@ class _Kit extends RefCounted:
 		var backdrop := ShaderMaterial.new()
 		backdrop.shader = CityScenery.BACKDROP_SHADER
 		materials["bd_body"] = backdrop
-		materials["bd_rib"] = _flat(Color(0.17, 0.16, 0.15))
+		materials["bd_rib"] = _flat(Color(0.045, 0.043, 0.04))
 		(materials["bd_rib"] as StandardMaterial3D).disable_fog = false
 		materials["crown_steel"] = _flat(Color(0.10, 0.11, 0.15))
 		materials["crown_cream"] = _flat(Color(0.46, 0.43, 0.36))

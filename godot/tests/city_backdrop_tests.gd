@@ -1,4 +1,5 @@
-## Converted-city backdrop regression suite; headless, no rendering.
+## Converted-city backdrop regression suite; runs headless, and on a real renderer also reads back
+## every MultiMesh instance transform.
 ## Everything is measured from the built scene: stored batch transforms are turned into world
 ## corners here, then compared with the realism reservations, the road and the visible towers.
 extends Node3D
@@ -31,6 +32,7 @@ func _ready() -> void:
 		_test_coverage(backdrop, instances)
 		_test_no_extras(scenery, backdrop)
 		_test_shader(backdrop)
+		await _test_renderer_transforms(backdrop)
 		_test_preserved(host, scenery)
 		_test_determinism(host, scenery)
 	_test_fallbacks(host)
@@ -242,6 +244,47 @@ func _test_shader(backdrop: Node3D) -> void:
 	_check("shader is deterministic and texture-free (no TIME, no samplers)", code.find("TIME") == -1 and code.find("sampler2D") == -1 and code.find("texture(") == -1)
 	_check("shader is unshaded so it adds no light dependence", code.find("render_mode unshaded") != -1)
 	_check("shader stays within the sparse-window rule", code.find("step(0.93, lit_roll)") != -1)
+	_check("shader exposure keeps the facade dark behind the detailed fronts", code.find("const float EXPOSURE = 0.22;") != -1)
+	var rib := (backdrop.get_node("BackdropRib") as MultiMeshInstance3D).material_override as StandardMaterial3D
+	_check("trim is dark (albedo %.3f)" % rib.albedo_color.v, rib != null and rib.albedo_color.v <= 0.05)
+
+
+## Every transform the renderer holds must equal the stored one; a deliberately displaced real
+## instance must be rejected, then restored. The Dummy server ignores transform setters, so the
+## readback and mutation only run with a real display server.
+func _test_renderer_transforms(backdrop: Node3D) -> void:
+	if DisplayServer.get_name() == "headless":
+		print("RENDER_CHECK: MultiMesh readback and mutation detector require the Vulkan backdrop run; Dummy transform setters are no-ops")
+		return
+	var total := 0
+	var drift := 0
+	for batch: MultiMeshInstance3D in backdrop.find_children("*", "MultiMeshInstance3D", false, false):
+		drift += _transform_mismatches(batch)
+		total += batch.multimesh.instance_count
+	_check("every real MultiMesh instance matches its stored transform (%d instances, %d mismatches)" % [total, drift], total > 0 and drift == 0)
+	var body := backdrop.get_node("BackdropBody") as MultiMeshInstance3D
+	var original := body.multimesh.get_instance_transform(0)
+	body.multimesh.set_instance_transform(0, Transform3D(original.basis, original.origin + Vector3(0.5, 0.0, 0.0)))
+	await _settle()
+	_check("detector: a displaced real MultiMesh instance is reported", _transform_mismatches(body) == 1)
+	body.multimesh.set_instance_transform(0, original)
+	await _settle()
+	_check("detector: the restored instance matches again", _transform_mismatches(body) == 0)
+
+
+func _settle() -> void:
+	for frame in 2:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+
+
+func _transform_mismatches(batch: MultiMeshInstance3D) -> int:
+	var stored: Array = batch.get_meta("city_transforms", [])
+	var bad := 0 if stored.size() == batch.multimesh.instance_count else 1
+	for index in mini(stored.size(), batch.multimesh.instance_count):
+		if not batch.multimesh.get_instance_transform(index).is_equal_approx(stored[index]):
+			bad += 1
+	return bad
 
 
 func _test_preserved(host: Node3D, scenery: Node3D) -> void:
