@@ -1,5 +1,7 @@
 # Roadside detail and lived-in city pass
 
+Next-pass instructions: read [city-next-pass-handoff.md](city-next-pass-handoff.md) first. The completed pass below is historical; the user's latest priorities are a substantial water-building upgrade, continuous detailed frontage, apartments and coherent war-ruin blocks. Implementation is deferred until the user resumes.
+
 Continue this chat worktree from f68b7e0. User wants detailed buildings exclusively in the roadside layer; generic grey masses must be subordinate behind them. Preserve distinctive silo/column landmark silhouettes while adding visible detail; add a small set of detailed roadside skyscrapers, boarded-up buildings, unhoused encampments and barrel fires.
 
 Split: Claude asset lead via ak-delegate owns building/prop asset work (headless ak-blender for new authored 3D) and coherent city assembly integration, reusing the existing PBR library and detailed sources. Prefer selective landmark upgrades and reusable facade/dressing modules over whole-library rebuilds. Codex owns integration choices, independent review of delegate output, focused checks and actual Vulkan driver/street captures, final review and preview publish. Architecture/budget/layout boundaries are reviewed first with ak-escalate design. Delegate one bounded implementation at a time; separate code-only tests if needed. No assets/final, main merge, driving/road/HUD changes.
