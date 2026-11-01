@@ -79,6 +79,27 @@ def check_city_realism_qa():
     print('PASS: city QA exits 0 healthy, 1 on --selftest-fail, no captures without --capture', flush=True)
 
 
+def check_city_roadside_qa():
+    """Roadside QA exit-code contract: 0 healthy, 1 with --selftest-fail, and no captures unless --capture is given (default is headless safe)."""
+    engine = find_engine()
+    base = [engine, '--headless', '--fixed-fps', '120', '--path', 'godot', 'res://tests/city_roadside_qa.tscn']
+    log = ROOT / '.ai' / 'city-roadside-qa.log'
+    code, report = run_bounded(base, log, 300)
+    print(report, flush=True)
+    if code != 0 or ERROR.search(report) or 'CITY_ROADSIDE_QA: 0 failures' not in report:
+        raise RuntimeError(f'Roadside QA healthy run failed (exit {code})')
+    if 'CITY_ROADSIDE_CAPTURE' in report:
+        raise RuntimeError('Roadside QA wrote captures without --capture')
+    code, report = run_bounded([*base, '--', '--selftest-fail'], log, 300)
+    print(report, flush=True)
+    if code != 1 or 'CITY_ROADSIDE_QA: 1 failures' not in report:
+        raise RuntimeError(f'Roadside QA --selftest-fail did not exit 1 through its own check (exit {code})')
+    print('PASS: roadside QA exits 0 healthy, 1 on --selftest-fail, no captures without --capture', flush=True)
+    if (ROOT / '.ai' / 'TEMP_CAPTURE').exists():  # TEMP-REMOVE
+        code, report = run_bounded([engine, '--path', 'godot', 'res://tests/city_roadside_qa.tscn', '--', '--capture'], log, 600)  # TEMP-REMOVE
+        print(report[-6000:], flush=True)  # TEMP-REMOVE
+
+
 def validate_city_kit():
     for validator in ('validate_city_kit.py', 'validate_habitation_workshop.py', 'validate_city_neighborhood.py', 'validate_city_streets.py',
                       'validate_industrial_market.py', 'test_validate_industrial_market.py',
@@ -97,7 +118,7 @@ def main():
     parser.add_argument('--menu-capture', action='store_true')
     parser.add_argument('--scenes', nargs='+', default=[
         'season_codec_tests', 'race_modes_tests', 'reverse_race_tests', 'main_menu_visual_qa',
-        'city_street_block_tests', 'block_circuit_tests', 'city_kit_tests', 'city_ground_tests', 'city_realism_tests', 'city_density_tests', 'city_backdrop_tests', 'season_course_tests', 'vehicle_audio_tests', 'vehicle_feedback_tests',
+        'city_street_block_tests', 'block_circuit_tests', 'city_kit_tests', 'city_ground_tests', 'city_realism_tests', 'city_density_tests', 'city_backdrop_tests', 'city_roadside_tests','season_course_tests', 'vehicle_audio_tests', 'vehicle_feedback_tests',
         'vehicle_effects_tests', 'bodywork_visual_tests', 'test_main', 'viscera_response_tests',
         'rubble_response_tests', 'armor_response_tests', 'coolant_response_tests', 'effluent_response_tests',
         'ichor_response_tests', 'track_visual_tests', 'viscera_pit_tests', 'boulder_motion_tests',
@@ -123,6 +144,8 @@ def main():
                         f'res://tests/{scene}.tscn'], 900 if scene in ('race_tests', 'season_course_tests', 'cpu_main', 'reverse_race_tests', 'city_ground_tests') else 300)
             if scene == 'city_realism_tests':
                 check_city_realism_qa()
+            if scene == 'city_roadside_tests':
+                check_city_roadside_qa()
     return 0
 
 

@@ -1,0 +1,1205 @@
+{
+ "version": 1,
+ "status": "candidate-review",
+ "coordinate_system": {
+  "units": "metres",
+  "up": "+Y",
+  "front": "-Z",
+  "blender_source": "Z-up, front +Y"
+ },
+ "binding": "geometry-only GLBs; every material is a stub named after the city realism library entry (extras.library_binding) and replaced from godot/assets/city/realism/city_families_manifest.json",
+ "protected_sources": {
+  "godot/assets/city/kit/exchange_hall.glb": "12762263ace8a6d478ab66f510a9dfeee431162e8ee6cdf9603d2b060bd9bc39",
+  "godot/assets/city/kit/pump_citadel.glb": "51aa04740456ff6725581b8043c3f949ab18202fb94ee6097cdfe6c50fbbb62c",
+  "godot/assets/city/kit/relay_tower.glb": "8bf9cf3ed1f79f5db63a6962bfc0eabe43c8c3f3a23df1d9e7206df07c5d1414",
+  "godot/assets/city/kit/city_kit_manifest.json": "39421ff18c61987090f41b127c62061b52e294cca03c561b1503c63863fdb18b",
+  "godot/assets/city/realism/city_families_manifest.json": "107c43b45eaa70fee7cb20c3578925059b5f292eb717463252e1c946b80e2cbb",
+  "godot/assets/city/realism/redline_shop.glb": "ebcd5a54740fcbdea9cffd0992208afec75a49c727e6b093d38269aac82c4588",
+  "godot/assets/city/realism/habitation_workshop.glb": "5818d35efc91da380feb510432f681b68a76444aff1e8121f2af61f8eefdbd38",
+  "godot/assets/city/realism/market_habitat.glb": "6a52dbb669174c5ace5cc9148cc7ee05f6602793c96e4db80847c67bbf82d953",
+  "godot/assets/city/realism/service_tenement.glb": "7b5ffa7139ebabef74cad981fff3853deb00e8b0462daae5fd1af21c08133953",
+  "godot/assets/city/realism/freight_depot.glb": "56031a004c7c10f6b7028cbc830e185408bb62354dbfb374d7c707f5bf1f3b60",
+  "godot/assets/city/realism/row_workshop.glb": "d2f39ebaa8d70147ee246e57cf27440a3d66900fb24868e0280e281b8455c4aa",
+  "godot/assets/city/realism/utility_substation.glb": "f4acef2d5f0d4e06105735f9a9ce3df51861fc13be12430394ab4af268666405",
+  "godot/assets/city/realism/transit_depot.glb": "0f4217a9ec6cd942814ec6b759701ea097436d527368f7ce15175dfe3a00a9aa",
+  "godot/assets/city/candidates/industrial_market/ramen_vendor.glb": "99e32948ececde80452836d8f5f5f033efd5e04931b7da5afe31adf2f07882c1",
+  "godot/assets/city/candidates/industrial_market/ramen_customer.glb": "a6b4de0fa48a29a8eb57fa481f2e0e58c5392aa7c853e23ec5e103d948dad0d8"
+ },
+ "assets": {
+  "barrel_fire_a": {
+   "id": "barrel_fire_a",
+   "glb": "barrel_fire_a.glb",
+   "tris": 1056,
+   "aabb": {
+    "min": [
+     -0.3135,
+     0.0,
+     -0.3135
+    ],
+    "max": [
+     0.3135,
+     0.9648,
+     0.3135
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "plastic_rubber",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 320,
+    "cladding_patch": 224,
+    "plastic_rubber": 396,
+    "lamp_glass": 116
+   },
+   "glb_bytes": 82136,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/barrel_fire_a.glb",
+   "refine": [
+    0.25,
+    1056
+   ],
+   "role": "barrel",
+   "fire": {
+    "base": [
+     0.0,
+     0.61,
+     0.0
+    ],
+    "radius": 0.204,
+    "flame_height": 0.78,
+    "smoke_height": 4.6,
+    "smoke_radius": 0.9
+   },
+   "entrances": []
+  },
+  "barrel_fire_b": {
+   "id": "barrel_fire_b",
+   "glb": "barrel_fire_b.glb",
+   "tris": 1144,
+   "aabb": {
+    "min": [
+     -0.4845,
+     0.0,
+     -0.3
+    ],
+    "max": [
+     0.342,
+     0.8648,
+     0.3
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "brick",
+    "plastic_rubber",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 372,
+    "cladding_patch": 224,
+    "brick": 36,
+    "plastic_rubber": 396,
+    "lamp_glass": 116
+   },
+   "glb_bytes": 92068,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/barrel_fire_b.glb",
+   "refine": [
+    0.25,
+    1144
+   ],
+   "role": "barrel",
+   "fire": {
+    "base": [
+     0.0,
+     0.548,
+     0.0
+    ],
+    "radius": 0.194,
+    "flame_height": 0.78,
+    "smoke_height": 4.6,
+    "smoke_radius": 0.9
+   },
+   "entrances": []
+  },
+  "camp_a": {
+   "id": "camp_a",
+   "glb": "camp_a.glb",
+   "tris": 1866,
+   "aabb": {
+    "min": [
+     -2.14,
+     -0.0127,
+     -2.543
+    ],
+    "max": [
+     3.3674,
+     2.15,
+     1.7612
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "render_plaster",
+    "roof_membrane",
+    "equipment_steel",
+    "fabric_awning",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 188,
+    "cladding_patch": 116,
+    "concrete": 80,
+    "render_plaster": 258,
+    "roof_membrane": 192,
+    "equipment_steel": 76,
+    "fabric_awning": 248,
+    "plastic_rubber": 708
+   },
+   "glb_bytes": 201476,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/camp_a.glb",
+   "refine": [
+    0.6,
+    1866
+   ],
+   "role": "camp",
+   "entrances": []
+  },
+  "camp_b": {
+   "id": "camp_b",
+   "glb": "camp_b.glb",
+   "tris": 1916,
+   "aabb": {
+    "min": [
+     -2.1097,
+     0.0,
+     -1.7
+    ],
+    "max": [
+     2.72,
+     1.9217,
+     1.7
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "render_plaster",
+    "roof_membrane",
+    "equipment_steel",
+    "fabric_awning",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 144,
+    "cladding_patch": 24,
+    "concrete": 40,
+    "render_plaster": 224,
+    "roof_membrane": 96,
+    "equipment_steel": 72,
+    "fabric_awning": 228,
+    "plastic_rubber": 1088
+   },
+   "glb_bytes": 201020,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/camp_b.glb",
+   "refine": [
+    0.6,
+    1916
+   ],
+   "role": "camp",
+   "entrances": []
+  },
+  "camp_c": {
+   "id": "camp_c",
+   "glb": "camp_c.glb",
+   "tris": 1740,
+   "aabb": {
+    "min": [
+     -2.47,
+     0.0,
+     -1.955
+    ],
+    "max": [
+     3.5913,
+     2.27,
+     2.8171
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "render_plaster",
+    "roof_membrane",
+    "equipment_steel",
+    "fabric_awning",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 300,
+    "cladding_patch": 92,
+    "concrete": 120,
+    "render_plaster": 96,
+    "roof_membrane": 176,
+    "equipment_steel": 76,
+    "fabric_awning": 368,
+    "plastic_rubber": 512
+   },
+   "glb_bytes": 183616,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/camp_c.glb",
+   "refine": [
+    0.6,
+    1740
+   ],
+   "role": "camp",
+   "entrances": []
+  },
+  "camp_d": {
+   "id": "camp_d",
+   "glb": "camp_d.glb",
+   "tris": 1734,
+   "aabb": {
+    "min": [
+     -2.44,
+     -0.0147,
+     -1.58
+    ],
+    "max": [
+     2.25,
+     1.42,
+     1.9
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "concrete",
+    "render_plaster",
+    "roof_membrane",
+    "equipment_steel",
+    "fabric_awning",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 216,
+    "cladding_patch": 152,
+    "concrete": 40,
+    "render_plaster": 170,
+    "roof_membrane": 108,
+    "equipment_steel": 108,
+    "fabric_awning": 144,
+    "plastic_rubber": 796
+   },
+   "glb_bytes": 200988,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/camp_d.glb",
+   "refine": [
+    0.6,
+    1734
+   ],
+   "role": "camp",
+   "entrances": []
+  },
+  "tower_a": {
+   "id": "tower_a",
+   "glb": "tower_a.glb",
+   "tris": 57780,
+   "aabb": {
+    "min": [
+     -12.2,
+     0.0,
+     -2.704
+    ],
+    "max": [
+     12.2,
+     76.72,
+     20.06
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "brick",
+    "render_plaster",
+    "roof_membrane",
+    "equipment_steel",
+    "glass_window",
+    "fabric_awning",
+    "plastic_rubber",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 20288,
+    "cladding_corrugated": 1600,
+    "cladding_patch": 196,
+    "concrete": 13568,
+    "brick": 4848,
+    "render_plaster": 8584,
+    "roof_membrane": 496,
+    "equipment_steel": 3460,
+    "glass_window": 3128,
+    "fabric_awning": 800,
+    "plastic_rubber": 280,
+    "sign_atlas": 72,
+    "lamp_glass": 460
+   },
+   "glb_bytes": 5576120,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/tower_a.glb",
+   "refine": [
+    3.4,
+    57780
+   ],
+   "role": "tower",
+   "floors": 16,
+   "height_m": 76.5,
+   "footprint": {
+    "min": [
+     -12.0,
+     0.0
+    ],
+    "max": [
+     12.0,
+     20.0
+    ]
+   },
+   "entrances": [
+    {
+     "kind": "shutter",
+     "position": [
+      9.0,
+      0.55,
+      -0.0
+     ],
+     "width": 3.6,
+     "height": 3.4
+    },
+    {
+     "kind": "personnel",
+     "position": [
+      -0.8,
+      0.0,
+      -0.0
+     ],
+     "width": 1.5,
+     "height": 3.1
+    },
+    {
+     "kind": "personnel",
+     "position": [
+      0.8,
+      0.0,
+      -0.0
+     ],
+     "width": 1.5,
+     "height": 3.1
+    },
+    {
+     "kind": "personnel",
+     "position": [
+      0.136,
+      58.0,
+      10.3
+     ],
+     "width": 1.0,
+     "height": 2.0
+    },
+    {
+     "kind": "lobby",
+     "position": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "width": 3.8,
+     "height": 4.4
+    }
+   ]
+  },
+  "tower_a_lod1": {
+   "id": "tower_a_lod1",
+   "glb": "tower_a_lod1.glb",
+   "tris": 5276,
+   "aabb": {
+    "min": [
+     -12.2,
+     0.0,
+     -0.4
+    ],
+    "max": [
+     12.2,
+     71.8,
+     20.2
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "concrete",
+    "brick",
+    "render_plaster",
+    "glass_window"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 92,
+    "concrete": 608,
+    "brick": 1832,
+    "render_plaster": 1792,
+    "glass_window": 952
+   },
+   "glb_bytes": 297348,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/tower_a_lod1.glb",
+   "refine": [
+    3.0,
+    5276
+   ],
+   "role": "tower_lod1",
+   "entrances": []
+  },
+  "tower_b": {
+   "id": "tower_b",
+   "glb": "tower_b.glb",
+   "tris": 55586,
+   "aabb": {
+    "min": [
+     -11.15,
+     0.0,
+     -4.43
+    ],
+    "max": [
+     11.15,
+     81.74,
+     18.06
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "brick",
+    "roof_membrane",
+    "equipment_steel",
+    "glass_window",
+    "fabric_awning",
+    "plastic_rubber",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 31790,
+    "cladding_corrugated": 8100,
+    "cladding_patch": 512,
+    "concrete": 2592,
+    "brick": 12,
+    "roof_membrane": 288,
+    "equipment_steel": 4316,
+    "glass_window": 6780,
+    "fabric_awning": 12,
+    "plastic_rubber": 448,
+    "sign_atlas": 48,
+    "lamp_glass": 688
+   },
+   "glb_bytes": 5658456,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/tower_b.glb",
+   "refine": [
+    5.0,
+    55586
+   ],
+   "role": "tower",
+   "floors": 16,
+   "height_m": 81.7,
+   "footprint": {
+    "min": [
+     -11.0,
+     0.0
+    ],
+    "max": [
+     11.0,
+     18.0
+    ]
+   },
+   "entrances": [
+    {
+     "kind": "shutter",
+     "position": [
+      -7.7,
+      0.0,
+      0.2
+     ],
+     "width": 4.0,
+     "height": 3.6
+    },
+    {
+     "kind": "shutter",
+     "position": [
+      7.7,
+      0.0,
+      0.2
+     ],
+     "width": 4.0,
+     "height": 3.6
+    },
+    {
+     "kind": "personnel",
+     "position": [
+      -0.75,
+      0.0,
+      0.18
+     ],
+     "width": 1.3,
+     "height": 2.7
+    },
+    {
+     "kind": "personnel",
+     "position": [
+      0.75,
+      0.0,
+      0.18
+     ],
+     "width": 1.3,
+     "height": 2.7
+    },
+    {
+     "kind": "personnel",
+     "position": [
+      -10.15,
+      0.0,
+      0.2
+     ],
+     "width": 0.9,
+     "height": 2.2
+    },
+    {
+     "kind": "personnel",
+     "position": [
+      5.992,
+      46.8,
+      9.888
+     ],
+     "width": 1.0,
+     "height": 2.0
+    },
+    {
+     "kind": "lobby",
+     "position": [
+      0.0,
+      0.0,
+      -0.0
+     ],
+     "width": 8.8,
+     "height": 4.5
+    }
+   ]
+  },
+  "tower_b_lod1": {
+   "id": "tower_b_lod1",
+   "glb": "tower_b_lod1.glb",
+   "tris": 4276,
+   "aabb": {
+    "min": [
+     -11.0,
+     0.0,
+     -0.1
+    ],
+    "max": [
+     11.0,
+     78.9,
+     18.0
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "concrete",
+    "glass_window"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 132,
+    "cladding_corrugated": 2604,
+    "concrete": 512,
+    "glass_window": 1028
+   },
+   "glb_bytes": 231776,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/tower_b_lod1.glb",
+   "refine": [
+    3.0,
+    4276
+   ],
+   "role": "tower_lod1",
+   "entrances": []
+  },
+  "exchange_hall_detail": {
+   "id": "exchange_hall_detail",
+   "glb": "exchange_hall_detail.glb",
+   "tris": 32032,
+   "aabb": {
+    "min": [
+     -28.25,
+     0.8,
+     -13.96
+    ],
+    "max": [
+     28.32,
+     18.5,
+     13.3162
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "render_plaster",
+    "equipment_steel",
+    "glass_window",
+    "fabric_awning",
+    "plastic_rubber",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 23588,
+    "cladding_corrugated": 40,
+    "cladding_patch": 1552,
+    "concrete": 544,
+    "render_plaster": 136,
+    "equipment_steel": 4696,
+    "glass_window": 24,
+    "fabric_awning": 272,
+    "plastic_rubber": 952,
+    "sign_atlas": 36,
+    "lamp_glass": 192
+   },
+   "glb_bytes": 3372500,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/exchange_hall_detail.glb",
+   "refine": [
+    1.2,
+    32032
+   ],
+   "role": "landmark",
+   "source_glb": "godot/assets/city/kit/exchange_hall.glb",
+   "source_aabb": [
+    [
+     -28.799999237060547,
+     0.0,
+     -14.100000381469727
+    ],
+    [
+     28.799999237060547,
+     23.149999618530273,
+     14.100000381469727
+    ]
+   ],
+   "entrances": [
+    {
+     "kind": "wicket",
+     "position": [
+      -8.7,
+      0.9,
+      -9.34
+     ],
+     "width": 1.0,
+     "height": 2.0
+    },
+    {
+     "kind": "wicket",
+     "position": [
+      4.9,
+      0.9,
+      -9.34
+     ],
+     "width": 1.0,
+     "height": 2.0
+    }
+   ]
+  },
+  "pump_citadel_detail": {
+   "id": "pump_citadel_detail",
+   "glb": "pump_citadel_detail.glb",
+   "tris": 34416,
+   "aabb": {
+    "min": [
+     -17.0515,
+     0.0,
+     -17.5692
+    ],
+    "max": [
+     17.0515,
+     32.3613,
+     13.3743
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "concrete",
+    "equipment_steel",
+    "glass_window",
+    "sign_atlas",
+    "lamp_glass"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 16004,
+    "cladding_corrugated": 112,
+    "cladding_patch": 428,
+    "concrete": 128,
+    "equipment_steel": 17308,
+    "glass_window": 40,
+    "sign_atlas": 12,
+    "lamp_glass": 384
+   },
+   "glb_bytes": 3807092,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/pump_citadel_detail.glb",
+   "refine": [
+    1.2,
+    34416
+   ],
+   "role": "landmark",
+   "source_glb": "godot/assets/city/kit/pump_citadel.glb",
+   "source_aabb": [
+    [
+     -17.200000762939453,
+     0.0,
+     -17.910144805908203
+    ],
+    [
+     17.200000762939453,
+     33.47999954223633,
+     17.910144805908203
+    ]
+   ],
+   "entrances": [
+    {
+     "kind": "double_door",
+     "position": [
+      0.0,
+      0.95,
+      -14.618
+     ],
+     "width": 3.8,
+     "height": 3.4
+    }
+   ]
+  },
+  "boards_habitation_workshop": {
+   "id": "boards_habitation_workshop",
+   "glb": "boards_habitation_workshop.glb",
+   "tris": 11376,
+   "aabb": {
+    "min": [
+     -10.74,
+     0.43,
+     -0.2
+    ],
+    "max": [
+     11.29,
+     12.57,
+     0.085
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "render_plaster",
+    "equipment_steel",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 440,
+    "cladding_corrugated": 864,
+    "cladding_patch": 4136,
+    "render_plaster": 384,
+    "equipment_steel": 5408,
+    "plastic_rubber": 144
+   },
+   "glb_bytes": 1170540,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/boards_habitation_workshop.glb",
+   "refine": [
+    0.8,
+    11376
+   ],
+   "role": "boards",
+   "family": "habitation_workshop",
+   "windows_found": 38,
+   "windows_boarded": 38,
+   "doors_barricaded": 2,
+   "entrances": [
+    {
+     "kind": "barricaded_door",
+     "position": [
+      -1.15,
+      0.3,
+      -0.0
+     ],
+     "width": 1.0,
+     "height": 2.1
+    },
+    {
+     "kind": "barricaded_door",
+     "position": [
+      10.65,
+      0.3,
+      -0.0
+     ],
+     "width": 1.0,
+     "height": 2.1
+    }
+   ]
+  },
+  "boards_market_habitat": {
+   "id": "boards_market_habitat",
+   "glb": "boards_market_habitat.glb",
+   "tris": 11054,
+   "aabb": {
+    "min": [
+     -7.99,
+     0.13,
+     -0.075
+    ],
+    "max": [
+     7.64,
+     9.67,
+     2.385
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "render_plaster",
+    "equipment_steel",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 372,
+    "cladding_corrugated": 998,
+    "cladding_patch": 3976,
+    "render_plaster": 696,
+    "equipment_steel": 4880,
+    "plastic_rubber": 132
+   },
+   "glb_bytes": 1096564,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/boards_market_habitat.glb",
+   "refine": [
+    0.8,
+    11054
+   ],
+   "role": "boards",
+   "family": "market_habitat",
+   "windows_found": 34,
+   "windows_boarded": 34,
+   "doors_barricaded": 1,
+   "entrances": [
+    {
+     "kind": "barricaded_door",
+     "position": [
+      6.95,
+      0.0,
+      2.3
+     ],
+     "width": 1.1,
+     "height": 2.2
+    }
+   ]
+  },
+  "boards_service_tenement": {
+   "id": "boards_service_tenement",
+   "glb": "boards_service_tenement.glb",
+   "tris": 10516,
+   "aabb": {
+    "min": [
+     -4.5593,
+     0.13,
+     -0.2
+    ],
+    "max": [
+     4.5545,
+     14.92,
+     0.085
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_corrugated",
+    "cladding_patch",
+    "render_plaster",
+    "equipment_steel",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 260,
+    "cladding_corrugated": 528,
+    "cladding_patch": 4076,
+    "render_plaster": 616,
+    "equipment_steel": 4904,
+    "plastic_rubber": 132
+   },
+   "glb_bytes": 1063168,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/boards_service_tenement.glb",
+   "refine": [
+    0.8,
+    10516
+   ],
+   "role": "boards",
+   "family": "service_tenement",
+   "windows_found": 32,
+   "windows_boarded": 32,
+   "doors_barricaded": 1,
+   "entrances": [
+    {
+     "kind": "barricaded_door",
+     "position": [
+      1.55,
+      0.0,
+      -0.0
+     ],
+     "width": 1.1,
+     "height": 2.3
+    }
+   ]
+  },
+  "boards_freight_depot": {
+   "id": "boards_freight_depot",
+   "glb": "boards_freight_depot.glb",
+   "tris": 564,
+   "aabb": {
+    "min": [
+     -11.2985,
+     5.144,
+     -0.075
+    ],
+    "max": [
+     -9.5107,
+     6.356,
+     0.0444
+    ]
+   },
+   "surfaces": [
+    "cladding_patch",
+    "equipment_steel"
+   ],
+   "tris_by_surface": {
+    "cladding_patch": 388,
+    "equipment_steel": 176
+   },
+   "glb_bytes": 54968,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/boards_freight_depot.glb",
+   "refine": [
+    0.8,
+    564
+   ],
+   "role": "boards",
+   "family": "freight_depot",
+   "windows_found": 2,
+   "windows_boarded": 2,
+   "doors_barricaded": 0,
+   "entrances": []
+  },
+  "boards_row_workshop": {
+   "id": "boards_row_workshop",
+   "glb": "boards_row_workshop.glb",
+   "tris": 3004,
+   "aabb": {
+    "min": [
+     -5.3074,
+     0.13,
+     -0.2
+    ],
+    "max": [
+     10.74,
+     3.04,
+     0.045
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "render_plaster",
+    "equipment_steel",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 300,
+    "cladding_patch": 1644,
+    "render_plaster": 96,
+    "equipment_steel": 952,
+    "plastic_rubber": 12
+   },
+   "glb_bytes": 297000,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/boards_row_workshop.glb",
+   "refine": [
+    0.8,
+    3004
+   ],
+   "role": "boards",
+   "family": "row_workshop",
+   "windows_found": 4,
+   "windows_boarded": 4,
+   "doors_barricaded": 3,
+   "entrances": [
+    {
+     "kind": "barricaded_door",
+     "position": [
+      -2.4,
+      0.0,
+      -0.0
+     ],
+     "width": 1.0,
+     "height": 2.3
+    },
+    {
+     "kind": "barricaded_door",
+     "position": [
+      -1.2,
+      0.0,
+      -0.0
+     ],
+     "width": 0.9,
+     "height": 2.3
+    },
+    {
+     "kind": "barricaded_door",
+     "position": [
+      10.1,
+      0.0,
+      -0.0
+     ],
+     "width": 1.0,
+     "height": 2.3
+    }
+   ]
+  },
+  "boards_utility_substation": {
+   "id": "boards_utility_substation",
+   "glb": "boards_utility_substation.glb",
+   "tris": 356,
+   "aabb": {
+    "min": [
+     -1.74,
+     0.13,
+     -0.2
+    ],
+    "max": [
+     -0.46,
+     2.11,
+     -0.05
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "equipment_steel"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 100,
+    "cladding_patch": 200,
+    "equipment_steel": 56
+   },
+   "glb_bytes": 51256,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/boards_utility_substation.glb",
+   "refine": [
+    0.8,
+    356
+   ],
+   "role": "boards",
+   "family": "utility_substation",
+   "windows_found": 0,
+   "windows_boarded": 0,
+   "doors_barricaded": 1,
+   "entrances": [
+    {
+     "kind": "barricaded_door",
+     "position": [
+      -1.1,
+      0.0,
+      -0.0
+     ],
+     "width": 1.0,
+     "height": 2.3
+    }
+   ]
+  },
+  "boards_transit_depot": {
+   "id": "boards_transit_depot",
+   "glb": "boards_transit_depot.glb",
+   "tris": 1780,
+   "aabb": {
+    "min": [
+     4.893,
+     0.13,
+     -1.18
+    ],
+    "max": [
+     11.4389,
+     2.4579,
+     -0.2108
+    ]
+   },
+   "surfaces": [
+    "steel_structure",
+    "cladding_patch",
+    "render_plaster",
+    "equipment_steel",
+    "plastic_rubber"
+   ],
+   "tris_by_surface": {
+    "steel_structure": 100,
+    "cladding_patch": 964,
+    "render_plaster": 56,
+    "equipment_steel": 648,
+    "plastic_rubber": 12
+   },
+   "glb_bytes": 178288,
+   "problems": [],
+   "textured_source": "assets/generated/city_roadside/textured_exports/boards_transit_depot.glb",
+   "refine": [
+    0.8,
+    1780
+   ],
+   "role": "boards",
+   "family": "transit_depot",
+   "windows_found": 4,
+   "windows_boarded": 4,
+   "doors_barricaded": 1,
+   "entrances": [
+    {
+     "kind": "barricaded_door",
+     "position": [
+      9.4,
+      0.0,
+      -0.2
+     ],
+     "width": 1.1,
+     "height": 2.3
+    }
+   ]
+  }
+ },
+ "problems": []
+}

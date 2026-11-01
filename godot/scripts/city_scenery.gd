@@ -54,6 +54,10 @@ static func build(parent: Node3D, course: CourseDefinition, use_city_kit: bool =
 			var landmarks: Array[AABB] = []
 			for placement: Dictionary in district.get_meta("placements", []):
 				landmarks.append(placement["bounds"])
+			# Roadside detail lots (towers, camps, barrel effects) are reserved before the generic backdrop is placed.
+			var roadside := CityRoadside.build(root, course, block, district)
+			if roadside != null:
+				landmarks.append_array(roadside.get_meta("reserved_bounds", []))
 			kit.build_backdrop(root, landmarks)
 	return root
 
