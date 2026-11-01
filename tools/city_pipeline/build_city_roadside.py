@@ -45,28 +45,24 @@ def main():
         jobs.append(("barrel_fire_" + v, lambda v=v: D.barrel_fire(v), dict(tri_cap=2500, edges=(0.25, 0.5, 99.0), rays=RAYS, ao_dist=0.25), "barrel"))
     for v in ("a", "b", "c", "d"):
         jobs.append(("camp_" + v, lambda v=v: D.camp(v), dict(tri_cap=9000, edges=(0.6, 1.0, 99.0), rays=RAYS, ao_dist=0.5), "camp"))
-    try:
-        import city_roadside_towers as TW
-        for v in ("a", "b"):
-            jobs.append(("tower_" + v, lambda v=v: TW.tower(v, 0), dict(tri_cap=60000, rays=RAYS, ao_dist=0.9), "tower"))
-            jobs.append(("tower_%s_lod1" % v, lambda v=v: TW.tower(v, 1), dict(tri_cap=9000, edges=(3.0, 6.0, 99.0), rays=RAYS, ao_dist=1.5), "tower_lod1"))
-    except ImportError:
-        pass
-    try:
-        import city_roadside_landmarks as LM
-        for v in ("exchange_hall", "pump_citadel"):
-            jobs.append((v + "_detail", lambda v=v: LM.landmark(v), dict(tri_cap=60000, rays=RAYS, ao_dist=0.9, edges=(1.2, 2.0, 3.4, 99.0)), "landmark"))
-    except ImportError:
-        pass
-    try:
-        import city_roadside_boards as BD
-        for fam in BD.FAMILIES:
-            jobs.append(("boards_" + fam, lambda fam=fam: BD.boards(fam), dict(tri_cap=16000, edges=(0.8, 1.5, 99.0), rays=RAYS, ao_dist=0.3), "boards"))
-    except ImportError:
-        pass
+    # Required modules: a missing module (or a failing import inside one) must stop the build, never silently drop an asset group.
+    import city_roadside_towers as TW
+    for v in ("a", "b"):
+        jobs.append(("tower_" + v, lambda v=v: TW.tower(v, 0), dict(tri_cap=60000, rays=RAYS, ao_dist=0.9), "tower"))
+        jobs.append(("tower_%s_lod1" % v, lambda v=v: TW.tower(v, 1), dict(tri_cap=9000, edges=(3.0, 6.0, 99.0), rays=RAYS, ao_dist=1.5), "tower_lod1"))
+    import city_roadside_landmarks as LM
+    for v in ("exchange_hall", "pump_citadel"):
+        jobs.append((v + "_detail", lambda v=v: LM.landmark(v), dict(tri_cap=60000, rays=RAYS, ao_dist=0.9, edges=(1.2, 2.0, 3.4, 99.0)), "landmark"))
+    import city_roadside_boards as BD
+    for fam in BD.FAMILIES:
+        jobs.append(("boards_" + fam, lambda fam=fam: BD.boards(fam), dict(tri_cap=16000, edges=(0.8, 1.5, 99.0), rays=RAYS, ao_dist=0.3), "boards"))
+    unknown = sorted(ONLY - {job[0] for job in jobs})
+    if unknown:
+        raise SystemExit("AK: ERROR unknown --only asset id(s): " + ", ".join(unknown))
     path = os.path.join(R.OUT, "roadside_manifest.json")
     old = json.load(open(path, encoding="utf-8")) if os.path.isfile(path) else {"assets": {}}
     assets = old.get("assets", {})
+    built = set()
     for name, build, kw, role in jobs:
         if not wanted(name):
             continue
@@ -77,6 +73,10 @@ def main():
         rec.update(extra)
         rec["entrances"] = [{"kind": e["kind"], "position": [round(e["p"][0], 3), round(e["p"][2], 3), round(-e["p"][1], 3)], "width": e["width"], "height": e["height"]} for e in ctx.entrances]
         assets[name] = rec
+        built.add(name)
+    missing = sorted(ONLY - built)
+    if missing:
+        raise SystemExit("AK: ERROR requested asset(s) were not built (manifest left unchanged): " + ", ".join(missing))
     manifest = {
         "version": 1, "status": "candidate-review",
         "coordinate_system": {"units": "metres", "up": "+Y", "front": "-Z", "blender_source": "Z-up, front +Y"},
