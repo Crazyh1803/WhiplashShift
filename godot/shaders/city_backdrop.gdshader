@@ -7,9 +7,14 @@ render_mode unshaded;
 
 const float BAY = 3.4;
 const float FLOOR_H = 3.8;
-// Darkens the whole facade to sit behind the detailed night fronts (old body facade ~0.025-0.045).
-const float BACKDROP_EXPOSURE = 0.22;
+// Subordinate generic backdrop: darker, desaturated and low-contrast so the detailed fronts read
+// as the foreground (old body facade ~0.025-0.045, previous backdrop exposure 0.22).
+const float BACKDROP_EXPOSURE = 0.13;
+const float BACKDROP_SATURATION = 0.45;
+const float BACKDROP_CONTRAST = 0.7;
+const vec3 HAZE = vec3(0.028, 0.032, 0.044);
 
+varying float view_dist;
 varying vec3 lpos;
 varying vec3 lnorm;
 varying flat vec3 msize;
@@ -18,6 +23,11 @@ varying float wy;
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+vec3 mute(vec3 c) {
+	float grey = dot(c, vec3(0.299, 0.587, 0.114));
+	return mix(vec3(grey), c, BACKDROP_SATURATION);
 }
 
 vec3 tone(float index) {
@@ -34,18 +44,20 @@ void vertex() {
 	msize = vec3(length(MODEL_MATRIX[0].xyz), length(MODEL_MATRIX[1].xyz), length(MODEL_MATRIX[2].xyz));
 	info = INSTANCE_CUSTOM.xy;
 	wy = (MODEL_MATRIX * vec4(VERTEX, 1.0)).y;
+	view_dist = length((MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz);
 }
 
 void fragment() {
 	vec3 n = abs(lnorm);
 	vec3 p = lpos * msize;
-	vec3 base = tone(info.x) * BACKDROP_EXPOSURE;
+	vec3 base = mute(tone(info.x)) * BACKDROP_EXPOSURE;
+	float haze = smoothstep(60.0, 320.0, view_dist) * 0.4;
 	float seed = info.y * 97.0;
 	if (n.y > 0.5) {
 		vec2 g = fract(p.xz / 4.0);
 		float seam = step(g.x, 0.03) + step(g.y, 0.03);
 		float patch = step(0.8, hash(floor(p.xz / 5.0) + seed));
-		ALBEDO = base * mix(0.55, 0.35, clamp(seam, 0.0, 1.0)) * mix(1.0, 1.35, patch);
+		ALBEDO = mix(base * mix(0.55, 0.35, clamp(seam, 0.0, 1.0)) * mix(1.0, 1.35, patch), HAZE, haze);
 	} else {
 		float u = n.x > 0.5 ? p.z : p.x;
 		float side = n.x > 0.5 ? 1.0 : 0.8;
@@ -62,6 +74,7 @@ void fragment() {
 		vec2 pc = floor(vec2(u / (BAY * 2.0), wy / (FLOOR_H * 2.0)));
 		float repair = step(0.86, hash(pc + seed * 3.0));
 		vec3 patch_tone = mix(vec3(0.27, 0.25, 0.21), vec3(0.19, 0.23, 0.26), step(0.5, hash(pc + seed))) * BACKDROP_EXPOSURE;
+		patch_tone = mute(patch_tone);
 		wall = mix(wall, patch_tone * panel * side, repair * 0.85);
 		// Rain streaks run down a few columns and fade with height; grime pools low.
 		float column = hash(vec2(floor(u * 3.0), seed * 5.0));
@@ -74,9 +87,10 @@ void fragment() {
 		vec3 glass = base * 0.35 * side;
 		vec3 lamp = mix(vec3(1.0, 0.72, 0.38), vec3(0.5, 0.82, 1.0), step(0.5, hash(cell + seed * 11.0)));
 		vec3 colour = mix(wall, glass, inset * (1.0 - repair * 0.8));
-		colour = mix(colour, lamp * 0.3, lit);
+		colour = mix(colour, lamp * 0.12, lit);
 		colour = mix(colour, base * 0.15, seam);
-		ALBEDO = colour;
-		EMISSION = lamp * 0.2 * lit;
+		colour = mix(vec3(0.02), colour, BACKDROP_CONTRAST);
+		ALBEDO = mix(colour, HAZE, haze);
+		EMISSION = lamp * 0.07 * lit;
 	}
 }

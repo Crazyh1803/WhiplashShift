@@ -7,6 +7,9 @@ extends RefCounted
 const SEED := 4207
 const MAX_LIGHTS := 12
 const ROAD_CLEARANCE := 3.5
+# Generic (undetailed) buildings keep their whole footprint at least this far from the rail edge,
+# beyond the detailed frontages' rear faces. Only detailed buildings may be roadside.
+const GENERIC_SETBACK := 50.0
 const DETAIL_BEHIND := 100.0
 const DETAIL_AHEAD := 350.0
 const WORLD_LIMIT := 1100.0
@@ -72,6 +75,11 @@ static func road_clearance(box: AABB, course: CourseDefinition) -> float:
 			continue
 		best = minf(best, _rect_segment_distance(low, high, pa, pb) - edge)
 	return best
+
+
+## True when the whole merged footprint sits beyond the generic-building setback.
+static func generic_clear(box: AABB, course: CourseDefinition) -> bool:
+	return road_clearance(box, course) >= GENERIC_SETBACK
 
 
 static func _rect_point_distance(low: Vector2, high: Vector2, p: Vector2) -> float:
@@ -201,8 +209,11 @@ class _Kit extends RefCounted:
 			merged = merged.merge(part[1] * CityScenery.UNIT_BOX)
 		return merged
 
-	func _accept(parts: Array, own_overlap: bool = true, emit_geometry: bool = true) -> bool:
+	func _accept(parts: Array, own_overlap: bool = true, emit_geometry: bool = true, generic: bool = false) -> bool:
 		var bounds := _bounds(parts)
+		# In the converted city a generic body can never be emitted inside the setback.
+		if generic and converted_city and not CityScenery.generic_clear(bounds, course):
+			emit_geometry = false
 		if absf(bounds.position.x) > CityScenery.WORLD_LIMIT or absf(bounds.end.x) > CityScenery.WORLD_LIMIT \
 				or absf(bounds.position.z) > CityScenery.WORLD_LIMIT or absf(bounds.end.z) > CityScenery.WORLD_LIMIT:
 			return false
@@ -264,7 +275,8 @@ class _Kit extends RefCounted:
 		while raw < total - CityScenery.DETAIL_BEHIND:
 			var detailed := _in_detail(raw)
 			var at := _sample(raw)
-			var emit_geometry := not replace_first_quarter or fposmod(raw, total) >= total * CityDistrict.FRACTION
+			# Converted city: generic towers are never emitted (draws still happen so the RNG stream holds).
+			var emit_geometry := not converted_city and (not replace_first_quarter or fposmod(raw, total) >= total * CityDistrict.FRACTION)
 			for side: float in [-1.0, 1.0]:
 				index += 1
 				if rng.randf() < 0.12:
@@ -279,7 +291,7 @@ class _Kit extends RefCounted:
 		var fz := rng.randf_range(15.0, 24.0)
 		var basis := _basis(at["dir"])
 		var offset: float = float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET + gap + fz * 0.5
-		_accept(_tower_parts(basis, at["pos"] + basis * Vector3(0, 0, offset * side), side, fx, fz, height, detailed, index), true, emit_geometry)
+		_accept(_tower_parts(basis, at["pos"] + basis * Vector3(0, 0, offset * side), side, fx, fz, height, detailed, index), true, emit_geometry, true)
 
 	func _tower_parts(basis: Basis, origin: Vector3, side: float, fx: float, fz: float, h: float, detailed: bool, index: int) -> Array:
 		var parts: Array = [_part("body", basis, origin, Vector3(0, h * 0.5, 0), Vector3(fx, h, fz)),
@@ -322,7 +334,7 @@ class _Kit extends RefCounted:
 				var offset: float = float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET + 9.0 + 6.0
 				var parts := _tower_parts(basis, at["pos"] + basis * Vector3(0, 0, offset * side), side, 22.0, 12.0, 6.0, false, int(raw))
 				parts.append(_part("amber", basis, at["pos"] + basis * Vector3(0, 0, offset * side), Vector3(0, 6.6, 0), Vector3(0.5, 0.5, 0.5)))
-				_accept(parts)
+				_accept(parts, true, not converted_city, true)
 			raw += 42.0
 
 	# A ring of stepped silhouettes with scattered window lights, outside any plausible road.
@@ -471,7 +483,8 @@ class _Kit extends RefCounted:
 						return
 					var row: Array = rows[row_index]
 					var jitter := rng.randf_range(-3.0, 3.0)
-					var gap := rng.randf_range(row[0], row[1])
+					# Same draw, shifted so the row starts at the generic setback.
+					var gap := CityScenery.GENERIC_SETBACK + (rng.randf_range(row[0], row[1]) - float(row[0]))
 					var height := rng.randf_range(row[2], row[3])
 					var fx := rng.randf_range(14.0, 24.0)
 					var fz := rng.randf_range(14.0, 22.0)
@@ -514,7 +527,7 @@ class _Kit extends RefCounted:
 		if absf(bounds.position.x) > CityScenery.WORLD_LIMIT or absf(bounds.end.x) > CityScenery.WORLD_LIMIT \
 				or absf(bounds.position.z) > CityScenery.WORLD_LIMIT or absf(bounds.end.z) > CityScenery.WORLD_LIMIT:
 			return false
-		if CityScenery.road_clearance(bounds, course) < CityScenery.ROAD_CLEARANCE:
+		if not CityScenery.generic_clear(bounds, course):
 			return false
 		var flat := AABB(Vector3(bounds.position.x, 0, bounds.position.z), Vector3(bounds.size.x, 1, bounds.size.z)).grow(1.0)
 		for reserved: AABB in reserved_bounds:

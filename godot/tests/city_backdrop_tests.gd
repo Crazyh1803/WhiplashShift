@@ -28,6 +28,7 @@ func _ready() -> void:
 		var instances := _instances(backdrop)
 		_test_counts(scenery, backdrop, instances)
 		_test_clearance(instances)
+		_test_layering(scenery, backdrop, instances)
 		_test_reservations(scenery, backdrop, instances)
 		_test_coverage(backdrop, instances)
 		_test_no_extras(scenery, backdrop)
@@ -244,7 +245,9 @@ func _test_shader(backdrop: Node3D) -> void:
 	_check("shader is deterministic and texture-free (no TIME, no samplers)", code.find("TIME") == -1 and code.find("sampler2D") == -1 and code.find("texture(") == -1)
 	_check("shader is unshaded so it adds no light dependence", code.find("render_mode unshaded") != -1)
 	_check("shader stays within the sparse-window rule", code.find("step(0.93, lit_roll)") != -1)
-	_check("shader exposure keeps the facade dark behind the detailed fronts", code.find("const float BACKDROP_EXPOSURE = 0.22;") != -1)
+	_check("shader exposure keeps the facade subordinate to the detailed fronts", code.find("const float BACKDROP_EXPOSURE = 0.13;") != -1)
+	_check("shader desaturates, flattens contrast and hazes with distance", code.find("BACKDROP_SATURATION = 0.45") != -1 and code.find("BACKDROP_CONTRAST = 0.7") != -1 and code.find("HAZE") != -1)
+	_check("shader window emission is faint", code.find("EMISSION = lamp * 0.07 * lit;") != -1)
 	var rib := (backdrop.get_node("BackdropRib") as MultiMeshInstance3D).material_override as StandardMaterial3D
 	_check("trim is dark (albedo %.3f)" % rib.albedo_color.v, rib != null and rib.albedo_color.v <= 0.05)
 
@@ -304,6 +307,14 @@ func _test_preserved(host: Node3D, scenery: Node3D) -> void:
 	var alone := CityRealism.build(alone_host, _course.geometry())
 	_check("detailed buildings and ground are unchanged (%d tris)" % int(realism.get_meta("triangle_count")),
 			alone != null and int(alone.get_meta("triangle_count")) == int(realism.get_meta("triangle_count")) and (alone.get_meta("placements") as Array).size() == (realism.get_meta("placements") as Array).size())
+	var same_records := alone != null
+	if same_records:
+		var a: Array = alone.get_meta("placements")
+		var b: Array = realism.get_meta("placements")
+		same_records = a.size() == b.size()
+		for i in mini(a.size(), b.size()):
+			same_records = same_records and a[i]["id"] == b[i]["id"] and var_to_str(a[i]["transform"]) == var_to_str(b[i]["transform"]) and var_to_str(a[i]["bounds"]) == var_to_str(b[i]["bounds"])
+	_check("every detailed placement record is unchanged by the layering (%d records)" % (realism.get_meta("placements") as Array).size(), same_records)
 	alone_host.free()
 	legacy.get_parent().remove_child(legacy)
 	legacy.free()
@@ -335,6 +346,56 @@ func _test_fallbacks(host: Node3D) -> void:
 	for built: Node in [legacy, plain]:
 		built.get_parent().remove_child(built)
 		built.free()
+
+
+## Generic buildings may not be roadside: setback on every emitted body, beyond detailed rear faces.
+func _test_layering(scenery: Node3D, backdrop: Node3D, instances: Array[Dictionary]) -> void:
+	_check("setback is a real distance beyond the road clearance (%.0f m)" % CityScenery.GENERIC_SETBACK, CityScenery.GENERIC_SETBACK >= 40.0)
+	var at: Dictionary = _course.points[40]
+	var dir: Vector3 = at["dir"]
+	var side := Vector3(-dir.z, 0.0, dir.x)
+	var edge := float(at["w"]) * 0.5 + TrackBuilder.RAIL_OFFSET
+	var roadside := AABB(at["pos"] + side * (edge + 11.0) - Vector3(8, 0, 8), Vector3(16, 40, 16))
+	var set_back := AABB(at["pos"] + side * (edge + CityScenery.GENERIC_SETBACK + 20.0) - Vector3(8, 0, 8), Vector3(16, 40, 16))
+	var almost := AABB(at["pos"] + side * (edge + CityScenery.GENERIC_SETBACK - 2.0) - Vector3(8, 0, 8), Vector3(16, 40, 16))
+	_check("detector: a roadside generic fixture fails the setback", not CityScenery.generic_clear(roadside, _course))
+	_check("detector: a set-back generic fixture passes the setback", CityScenery.generic_clear(set_back, _course))
+	_check("detector: a footprint just inside the setback fails", not CityScenery.generic_clear(almost, _course))
+	# Full scene graph: no legacy generic body, deck or street-wall geometry in the converted city.
+	var generic_instances := 0
+	for batch: MultiMeshInstance3D in scenery.find_children("*", "MultiMeshInstance3D", true, false):
+		if not backdrop.is_ancestor_of(batch) and String(batch.name) in ["Body", "Rib", "Cyan", "Amber", "Sinew", "Wall", "Post"]:
+			generic_instances += batch.multimesh.instance_count
+	_check("converted city emits no legacy tower, deck or street-wall geometry (%d instances)" % generic_instances, generic_instances == 0)
+	# Emitted-path guard: a roadside generic tower cannot reach a batch, a set-back one can.
+	var kit := CityScenery._Kit.new(_course, true, [], 0, true)
+	var basis: Basis = kit._basis(dir)
+	var near_parts: Array = kit._tower_parts(basis, (at["pos"] as Vector3) + basis * Vector3(0, 0, edge + 20.0), 1.0, 18.0, 18.0, 40.0, false, 1)
+	kit._accept(near_parts, true, true, true)
+	_check("detector: an emitted roadside generic tower never reaches a batch", (kit.pieces["body"] as Array).is_empty())
+	var far_parts: Array = kit._tower_parts(basis, (at["pos"] as Vector3) + basis * Vector3(0, 0, edge + CityScenery.GENERIC_SETBACK + 30.0), 1.0, 18.0, 18.0, 40.0, false, 1)
+	kit._accept(far_parts, true, true, true)
+	_check("a set-back generic tower still emits through the same path", not (kit.pieces["body"] as Array).is_empty())
+	# Every backdrop building and every stored part clears the setback.
+	var worst := INF
+	var violations := 0
+	for record: Dictionary in backdrop.get_meta("records"):
+		var gap := CityScenery.road_clearance(record["bounds"], _course)
+		worst = minf(worst, gap)
+		violations += int(gap < CityScenery.GENERIC_SETBACK)
+	for entry: Dictionary in instances:
+		violations += int(CityScenery.road_clearance(entry["world"], _course) < CityScenery.GENERIC_SETBACK)
+	_check("every backdrop footprint and part is %.0f m from the rail (worst %.1f, %d violations)" % [CityScenery.GENERIC_SETBACK, worst, violations], violations == 0)
+	# The setback lies beyond the measured rear faces of every detailed building.
+	var rear := 0.0
+	for placement: Dictionary in (scenery.get_node("CityRealism") as Node3D).get_meta("placements"):
+		var box: AABB = placement["bounds"]
+		for corner in 4:
+			var p := Vector3(box.position.x + box.size.x * float(corner & 1), 0.0, box.position.z + box.size.z * float(corner >> 1))
+			rear = maxf(rear, CityScenery.road_clearance(AABB(p, Vector3(0.001, 1, 0.001)), _course))
+	print("BACKDROP_LAYERING: setback=%.1f nearest=%.1f detailed_rear=%.1f" % [CityScenery.GENERIC_SETBACK, worst, rear])
+	_check("setback is at least 3 m behind the deepest detailed rear face (rear %.1f m)" % rear, CityScenery.GENERIC_SETBACK >= rear + 3.0)
+	_check("nearest generic footprint lies behind every detailed rear face (%.1f > %.1f)" % [worst, rear], worst > rear)
 
 
 func _test_detectors() -> void:
