@@ -110,6 +110,13 @@ def refine(mesh, max_edge):
         bmesh.ops.subdivide_edges(bm, edges=edges, cuts=1, use_grid_fill=True)
 
 
+def tube_ring(c, cx, cy, z, radius, tube, seg, mat):
+    """Hollow circular rail: a closed loop of thin tubular segments (never a capped disc, so the platform/roof stays visible through it)."""
+    pts = [V((cx + radius * math.cos(2 * math.pi * j / seg), cy + radius * math.sin(2 * math.pi * j / seg), z)) for j in range(seg)]
+    for j in range(seg):
+        c.m.cyl(pts[j], pts[(j + 1) % seg], tube, tube, mat, seg=4, smooth=False)
+
+
 def tri_count(bm):
     return sum(len(f.verts) - 2 for f in bm.faces)
 
@@ -152,6 +159,24 @@ def wear_fn(ctx, top, grime=1.0, soot=None):
     return f
 
 
+SHARED_TEXTURES = os.path.join(ROOT, "assets", "generated", "city_realism", "textures")
+
+
+def texture_uri(stem):
+    """URI of a shared city_realism texture relative to the roadside textured exports folder; the file must exist."""
+    target = os.path.join(SHARED_TEXTURES, stem + ".png")
+    if not os.path.isfile(target):
+        raise SystemExit("AK: ERROR shared texture missing: " + target)
+    return os.path.relpath(target, TEXTURED).replace(os.sep, "/")
+
+
+def validate_texture_uris(path):
+    """Every image URI of a retained textured export must resolve (from the export's own folder) to an existing file; returns the problems."""
+    js, _ = BIND.read_glb(path)
+    return ["%s: image %s -> %s does not exist" % (os.path.basename(path), i, im.get("uri")) for i, im in enumerate(js.get("images", []))
+            if not os.path.isfile(os.path.normpath(os.path.join(os.path.dirname(path), im.get("uri", ""))))]
+
+
 def externalize(path):
     """Exported GLB -> shared image URIs, TANGENT added -> retained textured source + geometry-only runtime stub (same flow as the family build)."""
     data = open(path, "rb").read()
@@ -171,7 +196,7 @@ def externalize(path):
         stem = os.path.splitext(im.get("name", ""))[0]
         if "bufferView" in im:
             del im["bufferView"]
-        im["uri"] = f"textures/{stem}.png"
+        im["uri"] = texture_uri(stem)
         im["mimeType"] = "image/png"
     new_bin = bytearray()
     remap = {}
@@ -203,7 +228,11 @@ def externalize(path):
     while len(new_bin) % 4:
         new_bin.append(0)
     js["buffers"] = [{"byteLength": len(new_bin)}]
-    BIND.write_pair(js, bytes(new_bin), os.path.join(TEXTURED, os.path.basename(path)), path)
+    textured = os.path.join(TEXTURED, os.path.basename(path))
+    BIND.write_pair(js, bytes(new_bin), textured, path)
+    bad = validate_texture_uris(textured)
+    if bad:
+        raise SystemExit("AK: ERROR unresolved texture URIs: " + "; ".join(bad))
 
 
 def export(ob, path):

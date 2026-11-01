@@ -29,7 +29,7 @@
   "barrel_fire_a": {
    "id": "barrel_fire_a",
    "glb": "barrel_fire_a.glb",
-   "tris": 1056,
+   "tris": 1260,
    "aabb": {
     "min": [
      -0.3135,
@@ -49,17 +49,17 @@
     "lamp_glass"
    ],
    "tris_by_surface": {
-    "steel_structure": 320,
+    "steel_structure": 524,
     "cladding_patch": 224,
     "plastic_rubber": 396,
     "lamp_glass": 116
    },
-   "glb_bytes": 82136,
+   "glb_bytes": 99488,
    "problems": [],
    "textured_source": "assets/generated/city_roadside/textured_exports/barrel_fire_a.glb",
    "refine": [
     0.25,
-    1056
+    1260
    ],
    "role": "barrel",
    "fire": {
@@ -78,7 +78,7 @@
   "barrel_fire_b": {
    "id": "barrel_fire_b",
    "glb": "barrel_fire_b.glb",
-   "tris": 1144,
+   "tris": 1348,
    "aabb": {
     "min": [
      -0.4845,
@@ -99,18 +99,18 @@
     "lamp_glass"
    ],
    "tris_by_surface": {
-    "steel_structure": 372,
+    "steel_structure": 576,
     "cladding_patch": 224,
     "brick": 36,
     "plastic_rubber": 396,
     "lamp_glass": 116
    },
-   "glb_bytes": 92068,
+   "glb_bytes": 109424,
    "problems": [],
    "textured_source": "assets/generated/city_roadside/textured_exports/barrel_fire_b.glb",
    "refine": [
     0.25,
-    1144
+    1348
    ],
    "role": "barrel",
    "fire": {
@@ -1049,7 +1049,7 @@
   "exchange_hall_detail": {
    "id": "exchange_hall_detail",
    "glb": "exchange_hall_detail.glb",
-   "tris": 32032,
+   "tris": 33016,
    "aabb": {
     "min": [
      -28.25,
@@ -1076,7 +1076,7 @@
     "lamp_glass"
    ],
    "tris_by_surface": {
-    "steel_structure": 23588,
+    "steel_structure": 24572,
     "cladding_corrugated": 40,
     "cladding_patch": 1552,
     "concrete": 544,
@@ -1088,12 +1088,12 @@
     "sign_atlas": 36,
     "lamp_glass": 192
    },
-   "glb_bytes": 3372500,
+   "glb_bytes": 3499364,
    "problems": [],
    "textured_source": "assets/generated/city_roadside/textured_exports/exchange_hall_detail.glb",
    "refine": [
     1.2,
-    32032
+    33016
    ],
    "role": "landmark",
    "source_glb": "godot/assets/city/kit/exchange_hall.glb",
@@ -1135,7 +1135,7 @@
   "pump_citadel_detail": {
    "id": "pump_citadel_detail",
    "glb": "pump_citadel_detail.glb",
-   "tris": 34416,
+   "tris": 35112,
    "aabb": {
     "min": [
      -17.0515,
@@ -1159,7 +1159,7 @@
     "lamp_glass"
    ],
    "tris_by_surface": {
-    "steel_structure": 16004,
+    "steel_structure": 16700,
     "cladding_corrugated": 112,
     "cladding_patch": 428,
     "concrete": 128,
@@ -1168,12 +1168,12 @@
     "sign_atlas": 12,
     "lamp_glass": 384
    },
-   "glb_bytes": 3807092,
+   "glb_bytes": 3895940,
    "problems": [],
    "textured_source": "assets/generated/city_roadside/textured_exports/pump_citadel_detail.glb",
    "refine": [
     1.2,
-    34416
+    35112
    ],
    "role": "landmark",
    "source_glb": "godot/assets/city/kit/pump_citadel.glb",

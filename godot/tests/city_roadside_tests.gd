@@ -450,6 +450,56 @@ func _test_camps_and_barrels(roadside: Node3D) -> void:
 		var cost: Dictionary = CityRoadsideCatalog.costs[id]
 		_check("%s is a detailed battered drum (%d tris)" % [id, cost["tris"]], cost["tris"] >= 800 and "lamp_glass" in cost["materials"])
 		_check("%s documents its fire anchor" % id, CityRoadsideCatalog.fire_anchor(id).has("base"))
+		var fire_radius := float(CityRoadsideCatalog.fire_anchor(id)["radius"])
+		var interior := Probe.barrel_interior_problems(CityRoadsideCatalog.meshes[id], fire_radius, fire_radius / 0.68)
+		for problem in interior:
+			print("  BARREL INTERIOR: ", id, " ", problem)
+		_check("%s first-hit from above sees glowing coal inside hollow hoops (%d problems)" % [id, interior.size()], interior.is_empty())
+	_test_barrel_probe_rejects_discs()
+
+
+## The from-above probe must fail a drum whose hoop is a capped disc over the coals (the old geometry) and pass the same drum with an annular hoop.
+func _test_barrel_probe_rejects_discs() -> void:
+	var drum := 0.3
+	var fire := drum * 0.68
+	var glass := _ring_mesh(0.0, drum * 0.7, 0.6, "lamp_glass")
+	var disc := _ring_mesh(0.0, drum * 1.045, 0.74, "steel_structure")
+	var annulus := _ring_mesh(drum * 0.99, drum * 1.045, 0.74, "steel_structure")
+	var capped := ArrayMesh.new()
+	var hollow := ArrayMesh.new()
+	for source: ArrayMesh in [glass, disc]:
+		capped.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, source.surface_get_arrays(0))
+		capped.surface_set_material(capped.get_surface_count() - 1, source.surface_get_material(0))
+	for source: ArrayMesh in [glass, annulus]:
+		hollow.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, source.surface_get_arrays(0))
+		hollow.surface_set_material(hollow.get_surface_count() - 1, source.surface_get_material(0))
+	_check("the from-above barrel probe rejects a capped disc hoop over the coals", not Probe.barrel_interior_problems(capped, fire, drum).is_empty())
+	_check("the from-above barrel probe accepts the same drum with an annular hoop", Probe.barrel_interior_problems(hollow, fire, drum).is_empty())
+
+
+## Flat annulus (inner 0 = full disc) at height y as a one-surface mesh named `material`.
+func _ring_mesh(inner: float, outer: float, y: float, material: String) -> ArrayMesh:
+	var vertices := PackedVector3Array()
+	var indices := PackedInt32Array()
+	var count := 24
+	for k in count:
+		var a := TAU * float(k) / float(count)
+		vertices.append(Vector3(cos(a), 0.0, sin(a)) * inner + Vector3(0.0, y, 0.0))
+		vertices.append(Vector3(cos(a), 0.0, sin(a)) * outer + Vector3(0.0, y, 0.0))
+	for k in count:
+		var i := k * 2
+		var j := ((k + 1) % count) * 2
+		indices.append_array(PackedInt32Array([i, i + 1, j + 1, i, j + 1, j]))
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	var named := StandardMaterial3D.new()
+	named.resource_name = material
+	mesh.surface_set_material(0, named)
+	return mesh
 
 
 func _test_effects(scenery: Node3D, roadside: Node3D) -> void:

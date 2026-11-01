@@ -95,6 +95,22 @@ def check_city_roadside_qa():
     if code != 1 or 'CITY_ROADSIDE_QA: 1 failures' not in report:
         raise RuntimeError(f'Roadside QA --selftest-fail did not exit 1 through its own check (exit {code})')
     print('PASS: roadside QA exits 0 healthy, 1 on --selftest-fail, no captures without --capture', flush=True)
+    if sys.platform == 'win32':
+        check_city_roadside_hidden_subjects(engine)
+
+
+def check_city_roadside_hidden_subjects(engine):
+    """Real-renderer self-test of the with/without checks: with the barrel body (or flame) hidden from the 'with' render, exactly that check must fail."""
+    base = [engine, '--path', 'godot', 'res://tests/city_roadside_qa.tscn', '--', '--capture', '--only=barrel']
+    log = ROOT / '.ai' / 'city-roadside-qa.log'
+    for hidden, expect, other in (('body', 'scene differs with vs without its subject', 'flame surface alone'),
+                                  ('flame', 'flame surface alone changes the upper-flame pixels', 'scene differs with vs without its subject')):
+        code, report = run_bounded([*base, f'--selftest-hide={hidden}'], log, 600)
+        fails = [line for line in report.splitlines() if line.startswith('  FAIL ')]
+        if code != 1 or not any(expect in line for line in fails) or any(other in line for line in fails):
+            print(report[-3000:], flush=True)
+            raise RuntimeError(f'Roadside QA hidden-{hidden} self-test did not fail exactly its own check (exit {code})')
+        print(f'PASS: hiding the barrel {hidden} fails its with/without check ({len(fails)} failures)', flush=True)
 
 
 def validate_city_kit():

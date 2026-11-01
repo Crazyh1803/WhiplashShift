@@ -46,12 +46,12 @@ void fragment() {
 	float height = max(local_pos.y, 0.0);
 	float broad = fbm(world_pos * 0.22);
 	float streak = fbm(vec3(world_pos.x * 1.5 + world_pos.z * 1.1, world_pos.y * 0.1, world_pos.z * 1.5 - world_pos.x * 1.1));
-	float grime = smoothstep(3.6, 0.0, height) * 0.55 + vertical_face * smoothstep(0.38, 0.8, streak) * 0.38 + (broad - 0.5) * 0.4;
+	float grime = (1.0 - smoothstep(0.0, 3.6, height)) * 0.55 + vertical_face * smoothstep(0.38, 0.8, streak) * 0.38 + (broad - 0.5) * 0.4;
 	vec2 g = abs(n.x) > abs(n.z) ? vec2(local_pos.z, local_pos.y) : vec2(local_pos.x, local_pos.y);
 	vec2 f = abs(fract(g / vec2(2.8, 2.4)) - 0.5);
 	float seam = clamp(step(0.488, f.x) + step(0.484, f.y), 0.0, 1.0) * step(0.8, vertical_face);
 	vec3 col = base_color.rgb * (1.0 - weather * clamp(grime, 0.0, 0.75) * 0.62);
-	float rust_mask = rust * smoothstep(7.0, 0.0, height) * smoothstep(0.35, 0.75, fbm(world_pos * 0.7));
+	float rust_mask = rust * (1.0 - smoothstep(0.0, 7.0, height)) * smoothstep(0.35, 0.75, fbm(world_pos * 0.7));
 	col = mix(col, col * vec3(1.55, 0.78, 0.45), rust_mask * weather);
 	col *= 1.0 - weather * 0.33 * seam;
 	ALBEDO = col;
