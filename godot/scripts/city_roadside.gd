@@ -61,28 +61,45 @@ static func build(parent: Node3D, input: CourseDefinition, realism: Node3D, dist
 	return root
 
 
-static func _batch(root: Node3D, label: String, mesh: Mesh, transforms: Array[Transform3D], begin: float, end: float, kind: String, shadows: bool = false) -> MultiMeshInstance3D:
-	if transforms.is_empty():
-		return null
-	var multimesh := MultiMesh.new()
-	multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	multimesh.mesh = mesh
-	multimesh.instance_count = transforms.size()
+## One MultiMeshInstance3D per placement (shared Mesh, one transform). Godot applies visibility ranges per GeometryInstance, measured to the node's merged
+## bounds, so a node must never span distant placements. The explicit custom_aabb is that placement's exact world box.
+static func _batch(root: Node3D, label: String, mesh: Mesh, transforms: Array[Transform3D], begin: float, end: float, kind: String, shadows: bool = false) -> Array[MultiMeshInstance3D]:
+	var nodes: Array[MultiMeshInstance3D] = []
 	for i in transforms.size():
-		multimesh.set_instance_transform(i, transforms[i])
-	var instance := MultiMeshInstance3D.new()
-	instance.name = label
-	instance.multimesh = multimesh
-	instance.set_meta("city_transforms", transforms)
-	instance.set_meta("roadside_kind", kind)
-	instance.visibility_range_begin = begin
-	instance.visibility_range_end = end
-	instance.visibility_range_begin_margin = MARGIN if begin > 0.0 else 0.0
-	instance.visibility_range_end_margin = MARGIN
-	instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
-	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	root.add_child(instance)
-	return instance
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.mesh = mesh
+		multimesh.instance_count = 1
+		multimesh.set_instance_transform(0, transforms[i])
+		var instance := MultiMeshInstance3D.new()
+		instance.name = label if transforms.size() == 1 else "%s_%d" % [label, i]
+		instance.multimesh = multimesh
+		instance.custom_aabb = world_box(transforms[i], mesh.get_aabb())
+		var placed: Array[Transform3D] = [transforms[i]]
+		instance.set_meta("city_transforms", placed)
+		instance.set_meta("roadside_kind", kind)
+		instance.set_meta("roadside_label", label)
+		instance.visibility_range_begin = begin
+		instance.visibility_range_end = end
+		instance.visibility_range_begin_margin = MARGIN if begin > 0.0 else 0.0
+		instance.visibility_range_end_margin = MARGIN
+		instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadows else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		root.add_child(instance)
+		nodes.append(instance)
+	return nodes
+
+
+## World-space box of a local box under a transform.
+static func world_box(xf: Transform3D, local: AABB) -> AABB:
+	var low := Vector3(INF, INF, INF)
+	var high := Vector3(-INF, -INF, -INF)
+	for corner in 8:
+		var c := local.position + Vector3(local.size.x * float(corner & 1), local.size.y * float((corner >> 1) & 1), local.size.z * float((corner >> 2) & 1))
+		var w := xf * c
+		low = Vector3(minf(low.x, w.x), minf(low.y, w.y), minf(low.z, w.z))
+		high = Vector3(maxf(high.x, w.x), maxf(high.y, w.y), maxf(high.z, w.z))
+	return AABB(low, high - low)
 
 
 static func _towers(root: Node3D, layout: CityRoadsideLayout) -> void:
@@ -204,6 +221,8 @@ static func measure(scenery: Node3D, course: CourseDefinition) -> Dictionary:
 	return peaks
 
 
+## Items follow how nodes really cull: a node with a finite visibility range is ONE item at the centre of its merged instance bounds and carries every
+## instance it contains. Only range-free nodes (landmark district batches, bounded by `hard_range`) are counted per instance.
 static func _items(instances: Array, scenery: Node3D) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	for instance: MultiMeshInstance3D in instances:
@@ -211,16 +230,28 @@ static func _items(instances: Array, scenery: Node3D) -> Array[Dictionary]:
 		if mesh == null:
 			continue
 		var tris := IndustrialMarketBenchmark.count_triangles(mesh)
-		var local := mesh.get_aabb().get_center()
+		var local_box := mesh.get_aabb()
+		var local := local_box.get_center()
 		var anchor := _world(instance, scenery)
 		var transforms: Array = instance.get_meta("city_transforms", [])
 		if transforms.is_empty():
 			out.append({"center": anchor * local, "begin": instance.visibility_range_begin, "end": instance.visibility_range_end, "tris": tris * instance.multimesh.instance_count, "surfaces": mesh.get_surface_count(), "key": instance.get_instance_id()})
 			continue
-		# per-instance centre for sparse batches; chunk batches carry one merged instance
+		if instance.visibility_range_end > 0.0 or instance.visibility_range_begin > 0.0:
+			var merged := AABB()
+			for i in transforms.size():
+				var box := world_box(anchor * (transforms[i] as Transform3D), local_box)
+				merged = box if i == 0 else merged.merge(box)
+			out.append({"center": merged.get_center(), "begin": instance.visibility_range_begin, "end": instance.visibility_range_end, "tris": tris * transforms.size(), "surfaces": mesh.get_surface_count(), "key": instance.get_instance_id()})
+			continue
 		for xf: Transform3D in transforms:
-			out.append({"center": anchor * (xf * local), "begin": instance.visibility_range_begin, "end": instance.visibility_range_end, "tris": tris, "surfaces": mesh.get_surface_count(), "key": instance.get_instance_id()})
+			out.append({"center": anchor * (xf * local), "begin": 0.0, "end": instance.visibility_range_end, "tris": tris, "surfaces": mesh.get_surface_count(), "key": instance.get_instance_id()})
 	return out
+
+
+## Triangles one add-on node draws at `eye` under the same rule the whole-street measurement uses (its own merged bounds and visibility window).
+static func active_tris(instance: MultiMeshInstance3D, scenery: Node3D, eye: Vector3) -> int:
+	return int(_sum(_items([instance], scenery), eye, 0.0)["tris"])
 
 
 static func _sum(items: Array[Dictionary], eye: Vector3, hard_range: float) -> Dictionary:

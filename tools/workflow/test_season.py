@@ -95,9 +95,6 @@ def check_city_roadside_qa():
     if code != 1 or 'CITY_ROADSIDE_QA: 1 failures' not in report:
         raise RuntimeError(f'Roadside QA --selftest-fail did not exit 1 through its own check (exit {code})')
     print('PASS: roadside QA exits 0 healthy, 1 on --selftest-fail, no captures without --capture', flush=True)
-    if (ROOT / '.ai' / 'TEMP_CAPTURE').exists():  # TEMP-REMOVE
-        code, report = run_bounded([engine, '--path', 'godot', 'res://tests/city_roadside_qa.tscn', '--', '--capture'], log, 600)  # TEMP-REMOVE
-        print(report[-6000:], flush=True)  # TEMP-REMOVE
 
 
 def validate_city_kit():

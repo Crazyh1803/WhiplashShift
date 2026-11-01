@@ -107,30 +107,35 @@ static func _smoke_material() -> ShaderMaterial:
 	return material
 
 
-## One instance per barrel, placed at the barrel's foot; `coal_heights` lifts flame and smoke to the coal bed. Phase offsets de-synchronise the flames deterministically.
-static func build(parent: Node3D, fire_bases: Array[Vector3], coal_heights: Array[float], yaw: Array[float]) -> MultiMeshInstance3D:
-	if fire_bases.is_empty():
-		return null
+## One MultiMeshInstance3D per barrel (one transform, the shared mesh), placed at the barrel's foot; `coal_heights` lifts flame and smoke to the coal bed.
+## Godot culls per node against its own bounds, so each fire keeps its own range. Phase offsets de-synchronise the flames deterministically by barrel index.
+static func build(parent: Node3D, fire_bases: Array[Vector3], coal_heights: Array[float], yaw: Array[float]) -> Array[MultiMeshInstance3D]:
+	var nodes: Array[MultiMeshInstance3D] = []
 	var count := mini(fire_bases.size(), MAX_BARRELS)
-	var multimesh := MultiMesh.new()
-	multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	multimesh.use_custom_data = true
-	multimesh.mesh = mesh()
-	multimesh.instance_count = count
-	var placed: Array[Transform3D] = []
 	for i in count:
 		var xf := Transform3D(Basis(Vector3.UP, yaw[i]), fire_bases[i])
-		placed.append(xf)
-		multimesh.set_instance_transform(i, xf)
-		multimesh.set_instance_custom_data(i, Color(fposmod(float(i) * 0.37 + 0.11, 1.0), coal_heights[i], 0, 0))
-	var instance := MultiMeshInstance3D.new()
-	instance.name = "BarrelFire"
-	instance.multimesh = multimesh
-	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	instance.visibility_range_end = 180.0
-	instance.visibility_range_end_margin = 10.0
-	instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
-	instance.set_meta("city_transforms", placed)
-	instance.set_meta("roadside_kind", "fire")
-	parent.add_child(instance)
-	return instance
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.use_custom_data = true
+		multimesh.mesh = mesh()
+		multimesh.instance_count = 1
+		multimesh.set_instance_transform(0, xf)
+		var phase := fposmod(float(i) * 0.37 + 0.11, 1.0)
+		multimesh.set_instance_custom_data(0, Color(phase, coal_heights[i], 0, 0))
+		var instance := MultiMeshInstance3D.new()
+		instance.name = "BarrelFire_%d" % i
+		instance.multimesh = multimesh
+		instance.custom_aabb = CityRoadside.world_box(xf, mesh().custom_aabb)
+		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		instance.visibility_range_end = 180.0
+		instance.visibility_range_end_margin = 10.0
+		instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		var placed: Array[Transform3D] = [xf]
+		instance.set_meta("city_transforms", placed)
+		instance.set_meta("roadside_kind", "fire")
+		instance.set_meta("roadside_label", "BarrelFire")
+		instance.set_meta("fire_phase", phase)
+		instance.set_meta("fire_coal", coal_heights[i])
+		parent.add_child(instance)
+		nodes.append(instance)
+	return nodes
