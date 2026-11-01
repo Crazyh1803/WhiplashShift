@@ -59,6 +59,51 @@ static func plan(roadside: Node3D, course: CourseDefinition) -> Array[Dictionary
 	return views
 
 
+## Which roadside nodes overlap the view's subject and whether each is drawn at the view's eye, by the same node-bounds rule as CityRoadside.measure.
+## Returns {"drawn": [kinds of overlapping nodes that are active], "culled": [kinds that are not]}.
+static func subject_activity(roadside: Node3D, view: Dictionary) -> Dictionary:
+	var drawn: Array[String] = []
+	var culled: Array[String] = []
+	var scenery := roadside.get_parent() as Node3D
+	var subject: AABB = (view["subject"] as AABB).grow(1.0)
+	for instance: MultiMeshInstance3D in roadside.find_children("*", "MultiMeshInstance3D", true, false):
+		if not instance.custom_aabb.intersects(subject):
+			continue
+		var kind := String(instance.get_meta("roadside_kind", ""))
+		if CityRoadside.active_tris(instance, scenery, view["eye"]) > 0:
+			drawn.append(kind)
+		else:
+			culled.append(kind)
+	return {"drawn": drawn, "culled": culled}
+
+
+## Empty when the view's subject geometry is really drawn at its eye: full detail for towers, boards, camps, barrels and fires, never only the far LOD.
+static func subject_problem(roadside: Node3D, view: Dictionary) -> String:
+	var activity := subject_activity(roadside, view)
+	var drawn: Array = activity["drawn"]
+	var culled: Array = activity["culled"]
+	match String(view["kind"]):
+		"tower", "podium":
+			if not "tower" in drawn or "tower_lod1" in drawn:
+				return "tower near detail not the active tower geometry %s" % [activity]
+		"boards":
+			if not "boards" in drawn:
+				return "boards not drawn %s" % [activity]
+		"camp":
+			if not "camp" in drawn:
+				return "camp not drawn %s" % [activity]
+		"barrel":
+			if not ("barrel" in drawn and "fire" in drawn):
+				return "barrel body and fire not both drawn %s" % [activity]
+		"landmark", "landmark_detail":
+			if not "landmark" in drawn:
+				return "landmark overlay not drawn %s" % [activity]
+		"driver":
+			if (drawn.is_empty() and not culled.is_empty()):
+				return "driver view subject entirely culled %s" % [activity]
+	return ""
+
+
 ## True when `point` lies inside the view's frustum (vertical fov, 16:9), computed from the look-at basis so it does not depend on a viewport.
 static func frames(view: Dictionary, point: Vector3, aspect: float = 16.0 / 9.0, margin: float = 0.95) -> bool:
 	var xf := Transform3D(Basis.IDENTITY, view["eye"]).looking_at(view["target"], Vector3.UP)

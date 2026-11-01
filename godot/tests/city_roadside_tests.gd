@@ -33,6 +33,7 @@ func _ready() -> void:
 		_test_boards(scenery, roadside)
 		_test_camps_and_barrels(roadside)
 		_test_effects(scenery, roadside)
+		_test_distant_transforms(scenery)
 		_test_lights(scenery, roadside)
 		_test_budget(scenery, roadside)
 		_test_originals(host, scenery)
@@ -288,8 +289,8 @@ func _test_towers(roadside: Node3D) -> void:
 	_check("the two skyscrapers have distinct silhouettes (%.0fx%.0fx%.0f vs %.0fx%.0fx%.0f)" % [a.size.x, a.size.y, a.size.z, b.size.x, b.size.y, b.size.z], absf(a.size.y - b.size.y) > 3.0 and (absf(a.size.x - b.size.x) > 1.0 or absf(a.size.z - b.size.z) > 1.0))
 	var sides := {}
 	for tower: Dictionary in roadside.get_meta("towers"):
-		var batch := roadside.get_node("Roadside_" + String(tower["id"])) as MultiMeshInstance3D
-		_check("%s near mesh has a bounded visibility window" % tower["id"], batch.visibility_range_end == CityRoadside.TOWER_NEAR_END)
+		var batch := _node_at(roadside, "Roadside_" + String(tower["id"]), (tower["transform"] as Transform3D).origin)
+		_check("%s near mesh has its own single-transform node with a bounded window" % tower["id"], batch != null and batch.multimesh.instance_count == 1 and batch.visibility_range_end == CityRoadside.TOWER_NEAR_END)
 		sides[int(tower["side"])] = true
 		var facing := -(tower["transform"] as Transform3D).basis.z
 		var at := CityDistrict.sample(_course, tower["s"])
@@ -390,9 +391,17 @@ func _test_camps_and_barrels(roadside: Node3D) -> void:
 
 
 func _test_effects(scenery: Node3D, roadside: Node3D) -> void:
-	var fire := roadside.get_node_or_null("BarrelFire") as MultiMeshInstance3D
+	var fires: Array[Node] = roadside.find_children("BarrelFire_*", "MultiMeshInstance3D", false, false)
 	var barrels: Array = roadside.get_meta("barrels")
-	_check("one fire instance per barrel (%d)" % barrels.size(), fire != null and fire.multimesh.instance_count == barrels.size() and barrels.size() <= CityRoadsideFx.MAX_BARRELS)
+	var fire := fires[0] as MultiMeshInstance3D if not fires.is_empty() else null
+	_check("one single-transform fire node per barrel (%d)" % barrels.size(), fire != null and fires.size() == barrels.size() and fires.all(func(n: MultiMeshInstance3D) -> bool: return n.multimesh.instance_count == 1) and barrels.size() <= CityRoadsideFx.MAX_BARRELS)
+	var phases := {}
+	for i in fires.size():
+		var data := Color((fires[i] as MultiMeshInstance3D).get_meta("fire_phase"), (fires[i] as MultiMeshInstance3D).get_meta("fire_coal"), 0.0)
+		phases[snappedf(data.r, 0.0001)] = true
+		_check("fire %d keeps its deterministic phase and coal height" % i, is_equal_approx(data.r, fposmod(float(i) * 0.37 + 0.11, 1.0)) and is_equal_approx(data.g, float(barrels[i]["coal_height"])))
+		_check("fire %d sits at its barrel with its exact world bounds" % i, ((fires[i] as MultiMeshInstance3D).get_meta("city_transforms")[0] as Transform3D).origin.is_equal_approx((barrels[i]["transform"] as Transform3D).origin) and (fires[i] as MultiMeshInstance3D).custom_aabb.grow(0.01).encloses(barrels[i]["effect"]))
+	_check("fire phases are de-synchronised (%d distinct)" % phases.size(), phases.size() == fires.size())
 	var mesh := fire.multimesh.mesh as ArrayMesh
 	_check("fire mesh is flame + ground pool + smoke", mesh.get_surface_count() == 3)
 	var puff_verts := (mesh.surface_get_arrays(2)[Mesh.ARRAY_VERTEX] as PackedVector3Array).size()
@@ -416,6 +425,54 @@ func _test_effects(scenery: Node3D, roadside: Node3D) -> void:
 	_check("effects animate by shader time (flame flickers, smoke loops)", flame.find("TIME") != -1 and smoke.find("TIME") != -1)
 	_check("the scene contains no particle systems", scenery.find_children("*", "GPUParticles3D", true, false).is_empty() and scenery.find_children("*", "CPUParticles3D", true, false).is_empty())
 	_check("the fire is distance-bounded", fire.visibility_range_end > 0.0 and fire.visibility_range_end <= 200.0)
+
+
+## The single-transform node of a placed asset (label "Roadside_<id>") whose instance sits at `origin`.
+func _node_at(roadside: Node3D, label: String, origin: Vector3) -> MultiMeshInstance3D:
+	for instance: MultiMeshInstance3D in roadside.find_children("*", "MultiMeshInstance3D", false, false):
+		if instance.get_meta("roadside_label", "") == label and (instance.get_meta("city_transforms")[0] as Transform3D).origin.is_equal_approx(origin):
+			return instance
+	return null
+
+
+## Regression for the rendered culling defect: Godot culls a node by its own merged bounds, so two distant copies of one asset must never share a ranged node.
+## Two copies 1200 m apart; an eye beside either must draw that copy's full detail (and only it), and the far LOD must follow each copy's own distance.
+func _test_distant_transforms(scenery: Node3D) -> void:
+	var host := Node3D.new()
+	add_child(host)
+	var tower_mesh: Mesh = CityRoadsideCatalog.meshes["tower_a"]
+	var lod_mesh: Mesh = CityRoadsideCatalog.meshes["tower_a_lod1"]
+	var a := Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, 0.0))
+	var b := Transform3D(Basis.IDENTITY, Vector3(1200.0, 0.0, 0.0))
+	var pair: Array[Transform3D] = [a, b]
+	var near := CityRoadside._batch(host, "T", tower_mesh, pair, 0.0, CityRoadside.TOWER_NEAR_END, "tower")
+	var far := CityRoadside._batch(host, "T_lod1", lod_mesh, pair, CityRoadside.TOWER_FAR_BEGIN, CityRoadside.TOWER_FAR_END, "tower_lod1")
+	_check("distant copies get one node each, none spans both", near.size() == 2 and far.size() == 2 and near.all(func(n: MultiMeshInstance3D) -> bool: return n.multimesh.instance_count == 1 and n.custom_aabb.size.x < 400.0))
+	var box_a := near[0].custom_aabb
+	var eyes := {"beside A": Vector3(0.0, 1.7, -40.0), "beside B": Vector3(1200.0, 1.7, -40.0), "far LOD range of A": Vector3(0.0, 1.7, -300.0), "far LOD range of B": Vector3(1200.0, 1.7, -300.0)}
+	for label: String in eyes:
+		var eye: Vector3 = eyes[label]
+		var which := 0 if eye.x < 600.0 else 1
+		var other := 1 - which
+		var full: bool = label.begins_with("beside")
+		var drawn := {}
+		for node: MultiMeshInstance3D in near + far:
+			drawn[node.name] = CityRoadside.active_tris(node, host, eye) > 0
+		_check("%s: own full detail %s, own far LOD %s" % [label, full, not full], drawn[near[which].name] == full and drawn[far[which].name] == not full)
+		_check("%s: the other copy draws nothing" % label, not drawn[near[other].name] and not drawn[far[other].name])
+	# the old merged node would have been centred between the copies, 600 m from both: neither near mesh could ever be drawn
+	var merged := box_a.merge(near[1].custom_aabb)
+	_check("a merged node would sit %.0f m from either copy, beyond the %.0f m near window" % [merged.get_center().x, CityRoadside.TOWER_NEAR_END], merged.get_center().distance_to(Vector3(0.0, 1.7, -40.0)) > CityRoadside.TOWER_NEAR_END + CityRoadside.MARGIN)
+	# the same holds for the fires: two barrels far apart, an eye beside either sees its own flames only
+	var bases: Array[Vector3] = [Vector3(0.0, 0.0, 0.0), Vector3(1200.0, 0.0, 0.0)]
+	var coals: Array[float] = [0.8, 0.9]
+	var yaws: Array[float] = [0.0, 0.7]
+	var fires := CityRoadsideFx.build(host, bases, coals, yaws)
+	_check("two distant barrels get two fire nodes", fires.size() == 2)
+	_check("an eye beside either fire draws its own flames only", CityRoadside.active_tris(fires[0], host, Vector3(3.0, 1.7, -3.0)) > 0 and CityRoadside.active_tris(fires[1], host, Vector3(3.0, 1.7, -3.0)) == 0 and CityRoadside.active_tris(fires[1], host, Vector3(1203.0, 1.7, -3.0)) > 0 and CityRoadside.active_tris(fires[0], host, Vector3(1203.0, 1.7, -3.0)) == 0)
+	host.free()
+	# the real scene: at every planned view the subject geometry is the active geometry
+	_check("the real scene keeps its roadside nodes single-transform (no ranged node spans placements)", (scenery.get_node("CityRoadside") as Node3D).find_children("*", "MultiMeshInstance3D", true, false).all(func(n: MultiMeshInstance3D) -> bool: return n.multimesh.instance_count == 1))
 
 
 func _constant(code: String, name_: String) -> float:
@@ -559,6 +616,13 @@ func _test_views(scenery: Node3D, roadside: Node3D) -> void:
 					inside += 1
 	_check("every planned view frames its subject (%d unframed, %d eyes inside solids)" % [unframed, inside], unframed == 0 and inside == 0)
 	_check("view names are unique (%d)" % names.size(), names.size() == views.size())
+	var inactive := 0
+	for view in views:
+		var problem := CityRoadsideViews.subject_problem(roadside, view)
+		if problem != "":
+			inactive += 1
+			print("SUBJECT NOT ACTIVE: ", view["name"], " ", problem)
+	_check("every planned view has its subject geometry active at its eye (%d inactive)" % inactive, inactive == 0)
 	if DisplayServer.get_name() == "headless":
 		print("RENDER_CHECK: captured-pixel verification needs a real display; headless run checked the framing plan only")
 		return

@@ -32,6 +32,8 @@ func _ready() -> void:
 	for view in views:
 		var subject: AABB = view["subject"]
 		_check(CityRoadsideViews.frames(view, subject.get_center()), "%s frames its subject" % view["name"])
+		var problem := CityRoadsideViews.subject_problem(roadside, view)
+		_check(problem == "", "%s subject geometry is active at its eye: %s" % [view["name"], problem])
 	var peaks := CityRoadside.measure(city, course)
 	print("CITY_ROADSIDE_RENDER_WINDOW ", peaks)
 	_check(peaks["addon_tris"] <= CityRoadside.ADDON_NEAR_BUDGET and peaks["addon_surfaces"] <= CityRoadside.ADDON_SURFACE_BUDGET, "add-on window within its caps")
@@ -59,6 +61,7 @@ func _ready() -> void:
 			camera.fov = view["fov"]
 			camera.look_at(view["target"])
 			lights._refresh(camera.position)
+			_check(CityRoadsideViews.subject_problem(roadside, view) == "", "%s subject geometry active in the capture" % view["name"])
 			await _capture(path.path_join(String(view["name"]) + ".png"))
 	var report := "CITY_ROADSIDE_QA: %d failures" % _failures.size()
 	print(report)
