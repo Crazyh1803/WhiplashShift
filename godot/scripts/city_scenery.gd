@@ -484,7 +484,7 @@ class _Kit extends RefCounted:
 					var row: Array = rows[row_index]
 					var jitter := rng.randf_range(-3.0, 3.0)
 					# Same draw, shifted so the row starts at the generic setback.
-					var gap := CityScenery.GENERIC_SETBACK + (rng.randf_range(row[0], row[1]) - float(row[0]))
+					var gap := CityScenery.GENERIC_SETBACK + (rng.randf_range(row[0], row[1]) - float(rows[0][0]))
 					var height := rng.randf_range(row[2], row[3])
 					var fx := rng.randf_range(14.0, 24.0)
 					var fz := rng.randf_range(14.0, 22.0)
