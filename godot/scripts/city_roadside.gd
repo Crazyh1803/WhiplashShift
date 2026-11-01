@@ -18,10 +18,9 @@ const MARGIN := 10.0
 ## base meshes are measured as their own term. Values are set from the measured library (see CityRoadside.measure and the test log), not guessed.
 const ADDON_NEAR_BUDGET := 175000
 const ADDON_SURFACE_BUDGET := 80
-## Whole-street ceilings at one eye: realism base (<= 320k / 160) + landmark bases + the shop actors + the add-on. Measured peak 573k / 247 (see the budget log line).
+## Whole-street ceilings at one eye: realism base (<= 320k / 160) + landmark bases + the shop actors + the add-on. Measured peak 575k / 254 with every unrestricted landmark instance counted (see the budget log line).
 const COMBINED_NEAR_BUDGET := 625000
 const COMBINED_SURFACE_BUDGET := 265
-const LANDMARK_RANGE := 460.0
 const WEATHERED: Array[String] = ["exchange_hall", "pump_citadel", "relay_tower"]
 const RUST := {"steel": 0.5, "machinery": 0.55, "trim": 0.35, "ceramic": 0.12, "cavity": 0.0}
 
@@ -103,7 +102,11 @@ static func world_box(xf: Transform3D, local: AABB) -> AABB:
 
 
 static func _towers(root: Node3D, layout: CityRoadsideLayout) -> void:
+	if not CityRoadsideCatalog.has_group("towers"):
+		return
 	for id in CityRoadsideCatalog.TOWERS:
+		if not CityRoadsideCatalog.meshes.has(id) or not CityRoadsideCatalog.meshes.has(id + "_lod1"):
+			continue
 		var transforms: Array[Transform3D] = []
 		for tower in layout.towers:
 			if tower["id"] == id:
@@ -206,7 +209,7 @@ static func measure(scenery: Node3D, course: CourseDefinition) -> Dictionary:
 	for s in range(0, int(course.total_length), 10):
 		var eye: Vector3 = CityDistrict.sample(course, float(s))["pos"] + Vector3.UP * 1.5
 		var base := _sum(base_items, eye, 0.0)
-		var landmarks := _sum(landmark_items, eye, LANDMARK_RANGE)
+		var landmarks := _sum(landmark_items, eye, 0.0)
 		var addon := _sum(addon_items, eye, 0.0)
 		var actors := _sum(actor_items, eye, 0.0)
 		peaks["base_tris"] = maxi(peaks["base_tris"], base["tris"])
@@ -222,7 +225,7 @@ static func measure(scenery: Node3D, course: CourseDefinition) -> Dictionary:
 
 
 ## Items follow how nodes really cull: a node with a finite visibility range is ONE item at the centre of its merged instance bounds and carries every
-## instance it contains. Only range-free nodes (landmark district batches, bounded by `hard_range`) are counted per instance.
+## instance it contains. Range-free nodes (the landmark district batches) are counted per instance with no distance cutoff, exactly as the renderer draws them.
 static func _items(instances: Array, scenery: Node3D) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	for instance: MultiMeshInstance3D in instances:

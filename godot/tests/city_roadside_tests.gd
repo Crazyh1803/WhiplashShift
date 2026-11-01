@@ -3,6 +3,7 @@
 ## (run with --capture on a Vulkan display); here the same plan is checked for framing, and on a real display each view is also rendered and read back.
 extends Node3D
 
+const Probe := preload("res://tests/city_roadside_probe.gd")
 const LIMIT := 1100.0
 const MIN_TOWERS := 4
 const MIN_BOARD_HOSTS := 6
@@ -29,6 +30,8 @@ func _ready() -> void:
 		_test_clearances(scenery, roadside)
 		_test_layering(scenery, roadside)
 		_test_towers(roadside)
+		_test_apertures()
+		await _test_rendered_apertures()
 		_test_tower_fill()
 		_test_landmarks(scenery, roadside)
 		_test_boards(scenery, roadside)
@@ -302,6 +305,61 @@ func _test_towers(roadside: Node3D) -> void:
 		_check("tower q%d faces the road" % (int(tower["quarter"]) + 1), facing.dot(lateral.normalized()) < -0.85)
 
 
+# ------------------------------------------------------------------------------------------------ recessed frontage openings
+## The podium core must not close the facade openings: at every declared aperture the FIRST surface a ray meets is the glass / door / shutter / dark
+## interior (never brick, concrete or plaster) and it lies behind the facade plane.
+func _test_apertures() -> void:
+	var kinds_by_tower := {"tower_a": ["shop_glass", "shop_shutter", "mezzanine_window", "entrance_door", "entrance_reveal"], "tower_b": ["shutter_raised_gap", "shutter_slats", "lobby_glass", "lobby_door"]}
+	for id in CityRoadsideCatalog.TOWERS:
+		var entry: Dictionary = CityRoadsideCatalog.entries[id]
+		var apertures: Array = entry.get("apertures", [])
+		var masonry: Array = entry.get("masonry", [])
+		var seen := {}
+		for probe: Dictionary in apertures:
+			seen[probe["kind"]] = true
+		_check("%s declares its recessed openings (%d probes, kinds %s)" % [id, apertures.size(), seen.keys()], apertures.size() >= 8 and masonry.size() >= 3 and kinds_by_tower[id].all(func(k: String) -> bool: return seen.has(k)))
+		var problems := Probe.aperture_problems(CityRoadsideCatalog.meshes[id], apertures, masonry)
+		for problem in problems:
+			print("  APERTURE: ", id, " ", problem)
+		_check("%s first-hit probes see glass/doors/shutters/interior, not the podium hull (%d problems)" % [id, problems.size()], problems.is_empty())
+	# the probe itself must fail an occluding hull: masonry 0.18 m behind the facade plane in front of glass 0.33 m behind it
+	var old := ArrayMesh.new()
+	for layer in [["brick", 0.18], ["glass_window", 0.33]]:
+		var arrays := []
+		arrays.resize(Mesh.ARRAY_MAX)
+		var z: float = layer[1]
+		arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3(-1, 0, z), Vector3(1, 0, z), Vector3(0, 2, z)])
+		old.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		var material := StandardMaterial3D.new()
+		material.resource_name = layer[0]
+		old.surface_set_material(old.get_surface_count() - 1, material)
+	var fake: Array = [{"kind": "shop_glass", "position": [0.0, 0.5, 0.0], "expect": ["glass_window"], "min_depth": 0.2}]
+	_check("the aperture probe rejects a masonry hull standing in front of the glass", Probe.aperture_problems(old, fake, ["brick", "concrete"]).size() == 1)
+	old.surface_remove(0)
+	Probe._faces.erase(old.get_instance_id())
+	_check("the aperture probe accepts the same opening once the hull is gone", Probe.aperture_problems(old, fake, ["brick", "concrete"]).is_empty())
+
+
+## On a real renderer: material-ID render of each near tower facade, sampled at the declared aperture centres.
+func _test_rendered_apertures() -> void:
+	if DisplayServer.get_name() == "headless":
+		print("RENDER_CHECK: material-ID aperture pass needs a real display; the first-hit geometry probes above ran headless")
+		return
+	for id in CityRoadsideCatalog.TOWERS:
+		var entry: Dictionary = CityRoadsideCatalog.entries[id]
+		var mesh: ArrayMesh = CityRoadsideCatalog.meshes[id]
+		var materials_before: Array[Material] = []
+		for surface in mesh.get_surface_count():
+			materials_before.append(mesh.surface_get_material(surface))
+		var problems := await Probe.rendered_aperture_problems(self, mesh, entry["apertures"], entry["masonry"])
+		for problem in problems:
+			print("  RENDERED APERTURE: ", id, " ", problem)
+		var restored := true
+		for surface in mesh.get_surface_count():
+			restored = restored and mesh.surface_get_material(surface) == materials_before[surface]
+		_check("%s rendered material-ID pixels at the openings show glass/doors/shutters, not masonry or background (%d problems)" % [id, problems.size()], problems.is_empty() and restored)
+
+
 # ------------------------------------------------------------------------------------------------ landmarks
 func _test_landmarks(scenery: Node3D, roadside: Node3D) -> void:
 	var manifest := JSON.parse_string(FileAccess.get_file_as_string(CityRoadsideCatalog.MANIFEST)) as Dictionary
@@ -550,6 +608,16 @@ func _test_budget(scenery: Node3D, roadside: Node3D) -> void:
 	_check("add-on visible triangles are capped explicitly (%d of %d)" % [peaks["addon_tris"], CityRoadside.ADDON_NEAR_BUDGET], peaks["addon_tris"] > 0 and peaks["addon_tris"] <= CityRoadside.ADDON_NEAR_BUDGET)
 	_check("add-on visible surfaces are capped explicitly (%d of %d)" % [peaks["addon_surfaces"], CityRoadside.ADDON_SURFACE_BUDGET], peaks["addon_surfaces"] > 0 and peaks["addon_surfaces"] <= CityRoadside.ADDON_SURFACE_BUDGET)
 	_check("landmark bases are counted in the combined measurement (%d tris)" % peaks["landmark_tris"], peaks["landmark_tris"] >= 10000)
+	# the district landmark batches carry no visibility range, so the renderer draws every instance at every eye: the measurement must count them all
+	var landmark_nodes := 0
+	var landmark_total := 0
+	var unrestricted := true
+	for instance: MultiMeshInstance3D in scenery.get_node("CityKit").find_children("*", "MultiMeshInstance3D", true, false):
+		if String(instance.get_meta("asset_id", "")) in CityRoadsideCatalog.LANDMARKS + ["relay_tower"]:
+			landmark_nodes += 1
+			unrestricted = unrestricted and instance.visibility_range_end == 0.0 and instance.visibility_range_begin == 0.0
+			landmark_total += IndustrialMarketBenchmark.count_triangles(instance.multimesh.mesh) * instance.multimesh.instance_count
+	_check("landmark batches are unrestricted and every instance is counted at every eye (%d nodes, %d of %d tris)" % [landmark_nodes, peaks["landmark_tris"], landmark_total], landmark_nodes > 0 and unrestricted and int(peaks["landmark_tris"]) == landmark_total)
 	_check("combined peak stays inside the explicit whole-street caps (%d of %d tris, %d of %d surfaces)" % [peaks["combined_tris"], CityRoadside.COMBINED_NEAR_BUDGET, peaks["combined_surfaces"], CityRoadside.COMBINED_SURFACE_BUDGET],
 			peaks["combined_tris"] <= CityRoadside.COMBINED_NEAR_BUDGET and peaks["combined_surfaces"] <= CityRoadside.COMBINED_SURFACE_BUDGET)
 	_check("the whole-street caps equal base + landmarks + actors + add-on terms at their measured peaks", CityRoadside.COMBINED_NEAR_BUDGET <= CityRealismLayout.NEAR_BUDGET + CityRoadside.ADDON_NEAR_BUDGET + int(peaks["landmark_tris"]) + int(peaks["actor_tris"]) + 40000)
@@ -607,6 +675,23 @@ func _test_fallbacks(host: Node3D) -> void:
 	CityRoadsideCatalog.meshes = saved
 	partial.get_parent().remove_child(partial)
 	partial.free()
+	# a missing tower near mesh or LOD mesh: no tower node is looked up or placed, the other groups still build, nothing errors
+	for missing in ["tower_a", "tower_b_lod1"]:
+		CityRoadsideCatalog.meshes = saved.duplicate()
+		CityRoadsideCatalog.meshes.erase(missing)
+		var no_towers := CityScenery.build(host, _course)
+		var no_towers_roadside := no_towers.get_node_or_null("CityRoadside") as Node3D
+		var tower_nodes := no_towers_roadside.find_children("Roadside_tower_*", "MultiMeshInstance3D", true, false) if no_towers_roadside != null else []
+		_check("a missing %s skips the whole tower group without a lookup error" % missing, no_towers_roadside != null and (no_towers_roadside.get_meta("towers") as Array).is_empty() and tower_nodes.is_empty() and not (no_towers_roadside.get_meta("camps") as Array).is_empty() and not (no_towers_roadside.get_meta("boards") as Array).is_empty() and no_towers.has_node("CityBackdrop"))
+		# the node builder itself must also be safe when called directly with the group unavailable
+		var probe_root := Node3D.new()
+		var no_boxes: Array[AABB] = []
+		CityRoadside._towers(probe_root, CityRoadsideLayout.new(_course, [], no_boxes, []))
+		_check("CityRoadside._towers adds nothing when %s is unavailable" % missing, probe_root.get_child_count() == 0)
+		probe_root.free()
+		CityRoadsideCatalog.meshes = saved
+		no_towers.get_parent().remove_child(no_towers)
+		no_towers.free()
 	# whole library missing: the city builds exactly as before the layer existed
 	var held_entries := CityRoadsideCatalog.entries
 	var held_meshes := CityRoadsideCatalog.meshes

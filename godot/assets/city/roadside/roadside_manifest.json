@@ -313,7 +313,7 @@
   "tower_a": {
    "id": "tower_a",
    "glb": "tower_a.glb",
-   "tris": 57780,
+   "tris": 59572,
    "aabb": {
     "min": [
      -12.2,
@@ -342,26 +342,26 @@
     "lamp_glass"
    ],
    "tris_by_surface": {
-    "steel_structure": 20288,
-    "cladding_corrugated": 1600,
+    "steel_structure": 21400,
+    "cladding_corrugated": 1828,
     "cladding_patch": 196,
-    "concrete": 13568,
-    "brick": 4848,
+    "concrete": 13664,
+    "brick": 4864,
     "render_plaster": 8584,
     "roof_membrane": 496,
     "equipment_steel": 3460,
-    "glass_window": 3128,
-    "fabric_awning": 800,
-    "plastic_rubber": 280,
+    "glass_window": 3224,
+    "fabric_awning": 812,
+    "plastic_rubber": 512,
     "sign_atlas": 72,
     "lamp_glass": 460
    },
-   "glb_bytes": 5576120,
+   "glb_bytes": 5776448,
    "problems": [],
    "textured_source": "assets/generated/city_roadside/textured_exports/tower_a.glb",
    "refine": [
     3.4,
-    57780
+    59572
    ],
    "role": "tower",
    "floors": 16,
@@ -376,6 +376,276 @@
      20.0
     ]
    },
+   "apertures": [
+    {
+     "kind": "mezzanine_window",
+     "position": [
+      -10.05,
+      6.9,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure",
+      "fabric_awning",
+      "cladding_corrugated"
+     ],
+     "min_depth": -0.3
+    },
+    {
+     "kind": "mezzanine_window",
+     "position": [
+      -7.18,
+      6.9,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure",
+      "fabric_awning",
+      "cladding_corrugated"
+     ],
+     "min_depth": -0.3
+    },
+    {
+     "kind": "mezzanine_window",
+     "position": [
+      -4.31,
+      6.9,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure",
+      "fabric_awning",
+      "cladding_corrugated"
+     ],
+     "min_depth": -0.3
+    },
+    {
+     "kind": "mezzanine_window",
+     "position": [
+      -1.44,
+      6.9,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure",
+      "fabric_awning",
+      "cladding_corrugated"
+     ],
+     "min_depth": -0.3
+    },
+    {
+     "kind": "mezzanine_window",
+     "position": [
+      1.43,
+      6.9,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure",
+      "fabric_awning",
+      "cladding_corrugated"
+     ],
+     "min_depth": -0.3
+    },
+    {
+     "kind": "mezzanine_window",
+     "position": [
+      4.3,
+      6.9,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure",
+      "fabric_awning",
+      "cladding_corrugated"
+     ],
+     "min_depth": -0.3
+    },
+    {
+     "kind": "mezzanine_window",
+     "position": [
+      7.17,
+      6.9,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure",
+      "fabric_awning",
+      "cladding_corrugated"
+     ],
+     "min_depth": -0.3
+    },
+    {
+     "kind": "mezzanine_window",
+     "position": [
+      10.04,
+      6.9,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure",
+      "fabric_awning",
+      "cladding_corrugated"
+     ],
+     "min_depth": -0.3
+    },
+    {
+     "kind": "shop_glass",
+     "position": [
+      -10.2,
+      1.645,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure"
+     ],
+     "min_depth": 0.2
+    },
+    {
+     "kind": "shop_glass",
+     "position": [
+      -7.8,
+      1.645,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure"
+     ],
+     "min_depth": 0.2
+    },
+    {
+     "kind": "shop_glass",
+     "position": [
+      -5.52,
+      1.645,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure"
+     ],
+     "min_depth": 0.0
+    },
+    {
+     "kind": "shop_glass",
+     "position": [
+      -3.48,
+      1.645,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure"
+     ],
+     "min_depth": 0.0
+    },
+    {
+     "kind": "shop_glass",
+     "position": [
+      3.48,
+      1.645,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure"
+     ],
+     "min_depth": 0.2
+    },
+    {
+     "kind": "shop_glass",
+     "position": [
+      5.52,
+      1.645,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure"
+     ],
+     "min_depth": 0.2
+    },
+    {
+     "kind": "shop_shutter",
+     "position": [
+      9.7,
+      1.4,
+      0.0
+     ],
+     "expect": [
+      "cladding_corrugated",
+      "steel_structure"
+     ],
+     "min_depth": 0.0
+    },
+    {
+     "kind": "entrance_door",
+     "position": [
+      -0.8,
+      1.75,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure"
+     ],
+     "min_depth": 0.2
+    },
+    {
+     "kind": "entrance_door",
+     "position": [
+      0.8,
+      1.75,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure"
+     ],
+     "min_depth": 0.2
+    },
+    {
+     "kind": "entrance_reveal",
+     "position": [
+      -1.72,
+      2.0,
+      0.0
+     ],
+     "expect": [
+      "plastic_rubber",
+      "steel_structure"
+     ],
+     "min_depth": 0.4
+    },
+    {
+     "kind": "entrance_reveal",
+     "position": [
+      1.72,
+      2.0,
+      0.0
+     ],
+     "expect": [
+      "plastic_rubber",
+      "steel_structure"
+     ],
+     "min_depth": 0.4
+    }
+   ],
+   "masonry": [
+    "brick",
+    "concrete",
+    "render_plaster"
+   ],
    "entrances": [
     {
      "kind": "shutter",
@@ -472,7 +742,7 @@
   "tower_b": {
    "id": "tower_b",
    "glb": "tower_b.glb",
-   "tris": 55586,
+   "tris": 55666,
    "aabb": {
     "min": [
      -11.15,
@@ -503,22 +773,22 @@
     "steel_structure": 31790,
     "cladding_corrugated": 8100,
     "cladding_patch": 512,
-    "concrete": 2592,
+    "concrete": 2616,
     "brick": 12,
     "roof_membrane": 288,
     "equipment_steel": 4316,
     "glass_window": 6780,
     "fabric_awning": 12,
-    "plastic_rubber": 448,
+    "plastic_rubber": 504,
     "sign_atlas": 48,
     "lamp_glass": 688
    },
-   "glb_bytes": 5658456,
+   "glb_bytes": 5667448,
    "problems": [],
    "textured_source": "assets/generated/city_roadside/textured_exports/tower_b.glb",
    "refine": [
     5.0,
-    55586
+    55666
    ],
    "role": "tower",
    "floors": 16,
@@ -533,6 +803,138 @@
      18.0
     ]
    },
+   "apertures": [
+    {
+     "kind": "shutter_raised_gap",
+     "position": [
+      -7.0,
+      0.6,
+      0.0
+     ],
+     "expect": [
+      "plastic_rubber"
+     ],
+     "min_depth": 0.4
+    },
+    {
+     "kind": "shutter_slats",
+     "position": [
+      -7.0,
+      2.4,
+      0.0
+     ],
+     "expect": [
+      "cladding_corrugated",
+      "steel_structure"
+     ],
+     "min_depth": 0.15
+    },
+    {
+     "kind": "shutter_slats",
+     "position": [
+      7.0,
+      0.6,
+      0.0
+     ],
+     "expect": [
+      "cladding_corrugated",
+      "steel_structure"
+     ],
+     "min_depth": 0.15
+    },
+    {
+     "kind": "shutter_slats",
+     "position": [
+      7.0,
+      2.4,
+      0.0
+     ],
+     "expect": [
+      "cladding_corrugated",
+      "steel_structure"
+     ],
+     "min_depth": 0.15
+    },
+    {
+     "kind": "lobby_glass",
+     "position": [
+      -3.67,
+      0.65,
+      0.0
+     ],
+     "expect": [
+      "glass_window"
+     ],
+     "min_depth": 0.25
+    },
+    {
+     "kind": "lobby_glass",
+     "position": [
+      -3.67,
+      3.9,
+      0.0
+     ],
+     "expect": [
+      "glass_window"
+     ],
+     "min_depth": 0.25
+    },
+    {
+     "kind": "lobby_glass",
+     "position": [
+      3.67,
+      0.65,
+      0.0
+     ],
+     "expect": [
+      "glass_window"
+     ],
+     "min_depth": 0.25
+    },
+    {
+     "kind": "lobby_glass",
+     "position": [
+      3.67,
+      3.9,
+      0.0
+     ],
+     "expect": [
+      "glass_window"
+     ],
+     "min_depth": 0.25
+    },
+    {
+     "kind": "lobby_door",
+     "position": [
+      -0.75,
+      1.75,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure"
+     ],
+     "min_depth": 0.25
+    },
+    {
+     "kind": "lobby_door",
+     "position": [
+      0.75,
+      1.75,
+      0.0
+     ],
+     "expect": [
+      "glass_window",
+      "steel_structure"
+     ],
+     "min_depth": 0.25
+    }
+   ],
+   "masonry": [
+    "brick",
+    "concrete",
+    "render_plaster"
+   ],
    "entrances": [
     {
      "kind": "shutter",

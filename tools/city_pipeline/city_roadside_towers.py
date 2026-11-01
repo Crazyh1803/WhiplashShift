@@ -61,6 +61,26 @@ def hull(c, xa, xb, ya, yb, z0, z1, mat):
     bx(c, xa + INSET, xb - INSET, ya + INSET, yb - INSET, z0, z1, mat)
 
 
+MASONRY = ["brick", "concrete", "render_plaster"]
+
+
+def podium_hull(c, xa, xb, ya, front, z1, mat):
+    """Podium core set BEHIND the facade wall: its front plane is `front` (behind the wall's back face), so every wall opening is a real recess that
+    ends in a dark interior panel instead of a solid masonry face."""
+    bx(c, xa + INSET, xb - INSET, ya + INSET, front, 0.0, z1, mat)
+
+
+def dark_interior(c, x0, x1, z0, z1, front):
+    """Unlit interior backing for one wall opening, flush with the hull front."""
+    bx(c, x0, x1, front, front + 0.04, z0, z1, "plastic_rubber")
+
+
+def probe(kind, x, z, expect, min_depth):
+    """Declared aperture probe (Godot coordinates, ray cast +Z from in front of the facade plane z=0): the FIRST surface hit at (x, z) must be one of
+    `expect` (never masonry) and lie at least `min_depth` metres behind the facade plane."""
+    return {"kind": kind, "position": [round(x, 3), round(z, 3), 0.0], "expect": expect, "min_depth": min_depth}
+
+
 def cheap_window(c, x0, x1, z0, z1, y, lit=False, blind=False):
     """Upper-floor window: glass (or a lit pane), head, sill and mullion proud of the wall, ~48 triangles."""
     bx(c, x0, x1, y - 0.2, y - 0.17, z0, z1, "lamp_glass" if lit else "glass_window")
@@ -162,13 +182,17 @@ def tower_a():
     x0, x1 = -W / 2, W / 2
     PH = 8.6                                                                  # podium height: ground 5.0 + mezzanine 3.6
     t = 0.6
-    hull(c, x0, x1, -D, 0.0, 0.0, PH, "brick")
+    HULL_A = -0.55                                                            # just inside the 0.6 m facade wall's back face
+    podium_hull(c, x0, x1, -D, HULL_A, PH, "brick")
     P.plinth_band(c, x0, x1, 0.0, 0.5, 0.12)
     shops = [(-11.0, -7.0), (-6.2, -2.8), (2.8, 6.2), (7.0, 11.0)]
     ent = (-1.9, 1.9)
     openings = [(a, b, 0.55, 4.2) for a, b in shops] + [(ent[0], ent[1], 0.0, 4.4)]
-    mez = [(-11.0 + i * 3.0 + 0.5, -11.0 + i * 3.0 + 2.4, 5.5, 7.5) for i in range(8)]
+    mez = [(-11.0 + i * 2.87, -11.0 + i * 2.87 + 1.9, 5.5, 7.5) for i in range(8)]
     P.wall(c, x0, x1, 0.0, PH, 0.0, t, "brick", openings=openings + mez)
+    for (a, b, za, zb) in openings + mez:
+        dark_interior(c, a, b, za, zb, HULL_A)
+    apertures = []
     P.wall(c, x0 - 0.0, x1, 4.4, 5.0, 0.12, 0.12, "render_plaster")           # fascia band over the shop line
     # shopfronts
     kinds = ["plain", "bars", "plain", "bars"]
@@ -176,6 +200,16 @@ def tower_a():
         P.window(c, a, b, 0.55, 4.2, 0.0, "bars" if i in (1, 3) else "plain", "steel_structure", t)
         if i == 3:
             P.roller_shutter(c, (a + b) / 2, 0.55, 0.0, b - a - 0.4, 3.4, raised=0.0, t=t)
+    for i, (a, b, za, zb) in enumerate(mez):
+        P.window(c, a, b, za, zb, 0.0, ["plain", "bars", "plain", "blind", "plain", "bars", "plain", "shutter"][i], "steel_structure", t)
+        apertures.append(probe("mezzanine_window", (a + b) / 2, 6.9, ["glass_window", "steel_structure", "fabric_awning", "cladding_corrugated"], -0.3))        # bars / shutter slats stand proud of the plane
+    for i, (a, b) in enumerate(shops):
+        deep = 0.2 if i in (0, 2) else 0.0
+        if i == 3:
+            apertures.append(probe("shop_shutter", (a + b) / 2 + 0.7, 1.4, ["cladding_corrugated", "steel_structure"], 0.0))
+        else:
+            for dx in (-0.3, 0.3):
+                apertures.append(probe("shop_glass", (a + b) / 2 + dx * (b - a), 0.55 + 0.3 * 3.65, ["glass_window", "steel_structure"], deep))
     P.awning(c, shops[0][0] - 0.2, shops[0][1] + 0.2, 0.05, 4.1, proj=1.6, drop=0.6)
     P.awning(c, shops[2][0] - 0.2, shops[2][1] + 0.2, 0.05, 4.1, proj=1.6, drop=0.6)
     P.sign_board(c, 0, -9.0, 0.12, 5.0 - 0.05 + 0.4, 3.4, 0.8)
@@ -237,8 +271,12 @@ def tower_a():
     c.m.sphere((0.0, -10.0, top2 + 18.8), 0.22, "lamp_glass", seg=8, rings=5)
     P.sign_board(c, 8, 0.0, -4.7, top2 + 1.8, 5.0, 1.2, hanging=True)
     c.entrance("lobby", 0.0, 0.0, 3.8, 4.4, 0.0)
+    for xx in (-0.8, 0.8):
+        apertures.append(probe("entrance_door", xx, 1.75, ["glass_window", "steel_structure"], 0.2))
+    for xx in (-1.72, 1.72):
+        apertures.append(probe("entrance_reveal", xx, 2.0, ["plastic_rubber", "steel_structure"], 0.4))
     top = top2 + 18.8
-    return c, {"floors": 8 + 6 + 2, "height_m": round(top, 2), "footprint": {"min": [x0, 0.0], "max": [x1, D]}}
+    return c, {"floors": 8 + 6 + 2, "height_m": round(top, 2), "footprint": {"min": [x0, 0.0], "max": [x1, D]}, "apertures": apertures, "masonry": MASONRY}
 
 
 # ================================================================================================ tower B
@@ -282,15 +320,28 @@ def tower_b():
     W, D = 22.0, 18.0
     x0, x1 = -W / 2, W / 2
     PH = 10.2                                                                 # 5.4 m open frame ground + 4.8 m upper podium
-    hull(c, x0, x1, -D, 0.0, 0.0, PH, "concrete")
+    HULL_B = -0.96                                                            # behind the shutters' raised-interior panel (-0.925)
+    podium_hull(c, x0, x1, -D, HULL_B, PH, "concrete")
     P.plinth_band(c, x0, x1, 0.0, 0.5, 0.12)
+    apertures = []
     # ground floor: steel frame (columns on plinths + header beam) with glass lobby, two loading shutters and service doors
     cols = [-10.4, -5.0, 0.0, 5.0, 10.4]
     for xx in cols:
         P.column_h(c, xx, 0.0, 0.0, 5.0, 0.4)
     P.beam_i(c, x0 + 0.3, x1 - 0.3, 0.0, 5.2, 0.5)
     bx(c, x0, x1, -0.5, 0.05, 5.4, PH, "concrete")                              # upper podium slab front
-    P.wall(c, x0, x1, 0.0, 5.0, -0.2, 0.5, "concrete", openings=[(-9.8, -5.6, 0.0, 3.6), (-4.4, 4.4, 0.0, 4.5), (5.6, 9.8, 0.0, 3.6)])
+    b_open = [(-9.8, -5.6, 0.0, 3.6), (-4.4, 4.4, 0.0, 4.5), (5.6, 9.8, 0.0, 3.6), (-10.6, -9.7, 0.0, 2.3)]
+    P.wall(c, x0, x1, 0.0, 5.0, -0.2, 0.5, "concrete", openings=b_open)
+    for (a, b, za, zb) in b_open:
+        dark_interior(c, a, b, za, zb, HULL_B)
+    apertures.append(probe("shutter_raised_gap", -7.0, 0.6, ["plastic_rubber"], 0.4))
+    for xx, zz in ((-7.0, 2.4), (7.0, 0.6), (7.0, 2.4)):
+        apertures.append(probe("shutter_slats", xx, zz, ["cladding_corrugated", "steel_structure"], 0.15))
+    for xx in (-3.67, 3.67):
+        for zz in (0.65, 3.9):
+            apertures.append(probe("lobby_glass", xx, zz, ["glass_window"], 0.25))
+    for xx in (-0.75, 0.75):
+        apertures.append(probe("lobby_door", xx, 1.75, ["glass_window", "steel_structure"], 0.25))
     P.roller_shutter(c, -7.7, 0.0, -0.2, 4.0, 3.6, raised=1.2, t=0.5)
     P.roller_shutter(c, 7.7, 0.0, -0.2, 4.0, 3.6, raised=0.0, t=0.5)
     # glass lobby: curtain wall with mullions, double doors
@@ -379,7 +430,7 @@ def tower_b():
     bx(c, 1.9, 9.9, -4.1, -3.7, ztr + 3.1, ztr + 5.3, "steel_structure")
     P.sign_board(c, 7, 5.9, -3.65, ztr + 4.2, 7.0, 1.7)
     c.entrance("lobby", 0.0, 0.0, 8.8, 4.5, 0.0)
-    return c, {"floors": 16, "height_m": round(ztl + 18.4, 2), "footprint": {"min": [x0, 0.0], "max": [x1, D]}}
+    return c, {"floors": 16, "height_m": round(ztl + 18.4, 2), "footprint": {"min": [x0, 0.0], "max": [x1, D]}, "apertures": apertures, "masonry": MASONRY}
 
 
 # ================================================================================================ LOD1 (distance massing, floor-banded)

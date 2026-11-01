@@ -3,6 +3,10 @@
 ## `--only=<kind>` limits captures to one view kind, `--selftest-fail` proves the exit-code contract.
 extends Node3D
 
+const Probe := preload("res://tests/city_roadside_probe.gd")
+## Smallest share of the frame each subject kind's isolated render must cover.
+const MIN_COVERAGE := {"tower": 0.02, "podium": 0.02, "landmark": 0.01, "landmark_detail": 0.01, "boards": 0.002, "camp": 0.003, "barrel": 0.001, "driver": 0.0005}
+
 var _failures: Array[String] = []
 
 
@@ -62,7 +66,14 @@ func _ready() -> void:
 			camera.look_at(view["target"])
 			lights._refresh(camera.position)
 			_check(CityRoadsideViews.subject_problem(roadside, view) == "", "%s subject geometry active in the capture" % view["name"])
-			await _capture(path.path_join(String(view["name"]) + ".png"))
+			var image := await _capture(path.path_join(String(view["name"]) + ".png"))
+			await _check_subject(roadside, view, image)
+		for id in CityRoadsideCatalog.TOWERS:
+			var entry: Dictionary = CityRoadsideCatalog.entries[id]
+			var problems := await Probe.rendered_aperture_problems(self, CityRoadsideCatalog.meshes[id], entry["apertures"], entry["masonry"])
+			for problem in problems:
+				print("  RENDERED APERTURE: ", id, " ", problem)
+			_check(problems.is_empty(), "%s material-ID pixels at its recessed openings are glass/doors/shutters (%d problems)" % [id, problems.size()])
 	var report := "CITY_ROADSIDE_QA: %d failures" % _failures.size()
 	print(report)
 	for failure in _failures:
@@ -70,7 +81,32 @@ func _ready() -> void:
 	get_tree().quit(1 if not _failures.is_empty() else 0)
 
 
-func _capture(file: String) -> void:
+## Isolated subject readback: only copies of the roadside nodes overlapping the view's subject are drawn from the view's camera against black. The subject
+## must cover real pixels with real (non-black) shading, and the same pixels in the full-scene capture must not be black (a missing draw) either.
+func _check_subject(roadside: Node3D, view: Dictionary, scene_image: Image) -> void:
+	var subject := await Probe.render_subject(self, roadside, view)
+	var kind := String(view["kind"])
+	var name := String(view["name"])
+	if kind == "driver" and int(subject["copies"]) == 0:
+		return
+	var floor_coverage: float = MIN_COVERAGE.get(kind, 0.002)
+	print("CITY_ROADSIDE_SUBJECT %s copies=%d coverage=%.4f mean=%.3f" % [name, subject["copies"], subject["coverage"], subject["mean"]])
+	_check(int(subject["copies"]) > 0 and float(subject["coverage"]) >= floor_coverage, "%s isolated subject covers %.3f%% of the frame (needs %.3f%%)" % [name, float(subject["coverage"]) * 100.0, floor_coverage * 100.0])
+	_check(float(subject["mean"]) >= 0.03, "%s isolated subject is shaded, not black (mean luminance %.3f)" % [name, subject["mean"]])
+	var mask: Image = subject["image"]
+	var scale := Vector2(float(scene_image.get_width()) / mask.get_width(), float(scene_image.get_height()) / mask.get_height())
+	var samples := 0
+	var dark := 0
+	for y in range(0, mask.get_height(), 3):
+		for x in range(0, mask.get_width(), 3):
+			if mask.get_pixel(x, y).get_luminance() > 0.012:
+				samples += 1
+				if scene_image.get_pixel(mini(int(x * scale.x), scene_image.get_width() - 1), mini(int(y * scale.y), scene_image.get_height() - 1)).get_luminance() < 0.01:
+					dark += 1
+	_check(samples == 0 or float(dark) / float(samples) < 0.35, "%s subject pixels are drawn in the scene capture (%d of %d black)" % [name, dark, samples])
+
+
+func _capture(file: String) -> Image:
 	for frame in 4:
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
@@ -85,6 +121,7 @@ func _capture(file: String) -> void:
 	_check(high - low > 0.04, "%s is not a flat image" % file.get_file())
 	image.save_png(file)
 	print("CITY_ROADSIDE_CAPTURE ", file.get_file(), " ", image.get_size())
+	return image
 
 
 func _check(ok: bool, label: String) -> void:
