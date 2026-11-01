@@ -14,6 +14,10 @@ const BOARD_FAMILIES: Array[String] = ["habitation_workshop", "market_habitat", 
 ## Per-asset triangle ceilings; the measured library sits well inside them.
 const TRIANGLE_CAPS := {"landmark": 40000, "tower": 70000, "tower_lod1": 9000, "boards": 20000, "camp": 6000, "barrel": 3000}
 const KIT_DIRECTORY := "res://assets/city/kit/"
+const TOWER_FILL := {"glass_window": 0.32}
+const TOWER_FILL_DEFAULT := 0.22
+const TOWER_FILL_SKIP: Array[String] = ["sign_atlas", "lamp_glass"]
+static var tower_variants: Dictionary = {}
 static var entries: Dictionary = {}
 static var meshes: Dictionary = {}
 static var costs: Dictionary = {}
@@ -73,6 +77,8 @@ static func available() -> bool:
 		if tris <= 0 or tris > cap or not box.position.is_finite() or not box.size.is_finite() or box.size.length() < 0.5:
 			push_warning("Roadside asset exceeds its contract: " + id)
 			continue
+		if _role(id) in ["tower", "tower_lod1"]:
+			_apply_tower_fill(mesh)
 		var names: Array[String] = []
 		for surface in mesh.get_surface_count():
 			names.append(mesh.surface_get_material(surface).resource_name)
@@ -131,8 +137,27 @@ static func fire_anchor(id: String) -> Dictionary:
 	return fire if fire is Dictionary else {}
 
 
+## Tower-only textured fill leaves the canonical materials and shared texture resources unchanged.
+static func _apply_tower_fill(mesh: ArrayMesh) -> void:
+	for surface in mesh.get_surface_count():
+		var source := mesh.surface_get_material(surface) as StandardMaterial3D
+		if source == null or source.resource_name in TOWER_FILL_SKIP or source.albedo_texture == null:
+			continue
+		if not tower_variants.has(source.resource_name):
+			var variant := source.duplicate() as StandardMaterial3D
+			variant.emission_enabled = true
+			variant.emission_operator = BaseMaterial3D.EMISSION_OP_MULTIPLY
+			variant.emission = Color(0.8, 0.85, 1.0)
+			variant.emission_texture = source.albedo_texture
+			variant.emission_energy_multiplier = float(TOWER_FILL.get(source.resource_name, TOWER_FILL_DEFAULT))
+			variant.set_meta("tower_fill_of", source)
+			tower_variants[source.resource_name] = variant
+		mesh.surface_set_material(surface, tower_variants[source.resource_name])
+
+
 ## Test hook: drop everything so a fallback can be rehearsed (the next available() reloads).
 static func reset() -> void:
+	tower_variants = {}
 	entries = {}
 	meshes = {}
 	costs = {}

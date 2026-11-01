@@ -20,7 +20,7 @@ static func mesh() -> ArrayMesh:
 	if _mesh != null:
 		return _mesh
 	var result := ArrayMesh.new()
-	_surface(result, _flame_arrays(), _material(0.0, 1.55, 1))
+	_surface(result, _flame_arrays(), _material(0.0, 1.0, 1))
 	_surface(result, _pool_arrays(), _material(1.0, 1.4, 0))
 	_surface(result, _smoke_arrays(), _smoke_material())
 	result.custom_aabb = AABB(Vector3(-CityRoadsideLayout.EFFECT_RADIUS, 0.0, -CityRoadsideLayout.EFFECT_RADIUS), Vector3(CityRoadsideLayout.EFFECT_RADIUS * 2.0, CityRoadsideLayout.EFFECT_HEIGHT, CityRoadsideLayout.EFFECT_RADIUS * 2.0))
@@ -108,12 +108,13 @@ static func _smoke_material() -> ShaderMaterial:
 
 
 ## One MultiMeshInstance3D per barrel (one transform, the shared mesh), placed at the barrel's foot; `coal_heights` lifts flame and smoke to the coal bed.
+## Anchors already include barrel yaw; symmetric effects stay axis-aligned inside their reserved box.
 ## Godot culls per node against its own bounds, so each fire keeps its own range. Phase offsets de-synchronise the flames deterministically by barrel index.
-static func build(parent: Node3D, fire_bases: Array[Vector3], coal_heights: Array[float], yaw: Array[float]) -> Array[MultiMeshInstance3D]:
+static func build(parent: Node3D, fire_bases: Array[Vector3], coal_heights: Array[float], _yaw: Array[float]) -> Array[MultiMeshInstance3D]:
 	var nodes: Array[MultiMeshInstance3D] = []
 	var count := mini(fire_bases.size(), MAX_BARRELS)
 	for i in count:
-		var xf := Transform3D(Basis(Vector3.UP, yaw[i]), fire_bases[i])
+		var xf := Transform3D(Basis.IDENTITY, fire_bases[i])
 		var multimesh := MultiMesh.new()
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		multimesh.use_custom_data = true

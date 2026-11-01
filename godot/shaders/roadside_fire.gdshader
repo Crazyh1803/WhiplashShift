@@ -24,7 +24,7 @@ void vertex() {
 	v_phase = INSTANCE_CUSTOM.x;
 	if (mode < 0.5) {
 		float t = TIME * 6.0 + v_phase * 40.0;
-		float h = UV.y;
+		float h = 1.0 - UV.y;
 		VERTEX.x += sin(t + h * 5.0) * 0.05 * h;
 		VERTEX.z += cos(t * 1.3 + h * 4.0) * 0.04 * h;
 		VERTEX.y = VERTEX.y * (0.92 + 0.1 * sin(t * 1.7 + v_phase * 10.0)) + INSTANCE_CUSTOM.y;     // custom.y = coal-bed height above the barrel foot
@@ -33,16 +33,16 @@ void vertex() {
 
 void fragment() {
 	if (mode < 0.5) {
-		vec2 uv = UV;
+		vec2 uv = vec2(UV.x, 1.0 - UV.y);
 		float w = abs(uv.x - 0.5) * 2.0;
 		float n = vnoise(vec2(uv.x * 4.0 + v_phase * 7.0, uv.y * 3.0 - TIME * 2.4));
-		float limit = mix(0.95, 0.1, pow(uv.y, 0.8)) + (n - 0.5) * 0.3 * uv.y;
-		float body = smoothstep(limit, limit * 0.35, w);
-		float tip = 1.0 - smoothstep(0.5, 1.0, uv.y + (n - 0.5) * 0.35);
-		vec3 hot = vec3(1.0, 0.92, 0.55);
-		vec3 cool = vec3(1.0, 0.32, 0.05);
-		ALBEDO = mix(hot, cool, clamp(uv.y * 1.25, 0.0, 1.0)) * intensity;
-		ALPHA = clamp(body * tip, 0.0, 1.0);
+		float limit = max(0.035, mix(0.85, 0.08, pow(uv.y, 0.7)) + (n - 0.5) * 0.55 * uv.y);
+		float body = 1.0 - smoothstep(limit * 0.35, limit, w);
+		float tip = (1.0 - smoothstep(0.45, 1.0, uv.y + (n - 0.5) * 0.5)) * (1.0 - smoothstep(0.8, 1.0, uv.y));
+		vec3 hot = vec3(1.0, 0.68, 0.22);
+		vec3 cool = vec3(0.95, 0.22, 0.03);
+		ALBEDO = mix(hot, cool, clamp(uv.y * 1.3, 0.0, 1.0)) * intensity;
+		ALPHA = clamp(body * tip, 0.0, 1.0) * 0.85;
 	} else {
 		float d = clamp(length(UV - vec2(0.5)) * 2.0, 0.0, 1.0);
 		float flicker = 0.78 + 0.22 * sin(TIME * 7.0 + v_phase * 20.0) + 0.1 * (vnoise(vec2(TIME * 3.0, v_phase * 9.0)) - 0.5);

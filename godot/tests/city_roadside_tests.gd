@@ -29,10 +29,12 @@ func _ready() -> void:
 		_test_clearances(scenery, roadside)
 		_test_layering(scenery, roadside)
 		_test_towers(roadside)
+		_test_tower_fill()
 		_test_landmarks(scenery, roadside)
 		_test_boards(scenery, roadside)
 		_test_camps_and_barrels(roadside)
 		_test_effects(scenery, roadside)
+		_test_fire_convention()
 		_test_distant_transforms(scenery)
 		_test_lights(scenery, roadside)
 		_test_budget(scenery, roadside)
@@ -62,7 +64,9 @@ func _test_catalog() -> void:
 		var mesh: ArrayMesh = CityRoadsideCatalog.meshes[id]
 		for surface in mesh.get_surface_count():
 			var material := mesh.surface_get_material(surface)
-			if material == null or not CityRealismCatalog.materials.has(material.resource_name) or material != CityRealismCatalog.materials[material.resource_name]:
+			var canonical: Material = CityRealismCatalog.materials.get(material.resource_name) if material != null else null
+			var is_fill: bool = material != null and CityRoadsideCatalog.tower_variants.get(material.resource_name) == material and material.get_meta("tower_fill_of") == canonical
+			if material == null or canonical == null or (material != canonical and not (is_fill and id.begins_with("tower_"))):
 				bad_material += 1
 			var arrays := mesh.surface_get_arrays(surface)
 			if (arrays[Mesh.ARRAY_TEX_UV] as PackedVector2Array).is_empty():
@@ -72,7 +76,7 @@ func _test_catalog() -> void:
 			if material != null and (material as StandardMaterial3D).normal_enabled and (arrays[Mesh.ARRAY_TANGENT] as PackedFloat32Array).is_empty():
 				missing_tangent += 1
 		roles[id] = CityRoadsideCatalog.costs[id]["tris"]
-	_check("every surface is bound to the canonical library material (%d unbound)" % bad_material, bad_material == 0)
+	_check("every surface uses its canonical material or documented tower fill (%d unbound)" % bad_material, bad_material == 0)
 	_check("every surface has UV0 (%d without)" % no_uv, no_uv == 0)
 	_check("every surface carries COLOR_0 wear/AO (%d without)" % no_colour, no_colour == 0)
 	_check("every normal-mapped surface carries tangents (%d without)" % missing_tangent, missing_tangent == 0)
@@ -425,6 +429,47 @@ func _test_effects(scenery: Node3D, roadside: Node3D) -> void:
 	_check("effects animate by shader time (flame flickers, smoke loops)", flame.find("TIME") != -1 and smoke.find("TIME") != -1)
 	_check("the scene contains no particle systems", scenery.find_children("*", "GPUParticles3D", true, false).is_empty() and scenery.find_children("*", "CPUParticles3D", true, false).is_empty())
 	_check("the fire is distance-bounded", fire.visibility_range_end > 0.0 and fire.visibility_range_end <= 200.0)
+
+
+func _test_tower_fill() -> void:
+	var filled := 0
+	var shared := true
+	for id in CityRoadsideCatalog.TOWERS:
+		for key: String in [id, id + "_lod1"]:
+			var tower_mesh: ArrayMesh = CityRoadsideCatalog.meshes[key]
+			for surface in tower_mesh.get_surface_count():
+				var material := tower_mesh.surface_get_material(surface) as StandardMaterial3D
+				var source: StandardMaterial3D = CityRealismCatalog.materials[material.resource_name]
+				if material != source:
+					filled += 1
+					shared = shared and material.albedo_texture == source.albedo_texture and material.normal_texture == source.normal_texture and material.roughness_texture == source.roughness_texture and material.emission_texture == source.albedo_texture and material.emission_operator == BaseMaterial3D.EMISSION_OP_MULTIPLY and material.emission_energy_multiplier <= 0.35
+				else:
+					shared = shared and material.resource_name in CityRoadsideCatalog.TOWER_FILL_SKIP
+	_check("tower readability variants share canonical textures and preserve textured fill (%d surfaces)" % filled, filled >= 6 and shared)
+	for name: String in CityRealismCatalog.materials:
+		var canonical := CityRealismCatalog.materials[name] as StandardMaterial3D
+		_check("canonical %s has no tower fill" % name, not canonical.emission_enabled or name in CityRoadsideCatalog.TOWER_FILL_SKIP)
+
+
+func _test_fire_convention() -> void:
+	var flame: String = CityRoadsideFx.FLAME_SHADER.code
+	_check("flame shader maps UV.y to upward height", flame.count("1.0 - UV.y") >= 2 and flame.find("1.0 - smoothstep(limit * 0.35, limit, w)") != -1)
+	var mesh := CityRoadsideFx.mesh()
+	var arrays := mesh.surface_get_arrays(0)
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var uvs: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+	var oriented := true
+	for i in vertices.size():
+		oriented = oriented and is_equal_approx(uvs[i].y, 1.0 if vertices[i].y < 0.01 else 0.0)
+	_check("flame geometry keeps UV.y=1 at its base and 0 at its tip", oriented)
+	var host := Node3D.new()
+	var bases: Array[Vector3] = [Vector3(10, 2, -5)]
+	var coals: Array[float] = [0.4]
+	var yaws: Array[float] = [0.9]
+	var fires := CityRoadsideFx.build(host, bases, coals, yaws)
+	var want := AABB(bases[0] + mesh.custom_aabb.position, mesh.custom_aabb.size)
+	_check("yawed barrels retain the exact axis-aligned fire reservation", fires[0].custom_aabb.position.is_equal_approx(want.position) and fires[0].custom_aabb.size.is_equal_approx(want.size) and (fires[0].get_meta("city_transforms")[0] as Transform3D).basis.is_equal_approx(Basis.IDENTITY))
+	host.free()
 
 
 ## The single-transform node of a placed asset (label "Roadside_<id>") whose instance sits at `origin`.
