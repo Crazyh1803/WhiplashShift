@@ -266,8 +266,8 @@ def exchange_hall():
         for k in range(14):
             a = 2 * math.pi * k / 14
             P.cylv(c, x + (r + 0.6) * math.cos(a), y + (r + 0.6) * math.sin(a), zp + 0.06, zp + 1.05, 0.02, "steel_structure", seg=5)
-        c.m.cyl((x, y, zp + 1.05), (x, y, zp + 1.09), r + 0.61, r + 0.61, "steel_structure", seg=20, smooth=False)
-        c.m.cyl((x, y, zp + 0.55), (x, y, zp + 0.58), r + 0.61, r + 0.61, "steel_structure", seg=20, smooth=False)
+        R.tube_ring(c, x, y, zp + 1.07, r + 0.61, 0.02, 20, "steel_structure")
+        R.tube_ring(c, x, y, zp + 0.565, r + 0.61, 0.02, 20, "steel_structure")
         # level gauge, flange valves on the outlet pipe at 0.4 h
         zv = z0 + h * 0.4
         for k in range(3):
@@ -398,7 +398,7 @@ def pump_citadel():
         for kk in range(10):
             ang = 2 * math.pi * kk / 10
             P.cylv(c, tx + (tr - 0.35) * math.cos(ang), ty + (tr - 0.35) * math.sin(ang), top + 0.3, top + 1.2, 0.02, "steel_structure", seg=5)
-        c.m.cyl((tx, ty, top + 1.2), (tx, ty, top + 1.24), tr - 0.33, tr - 0.33, "steel_structure", seg=14, smooth=False)
+        R.tube_ring(c, tx, ty, top + 1.22, tr - 0.33, 0.02, 14, "steel_structure")
         gauge(c, tx + n.x * (tr + 0.02), ty + n.y * (tr + 0.02), 3.4) if False else None
         P.cylv(c, tx + n.x * (tr + 0.08), ty + n.y * (tr + 0.08), 1.5, th * 0.55, 0.022, "lamp_glass", seg=5)
         c.dirty.append((tx, ty, 1.0, 2.8, 0.3))

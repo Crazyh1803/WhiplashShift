@@ -198,8 +198,9 @@ def barrel_fire(variant):
     c.m.fan_cap(ring, (0, 0, 0), "steel_structure", flip=True)
     rimrows = [outer[-1], inner[-1]]
     c.m.surface(rimrows, True, "steel_structure", smooth=False)                             # rolled lip
-    for z in (0.17, 0.44, h * 0.8):                                                         # rolling hoops
-        c.m.cyl((0, 0, z), (0, 0, z + 0.035), r * 1.045, r * 1.045, "steel_structure", seg=seg, smooth=False)
+    for z in (0.17, 0.44, h * 0.8):                                                         # rolling hoops: hollow annular bands, the drum interior stays open
+        ring = lambda rad, zz: [(rad * math.cos(2 * math.pi * j / seg), rad * math.sin(2 * math.pi * j / seg), zz) for j in range(seg)]
+        c.m.surface([ring(r * 1.045, z), ring(r * 1.045, z + 0.035), ring(r * 0.99, z + 0.035), ring(r * 0.99, z), ring(r * 1.045, z)], True, "steel_structure", smooth=False)
     c.m.cyl((0, 0, 0), (0, 0, 0.03), r * 0.99, r * 0.99, "steel_structure", seg=seg, smooth=False)
     for (aa, zz, ww) in ((0.9, 0.3, 0.07), (3.8, 0.12, 0.05)):                               # rust-through scorch holes
         P.bx(c, r * 0.97 * math.cos(aa) - ww, r * 0.97 * math.cos(aa) + ww, r * 0.97 * math.sin(aa) - ww, r * 0.97 * math.sin(aa) + ww, zz, zz + ww * 1.4, "plastic_rubber")

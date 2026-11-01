@@ -40,6 +40,44 @@ static func first_hit(mesh: ArrayMesh, at: Vector3, from_z: float = -8.0) -> Dic
 	return best
 
 
+## FIRST surface hit by a ray cast straight down (-Y) from (at.x, from_y, at.z): {"material", "height": hit y, "surface"}; material "" on a miss.
+static func first_hit_down(mesh: ArrayMesh, at: Vector3, from_y: float = 3.0) -> Dictionary:
+	var best := {"material": "", "height": -INF, "surface": -1}
+	for surface in mesh.get_surface_count():
+		var triangles := TriangleMesh.new()
+		triangles.create_from_faces(surface_faces(mesh, surface))
+		var hit: Dictionary = triangles.intersect_ray(Vector3(at.x, from_y, at.z), Vector3.DOWN)
+		if not hit.is_empty() and (hit["position"] as Vector3).y > float(best["height"]):
+			best = {"material": mesh.surface_get_material(surface).resource_name, "height": (hit["position"] as Vector3).y, "surface": surface}
+	return best
+
+
+## Looking down into a burning drum: every sample inside the fire radius must first hit the coal bed (never steel, i.e. a hoop or lid spanning the opening),
+## with glowing coal visible, while the hoop ring itself is still there. `radius` is the fire radius, `drum` the drum radius. Returns the problems.
+static func barrel_interior_problems(mesh: ArrayMesh, radius: float, drum: float) -> Array[String]:
+	var problems: Array[String] = []
+	var glow := 0
+	var samples := 0
+	for ring in [0.0, 0.35, 0.7, 0.95]:
+		for k in (1 if ring == 0.0 else 8):
+			var a := TAU * float(k) / 8.0
+			var hit := first_hit_down(mesh, Vector3(cos(a), 0.0, sin(a)) * radius * ring)
+			var material := String(hit["material"])
+			samples += 1
+			glow += int(material == "lamp_glass")
+			if not material in ["lamp_glass", "plastic_rubber"]:
+				problems.append("interior sample at %.0f%% of the fire radius, angle %.0f first hits %s at y=%.2f" % [ring * 100.0, rad_to_deg(a), material if material != "" else "nothing", float(hit["height"])])
+	if glow * 3 < samples:
+		problems.append("only %d of %d interior samples see glowing coal" % [glow, samples])
+	var hoops := 0
+	for k in 16:
+		var a := TAU * float(k) / 16.0
+		hoops += int(first_hit_down(mesh, Vector3(cos(a), 0.0, sin(a)) * drum * 1.025)["material"] == "steel_structure")
+	if hoops < 12:
+		problems.append("rolling hoops missing: only %d of 16 samples on the hoop ring hit steel" % hoops)
+	return problems
+
+
 ## Probes of one tower mesh against its declared apertures: returns the list of problems (empty when every declared opening shows an allowed, recessed surface).
 static func aperture_problems(mesh: ArrayMesh, apertures: Array, masonry: Array) -> Array[String]:
 	var problems: Array[String] = []
