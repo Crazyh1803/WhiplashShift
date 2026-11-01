@@ -20,3 +20,4 @@ __pycache__/
 
 .ai/bounded-selftest.log
 .ai/city-realism-qa.log
+.ai/city-roadside-qa.log
