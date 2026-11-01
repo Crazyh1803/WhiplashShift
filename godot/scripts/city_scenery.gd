@@ -521,7 +521,7 @@ class _Kit extends RefCounted:
 		var records: Array = state["records"]
 		var bodies: Array = state["bodies"]
 		var ribs: Array = state["ribs"]
-		if records.size() >= CityScenery.BACKDROP_MAX_BUILDINGS or bodies.size() + ribs.size() + parts.size() > CityScenery.BACKDROP_MAX_INSTANCES:
+		if records.size() >= CityScenery.BACKDROP_MAX_BUILDINGS or bodies.size() + ribs.size() + parts.size() >= CityScenery.BACKDROP_MAX_INSTANCES:
 			return false
 		var bounds := _bounds(parts)
 		if absf(bounds.position.x) > CityScenery.WORLD_LIMIT or absf(bounds.end.x) > CityScenery.WORLD_LIMIT \
